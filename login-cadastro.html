@@ -189,7 +189,7 @@ const auth = getAuth(app);
         messageDiv.style.color = "green";
         messageDiv.textContent = "Login realizado com sucesso!";
         // Redirecione para a página principal, por exemplo:
-        window.location.href = "index.html";
+        window.location.href = "main.html";
       } catch (error) {
         messageDiv.style.color = "red";
         messageDiv.textContent = error.message;
@@ -210,7 +210,7 @@ const auth = getAuth(app);
         messageDiv.style.color = "green";
         messageDiv.textContent = "Cadastro realizado com sucesso!";
         // Após o cadastro, você pode redirecionar ou limpar o formulário
-        // window.location.href = "index.html";
+        // window.location.href = "main.html";
       } catch (error) {
         messageDiv.style.color = "red";
         messageDiv.textContent = error.message;
@@ -232,7 +232,7 @@ const auth = getAuth(app);
     localStorage.setItem("userLoggedIn", "true");
 
     // Verifica se há uma URL de redirecionamento salva
-    const redirectURL = localStorage.getItem("redirectAfterLogin") || "index.html"; 
+    const redirectURL = localStorage.getItem("redirectAfterLogin") || "main.html"; 
     localStorage.removeItem("redirectAfterLogin"); 
 
     window.location.href = redirectURL;
@@ -250,7 +250,7 @@ signInWithEmailAndPassword(auth, email, senha)
     messageDiv.textContent = "Login realizado com sucesso!";
     
     setTimeout(() => {
-      window.location.href = "index.html"; 
+      window.location.href = "main.html"; 
     }, 1000); // Aguarda 1 segundo antes de redirecionar
   })
   .catch((error) => {
