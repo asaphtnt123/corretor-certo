@@ -3,7 +3,6 @@ import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } 
 
 import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-storage.js";
-import Swal from "https://cdn.jsdelivr.net/npm/sweetalert2@11";
 // Configuração do Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyCNr5JoKsWJVeUYAaVDqmPznZo100v0uvg",
