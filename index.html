@@ -224,11 +224,11 @@
     // Verifica o estado de autenticação ao carregar a página
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        console.log("Usuário logado:", user);
-        // Se o usuário estiver logado, redireciona para a página principal
+        console.log("Usuário já está logado:", user);
+        // Se o usuário já estiver logado, redireciona para a página principal
         window.location.href = "main.html";
       } else {
-        console.log("Usuário não está logado.");
+        console.log("Usuário não está logado. Exibindo formulário de login.");
       }
     });
   </script>
