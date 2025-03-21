@@ -42,36 +42,7 @@ console.log("Firestore conectado:", db);
 });
 
 
-document.addEventListener("DOMContentLoaded", () => {
-   onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        // Usuário está logado
-        console.log("Usuário logado:", user);
 
-        // Busca o nome do usuário no Firestore
-        const db = getFirestore();
-        const userDocRef = doc(db, "usuarios", user.uid); // Referência ao documento do usuário
-        const userDoc = await getDoc(userDocRef);
-
-        if (userDoc.exists()) {
-            // Se o documento existe, pega o campo 'nome'
-            const userName = userDoc.data().nome || "Usuário";
-            document.getElementById("user-name").textContent = userName;
-
-            // Salva o nome no localStorage para uso futuro (opcional)
-            localStorage.setItem("userName", userName);
-        } else {
-            // Se o documento não existe, usa um valor padrão
-            console.log("Documento do usuário não encontrado no Firestore.");
-            document.getElementById("user-name").textContent = "Usuário";
-        }
-    } else {
-        // Usuário não está logado
-        console.log("Usuário não está logado.");
-        document.getElementById("user-name").textContent = "Convidado";
-    }
-});
-});
   
   
 
