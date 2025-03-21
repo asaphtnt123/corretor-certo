@@ -64,7 +64,7 @@ document.getElementById("cadastro-form").addEventListener("submit", async (e) =>
         });
 
         localStorage.setItem("userName", nome);
-        window.location.href = "perfil.html";
+        window.location.href = "index.html";
     } catch (error) {
         console.error("Erro no cadastro:", error.message);
         alert("Erro ao criar conta: " + error.message);
@@ -89,7 +89,7 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
             localStorage.setItem("tipoUsuario", userData.tipoUsuario);
         }
 
-        window.location.href = "perfil.html";
+        window.location.href = "index.html";
     } catch (error) {
         console.error("Erro no login:", error.message);
         alert("Erro ao fazer login: " + error.message);
@@ -100,7 +100,7 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
 onAuthStateChanged(auth, (user) => {
     if (user) {
         console.log("Usuário já está logado:", user);
-        window.location.href = "perfil.html";
+        window.location.href = "index.html";
     } else {
         console.log("Nenhum usuário logado.");
     }
