@@ -230,7 +230,16 @@
       } else {
         console.log("Usuário não está logado. Exibindo formulário de login.");
       }
-    });
+    });onAuthStateChanged(auth, (user) => {
+  if (user) {
+    console.log("Usuário já está logado:", user);
+    document.getElementById("message").innerHTML = `
+      <p>Você já está logado!</p>
+      <a href="main.html" class="btn">Ir para a página inicial</a>
+    `;
+  }
+});
+
   </script>
 </body>
 </html>
