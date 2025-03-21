@@ -585,22 +585,30 @@ document.getElementById("form-anuncio").addEventListener("submit", function(even
         document.getElementById("form-carro").style.display = "block";
     }
 });
-// Inicialize o Firebase antes de usar este código
-document.getElementById("form-imovel").addEventListener("submit", async function (event) {
-    event.preventDefault(); // Impede o envio padrão do formulário
+document.addEventListener("DOMContentLoaded", function () {
+    const loginBtn = document.getElementById("login-btn");
+    const userNameElement = document.getElementById("user-name");
 
-    // Verifica se há um usuário autenticado
-    const user = firebase.auth().currentUser;
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // Se o usuário estiver logado, exibir o nome ao lado do botão
+            userNameElement.textContent = `Olá, ${user.displayName || "Usuário"}`;
+            loginBtn.href = "#"; // Pode ser atualizado para uma página de perfil
+        } else {
+            // Se não estiver logado, manter o botão como "Login / Cadastro"
+            userNameElement.textContent = "Login / Cadastro";
+            loginBtn.href = "login.html"; // Redireciona para login/cadastro
+        }
+    });
 
-    if (!user) {
-        // Se não estiver logado, exibe um alerta e direciona para o login
-        alert("Você precisa estar logado para anunciar um imóvel.");
-        window.location.href = "login.html"; // Redireciona para a página de login
-    } else {
-        // Se estiver logado, envia o formulário normalmente
-        this.submit();
-    }
+    loginBtn.addEventListener("click", function (event) {
+        if (!auth.currentUser) {
+            event.preventDefault(); // Impede a navegação caso o usuário não esteja logado
+            window.location.href = "login.html";
+        }
+    });
 });
+
 
 
 
