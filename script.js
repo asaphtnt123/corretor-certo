@@ -546,28 +546,27 @@ document.addEventListener('DOMContentLoaded', () => {
    
 });
 document.addEventListener("DOMContentLoaded", function () {
-  auth.onAuthStateChanged((user) => {
-    document.getElementById("btn-anunciar").addEventListener("click", function () {
-      if (!user) {
-        // Salva a URL para redirecionar após login
-        localStorage.setItem("redirectAfterLogin", window.location.href);
+    const loginBtn = document.getElementById("login-btn");
 
-        Swal.fire({
-          title: 'Atenção',
-          text: 'Você precisa estar logado para anunciar um imóvel. Por favor, faça login ou cadastre-se.',
-          icon: 'warning',
-          confirmButtonText: 'Ir para Login/Cadastro'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            window.location.href = "login-cadastro.html";
-          }
-        });
-      } else {
-        // Se logado, exibe o formulário de anúncio
-        document.getElementById("form-anuncio-container").style.display = "block";
-      }
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // Se o usuário estiver logado, exibir nome
+            loginBtn.innerHTML = `<p>${user.displayName || "Meu Perfil"}</p>`;
+            loginBtn.href = "#"; // Pode definir um link para a página de perfil no futuro
+        } else {
+            // Se não estiver logado, manter o botão de login/cadastro
+            loginBtn.innerHTML = `<p>Login / Cadastro</p>`;
+            loginBtn.href = "login.html"; // Redireciona para a página de login
+        }
     });
-  });
+
+    // Caso o botão seja clicado e o usuário não esteja logado, ir para login.html
+    loginBtn.addEventListener("click", function (event) {
+        if (!auth.currentUser) {
+            event.preventDefault(); // Impede a navegação padrão caso queira adicionar alertas
+            window.location.href = "login.html";
+        }
+    });
 });
 
 
