@@ -1,5 +1,5 @@
+import { getFirestore, collection, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 import { getStorage } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-storage.js";
 import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
 
@@ -43,17 +43,34 @@ console.log("Firestore conectado:", db);
 
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Verifica o estado de autenticação
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            // Usuário está logado
-            const userName = user.displayName || localStorage.getItem("userName") || "Usuário";
+   onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        // Usuário está logado
+        console.log("Usuário logado:", user);
+
+        // Busca o nome do usuário no Firestore
+        const db = getFirestore();
+        const userDocRef = doc(db, "usuarios", user.uid); // Referência ao documento do usuário
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+            // Se o documento existe, pega o campo 'nome'
+            const userName = userDoc.data().nome || "Usuário";
             document.getElementById("user-name").textContent = userName;
+
+            // Salva o nome no localStorage para uso futuro (opcional)
+            localStorage.setItem("userName", userName);
         } else {
-            // Usuário não está logado
-            document.getElementById("user-name").textContent = "Convidado";
+            // Se o documento não existe, usa um valor padrão
+            console.log("Documento do usuário não encontrado no Firestore.");
+            document.getElementById("user-name").textContent = "Usuário";
         }
-    });
+    } else {
+        // Usuário não está logado
+        console.log("Usuário não está logado.");
+        document.getElementById("user-name").textContent = "Convidado";
+    }
+});
 });
   
   
