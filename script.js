@@ -3,6 +3,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebas
 import { getStorage } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-storage.js";
 import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
 
+import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-storage.js";
+import Swal from "https://cdn.jsdelivr.net/npm/sweetalert2@11";
 // Configuração do Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyCNr5JoKsWJVeUYAaVDqmPznZo100v0uvg",
@@ -110,6 +113,7 @@ async function carregarImoveisDestaque() {
     try {
         console.log("Iniciando a busca de imóveis em destaque...");
 
+        const db = getFirestore();
         const destaqueRef = collection(db, "imoveis");
         const destaqueQuery = query(destaqueRef, where("destaque", "==", true));
         const querySnapshot = await getDocs(destaqueQuery);
@@ -166,7 +170,6 @@ async function carregarImoveisDestaque() {
         console.error("Erro ao carregar destaques:", error);
     }
 }
-
 
 
 // Função para upload de imagens
@@ -292,9 +295,10 @@ document.addEventListener("DOMContentLoaded", function() {
 // Função para carregar o logo do Firestore
 async function carregarLogo() {
     try {
+        const db = getFirestore();
         const logoCollection = collection(db, 'LOGO');
         const querySnapshot = await getDocs(logoCollection);
-        
+
         if (!querySnapshot.empty) {
             const primeiroLogo = querySnapshot.docs[0].data();
             document.getElementById('logoContainer').innerHTML = `
