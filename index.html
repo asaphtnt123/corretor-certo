@@ -126,8 +126,8 @@
   <!-- Script do Firebase e Lógica de Autenticação -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-    import { setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, setPersistence, browserLocalPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+    import Swal from "https://cdn.jsdelivr.net/npm/sweetalert2@11"; // Importação do SweetAlert2
 
     // Configuração do Firebase
     const firebaseConfig = {
@@ -219,6 +219,17 @@
       } catch (error) {
         messageDiv.style.color = "red";
         messageDiv.textContent = error.message;
+      }
+    });
+
+    // Verifica o estado de autenticação ao carregar a página
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("Usuário logado:", user);
+        // Se o usuário estiver logado, redireciona para a página principal
+        window.location.href = "main.html";
+      } else {
+        console.log("Usuário não está logado.");
       }
     });
   </script>
