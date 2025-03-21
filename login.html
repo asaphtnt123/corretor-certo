@@ -191,7 +191,7 @@
         localStorage.setItem("userName", userCredential.user.displayName || "Usuário");
 
         // Redireciona para a página principal
-        window.location.href = "main.html";
+        window.location.href = "index.html";
       } catch (error) {
         console.error("Erro no login:", error.message);
         Swal.fire("Erro", "Erro ao fazer login. Verifique seu e-mail e senha.", "error");
@@ -226,7 +226,7 @@ onAuthStateChanged(auth, (user) => {
     console.log("Usuário já está logado:", user);
     document.getElementById("message").innerHTML = `
       <p>Você já está logado!</p>
-      <a href="main.html" class="btn">Ir para a página inicial</a>
+      <a href="index.html" class="btn">Ir para a página inicial</a>
     `;
   }
 });
