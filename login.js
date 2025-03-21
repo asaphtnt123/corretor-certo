@@ -17,8 +17,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Ativa persistência do login
-setPersistence(auth, browserLocalPersistence).then(() => console.log("Persistência ativada!"));
 
 // Alternar entre Login e Cadastro
 document.getElementById("login-tab").addEventListener("click", () => toggleForm("login"));
