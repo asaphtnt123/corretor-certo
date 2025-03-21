@@ -1,8 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
 
-
+// Configuração do Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyCNr5JoKsWJVeUYAaVDqmPznZo100v0uvg",
     authDomain: "corretorcerto-76933.firebaseapp.com",
@@ -17,6 +17,19 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// Verifica se o Firebase inicializou corretamente
+console.log("Firebase inicializado:", app);
+console.log("Auth:", auth);
+console.log("Firestore:", db);
+
+// Ativa persistência do login
+setPersistence(auth, browserLocalPersistence)
+  .then(() => {
+    console.log("Persistência ativada!");
+  })
+  .catch((error) => {
+    console.error("Erro na persistência:", error);
+  });
 
 // Alternar entre Login e Cadastro
 document.getElementById("login-tab").addEventListener("click", () => toggleForm("login"));
@@ -86,6 +99,9 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
 // Verificar se o usuário já está logado
 onAuthStateChanged(auth, (user) => {
     if (user) {
+        console.log("Usuário já está logado:", user);
         window.location.href = "perfil.html";
+    } else {
+        console.log("Nenhum usuário logado.");
     }
 });
