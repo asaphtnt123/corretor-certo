@@ -64,14 +64,18 @@ document.getElementById("cadastro-form").addEventListener("submit", async (e) =>
         // Atualiza o perfil do usuário com o nome
         await updateProfile(user, { displayName: nome });
 
-        // Salva os dados do usuário no Firestore
-        await setDoc(doc(db, "users", user.uid), {
-            nome: nome,
-            telefone: telefone,
-            email: email,
-            tipoUsuario: tipoUsuario,
-            dataCadastro: new Date()
-        });
+       try {
+    await setDoc(doc(db, "usuarios", user.uid), {
+        nome: nome,
+        telefone: telefone,
+        email: email,
+        tipoUsuario: tipoUsuario,
+        dataCadastro: new Date()
+    });
+    console.log("Documento criado com sucesso!");
+} catch (error) {
+    console.error("Erro ao criar documento:", error);
+}
 
         // Armazena o nome do usuário no localStorage
         localStorage.setItem("userName", nome);
