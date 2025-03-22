@@ -571,6 +571,3 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-
-// Torna a função mudarImagem acessível globalmente
-window.mudarImagem = mudarImagem;
