@@ -50,12 +50,6 @@ document.getElementById("cadastro-form").addEventListener("submit", async (e) =>
     const senha = document.getElementById("cadastro-senha").value;
     const tipoUsuario = document.getElementById("tipo-usuario").value;
 
-    // Verifica se todos os campos foram preenchidos
-    if (!nome || !telefone || !email || !senha || !tipoUsuario) {
-        alert("Por favor, preencha todos os campos.");
-        return;
-    }
-
     try {
         // Cria o usuário no Firebase Authentication
         const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
@@ -64,36 +58,24 @@ document.getElementById("cadastro-form").addEventListener("submit", async (e) =>
         // Atualiza o perfil do usuário com o nome
         await updateProfile(user, { displayName: nome });
 
-       try {
-    await setDoc(doc(db, "usuarios", user.uid), {
-        nome: nome,
-        telefone: telefone,
-        email: email,
-        tipoUsuario: tipoUsuario,
-        dataCadastro: new Date()
-    });
-    console.log("Documento criado com sucesso!");
-} catch (error) {
-    console.error("Erro ao criar documento:", error);
-}
+        // Salva os dados do usuário no Firestore
+        await setDoc(doc(db, "usuarios", user.uid), {
+            nome: nome,
+            telefone: telefone,
+            email: email,
+            tipoUsuario: tipoUsuario,
+            dataCadastro: new Date()
+        });
 
-        // Armazena o nome do usuário no localStorage
-        localStorage.setItem("userName", nome);
+        console.log("Documento criado com sucesso no Firestore!");
 
         // Redireciona para a página inicial
         window.location.href = "index.html";
     } catch (error) {
-        console.error("Erro no cadastro:", error.code, error.message);
-        if (error.code === "auth/email-already-in-use") {
-            alert("Este email já está em uso. Tente outro email.");
-        } else if (error.code === "auth/weak-password") {
-            alert("A senha deve ter pelo menos 6 caracteres.");
-        } else {
-            alert("Erro ao criar conta: " + error.message);
-        }
+        console.error("Erro no cadastro:", error);
+        alert("Erro ao criar conta: " + error.message);
     }
 });
-
 // Login de Usuário
 document.getElementById("login-form").addEventListener("submit", async (e) => {
     e.preventDefault();
