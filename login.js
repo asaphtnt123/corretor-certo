@@ -24,12 +24,8 @@ console.log("Firestore:", db);
 
 // Ativa persistência do login
 setPersistence(auth, browserLocalPersistence)
-  .then(() => {
-    console.log("Persistência ativada!");
-  })
-  .catch((error) => {
-    console.error("Erro na persistência:", error);
-  });
+  .then(() => console.log("Persistência ativada!"))
+  .catch(error => console.error("Erro na persistência:", error));
 
 // Alternar entre Login e Cadastro
 document.getElementById("login-tab").addEventListener("click", () => toggleForm("login"));
@@ -40,10 +36,9 @@ function toggleForm(type) {
     document.getElementById("cadastro-form").style.display = type === "cadastro" ? "block" : "none";
 }
 
+// Cadastro de Usuário
 document.getElementById("cadastro-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-
-    // Captura os valores do formulário
     const nome = document.getElementById("cadastro-nome").value;
     const telefone = document.getElementById("cadastro-telefone").value;
     const email = document.getElementById("cadastro-email").value;
@@ -51,14 +46,16 @@ document.getElementById("cadastro-form").addEventListener("submit", async (e) =>
     const tipoUsuario = document.getElementById("tipo-usuario").value;
 
     try {
-        // Cria o usuário no Firebase Authentication
+        console.log("Criando usuário...");
         const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
-        const user = userCredential.user;
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
-        // Atualiza o perfil do usuário com o nome
+        const user = userCredential.user;
+        console.log("Usuário criado no Authentication:", user);
+
         await updateProfile(user, { displayName: nome });
 
-        // Salva os dados do usuário no Firestore
+        console.log("Tentando salvar usuário no Firestore...");
         await setDoc(doc(db, "usuarios", user.uid), {
             nome: nome,
             telefone: telefone,
@@ -66,16 +63,15 @@ document.getElementById("cadastro-form").addEventListener("submit", async (e) =>
             tipoUsuario: tipoUsuario,
             dataCadastro: new Date()
         });
+        console.log("Usuário salvo com sucesso no Firestore!");
 
-        console.log("Usuário cadastrado e dados salvos no Firestore!");
-
-        // Redireciona para a página de perfil
         window.location.href = "perfil.html";
     } catch (error) {
         console.error("Erro no cadastro:", error);
         alert("Erro ao criar conta: " + error.message);
     }
 });
+
 // Login de Usuário
 document.getElementById("login-form").addEventListener("submit", async (e) => {
     e.preventDefault();
