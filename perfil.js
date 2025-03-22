@@ -19,25 +19,25 @@ const db = getFirestore(app);
 
 // Elementos do formulário
 const perfilForm = document.getElementById("perfil-form");
-const nomeInput = document.getElementById("nome");
-const telefoneInput = document.getElementById("telefone");
-const emailInput = document.getElementById("email");
-const cpfCnpjInput = document.getElementById("cpf-cnpj");
-const dataNascimentoInput = document.getElementById("data-nascimento");
-const creciInput = document.getElementById("creci");
-const areaAtuacaoInput = document.getElementById("area-atuacao");
-const anosExperienciaInput = document.getElementById("anos-experiencia");
-const descricaoProfissionalInput = document.getElementById("descricao-profissional");
-const cepInput = document.getElementById("cep");
-const estadoInput = document.getElementById("estado");
-const cidadeInput = document.getElementById("cidade");
-const bairroInput = document.getElementById("bairro");
-const tipoImovelInput = document.getElementById("tipo-imovel");
-const tipoAutomovelInput = document.getElementById("tipo-automovel");
-const faixaPrecoInput = document.getElementById("faixa-preco");
 const tipoInteresseInput = document.getElementById("tipo-interesse");
-const localizacaoInteresseInput = document.getElementById("localizacao-interesse");
-const faixaPrecoInteresseInput = document.getElementById("faixa-preco-interesse");
+const formImoveis = document.getElementById("form-imoveis");
+const formAutomoveis = document.getElementById("form-automoveis");
+
+// Alternar entre formulários de imóveis e automóveis
+tipoInteresseInput.addEventListener("change", () => {
+    const tipoSelecionado = tipoInteresseInput.value;
+
+    if (tipoSelecionado === "imoveis") {
+        formImoveis.classList.remove("hidden");
+        formAutomoveis.classList.add("hidden");
+    } else if (tipoSelecionado === "automoveis") {
+        formAutomoveis.classList.remove("hidden");
+        formImoveis.classList.add("hidden");
+    } else {
+        formImoveis.classList.add("hidden");
+        formAutomoveis.classList.add("hidden");
+    }
+});
 
 // Verifica o estado de autenticação
 onAuthStateChanged(auth, (user) => {
@@ -56,32 +56,28 @@ perfilForm.addEventListener("submit", async (e) => {
     const user = auth.currentUser;
     if (user) {
         const userData = {
-            nome: nomeInput.value,
-            telefone: telefoneInput.value,
-            email: emailInput.value,
-            cpfCnpj: cpfCnpjInput.value,
-            dataNascimento: dataNascimentoInput.value,
-            creci: creciInput.value,
-            areaAtuacao: areaAtuacaoInput.value,
-            anosExperiencia: anosExperienciaInput.value,
-            descricaoProfissional: descricaoProfissionalInput.value,
-            endereco: {
-                cep: cepInput.value,
-                estado: estadoInput.value,
-                cidade: cidadeInput.value,
-                bairro: bairroInput.value
-            },
-            preferenciasAtuacao: {
-                tipoImovel: Array.from(tipoImovelInput.selectedOptions).map(option => option.value),
-                tipoAutomovel: Array.from(tipoAutomovelInput.selectedOptions).map(option => option.value),
-                faixaPreco: faixaPrecoInput.value
-            },
-            preferenciasBusca: {
-                tipoInteresse: tipoInteresseInput.value,
-                localizacaoInteresse: localizacaoInteresseInput.value,
-                faixaPrecoInteresse: faixaPrecoInteresseInput.value
-            }
+            nome: document.getElementById("nome").value,
+            telefone: document.getElementById("telefone").value,
+            email: document.getElementById("email").value,
+            cpfCnpj: document.getElementById("cpf-cnpj").value,
+            dataNascimento: document.getElementById("data-nascimento").value,
+            tipoInteresse: tipoInteresseInput.value,
         };
+
+        // Adiciona dados específicos com base no tipo de interesse
+        if (tipoInteresseInput.value === "imoveis") {
+            userData.imoveis = {
+                tipoImovel: document.getElementById("tipo-imovel").value,
+                localizacao: document.getElementById("localizacao-imovel").value,
+                faixaPreco: document.getElementById("faixa-preco-imovel").value,
+            };
+        } else if (tipoInteresseInput.value === "automoveis") {
+            userData.automoveis = {
+                tipoAutomovel: document.getElementById("tipo-automovel").value,
+                marca: document.getElementById("marca-automovel").value,
+                faixaPreco: document.getElementById("faixa-preco-automovel").value,
+            };
+        }
 
         try {
             await setDoc(doc(db, "usuarios", user.uid), userData);
