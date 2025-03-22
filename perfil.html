@@ -76,49 +76,62 @@
             <input type="date" id="data-nascimento">
         </div>
 
-        <!-- Escolha do Tipo de Interesse -->
+        <!-- Escolha do Tipo de Usuário -->
         <div class="form-section">
-            <h2>Escolha seu Tipo de Interesse</h2>
-            <label for="tipo-interesse">Selecione o tipo de interesse:</label>
-            <select id="tipo-interesse" required>
+            <h2>Tipo de Usuário</h2>
+            <label for="tipo-usuario">Selecione o tipo de usuário:</label>
+            <select id="tipo-usuario" required>
+                <option value="">Selecione...</option>
+                <option value="comum">Usuário Comum</option>
+                <option value="comercial">Usuário Comercial</option>
+            </select>
+        </div>
+
+        <!-- Formulário para Usuário Comum -->
+        <div id="form-comum" class="form-section hidden">
+            <h2>Informações para Usuário Comum</h2>
+            <label for="tipo-interesse">Tipo de Interesse:</label>
+            <select id="tipo-interesse">
                 <option value="">Selecione...</option>
                 <option value="imoveis">Imóveis</option>
                 <option value="automoveis">Automóveis</option>
             </select>
+
+            <div id="form-imoveis" class="hidden">
+                <label for="localizacao-imovel">Localização de Interesse:</label>
+                <input type="text" id="localizacao-imovel">
+
+                <label for="faixa-preco-imovel">Faixa de Preço:</label>
+                <input type="text" id="faixa-preco-imovel">
+            </div>
+
+            <div id="form-automoveis" class="hidden">
+                <label for="marca-automovel">Marca:</label>
+                <input type="text" id="marca-automovel">
+
+                <label for="faixa-preco-automovel">Faixa de Preço:</label>
+                <input type="text" id="faixa-preco-automovel">
+            </div>
         </div>
 
-        <!-- Formulário para Imóveis -->
-        <div id="form-imoveis" class="form-section hidden">
-            <h2>Informações sobre Imóveis</h2>
-            <label for="tipo-imovel">Tipo de Imóvel:</label>
-            <select id="tipo-imovel">
-                <option value="casa">Casa</option>
-                <option value="apartamento">Apartamento</option>
-                <option value="terreno">Terreno</option>
+        <!-- Formulário para Usuário Comercial -->
+        <div id="form-comercial" class="form-section hidden">
+            <h2>Informações para Usuário Comercial</h2>
+            <label for="creci">CRECI (para corretores):</label>
+            <input type="text" id="creci">
+
+            <label for="cnpj">CNPJ (para empresas):</label>
+            <input type="text" id="cnpj">
+
+            <label for="area-atuacao">Área de Atuação:</label>
+            <select id="area-atuacao">
+                <option value="residencial">Imóveis Residenciais</option>
+                <option value="comercial">Imóveis Comerciais</option>
+                <option value="automoveis">Automóveis</option>
             </select>
 
-            <label for="localizacao-imovel">Localização de Interesse:</label>
-            <input type="text" id="localizacao-imovel">
-
-            <label for="faixa-preco-imovel">Faixa de Preço:</label>
-            <input type="text" id="faixa-preco-imovel">
-        </div>
-
-        <!-- Formulário para Automóveis -->
-        <div id="form-automoveis" class="form-section hidden">
-            <h2>Informações sobre Automóveis</h2>
-            <label for="tipo-automovel">Tipo de Automóvel:</label>
-            <select id="tipo-automovel">
-                <option value="carro">Carro</option>
-                <option value="moto">Moto</option>
-                <option value="caminhao">Caminhão</option>
-            </select>
-
-            <label for="marca-automovel">Marca:</label>
-            <input type="text" id="marca-automovel">
-
-            <label for="faixa-preco-automovel">Faixa de Preço:</label>
-            <input type="text" id="faixa-preco-automovel">
+            <label for="descricao-empresa">Descrição da Empresa/Profissional:</label>
+            <textarea id="descricao-empresa" rows="4"></textarea>
         </div>
 
         <button type="submit">Salvar Perfil</button>
