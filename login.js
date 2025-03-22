@@ -40,21 +40,31 @@ function toggleForm(type) {
     document.getElementById("cadastro-form").style.display = type === "cadastro" ? "block" : "none";
 }
 
-// Cadastro de Usuário
 document.getElementById("cadastro-form").addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    // Captura os valores do formulário
     const nome = document.getElementById("cadastro-nome").value;
     const telefone = document.getElementById("cadastro-telefone").value;
     const email = document.getElementById("cadastro-email").value;
     const senha = document.getElementById("cadastro-senha").value;
     const tipoUsuario = document.getElementById("tipo-usuario").value;
 
+    // Verifica se todos os campos foram preenchidos
+    if (!nome || !telefone || !email || !senha || !tipoUsuario) {
+        alert("Por favor, preencha todos os campos.");
+        return;
+    }
+
     try {
+        // Cria o usuário no Firebase Authentication
         const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
         const user = userCredential.user;
+
+        // Atualiza o perfil do usuário com o nome
         await updateProfile(user, { displayName: nome });
 
-        // Salvar dados no Firestore
+        // Salva os dados do usuário no Firestore
         await setDoc(doc(db, "usuarios", user.uid), {
             nome: nome,
             telefone: telefone,
@@ -63,11 +73,20 @@ document.getElementById("cadastro-form").addEventListener("submit", async (e) =>
             dataCadastro: new Date()
         });
 
+        // Armazena o nome do usuário no localStorage
         localStorage.setItem("userName", nome);
+
+        // Redireciona para a página inicial
         window.location.href = "index.html";
     } catch (error) {
-        console.error("Erro no cadastro:", error.message);
-        alert("Erro ao criar conta: " + error.message);
+        console.error("Erro no cadastro:", error.code, error.message);
+        if (error.code === "auth/email-already-in-use") {
+            alert("Este email já está em uso. Tente outro email.");
+        } else if (error.code === "auth/weak-password") {
+            alert("A senha deve ter pelo menos 6 caracteres.");
+        } else {
+            alert("Erro ao criar conta: " + error.message);
+        }
     }
 });
 
