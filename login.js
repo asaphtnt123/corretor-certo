@@ -65,7 +65,7 @@ document.getElementById("cadastro-form").addEventListener("submit", async (e) =>
         await updateProfile(user, { displayName: nome });
 
         // Salva os dados do usuário no Firestore
-        await setDoc(doc(db, "usuarios", user.uid), {
+        await setDoc(doc(db, "users", user.uid), {
             nome: nome,
             telefone: telefone,
             email: email,
