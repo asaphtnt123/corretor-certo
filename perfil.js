@@ -19,11 +19,30 @@ const db = getFirestore(app);
 
 // Elementos do formulário
 const perfilForm = document.getElementById("perfil-form");
+const tipoUsuarioInput = document.getElementById("tipo-usuario");
+const formComum = document.getElementById("form-comum");
+const formComercial = document.getElementById("form-comercial");
 const tipoInteresseInput = document.getElementById("tipo-interesse");
 const formImoveis = document.getElementById("form-imoveis");
 const formAutomoveis = document.getElementById("form-automoveis");
 
-// Alternar entre formulários de imóveis e automóveis
+// Alternar entre formulários de usuário comum e comercial
+tipoUsuarioInput.addEventListener("change", () => {
+    const tipoSelecionado = tipoUsuarioInput.value;
+
+    if (tipoSelecionado === "comum") {
+        formComum.classList.remove("hidden");
+        formComercial.classList.add("hidden");
+    } else if (tipoSelecionado === "comercial") {
+        formComercial.classList.remove("hidden");
+        formComum.classList.add("hidden");
+    } else {
+        formComum.classList.add("hidden");
+        formComercial.classList.add("hidden");
+    }
+});
+
+// Alternar entre formulários de imóveis e automóveis (para usuário comum)
 tipoInteresseInput.addEventListener("change", () => {
     const tipoSelecionado = tipoInteresseInput.value;
 
@@ -61,21 +80,28 @@ perfilForm.addEventListener("submit", async (e) => {
             email: document.getElementById("email").value,
             cpfCnpj: document.getElementById("cpf-cnpj").value,
             dataNascimento: document.getElementById("data-nascimento").value,
-            tipoInteresse: tipoInteresseInput.value,
+            tipoUsuario: tipoUsuarioInput.value,
         };
 
-        // Adiciona dados específicos com base no tipo de interesse
-        if (tipoInteresseInput.value === "imoveis") {
-            userData.imoveis = {
-                tipoImovel: document.getElementById("tipo-imovel").value,
-                localizacao: document.getElementById("localizacao-imovel").value,
-                faixaPreco: document.getElementById("faixa-preco-imovel").value,
+        // Adiciona dados específicos com base no tipo de usuário
+        if (tipoUsuarioInput.value === "comum") {
+            userData.comum = {
+                tipoInteresse: tipoInteresseInput.value,
+                imoveis: {
+                    localizacao: document.getElementById("localizacao-imovel").value,
+                    faixaPreco: document.getElementById("faixa-preco-imovel").value,
+                },
+                automoveis: {
+                    marca: document.getElementById("marca-automovel").value,
+                    faixaPreco: document.getElementById("faixa-preco-automovel").value,
+                }
             };
-        } else if (tipoInteresseInput.value === "automoveis") {
-            userData.automoveis = {
-                tipoAutomovel: document.getElementById("tipo-automovel").value,
-                marca: document.getElementById("marca-automovel").value,
-                faixaPreco: document.getElementById("faixa-preco-automovel").value,
+        } else if (tipoUsuarioInput.value === "comercial") {
+            userData.comercial = {
+                creci: document.getElementById("creci").value,
+                cnpj: document.getElementById("cnpj").value,
+                areaAtuacao: document.getElementById("area-atuacao").value,
+                descricaoEmpresa: document.getElementById("descricao-empresa").value,
             };
         }
 
