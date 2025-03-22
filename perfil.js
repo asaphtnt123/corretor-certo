@@ -245,3 +245,17 @@ perfilForm.addEventListener("submit", async (e) => {
         }
     }
 });
+
+
+  // Função de logout
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            auth.signOut().then(() => {
+                // Logout bem-sucedido
+                alert('Logout realizado com sucesso!');
+                window.location.href = 'index.html'; // Redirecionar para a página inicial
+            }).catch((error) => {
+                // Tratar erros
+                console.error('Erro ao fazer logout:', error);
+                alert('Erro ao fazer logout. Tente novamente.');
+            });
+        });
