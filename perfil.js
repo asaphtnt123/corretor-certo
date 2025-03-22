@@ -175,3 +175,60 @@ perfilForm.addEventListener("submit", async (e) => {
         }
     }
 });
+
+
+async function carregarAnuncios(userId) {
+    const anunciosRef = collection(db, "anuncios");
+    const q = query(anunciosRef, where("userId", "==", userId));
+    const querySnapshot = await getDocs(q);
+
+    const anunciosContainer = document.getElementById("anuncios-container");
+    anunciosContainer.innerHTML = ""; // Limpa o conteúdo anterior
+
+    querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const anuncioHTML = `
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <img src="${data.imagens[0]}" class="card-img-top" alt="Imagem do Anúncio">
+                    <div class="card-body">
+                        <h5 class="card-title">${data.titulo}</h5>
+                        <p class="card-text">${data.descricao}</p>
+                        <p><strong>Preço:</strong> R$ ${data.preco}</p>
+                        <a href="#" class="btn btn-primary">Ver Detalhes</a>
+                    </div>
+                </div>
+            </div>
+        `;
+        anunciosContainer.innerHTML += anuncioHTML;
+    });
+}
+
+
+
+async function carregarFavoritos(userId) {
+    const favoritosRef = collection(db, "favoritos");
+    const q = query(favoritosRef, where("userId", "==", userId));
+    const querySnapshot = await getDocs(q);
+
+    const favoritosContainer = document.getElementById("favoritos-container");
+    favoritosContainer.innerHTML = ""; // Limpa o conteúdo anterior
+
+    querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const favoritoHTML = `
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <img src="${data.imagens[0]}" class="card-img-top" alt="Imagem do Anúncio">
+                    <div class="card-body">
+                        <h5 class="card-title">${data.titulo}</h5>
+                        <p class="card-text">${data.descricao}</p>
+                        <p><strong>Preço:</strong> R$ ${data.preco}</p>
+                        <a href="#" class="btn btn-primary">Ver Detalhes</a>
+                    </div>
+                </div>
+            </div>
+        `;
+        favoritosContainer.innerHTML += favoritoHTML;
+    });
+}
