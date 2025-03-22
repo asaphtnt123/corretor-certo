@@ -12,32 +12,53 @@
         h1 {
             color: #333;
         }
-        p {
-            font-size: 18px;
+        form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
         button {
+            margin-top: 20px;
             padding: 10px 20px;
-            background-color: #ff4444;
+            background-color: #28a745;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
         button:hover {
-            background-color: #cc0000;
+            background-color: #218838;
         }
     </style>
 </head>
 <body>
     <h1>Meu Perfil</h1>
-    <div id="user-info">
-        <p><strong>Nome:</strong> <span id="user-name">Carregando...</span></p>
-        <p><strong>Email:</strong> <span id="user-email">Carregando...</span></p>
-        <p><strong>Telefone:</strong> <span id="user-phone">Carregando...</span></p>
-        <p><strong>Tipo de Usuário:</strong> <span id="user-type">Carregando...</span></p>
-        <p><strong>Data de Cadastro:</strong> <span id="user-created-at">Carregando...</span></p>
-    </div>
-    <button id="logout">Sair</button>
+    <form id="perfil-form">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" required>
+
+        <label for="telefone">Telefone:</label>
+        <input type="text" id="telefone" required>
+
+        <label for="tipo-usuario">Tipo de Usuário:</label>
+        <select id="tipo-usuario" required>
+            <option value="corretor">Corretor</option>
+            <option value="proprietario">Proprietário</option>
+            <option value="comprador">Comprador</option>
+        </select>
+
+        <button type="submit">Salvar Perfil</button>
+    </form>
 
     <script src="perfil.js" type="module"></script>
 </body>
