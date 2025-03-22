@@ -67,10 +67,10 @@ document.getElementById("cadastro-form").addEventListener("submit", async (e) =>
             dataCadastro: new Date()
         });
 
-        console.log("Documento criado com sucesso no Firestore!");
+        console.log("Usuário cadastrado e dados salvos no Firestore!");
 
-        // Redireciona para a página inicial
-        window.location.href = "index.html";
+        // Redireciona para a página de perfil
+        window.location.href = "perfil.html";
     } catch (error) {
         console.error("Erro no cadastro:", error);
         alert("Erro ao criar conta: " + error.message);
