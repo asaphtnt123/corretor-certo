@@ -29,7 +29,6 @@ const formAutomoveis = document.getElementById("form-automoveis");
 
 
 // Elementos do formulário e do card
-const perfilForm = document.getElementById("perfil-form");
 const userCard = document.getElementById("user-card");
 const cardNome = document.getElementById("card-nome");
 const cardTelefone = document.getElementById("card-telefone");
