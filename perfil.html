@@ -52,10 +52,56 @@
         .hidden {
             display: none;
         }
+        .card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .card h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .card p {
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
     <h1>Meu Perfil</h1>
+
+    <!-- Card para exibir informações do usuário -->
+    <div id="user-card" class="card hidden">
+        <h2>Informações do Usuário</h2>
+        <p><strong>Nome:</strong> <span id="card-nome"></span></p>
+        <p><strong>Telefone:</strong> <span id="card-telefone"></span></p>
+        <p><strong>Email:</strong> <span id="card-email"></span></p>
+        <p><strong>CPF/CNPJ:</strong> <span id="card-cpf-cnpj"></span></p>
+        <p><strong>Tipo de Usuário:</strong> <span id="card-tipo-usuario"></span></p>
+        <div id="card-comum" class="hidden">
+            <p><strong>Tipo de Interesse:</strong> <span id="card-tipo-interesse"></span></p>
+            <div id="card-imoveis" class="hidden">
+                <p><strong>Localização de Interesse:</strong> <span id="card-localizacao-imovel"></span></p>
+                <p><strong>Faixa de Preço:</strong> <span id="card-faixa-preco-imovel"></span></p>
+            </div>
+            <div id="card-automoveis" class="hidden">
+                <p><strong>Marca:</strong> <span id="card-marca-automovel"></span></p>
+                <p><strong>Faixa de Preço:</strong> <span id="card-faixa-preco-automovel"></span></p>
+            </div>
+        </div>
+        <div id="card-comercial" class="hidden">
+            <p><strong>CRECI:</strong> <span id="card-creci"></span></p>
+            <p><strong>CNPJ:</strong> <span id="card-cnpj"></span></p>
+            <p><strong>Área de Atuação:</strong> <span id="card-area-atuacao"></span></p>
+            <p><strong>Descrição:</strong> <span id="card-descricao-empresa"></span></p>
+        </div>
+    </div>
+
+    <!-- Formulário de perfil -->
     <form id="perfil-form">
         <!-- Informações Pessoais -->
         <div class="form-section">
@@ -128,6 +174,7 @@
                 <option value="residencial">Imóveis Residenciais</option>
                 <option value="comercial">Imóveis Comerciais</option>
                 <option value="automoveis">Automóveis</option>
+                <option value="terrenos">Terrenos</option>
             </select>
 
             <label for="descricao-empresa">Descrição da Empresa/Profissional:</label>
