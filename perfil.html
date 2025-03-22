@@ -49,6 +49,9 @@
             margin-top: 0;
             color: #555;
         }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -73,78 +76,49 @@
             <input type="date" id="data-nascimento">
         </div>
 
-        <!-- Informações Profissionais (para corretores) -->
+        <!-- Escolha do Tipo de Interesse -->
         <div class="form-section">
-            <h2>Informações Profissionais</h2>
-            <label for="creci">CRECI:</label>
-            <input type="text" id="creci">
-
-            <label for="area-atuacao">Área de Atuação:</label>
-            <select id="area-atuacao">
-                <option value="residencial">Imóveis Residenciais</option>
-                <option value="comercial">Imóveis Comerciais</option>
+            <h2>Escolha seu Tipo de Interesse</h2>
+            <label for="tipo-interesse">Selecione o tipo de interesse:</label>
+            <select id="tipo-interesse" required>
+                <option value="">Selecione...</option>
+                <option value="imoveis">Imóveis</option>
                 <option value="automoveis">Automóveis</option>
             </select>
-
-            <label for="anos-experiencia">Anos de Experiência:</label>
-            <input type="number" id="anos-experiencia">
-
-            <label for="descricao-profissional">Descrição Profissional:</label>
-            <textarea id="descricao-profissional" rows="4"></textarea>
         </div>
 
-        <!-- Informações de Endereço -->
-        <div class="form-section">
-            <h2>Endereço</h2>
-            <label for="cep">CEP:</label>
-            <input type="text" id="cep">
-
-            <label for="estado">Estado:</label>
-            <input type="text" id="estado">
-
-            <label for="cidade">Cidade:</label>
-            <input type="text" id="cidade">
-
-            <label for="bairro">Bairro:</label>
-            <input type="text" id="bairro">
-        </div>
-
-        <!-- Preferências de Atuação (para corretores e proprietários) -->
-        <div class="form-section">
-            <h2>Preferências de Atuação</h2>
-            <label for="tipo-imovel">Tipos de Imóveis que Trabalha:</label>
-            <select id="tipo-imovel" multiple>
-                <option value="casa">Casas</option>
-                <option value="apartamento">Apartamentos</option>
-                <option value="terreno">Terrenos</option>
-            </select>
-
-            <label for="tipo-automovel">Tipos de Automóveis que Trabalha:</label>
-            <select id="tipo-automovel" multiple>
-                <option value="carro">Carros</option>
-                <option value="moto">Motos</option>
-                <option value="caminhao">Caminhões</option>
-            </select>
-
-            <label for="faixa-preco">Faixa de Preço de Atuação:</label>
-            <input type="text" id="faixa-preco">
-        </div>
-
-        <!-- Preferências de Busca (para compradores) -->
-        <div class="form-section">
-            <h2>Preferências de Busca</h2>
-            <label for="tipo-interesse">Tipo de Imóvel de Interesse:</label>
-            <select id="tipo-interesse">
+        <!-- Formulário para Imóveis -->
+        <div id="form-imoveis" class="form-section hidden">
+            <h2>Informações sobre Imóveis</h2>
+            <label for="tipo-imovel">Tipo de Imóvel:</label>
+            <select id="tipo-imovel">
                 <option value="casa">Casa</option>
                 <option value="apartamento">Apartamento</option>
                 <option value="terreno">Terreno</option>
             </select>
 
-            <label for="localizacao-interesse">Localização de Interesse:</label>
-            <input type="text" id="localizacao-interesse">
+            <label for="localizacao-imovel">Localização de Interesse:</label>
+            <input type="text" id="localizacao-imovel">
 
-            <label for="faixa-preco-interesse">Faixa de Preço:</label>
-            <input type="text" id="faixa-preco-interesse">
+            <label for="faixa-preco-imovel">Faixa de Preço:</label>
+            <input type="text" id="faixa-preco-imovel">
+        </div>
+
+        <!-- Formulário para Automóveis -->
+        <div id="form-automoveis" class="form-section hidden">
+            <h2>Informações sobre Automóveis</h2>
+            <label for="tipo-automovel">Tipo de Automóvel:</label>
+            <select id="tipo-automovel">
+                <option value="carro">Carro</option>
+                <option value="moto">Moto</option>
+                <option value="caminhao">Caminhão</option>
+            </select>
+
+            <label for="marca-automovel">Marca:</label>
+            <input type="text" id="marca-automovel">
+
+            <label for="faixa-preco-automovel">Faixa de Preço:</label>
+            <input type="text" id="faixa-preco-automovel">
         </div>
 
         <button type="submit">Salvar Perfil</button>
