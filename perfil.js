@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -17,18 +17,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Elementos do formulário
-const perfilForm = document.getElementById("perfil-form");
-const tipoUsuarioInput = document.getElementById("tipo-usuario");
-const formComum = document.getElementById("form-comum");
-const formComercial = document.getElementById("form-comercial");
-const tipoInteresseInput = document.getElementById("tipo-interesse");
-const formImoveis = document.getElementById("form-imoveis");
-const formAutomoveis = document.getElementById("form-automoveis");
-
-
-
 // Elementos do formulário e do card
+const perfilForm = document.getElementById("perfil-form");
 const userCard = document.getElementById("user-card");
 const cardNome = document.getElementById("card-nome");
 const cardTelefone = document.getElementById("card-telefone");
@@ -99,6 +89,7 @@ onAuthStateChanged(auth, (user) => {
         window.location.href = "login.html";
     }
 });
+
 // Alternar entre formulários de usuário comum e comercial
 tipoUsuarioInput.addEventListener("change", () => {
     const tipoSelecionado = tipoUsuarioInput.value;
@@ -128,16 +119,6 @@ tipoInteresseInput.addEventListener("change", () => {
     } else {
         formImoveis.classList.add("hidden");
         formAutomoveis.classList.add("hidden");
-    }
-});
-
-// Verifica o estado de autenticação
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        console.log("Usuário logado:", user.uid);
-    } else {
-        // Usuário não está logado, redireciona para a página de login
-        window.location.href = "login.html";
     }
 });
 
@@ -179,9 +160,15 @@ perfilForm.addEventListener("submit", async (e) => {
         }
 
         try {
+            // Salva os dados no Firestore
             await setDoc(doc(db, "usuarios", user.uid), userData);
             alert("Perfil salvo com sucesso!");
-            window.location.href = "index.html"; // Redireciona para a página inicial
+
+            // Atualiza o card com as novas informações
+            await carregarInformacoesUsuario(user);
+
+            // Exibe o card
+            userCard.classList.remove("hidden");
         } catch (error) {
             console.error("Erro ao salvar perfil:", error);
             alert("Erro ao salvar perfil. Tente novamente.");
