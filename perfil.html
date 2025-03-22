@@ -4,11 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meu Perfil</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            font-size: 18px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #cc0000;
+        }
+    </style>
 </head>
 <body>
     <h1>Meu Perfil</h1>
-    <p id="user-info">Carregando informações...</p>
-    <p id="tipo-usuario"></p>
+    <div id="user-info">
+        <p><strong>Nome:</strong> <span id="user-name">Carregando...</span></p>
+        <p><strong>Email:</strong> <span id="user-email">Carregando...</span></p>
+        <p><strong>Telefone:</strong> <span id="user-phone">Carregando...</span></p>
+        <p><strong>Tipo de Usuário:</strong> <span id="user-type">Carregando...</span></p>
+        <p><strong>Data de Cadastro:</strong> <span id="user-created-at">Carregando...</span></p>
+    </div>
     <button id="logout">Sair</button>
 
     <script src="perfil.js" type="module"></script>
