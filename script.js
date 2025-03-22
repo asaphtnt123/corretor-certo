@@ -557,27 +557,39 @@ document.getElementById("form-anuncio").addEventListener("submit", function(even
     }
 });
 document.addEventListener("DOMContentLoaded", function () {
-    const loginBtn = document.getElementById("login-btn");
-    const userNameElement = document.getElementById("user-name");
+   // Inicializa Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            // Se o usuário estiver logado, exibir o nome ao lado do botão
-            userNameElement.textContent = `Olá, ${user.displayName || "Usuário"}`;
-            loginBtn.href = "#"; // Pode ser atualizado para uma página de perfil
-        } else {
-            // Se não estiver logado, manter o botão como "Login / Cadastro"
-            userNameElement.textContent = "Login / Cadastro";
-            loginBtn.href = "login.html"; // Redireciona para login/cadastro
-        }
-    });
+// Elementos da página
+const loginBtn = document.getElementById("login-btn");
+const userNameElement = document.getElementById("user-name");
 
-    loginBtn.addEventListener("click", function (event) {
-        if (!auth.currentUser) {
-            event.preventDefault(); // Impede a navegação caso o usuário não esteja logado
-            window.location.href = "login.html";
-        }
-    });
+// Verifica o estado de autenticação
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        // Usuário está logado
+        console.log("Usuário logado:", user.uid);
+
+        // Exibe o nome do usuário
+        userNameElement.textContent = user.displayName || "Meu Perfil";
+
+        // Altera o link para redirecionar para perfil.html
+        loginBtn.href = "perfil.html";
+    } else {
+        // Usuário não está logado
+        userNameElement.textContent = "Login / Cadastro";
+        loginBtn.href = "login.html";
+    }
+});
+
+// Adiciona um evento de clique para o botão de perfil
+loginBtn.addEventListener("click", (event) => {
+    if (!auth.currentUser) {
+        event.preventDefault(); // Impede o redirecionamento padrão
+        window.location.href = "login.html"; // Redireciona para a página de login
+    }
+});
 });
 
 
