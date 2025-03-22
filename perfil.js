@@ -21,7 +21,23 @@ const db = getFirestore(app);
 const perfilForm = document.getElementById("perfil-form");
 const nomeInput = document.getElementById("nome");
 const telefoneInput = document.getElementById("telefone");
-const tipoUsuarioInput = document.getElementById("tipo-usuario");
+const emailInput = document.getElementById("email");
+const cpfCnpjInput = document.getElementById("cpf-cnpj");
+const dataNascimentoInput = document.getElementById("data-nascimento");
+const creciInput = document.getElementById("creci");
+const areaAtuacaoInput = document.getElementById("area-atuacao");
+const anosExperienciaInput = document.getElementById("anos-experiencia");
+const descricaoProfissionalInput = document.getElementById("descricao-profissional");
+const cepInput = document.getElementById("cep");
+const estadoInput = document.getElementById("estado");
+const cidadeInput = document.getElementById("cidade");
+const bairroInput = document.getElementById("bairro");
+const tipoImovelInput = document.getElementById("tipo-imovel");
+const tipoAutomovelInput = document.getElementById("tipo-automovel");
+const faixaPrecoInput = document.getElementById("faixa-preco");
+const tipoInteresseInput = document.getElementById("tipo-interesse");
+const localizacaoInteresseInput = document.getElementById("localizacao-interesse");
+const faixaPrecoInteresseInput = document.getElementById("faixa-preco-interesse");
 
 // Verifica o estado de autenticação
 onAuthStateChanged(auth, (user) => {
@@ -37,25 +53,43 @@ onAuthStateChanged(auth, (user) => {
 perfilForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const nome = nomeInput.value;
-    const telefone = telefoneInput.value;
-    const tipoUsuario = tipoUsuarioInput.value;
+    const user = auth.currentUser;
+    if (user) {
+        const userData = {
+            nome: nomeInput.value,
+            telefone: telefoneInput.value,
+            email: emailInput.value,
+            cpfCnpj: cpfCnpjInput.value,
+            dataNascimento: dataNascimentoInput.value,
+            creci: creciInput.value,
+            areaAtuacao: areaAtuacaoInput.value,
+            anosExperiencia: anosExperienciaInput.value,
+            descricaoProfissional: descricaoProfissionalInput.value,
+            endereco: {
+                cep: cepInput.value,
+                estado: estadoInput.value,
+                cidade: cidadeInput.value,
+                bairro: bairroInput.value
+            },
+            preferenciasAtuacao: {
+                tipoImovel: Array.from(tipoImovelInput.selectedOptions).map(option => option.value),
+                tipoAutomovel: Array.from(tipoAutomovelInput.selectedOptions).map(option => option.value),
+                faixaPreco: faixaPrecoInput.value
+            },
+            preferenciasBusca: {
+                tipoInteresse: tipoInteresseInput.value,
+                localizacaoInteresse: localizacaoInteresseInput.value,
+                faixaPrecoInteresse: faixaPrecoInteresseInput.value
+            }
+        };
 
-    try {
-        const user = auth.currentUser;
-        if (user) {
-            // Salva os dados do usuário no Firestore
-            await setDoc(doc(db, "usuarios", user.uid), {
-                nome: nome,
-                telefone: telefone,
-                tipoUsuario: tipoUsuario,
-                dataCadastro: new Date()
-            });
+        try {
+            await setDoc(doc(db, "usuarios", user.uid), userData);
             alert("Perfil salvo com sucesso!");
             window.location.href = "index.html"; // Redireciona para a página inicial
+        } catch (error) {
+            console.error("Erro ao salvar perfil:", error);
+            alert("Erro ao salvar perfil. Tente novamente.");
         }
-    } catch (error) {
-        console.error("Erro ao salvar perfil:", error);
-        alert("Erro ao salvar perfil. Tente novamente.");
     }
 });
