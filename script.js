@@ -581,7 +581,10 @@ loginBtn.addEventListener("click", (event) => {
 });
 
 
-
+document.getElementById("btn-anunciar").addEventListener("click", () => {
+    // Redireciona para a página de anúncio
+    window.location.href = "anunciar.html";
+});
 
 // Torna a função mudarImagem acessível globalmente
 window.mudarImagem = mudarImagem;
