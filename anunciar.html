@@ -1,95 +1,28 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Anuncie seu imóvel ou carro com facilidade e segurança.">
-  <meta name="keywords" content="anunciar imóvel, anunciar carro, alugueis, venda de carros, aluguel de imóveis">
-  <title>Anunciar Imóvel ou Automóvel - Corretor Certo</title>
-  <link rel="stylesheet" href="css/style.css">
-  <script type="module" src="js/script.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anunciar - Corretor Certo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Header -->
-  <header class="header">
-    <div class="container">
-      <nav class="navbar">
-        <a href="index.html" class="logo">Corretor Certo</a>
-        <ul class="nav-menu">
-          <li><a href="#">Início</a></li>
-          <li><a href="#">Imóveis</a></li>
-          <li><a href="#">Automóveis</a></li>
-          <li><a href="#">Sobre</a></li>
-          <li><a href="#">Contato</a></li>
-        </ul>
-      </nav>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Anunciar</h1>
+        <div class="row">
+            <div class="col-md-6 mx-auto">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title text-center">O que você deseja anunciar?</h3>
+                        <div class="d-grid gap-3">
+                            <a href="anunciar-imovel.html" class="btn btn-primary btn-lg">Anunciar Imóvel</a>
+                            <a href="anunciar-automovel.html" class="btn btn-secondary btn-lg">Anunciar Automóvel</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </header>
-
-  <!-- Formulário de Anúncio -->
-  <main>
-    <section class="anunciar">
-      <div class="container">
-        <h1>Anuncie seu Imóvel ou Automóvel</h1>
-        <p>Preencha os campos abaixo para anunciar seu imóvel ou automóvel.</p>
-
-        <form id="form-anuncio" action="#" method="POST">
-          <div class="form-group">
-            <label for="tipo">Tipo de Anúncio:</label>
-            <select id="tipo" name="tipo" required>
-              <option value="imovel">Imóvel</option>
-              <option value="carro">Automóvel</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="titulo">Título do Anúncio:</label>
-            <input type="text" id="titulo" name="titulo" placeholder="Título do anúncio" required>
-          </div>
-
-          <div class="form-group">
-            <label for="descricao">Descrição:</label>
-            <textarea id="descricao" name="descricao" placeholder="Detalhes sobre o imóvel ou automóvel" rows="4" required></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="preco">Preço:</label>
-            <input type="number" id="preco" name="preco" placeholder="Preço (R$)" required>
-          </div>
-
-          <div class="form-group">
-            <label for="bairro">Bairro ou Localização:</label>
-            <input type="text" id="bairro" name="bairro" placeholder="Digite a localização" required>
-          </div>
-
-          <div class="form-group">
-            <label for="imagem">Imagens do Produto:</label>
-            <input type="file" id="imagem" name="imagem" accept="image/*" multiple>
-          </div>
-
-          <button type="submit" class="btn-anunciar">Anunciar Agora</button>
-        </form>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <div class="container">
-      <p>&copy; 2025 Corretor Certo. Todos os direitos reservados.</p>
-    </div>
-  </footer>
-
-  <!-- Script para ler o parâmetro e ajustar o formulário -->
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      const params = new URLSearchParams(window.location.search);
-      const tipo = params.get("tipo");
-      if (tipo) {
-        // Define o valor do select com base no parâmetro
-        document.getElementById("tipo").value = tipo;
-        // Se necessário, você pode aqui exibir campos específicos ou realizar outras customizações
-      }
-    });
-  </script>
 </body>
 </html>
