@@ -24,6 +24,7 @@ const db = getFirestore(app);
 const storage = getStorage(app); // Agora a função getStorage está definida corretamente
 console.log("Firestore conectado:", db);
 
+document.addEventListener("DOMContentLoaded", () => {
 
     setPersistence(auth, browserLocalPersistence)
   .then(() => {
@@ -588,3 +589,5 @@ document.getElementById("btn-anunciar").addEventListener("click", () => {
 
 // Torna a função mudarImagem acessível globalmente
 window.mudarImagem = mudarImagem;
+
+    });
