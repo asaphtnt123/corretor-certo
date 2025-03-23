@@ -159,88 +159,76 @@ async function uploadImagens(imagens, tipo) {
 }
 
 // Formulário de Imóvel
-document.getElementById('form-imovel').addEventListener('submit', async function(event) {
-    event.preventDefault();
+document.getElementById("form-imovel")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-    // Captura os dados do formulário de imóvel
-    const tituloImovel = document.getElementById('titulo-imovel').value;
-    const tipoImovel = document.getElementById('tipo-imovel').value;
-    const descricaoImovel = document.getElementById('descricao-imovel').value;
-    const precoImovel = document.getElementById('preco-imovel').value;
-    const tamanhoImovel = document.getElementById('tamanho-imovel').value;
-    const quartosImovel = document.getElementById('quartos-imovel').value;
-    const banheirosImovel = document.getElementById('banheiros-imovel').value;
-    const bairroImovel = document.getElementById('bairro-imovel').value;
-    const imagensImovel = document.getElementById('imagem-imovel').files;
+    const titulo = document.getElementById("titulo").value;
+    const descricao = document.getElementById("descricao").value;
+    const tipo = document.getElementById("tipo").value;
+    const preco = parseFloat(document.getElementById("preco").value);
+    const quartos = parseInt(document.getElementById("quartos").value);
+    const banheiros = parseInt(document.getElementById("banheiros").value);
+    const bairro = document.getElementById("bairro").value;
+    const imagens = document.getElementById("imagens").files;
 
     // Faz o upload das imagens
-    let imagensURLsImovel = [];
-    if (imagensImovel.length > 0) {
-        imagensURLsImovel = await uploadImagens(imagensImovel, "imoveis");
-    }
-
-    // Cria o objeto de dados do imóvel
-    const imovelData = {
-        titulo: tituloImovel,
-        tipo: tipoImovel,
-        descricao: descricaoImovel,
-        preco: parseFloat(precoImovel),
-        tamanho: parseInt(tamanhoImovel),
-        quartos: parseInt(quartosImovel),
-        banheiros: parseInt(banheirosImovel),
-        bairro: bairroImovel,
-        imagens: imagensURLsImovel,
-    };
+    const imagensURLs = await uploadImagens(imagens, "imoveis");
 
     // Salva no Firestore
     try {
-        const docRef = await addDoc(collection(db, "anuncios-imoveis"), imovelData);
-        console.log("Imóvel anunciado com sucesso, ID:", docRef.id);
-        alert('Anúncio de imóvel criado com sucesso!');
-        document.getElementById('form-imovel').reset();
-    } catch (e) {
-        console.error("Erro ao criar anúncio de imóvel: ", e);
-        alert('Erro ao criar o anúncio de imóvel. Tente novamente.');
+        const docRef = await addDoc(collection(db, "imoveis"), {
+            titulo,
+            descricao,
+            tipo,
+            preco,
+            quartos,
+            banheiros,
+            bairro,
+            imagens: imagensURLs,
+            userId: auth.currentUser.uid,
+            data: new Date()
+        });
+        alert("Imóvel anunciado com sucesso!");
+        window.location.href = "index.html";
+    } catch (error) {
+        console.error("Erro ao anunciar imóvel:", error);
+        alert("Erro ao anunciar imóvel. Tente novamente.");
     }
 });
 
 // Formulário de Automóvel
-document.getElementById('form-carro').addEventListener('submit', async function(event) {
-    event.preventDefault();
+document.getElementById("form-automovel")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-    // Captura os dados do formulário de automóvel
-    const tituloCarro = document.getElementById('titulo-carro').value;
-    const marcaCarro = document.getElementById('marca').value;
-    const modeloCarro = document.getElementById('modelo').value;
-    const anoCarro = document.getElementById('ano').value;
-    const precoCarro = document.getElementById('preco-carro').value;
-    const imagensCarro = document.getElementById('imagem-carro').files;
+    const titulo = document.getElementById("titulo").value;
+    const descricao = document.getElementById("descricao").value;
+    const marca = document.getElementById("marca").value;
+    const modelo = document.getElementById("modelo").value;
+    const ano = parseInt(document.getElementById("ano").value);
+    const preco = parseFloat(document.getElementById("preco").value);
+    const imagens = document.getElementById("imagens").files;
 
     // Faz o upload das imagens
-    let imagensURLsCarro = [];
-    if (imagensCarro.length > 0) {
-        imagensURLsCarro = await uploadImagens(imagensCarro, "carros");
-    }
-
-    // Cria o objeto de dados do automóvel
-    const carroData = {
-        titulo: tituloCarro,
-        marca: marcaCarro,
-        modelo: modeloCarro,
-        ano: parseInt(anoCarro),
-        preco: parseFloat(precoCarro),
-        imagens: imagensURLsCarro,
-    };
+    const imagensURLs = await uploadImagens(imagens, "automoveis");
 
     // Salva no Firestore
     try {
-        const docRef = await addDoc(collection(db, "anuncios-carros"), carroData);
-        console.log("Automóvel anunciado com sucesso, ID:", docRef.id);
-        alert('Anúncio de automóvel criado com sucesso!');
-        document.getElementById('form-carro').reset();
-    } catch (e) {
-        console.error("Erro ao criar anúncio de automóvel: ", e);
-        alert('Erro ao criar o anúncio de automóvel. Tente novamente.');
+        const docRef = await addDoc(collection(db, "automoveis"), {
+            titulo,
+            descricao,
+            marca,
+            modelo,
+            ano,
+            preco,
+            imagens: imagensURLs,
+            userId: auth.currentUser.uid,
+            data: new Date()
+        });
+        alert("Automóvel anunciado com sucesso!");
+        window.location.href = "index.html";
+    } catch (error) {
+        console.error("Erro ao anunciar automóvel:", error);
+        alert("Erro ao anunciar automóvel. Tente novamente.");
     }
 });
 
