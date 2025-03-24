@@ -140,21 +140,31 @@ async function carregarImoveisDestaque() {
 }
 
 
-// Função para upload de imagens
 async function uploadImagens(imagens, tipo) {
     const urls = [];
+    
+    if (!auth.currentUser) {
+        console.error("Erro: Nenhum usuário autenticado.");
+        alert("Você precisa estar logado para fazer upload de imagens.");
+        return [];
+    }
+
     for (let i = 0; i < imagens.length; i++) {
         const file = imagens[i];
-        const storageRef = ref(storage, `${tipo}/${file.name}`);
+        const storageRef = ref(storage, `${tipo}/${auth.currentUser.uid}/${file.name}`);
 
         try {
+            console.log(`Fazendo upload da imagem: ${file.name}`);
             const snapshot = await uploadBytes(storageRef, file);
             const downloadURL = await getDownloadURL(snapshot.ref);
             urls.push(downloadURL);
+            console.log(`Imagem enviada com sucesso: ${downloadURL}`);
         } catch (error) {
-            console.error("Erro ao fazer upload da imagem: ", error);
+            console.error("Erro ao fazer upload da imagem:", error);
+            alert("Erro ao enviar a imagem. Tente novamente.");
         }
     }
+
     return urls;
 }
 
@@ -172,7 +182,17 @@ document.getElementById("form-imovel")?.addEventListener("submit", async (e) => 
     const imagens = document.getElementById("imagens").files;
 
     // Faz o upload das imagens
-    const imagensURLs = await uploadImagens(imagens, "imoveis");
+if (imagens.length === 0) {
+    alert("Por favor, selecione pelo menos uma imagem.");
+    return;
+}
+
+const imagensURLs = await uploadImagens(imagens, "imoveis");
+
+if (imagensURLs.length === 0) {
+    alert("Erro ao enviar imagens. Verifique sua conexão e tente novamente.");
+    return;
+}
 
     // Salva no Firestore
     try {
