@@ -140,18 +140,23 @@ async function carregarImoveisDestaque() {
 }
 
 
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-storage.js";
+
+const storage = getStorage();
+
 async function uploadImagens(imagens, tipo) {
-    const urls = [];
-    
     if (!auth.currentUser) {
         console.error("Erro: Nenhum usuário autenticado.");
         alert("Você precisa estar logado para fazer upload de imagens.");
         return [];
     }
 
+    const userId = auth.currentUser.uid;
+    const urls = [];
+
     for (let i = 0; i < imagens.length; i++) {
         const file = imagens[i];
-        const storageRef = ref(storage, `${tipo}/${auth.currentUser.uid}/${file.name}`);
+        const storageRef = ref(storage, `${tipo}/${userId}/${file.name}`);
 
         try {
             console.log(`Fazendo upload da imagem: ${file.name}`);
@@ -161,12 +166,13 @@ async function uploadImagens(imagens, tipo) {
             console.log(`Imagem enviada com sucesso: ${downloadURL}`);
         } catch (error) {
             console.error("Erro ao fazer upload da imagem:", error);
-            alert("Erro ao enviar a imagem. Tente novamente.");
+            alert("Erro ao enviar a imagem. Verifique as permissões do Firebase Storage.");
         }
     }
 
     return urls;
 }
+
 
 // Formulário de Imóvel
 document.getElementById("form-imovel")?.addEventListener("submit", async (e) => {
