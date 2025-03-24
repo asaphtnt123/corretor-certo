@@ -3,26 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anunciar - Corretor Certo</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <title>Criar Anúncio</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container mt-5">
-        <h1 class="text-center mb-4">Anunciar</h1>
-        <div class="row">
-            <div class="col-md-6 mx-auto">
-                <div class="card">
-                    <div class="card-body">
-                        <h3 class="card-title text-center">O que você deseja anunciar?</h3>
-                        <div class="d-grid gap-3">
-                            <a href="anunciar-imovel.html" class="btn btn-primary btn-lg">Anunciar Imóvel</a>
-                            <a href="anunciar-automovel.html" class="btn btn-secondary btn-lg">Anunciar Automóvel</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+
+    <header>
+        <h1>Criar Novo Anúncio</h1>
+    </header>
+
+    <main>
+        <form id="form-anuncio">
+            <label for="titulo">Título:</label>
+            <input type="text" id="titulo" required>
+
+            <label for="descricao">Descrição:</label>
+            <textarea id="descricao" required></textarea>
+
+            <label for="preco">Preço (R$):</label>
+            <input type="number" id="preco" required>
+
+            <label>Tipo de Anúncio:</label>
+            <input type="radio" name="tipo-anuncio" value="imoveis" required> Imóvel
+            <input type="radio" name="tipo-anuncio" value="automoveis" required> Automóvel
+
+            <label for="imagens">Imagens:</label>
+            <input type="file" id="imagens" multiple required>
+
+            <button type="submit">Criar Anúncio</button>
+        </form>
+    </main>
+
+    <script src="anuncio.js" type="module"></script>
 </body>
 </html>
