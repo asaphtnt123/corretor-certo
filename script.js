@@ -153,11 +153,15 @@ async function uploadImagens(imagens, tipo) {
     const urls = [];
 
     for (let i = 0; i < imagens.length; i++) {
-        const file = imagens[i];
-        const storageRef = ref(storage, `${tipo}/${userId}/${file.name}`);
+        let file = imagens[i];
+
+        // Remover caracteres especiais do nome do arquivo
+        let fileName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+
+        const storageRef = ref(storage, `${tipo}/${userId}/${fileName}`);
 
         try {
-            console.log(`Fazendo upload da imagem: ${file.name}`);
+            console.log(`Fazendo upload da imagem: ${fileName}`);
             const snapshot = await uploadBytes(storageRef, file);
             const downloadURL = await getDownloadURL(snapshot.ref);
             urls.push(downloadURL);
@@ -479,14 +483,17 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
-// Controle do menu
 const menuToggle = document.getElementById('menu-toggle');
 const navMenu = document.getElementById('nav-menu');
 
-menuToggle.addEventListener('click', () => {
-    navMenu.classList.toggle('active');
-    menuToggle.innerHTML = navMenu.classList.contains('active') ? '✕' : '☰';
-});
+if (menuToggle && navMenu) {
+    menuToggle.addEventListener('click', () => {
+        navMenu.classList.toggle('active');
+        menuToggle.innerHTML = navMenu.classList.contains('active') ? '✕' : '☰';
+    });
+} else {
+    console.warn("Elemento menu-toggle ou nav-menu não encontrado.");
+}
 
 // Lista de bairros
 const bairros = [
@@ -531,25 +538,26 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener("DOMContentLoaded", function () {
     const loginBtn = document.getElementById("login-btn");
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            // Se o usuário estiver logado, exibir nome
-            loginBtn.innerHTML = `<p>${user.displayName || "Meu Perfil"}</p>`;
-            loginBtn.href = "#"; // Pode definir um link para a página de perfil no futuro
-        } else {
-            // Se não estiver logado, manter o botão de login/cadastro
-            loginBtn.innerHTML = `<p>Login / Cadastro</p>`;
-            loginBtn.href = "login.html"; // Redireciona para a página de login
-        }
-    });
+    if (loginBtn) {
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loginBtn.innerHTML = `<p>${user.displayName || "Meu Perfil"}</p>`;
+                loginBtn.href = "perfil.html"; 
+            } else {
+                loginBtn.innerHTML = `<p>Login / Cadastro</p>`;
+                loginBtn.href = "login.html"; 
+            }
+        });
 
-    // Caso o botão seja clicado e o usuário não esteja logado, ir para login.html
-    loginBtn.addEventListener("click", function (event) {
-        if (!auth.currentUser) {
-            event.preventDefault(); // Impede a navegação padrão caso queira adicionar alertas
-            window.location.href = "login.html";
-        }
-    });
+        loginBtn.addEventListener("click", function (event) {
+            if (!auth.currentUser) {
+                event.preventDefault();
+                window.location.href = "login.html";
+            }
+        });
+    } else {
+        console.warn("Elemento login-btn não encontrado.");
+    }
 });
 
 
