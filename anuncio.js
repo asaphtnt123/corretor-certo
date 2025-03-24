@@ -1,13 +1,25 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
 import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-storage.js";
 
-// Inicializando Firebase
-const auth = getAuth();
-const db = getFirestore();
-const storage = getStorage();
+// Configuração do Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyCNr5JoKsWJVeUYAaVDqmPznZo100v0uvg",
+    authDomain: "corretorcerto-76933.firebaseapp.com",
+    projectId: "corretorcerto-76933",
+    storageBucket: "corretorcerto-76933.appspot.com",
+    messagingSenderId: "357149829474",
+    appId: "1:357149829474:web:324b2005d82eabbce5e43b"
+};
 
-// Garante que o usuário esteja autenticado antes de criar anúncios
+// Inicializa o Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// Verifica se o usuário está autenticado antes de criar anúncios
 onAuthStateChanged(auth, (user) => {
     if (!user) {
         alert("Você precisa estar logado para criar um anúncio!");
@@ -19,7 +31,7 @@ onAuthStateChanged(auth, (user) => {
 async function uploadImagens(imagens, tipo) {
     const urls = [];
     const user = auth.currentUser;
-    
+
     if (!user) {
         alert("Usuário não autenticado!");
         return [];
