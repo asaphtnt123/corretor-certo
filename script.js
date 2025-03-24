@@ -140,9 +140,7 @@ async function carregarImoveisDestaque() {
 }
 
 
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-storage.js";
 
-const storage = getStorage();
 
 async function uploadImagens(imagens, tipo) {
     if (!auth.currentUser) {
