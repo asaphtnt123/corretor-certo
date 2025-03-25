@@ -1,25 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-
-    <!-- REMOVA TODOS OS IMPORTS MODULARES -->
-<!-- Adicione APENAS estas CDNs -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
-
-<!-- Seu script SEM type="module" -->
-<script src="anuncio.js"></script>
-
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Criar Anúncio</title>
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Firebase v8 CDNs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
 </head>
 <body>
-
     <header>
         <h1>Criar Novo Anúncio</h1>
     </header>
@@ -46,6 +39,7 @@
         </form>
     </main>
 
-    <script src="anuncio.js" type="module"></script>
+    <!-- Scripts devem vir após o conteúdo e SEM type="module" -->
+    <script src="anuncio.js"></script>
 </body>
 </html>
