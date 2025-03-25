@@ -19,86 +19,95 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// Verifica se o usuário está autenticado antes de criar anúncios
+// Verifica autenticação
 onAuthStateChanged(auth, (user) => {
     if (!user) {
-        alert("Você precisa estar logado para criar um anúncio!");
+        alert("Você precisa estar logado para criar anúncios!");
         window.location.href = "login.html";
     }
 });
 
-// Função para fazer upload das imagens para o Firebase Storage
+// Upload paralelo de imagens
 async function uploadImagens(imagens, tipo) {
-    const urls = [];
     const user = auth.currentUser;
-
     if (!user) {
         alert("Usuário não autenticado!");
         return [];
     }
 
-    for (let i = 0; i < imagens.length; i++) {
-        let file = imagens[i];
-        let fileName = file.name.replace(/[^a-zA-Z0-9.]/g, "_"); // Remove caracteres especiais
-        const storageRef = ref(storage, `${tipo}/${user.uid}/${fileName}`);
-
-        try {
+    try {
+        const uploadPromises = Array.from(imagens).map(async (file) => {
+            const fileName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+            const storageRef = ref(storage, `${tipo}/${user.uid}/${fileName}`);
             const snapshot = await uploadBytes(storageRef, file);
-            const downloadURL = await getDownloadURL(snapshot.ref);
-            urls.push(downloadURL);
-        } catch (error) {
-            console.error("Erro ao fazer upload da imagem:", error);
-            alert("Erro ao enviar imagem. Tente novamente.");
-        }
-    }
+            return getDownloadURL(snapshot.ref);
+        });
 
-    return urls;
+        return await Promise.all(uploadPromises);
+    } catch (error) {
+        console.error("Erro no upload:", error);
+        alert("Falha ao enviar imagens. Verifique o formato e tamanho (máx. 5MB)");
+        return [];
+    }
 }
 
-// Função para criar um novo anúncio
+// Validação de formulário
+function validarFormulario(titulo, descricao, preco, imagens) {
+    if (!titulo || !descricao || !preco || !imagens.length) {
+        alert("Preencha todos os campos e selecione ao menos uma imagem!");
+        return false;
+    }
+
+    if (imagens.length > 5) {
+        alert("Máximo de 5 imagens permitidas!");
+        return false;
+    }
+
+    if (isNaN(parseFloat(preco))) {
+        alert("Preço inválido! Use números (ex: 250000)");
+        return false;
+    }
+
+    return true;
+}
+
+// Criação de anúncio
 async function criarAnuncio(event) {
     event.preventDefault();
 
-    const titulo = document.getElementById("titulo").value;
-    const descricao = document.getElementById("descricao").value;
-    const preco = document.getElementById("preco").value;
-    const tipoAnuncio = document.querySelector('input[name="tipo-anuncio"]:checked').value;
+    const titulo = document.getElementById("titulo").value.trim();
+    const descricao = document.getElementById("descricao").value.trim();
+    const preco = document.getElementById("preco").value.trim();
+    const tipoAnuncio = document.querySelector('input[name="tipo-anuncio"]:checked')?.value;
     const imagens = document.getElementById("imagens").files;
 
-    if (!titulo || !descricao || !preco || imagens.length === 0) {
-        alert("Preencha todos os campos e envie pelo menos uma imagem.");
-        return;
-    }
+    if (!validarFormulario(titulo, descricao, preco, imagens) || !tipoAnuncio) return;
 
     try {
         const imagensURLs = await uploadImagens(imagens, tipoAnuncio);
-        const user = auth.currentUser;
+        if (imagensURLs.length === 0) return;
 
         await addDoc(collection(db, "anuncios"), {
             titulo,
             descricao,
-            preco,
+            preco: parseFloat(preco),
             tipo: tipoAnuncio,
             imagens: imagensURLs,
-            userId: user.uid,
+            userId: auth.currentUser.uid,
             dataPublicacao: new Date()
         });
 
-        alert("Anúncio criado com sucesso!");
+        document.getElementById("form-anuncio").reset();
+        alert("Anúncio publicado com sucesso!");
         window.location.href = "meus-anuncios.html";
     } catch (error) {
-        console.error("Erro ao criar anúncio:", error);
-        alert("Erro ao criar anúncio. Tente novamente.");
+        console.error("Erro crítico:", error);
+        alert(`Erro: ${error.message || "Tente novamente mais tarde"}`);
     }
 }
 
-// Adiciona evento ao formulário de criação de anúncios
+// Inicialização
 document.addEventListener("DOMContentLoaded", () => {
-    const formAnuncio = document.getElementById("form-anuncio");
-
-    if (formAnuncio) {
-        formAnuncio.addEventListener("submit", criarAnuncio);
-    } else {
-        console.warn("Formulário de anúncio não encontrado.");
-    }
+    const form = document.getElementById("form-anuncio");
+    if (form) form.addEventListener("submit", criarAnuncio);
 });
