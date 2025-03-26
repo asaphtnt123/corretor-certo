@@ -1,5 +1,8 @@
 
 // Importar funções do Firebase corretamente
+import { collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getAuth, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -34,11 +37,11 @@ export { app, db, auth, storage };
   
   
   
-  document.addEventListener("DOMContentLoaded", () => {
+// Carregar imóveis em destaque ao carregar a página
+document.addEventListener("DOMContentLoaded", () => {
     console.log("Página carregada! Chamando carregarImoveisDestaque...");
     carregarImoveisDestaque();
 });
-
 
 
   
@@ -75,11 +78,11 @@ function mudarImagem(carrosselId, direcao) {
 // Torna a função mudarImagem acessível globalmente
 window.mudarImagem = mudarImagem;
 
+// Função para carregar imóveis em destaque
 async function carregarImoveisDestaque() {
     try {
         console.log("Iniciando a busca de imóveis em destaque...");
 
-        const db = getFirestore();
         const destaqueRef = collection(db, "imoveis");
         const destaqueQuery = query(destaqueRef, where("destaque", "==", true));
         const querySnapshot = await getDocs(destaqueQuery);
@@ -98,21 +101,14 @@ async function carregarImoveisDestaque() {
             const data = doc.data();
             console.log("Dados do documento:", data);
 
-            // Pegando o título corretamente
-            const titulo = data.titulo ? data.titulo : "Título não disponível";
-            console.log("Título processado:", titulo);
-
-            // Pegando as imagens corretamente (se não houver imagens, coloca uma imagem padrão)
+            const titulo = data.titulo || "Título não disponível";
             const imagens = data.imagens && data.imagens.length > 0 ? data.imagens : ["images/default.jpg"];
-            console.log("Imagens processadas:", imagens);
 
-            // Cria o carrossel de imagens
-            const carrosselId = `carrossel-${doc.id}`; // ID único para cada carrossel
+            const carrosselId = `carrossel-${doc.id}`;
 
             const itemDiv = document.createElement("div");
             itemDiv.classList.add("destaque-item");
 
-            // Exibe a primeira imagem, outras serão manipuladas pela função de navegação
             itemDiv.innerHTML = `
                 <div class="carrossel" id="${carrosselId}">
                     <div class="carrossel-imagens">
@@ -583,20 +579,14 @@ const auth = getAuth(app);
 const loginBtn = document.getElementById("login-btn");
 const userNameElement = document.getElementById("user-name");
 
-// Verifica o estado de autenticação
+// Detectar estado de autenticação
 onAuthStateChanged(auth, (user) => {
+    const loginBtn = document.getElementById("login-btn");
     if (user) {
-        // Usuário está logado
-        console.log("Usuário logado:", user.uid);
-
-        // Exibe o nome do usuário
-        userNameElement.textContent = user.displayName || "Meu Perfil";
-
-        // Altera o link para redirecionar para perfil.html
+        loginBtn.innerHTML = `<p>${user.displayName || "Meu Perfil"}</p>`;
         loginBtn.href = "perfil.html";
     } else {
-        // Usuário não está logado
-        userNameElement.textContent = "Login / Cadastro";
+        loginBtn.innerHTML = `<p>Login / Cadastro</p>`;
         loginBtn.href = "login.html";
     }
 });
