@@ -33,6 +33,13 @@
         .hidden {
             display: none;
         }
+        .card-img-top {
+            height: 200px;
+            object-fit: cover;
+        }
+        .btn-view-more {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -41,13 +48,12 @@
             <h1 class="text-center mb-0">Meu Perfil</h1>
             <div>
                 <a href="index.html" class="btn btn-secondary me-2">Voltar para Home</a>
-                                <button id="logout-btn" class="btn btn-danger">Logout</button>
-
+                <button id="logout-btn" class="btn btn-danger">Logout</button>
             </div>
         </div>
 
         <!-- Tabs -->
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <ul class="nav nav-tabs" id="profileTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="perfil-tab" data-bs-toggle="tab" data-bs-target="#perfil" type="button" role="tab" aria-controls="perfil" aria-selected="true">Perfil</button>
             </li>
@@ -206,6 +212,10 @@
                 <h2>Meus Anúncios</h2>
                 <div id="anuncios-container" class="row">
                     <!-- Anúncios serão carregados dinamicamente aqui -->
+                    <div class="col-12 text-center py-5" id="no-anuncios">
+                        <p class="text-muted">Você ainda não tem anúncios cadastrados.</p>
+                        <a href="anunciar.html" class="btn btn-primary">Criar meu primeiro anúncio</a>
+                    </div>
                 </div>
             </div>
 
@@ -214,6 +224,9 @@
                 <h2>Meus Favoritos</h2>
                 <div id="favoritos-container" class="row">
                     <!-- Anúncios favoritos serão carregados dinamicamente aqui -->
+                    <div class="col-12 text-center py-5" id="no-favoritos">
+                        <p class="text-muted">Você ainda não tem anúncios favoritos.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -225,5 +238,25 @@
 
     <!-- Seu JavaScript -->
     <script src="perfil.js" type="module"></script>
+    
+    <script>
+        // Ativar a aba correta quando a página carrega com hash na URL
+        document.addEventListener('DOMContentLoaded', function() {
+            const hash = window.location.hash;
+            if (hash === '#anuncios') {
+                const triggerTab = document.querySelector('#anuncios-tab');
+                if (triggerTab) {
+                    const tab = new bootstrap.Tab(triggerTab);
+                    tab.show();
+                }
+            } else if (hash === '#favoritos') {
+                const triggerTab = document.querySelector('#favoritos-tab');
+                if (triggerTab) {
+                    const tab = new bootstrap.Tab(triggerTab);
+                    tab.show();
+                }
+            }
+        });
+    </script>
 </body>
 </html>
