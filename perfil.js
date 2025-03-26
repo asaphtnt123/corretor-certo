@@ -3,9 +3,22 @@ import { collection, query, where, getDocs, addDoc } from "https://www.gstatic.c
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { getAuth, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+import { 
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  getDoc,
+  setDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";import { 
+  getAuth, 
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -65,46 +78,53 @@ const tipoInteresseInput = document.getElementById("tipo-interesse");
 const formImoveis = document.getElementById("form-imoveis");
 const formAutomoveis = document.getElementById("form-automoveis");
 
-// Função para carregar e exibir as informações do usuário no card
 async function carregarInformacoesUsuario(user) {
-    const userDoc = await getDoc(doc(db, "usuarios", user.uid));
-    if (userDoc.exists()) {
-        const userData = userDoc.data();
+    try {
+        const userDocRef = doc(db, "usuarios", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
 
-        // Exibe as informações básicas
-        cardNome.textContent = userData.nome || "Não informado";
-        cardTelefone.textContent = userData.telefone || "Não informado";
-        cardEmail.textContent = userData.email || "Não informado";
-        cardCpfCnpj.textContent = userData.cpfCnpj || "Não informado";
-        cardTipoUsuario.textContent = userData.tipoUsuario === "comum" ? "Usuário Comum" : "Usuário Comercial";
+            // Exibe as informações básicas
+            cardNome.textContent = userData.nome || "Não informado";
+            cardTelefone.textContent = userData.telefone || "Não informado";
+            cardEmail.textContent = userData.email || "Não informado";
+            cardCpfCnpj.textContent = userData.cpfCnpj || "Não informado";
+            cardTipoUsuario.textContent = userData.tipoUsuario === "comum" ? "Usuário Comum" : "Usuário Comercial";
 
-        // Exibe as informações específicas do tipo de usuário
-        if (userData.tipoUsuario === "comum") {
-            cardComum.classList.remove("hidden");
-            cardTipoInteresse.textContent = userData.comum?.tipoInteresse || "Não informado";
+            // Exibe as informações específicas do tipo de usuário
+            if (userData.tipoUsuario === "comum") {
+                cardComum.classList.remove("hidden");
+                cardTipoInteresse.textContent = userData.comum?.tipoInteresse || "Não informado";
 
-            if (userData.comum?.tipoInteresse === "imoveis") {
-                cardImoveis.classList.remove("hidden");
-                cardLocalizacaoImovel.textContent = userData.comum.imoveis?.localizacao || "Não informado";
-                cardFaixaPrecoImovel.textContent = userData.comum.imoveis?.faixaPreco || "Não informado";
-            } else if (userData.comum?.tipoInteresse === "automoveis") {
-                cardAutomoveis.classList.remove("hidden");
-                cardMarcaAutomovel.textContent = userData.comum.automoveis?.marca || "Não informado";
-                cardFaixaPrecoAutomovel.textContent = userData.comum.automoveis?.faixaPreco || "Não informado";
+                if (userData.comum?.tipoInteresse === "imoveis") {
+                    cardImoveis.classList.remove("hidden");
+                    cardLocalizacaoImovel.textContent = userData.comum.imoveis?.localizacao || "Não informado";
+                    cardFaixaPrecoImovel.textContent = userData.comum.imoveis?.faixaPreco || "Não informado";
+                } else if (userData.comum?.tipoInteresse === "automoveis") {
+                    cardAutomoveis.classList.remove("hidden");
+                    cardMarcaAutomovel.textContent = userData.comum.automoveis?.marca || "Não informado";
+                    cardFaixaPrecoAutomovel.textContent = userData.comum.automoveis?.faixaPreco || "Não informado";
+                }
+            } else if (userData.tipoUsuario === "comercial") {
+                cardComercial.classList.remove("hidden");
+                cardCreci.textContent = userData.comercial?.creci || "Não informado";
+                cardCnpj.textContent = userData.comercial?.cnpj || "Não informado";
+                cardAreaAtuacao.textContent = userData.comercial?.areaAtuacao || "Não informado";
+                cardDescricaoEmpresa.textContent = userData.comercial?.descricaoEmpresa || "Não informado";
             }
-        } else if (userData.tipoUsuario === "comercial") {
-            cardComercial.classList.remove("hidden");
-            cardCreci.textContent = userData.comercial?.creci || "Não informado";
-            cardCnpj.textContent = userData.comercial?.cnpj || "Não informado";
-            cardAreaAtuacao.textContent = userData.comercial?.areaAtuacao || "Não informado";
-            cardDescricaoEmpresa.textContent = userData.comercial?.descricaoEmpresa || "Não informado";
-        }
 
-        // Exibe o card
-        userCard.classList.remove("hidden");
+            // Exibe o card
+            userCard.classList.remove("hidden");
+        } else {
+            console.log("Nenhum documento de usuário encontrado");
+        }
+    } catch (error) {
+        console.error("Erro ao carregar informações do usuário:", error);
+        alert("Erro ao carregar informações do perfil. Tente novamente.");
     }
 }
-
 
 async function carregarAnuncios(userId) {
     // Busca em ambas as coleções
@@ -308,16 +328,14 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 
-
-  // Função de logout
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            auth.signOut().then(() => {
-                // Logout bem-sucedido
-                alert('Logout realizado com sucesso!');
-                window.location.href = 'index.html'; // Redirecionar para a página inicial
-            }).catch((error) => {
-                // Tratar erros
-                console.error('Erro ao fazer logout:', error);
-                alert('Erro ao fazer logout. Tente novamente.');
-            });
-        });
+// Função de logout atualizada para Firebase v9+
+document.getElementById('logout-btn').addEventListener('click', async () => {
+    try {
+        await signOut(auth);
+        alert('Logout realizado com sucesso!');
+        window.location.href = 'index.html';
+    } catch (error) {
+        console.error('Erro ao fazer logout:', error);
+        alert('Erro ao fazer logout. Tente novamente.');
+    }
+});
