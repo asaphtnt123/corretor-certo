@@ -105,7 +105,7 @@ async function criarAnuncio(event) {
         });
 
         alert("Anúncio publicado com sucesso!");
-        window.location.href = "meus-anuncios.html";
+window.location.href = "perfil.html#meus-anuncios";
     } catch (error) {
         console.error("Erro ao publicar:", error);
         alert("Erro: " + error.message);
