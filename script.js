@@ -78,7 +78,6 @@ function mudarImagem(carrosselId, direcao) {
 // Torna a função mudarImagem acessível globalmente
 window.mudarImagem = mudarImagem;
 
-// Função para carregar imóveis em destaque
 async function carregarImoveisDestaque() {
     try {
         console.log("Iniciando a busca de imóveis em destaque...");
@@ -130,9 +129,9 @@ async function carregarImoveisDestaque() {
 
     } catch (error) {
         console.error("Erro ao carregar destaques:", error);
+        document.getElementById("destaqueContainer").innerHTML = "<p>Erro ao carregar destaques. Verifique suas permissões.</p>";
     }
 }
-
 
 
 
@@ -273,8 +272,8 @@ document.addEventListener("DOMContentLoaded", function() {
 // Função para carregar o logo do Firestore
 async function carregarLogo() {
     try {
-        const db = getFirestore();
-        const logoCollection = collection(db, 'LOGO');
+        console.log("Carregando logo...");
+        const logoCollection = collection(db, "LOGO");
         const querySnapshot = await getDocs(logoCollection);
 
         if (!querySnapshot.empty) {
@@ -283,11 +282,12 @@ async function carregarLogo() {
                 <img src="${primeiroLogo.imgLogo}" alt="Logo Corretor Certo" class="logo-img" style="max-width: 150px; height: auto;" loading="lazy">
             `;
         } else {
-            console.warn("Nenhuma imagem de logo encontrada no Firestore.");
+            console.warn("Nenhuma imagem de logo encontrada.");
+            document.getElementById('logoContainer').innerHTML = "Corretor Certo";
         }
     } catch (error) {
         console.error("Erro ao carregar logo:", error);
-        document.getElementById('logoContainer').innerHTML = 'Corretor Certo';
+        document.getElementById('logoContainer').innerHTML = "Erro ao carregar logo.";
     }
 }
 
