@@ -35,7 +35,6 @@ export { app, analytics, db, auth, storage };
 
 
 
-const storage = getStorage(app); // Agora a função getStorage está definida corretamente
 console.log("Firestore conectado:", db);
 
 
