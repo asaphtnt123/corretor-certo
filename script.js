@@ -28,7 +28,6 @@ setPersistence(auth, browserLocalPersistence)
   .then(() => console.log("Persistência ativada!"))
   .catch((error) => console.error("Erro na persistência:", error));
 
-export { app, analytics, db, auth, storage };
 
 
 
