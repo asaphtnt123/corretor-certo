@@ -1,8 +1,12 @@
-// Importar funções do Firebase corretamente
-import { collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
+// Importar funções do Firebase corretamente (versão consolidada)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { 
+  getAuth, 
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
   getFirestore,
   collection,
@@ -11,14 +15,10 @@ import {
   getDocs,
   doc,
   getDoc,
-  setDoc
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";import { 
-  getAuth, 
-  onAuthStateChanged,
-  setPersistence,
-  browserLocalPersistence,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+  setDoc,
+  addDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -33,6 +33,7 @@ const firebaseConfig = {
 
 // Inicializar Firebase
 const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);  // Adicionei esta linha que estava faltando
 const auth = getAuth(app);
 const storage = getStorage(app);
 
@@ -44,7 +45,6 @@ setPersistence(auth, browserLocalPersistence)
 console.log("Firebase inicializado com sucesso!");
 
 export { app, db, auth, storage };
-
 
 
 // Elementos do formulário e do card
