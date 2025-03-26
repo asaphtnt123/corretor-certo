@@ -18,25 +18,54 @@
     </header>
 
     <main>
-        <form id="form-anuncio">
-            <label for="titulo">Título:</label>
-            <input type="text" id="titulo" required>
+     <!-- Campos específicos para imóveis (devem estar em form-imovel) -->
+<div id="form-imovel" class="hidden">
+    <div class="mb-3">
+        <label for="tipo-imovel" class="form-label">Tipo de Imóvel:</label>
+        <select id="tipo-imovel" class="form-select">
+            <option value="casa">Casa</option>
+            <option value="apartamento">Apartamento</option>
+            <option value="terreno">Terreno</option>
+            <option value="comercial">Comercial</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="quartos" class="form-label">Quartos:</label>
+        <input type="number" id="quartos" class="form-control" min="0">
+    </div>
+    <div class="mb-3">
+        <label for="banheiros" class="form-label">Banheiros:</label>
+        <input type="number" id="banheiros" class="form-control" min="0">
+    </div>
+    <div class="mb-3">
+        <label for="area" class="form-label">Área (m²):</label>
+        <input type="number" id="area" class="form-control" step="0.01" min="0">
+    </div>
+    <div class="mb-3">
+        <label for="bairro" class="form-label">Bairro:</label>
+        <input type="text" id="bairro" class="form-control">
+    </div>
+</div>
 
-            <label for="descricao">Descrição:</label>
-            <textarea id="descricao" required></textarea>
-
-            <label for="preco">Preço (R$):</label>
-            <input type="number" id="preco" required>
-
-            <label>Tipo de Anúncio:</label>
-            <input type="radio" name="tipo-anuncio" value="imoveis" required> Imóvel
-            <input type="radio" name="tipo-anuncio" value="automoveis" required> Automóvel
-
-            <label for="imagens">Imagens:</label>
-            <input type="file" id="imagens" multiple required>
-
-            <button type="submit">Criar Anúncio</button>
-        </form>
+<!-- Campos específicos para automóveis (devem estar em form-automovel) -->
+<div id="form-automovel" class="hidden">
+    <div class="mb-3">
+        <label for="marca" class="form-label">Marca:</label>
+        <input type="text" id="marca" class="form-control">
+    </div>
+    <div class="mb-3">
+        <label for="modelo" class="form-label">Modelo:</label>
+        <input type="text" id="modelo" class="form-control">
+    </div>
+    <div class="mb-3">
+        <label for="ano" class="form-label">Ano:</label>
+        <input type="number" id="ano" class="form-control" min="1900" max="${new Date().getFullYear()}">
+    </div>
+    <div class="mb-3">
+        <label for="km" class="form-label">Quilometragem:</label>
+        <input type="number" id="km" class="form-control" min="0">
+    </div>
+</div>
     </main>
 
     <!-- Scripts devem vir após o conteúdo e SEM type="module" -->
