@@ -1,17 +1,10 @@
 
 
-// Importar funções do Firebase SDK
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import { getFirestore } from "firebase/firestore";
-import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "firebase/auth";
-import { getStorage } from "firebase/storage";
 
-// Configuração do Firebase para o novo projeto
-const firebaseConfig = {
+// Configurações do seu projeto do Firebase
+    const firebaseConfig = {
   apiKey: "AIzaSyA-7HOp-Ycvyf3b_03ev__8aJEwAbWSQZY",
   authDomain: "connectfamilia-312dc.firebaseapp.com",
-  databaseURL: "https://connectfamilia-312dc-default-rtdb.firebaseio.com",
   projectId: "connectfamilia-312dc",
   storageBucket: "connectfamilia-312dc.appspot.com",
   messagingSenderId: "797817838649",
