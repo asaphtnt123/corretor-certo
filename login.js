@@ -1,21 +1,5 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+import { db, auth } from "./firebase"; // Ajuste o caminho conforme necessário
 
-// Configuração do Firebase
-const firebaseConfig = {
-    apiKey: "AIzaSyCNr5JoKsWJVeUYAaVDqmPznZo100v0uvg",
-    authDomain: "corretorcerto-76933.firebaseapp.com",
-    projectId: "corretorcerto-76933",
-    storageBucket: "corretorcerto-76933.appspot.com",
-    messagingSenderId: "357149829474",
-    appId: "1:357149829474:web:324b2005d82eabbce5e43b"
-};
-
-// Inicializa Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
 
 // Verifica se o Firebase inicializou corretamente
 console.log("Firebase inicializado:", app);
