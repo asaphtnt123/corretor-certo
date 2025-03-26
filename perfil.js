@@ -1,21 +1,39 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+// Importar funções do Firebase corretamente
+import { collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getAuth, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 // Configuração do Firebase
 const firebaseConfig = {
-    apiKey: "AIzaSyCNr5JoKsWJVeUYAaVDqmPznZo100v0uvg",
-    authDomain: "corretorcerto-76933.firebaseapp.com",
-    projectId: "corretorcerto-76933",
-    storageBucket: "corretorcerto-76933.appspot.com",
-    messagingSenderId: "357149829474",
-    appId: "1:357149829474:web:324b2005d82eabbce5e43b"
+  apiKey: "AIzaSyA-7HOp-Ycvyf3b_03ev__8aJEwAbWSQZY",
+  authDomain: "connectfamilia-312dc.firebaseapp.com",
+  projectId: "connectfamilia-312dc",
+  storageBucket: "connectfamilia-312dc.appspot.com",
+  messagingSenderId: "797817838649",
+  appId: "1:797817838649:web:1aa7c54abd97661f8d81e8",
+  measurementId: "G-QKN9NFXZZQ"
 };
 
-// Inicializa Firebase
+// Inicializar Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app);
+const auth = getAuth(app);
+const storage = getStorage(app);
+
+// Ativar persistência da autenticação
+setPersistence(auth, browserLocalPersistence)
+  .then(() => console.log("Persistência ativada!"))
+  .catch((error) => console.error("Erro na persistência:", error));
+
+console.log("Firebase inicializado com sucesso!");
+
+export { app, db, auth, storage };
+
+
 
 // Elementos do formulário e do card
 const perfilForm = document.getElementById("perfil-form");
