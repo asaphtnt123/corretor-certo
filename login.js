@@ -1,4 +1,4 @@
-import { db, auth } from "./firebase"; // Ajuste o caminho conforme necessário
+import { db, auth } from "./firebase.js"; // Ajuste o caminho conforme necessário
 
 
 // Verifica se o Firebase inicializou corretamente
