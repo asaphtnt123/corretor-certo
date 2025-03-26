@@ -1,8 +1,12 @@
 
+// Importar funções do Firebase corretamente
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getAuth, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-
-// Configurações do seu projeto do Firebase
-    const firebaseConfig = {
+// Configuração do Firebase
+const firebaseConfig = {
   apiKey: "AIzaSyA-7HOp-Ycvyf3b_03ev__8aJEwAbWSQZY",
   authDomain: "connectfamilia-312dc.firebaseapp.com",
   projectId: "connectfamilia-312dc",
@@ -12,37 +16,21 @@
   measurementId: "G-QKN9NFXZZQ"
 };
 
-
-// Inicialize o Firebase
-    firebase.initializeApp(firebaseConfig);
- // Obtenha uma referência para o Firestore
-    const firestore = firebase.firestore();
-
-
-// Inicializar Firebase apenas uma vez
-const analytics = getAnalytics(app);
+// Inicializar Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 
+// Ativar persistência da autenticação
 setPersistence(auth, browserLocalPersistence)
   .then(() => console.log("Persistência ativada!"))
   .catch((error) => console.error("Erro na persistência:", error));
 
+console.log("Firebase inicializado com sucesso!");
 
+export { app, db, auth, storage };
 
-
-
-console.log("Firestore conectado:", db);
-
-
-    setPersistence(auth, browserLocalPersistence)
-  .then(() => {
-    console.log("Persistência ativada!");
-  })
-  .catch((error) => {
-    console.error("Erro na persistência:", error);
-  });
-  
   
   
   
