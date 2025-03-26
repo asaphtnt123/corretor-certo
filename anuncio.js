@@ -79,36 +79,72 @@ async function uploadImagens(files, tipo) {
 async function criarAnuncio(event) {
     event.preventDefault();
 
+    const user = auth.currentUser;
+    if (!user) {
+        alert("Você precisa estar logado para criar anúncios!");
+        window.location.href = "login.html";
+        return;
+    }
+
     const titulo = document.getElementById("titulo").value.trim();
     const descricao = document.getElementById("descricao").value.trim();
-    const preco = document.getElementById("preco").value.trim();
-    const tipoAnuncio = document.querySelector('input[name="tipo-anuncio"]:checked')?.value;
+    const preco = parseFloat(document.getElementById("preco").value);
     const imagens = document.getElementById("imagens").files;
+    const tipoAnuncio = document.querySelector('input[name="tipo-anuncio"]:checked')?.value;
 
-    if (!titulo || !descricao || !preco || !imagens.length || !tipoAnuncio) {
-        alert("Preencha todos os campos obrigatórios!");
+    // Validações básicas
+    if (!titulo || !descricao || isNaN(preco) || !imagens.length || !tipoAnuncio) {
+        alert("Preencha todos os campos obrigatórios corretamente!");
         return;
     }
 
     try {
+        // Faz o upload das imagens
         const urls = await uploadImagens(imagens, tipoAnuncio);
-        if (urls.length === 0) return;
+        if (urls.length === 0) {
+            alert("Erro ao enviar imagens. Tente novamente.");
+            return;
+        }
 
-        await addDoc(collection(db, "anuncios"), {
+        // Dados comuns a todos os anúncios
+        const anuncioData = {
             titulo,
             descricao,
-            preco: parseFloat(preco),
-            tipo: tipoAnuncio,
+            preco,
             imagens: urls,
-            userId: auth.currentUser.uid,
-            timestamp: serverTimestamp()
-        });
+            userId: user.uid,
+            data: new Date(),
+            destaque: false // Pode ser alterado posteriormente para anúncios em destaque
+        };
+
+        // Adiciona campos específicos conforme o tipo de anúncio
+        if (tipoAnuncio === "imovel") {
+            // Campos específicos para imóveis
+            anuncioData.tipo = document.getElementById("tipo-imovel").value;
+            anuncioData.quartos = parseInt(document.getElementById("quartos").value);
+            anuncioData.banheiros = parseInt(document.getElementById("banheiros").value);
+            anuncioData.bairro = document.getElementById("bairro").value;
+            anuncioData.area = parseFloat(document.getElementById("area").value);
+            
+            // Salva na coleção de imóveis
+            await addDoc(collection(db, "imoveis"), anuncioData);
+        } 
+        else if (tipoAnuncio === "automovel") {
+            // Campos específicos para automóveis
+            anuncioData.marca = document.getElementById("marca").value;
+            anuncioData.modelo = document.getElementById("modelo").value;
+            anuncioData.ano = parseInt(document.getElementById("ano").value);
+            anuncioData.km = parseInt(document.getElementById("km").value);
+            
+            // Salva na coleção de automóveis
+            await addDoc(collection(db, "automoveis"), anuncioData);
+        }
 
         alert("Anúncio publicado com sucesso!");
-window.location.href = "perfil.html#meus-anuncios";
+        window.location.href = "perfil.html#anuncios";
     } catch (error) {
-        console.error("Erro ao publicar:", error);
-        alert("Erro: " + error.message);
+        console.error("Erro ao publicar anúncio:", error);
+        alert("Erro ao publicar anúncio: " + error.message);
     }
 }
 
