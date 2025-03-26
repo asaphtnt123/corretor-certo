@@ -1,11 +1,23 @@
-// Importar funções do Firebase corretamente
-import { collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
+// Importações atualizadas
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { getAuth, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  serverTimestamp 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { 
+  getAuth, 
+  setPersistence, 
+  browserLocalPersistence,
+  onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { 
+  getStorage, 
+  ref, 
+  uploadBytes, 
+  getDownloadURL 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -31,11 +43,8 @@ setPersistence(auth, browserLocalPersistence)
 
 console.log("Firebase inicializado com sucesso!");
 
-export { app, db, auth, storage };
-
-
 // Verificação de autenticação
-auth.onAuthStateChanged((user) => {
+onAuthStateChanged(auth, (user) => {
     if (!user) {
         alert("Acesso restrito! Faça login para continuar.");
         window.location.href = "login.html";
@@ -46,13 +55,16 @@ auth.onAuthStateChanged((user) => {
 async function uploadImagens(files, tipo) {
     try {
         const user = auth.currentUser;
+        if (!user) throw new Error("Usuário não autenticado");
+        
         const urls = [];
         
         for (const file of files) {
             const fileName = file.name.replace(/[^\w.]/g, "_");
-            const storageRef = storage.ref(`${tipo}/${user.uid}/${fileName}`);
-            const snapshot = await storageRef.put(file);
-            urls.push(await snapshot.ref.getDownloadURL());
+            const storageRef = ref(storage, `${tipo}/${user.uid}/${fileName}`);
+            const snapshot = await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(snapshot.ref);
+            urls.push(downloadURL);
         }
         
         return urls;
@@ -82,14 +94,14 @@ async function criarAnuncio(event) {
         const urls = await uploadImagens(imagens, tipoAnuncio);
         if (urls.length === 0) return;
 
-        await db.collection("anuncios").add({
+        await addDoc(collection(db, "anuncios"), {
             titulo,
             descricao,
             preco: parseFloat(preco),
             tipo: tipoAnuncio,
             imagens: urls,
             userId: auth.currentUser.uid,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            timestamp: serverTimestamp()
         });
 
         alert("Anúncio publicado com sucesso!");
