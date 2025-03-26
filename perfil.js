@@ -105,34 +105,64 @@ async function carregarInformacoesUsuario(user) {
     }
 }
 
-// Função para carregar os anúncios do usuário
+
 async function carregarAnuncios(userId) {
-    const anunciosRef = collection(db, "anuncios");
-    const q = query(anunciosRef, where("userId", "==", userId));
-    const querySnapshot = await getDocs(q);
+    // Busca em ambas as coleções
+    const imoveisRef = collection(db, "imoveis");
+    const automoveisRef = collection(db, "automoveis");
+    
+    const qImoveis = query(imoveisRef, where("userId", "==", userId));
+    const qAutomoveis = query(automoveisRef, where("userId", "==", userId));
+
+    const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
+        getDocs(qImoveis),
+        getDocs(qAutomoveis)
+    ]);
 
     const anunciosContainer = document.getElementById("anuncios-container");
-    anunciosContainer.innerHTML = ""; // Limpa o conteúdo anterior
+    const noAnuncios = document.getElementById("no-anuncios");
+    
+    anunciosContainer.innerHTML = "";
+    noAnuncios.classList.add("hidden");
 
-    querySnapshot.forEach((doc) => {
+    // Verifica se há resultados
+    if (imoveisSnapshot.empty && automoveisSnapshot.empty) {
+        noAnuncios.classList.remove("hidden");
+        return;
+    }
+
+    // Processa imóveis
+    imoveisSnapshot.forEach((doc) => {
         const data = doc.data();
-        const anuncioHTML = `
-            <div class="col-md-4 mb-4">
-                <div class="card">
-                    <img src="${data.imagens[0]}" class="card-img-top" alt="Imagem do Anúncio">
-                    <div class="card-body">
-                        <h5 class="card-title">${data.titulo}</h5>
-                        <p class="card-text">${data.descricao}</p>
-                        <p><strong>Preço:</strong> R$ ${data.preco}</p>
-                        <a href="#" class="btn btn-primary">Ver Detalhes</a>
-                    </div>
-                </div>
-            </div>
-        `;
-        anunciosContainer.innerHTML += anuncioHTML;
+        anunciosContainer.innerHTML += criarCardAnuncio(data, "Imóvel");
+    });
+
+    // Processa automóveis
+    automoveisSnapshot.forEach((doc) => {
+        const data = doc.data();
+        anunciosContainer.innerHTML += criarCardAnuncio(data, "Automóvel");
     });
 }
 
+// Função auxiliar para criar o HTML do card de anúncio
+function criarCardAnuncio(data, tipo) {
+    return `
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <img src="${data.imagens[0]}" class="card-img-top" alt="Imagem do Anúncio">
+                <div class="card-body">
+                    <h5 class="card-title">${data.titulo}</h5>
+                    <p class="card-text">${data.descricao}</p>
+                    <p><strong>Tipo:</strong> ${tipo}</p>
+                    <p><strong>Preço:</strong> R$ ${data.preco.toFixed(2)}</p>
+                    ${data.tipo ? `<p><strong>Tipo:</strong> ${data.tipo}</p>` : ''}
+                    ${data.marca ? `<p><strong>Marca:</strong> ${data.marca}</p>` : ''}
+                    <a href="#" class="btn btn-primary">Ver Detalhes</a>
+                </div>
+            </div>
+        </div>
+    `;
+}
 // Função para carregar os favoritos do usuário
 async function carregarFavoritos(userId) {
     const favoritosRef = collection(db, "favoritos");
