@@ -1,11 +1,11 @@
 
 
-
 // Importar funções do Firebase SDK
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getFirestore } from "firebase/firestore"; // Se estiver usando Firestore
-import { getAuth } from "firebase/auth"; // Se estiver usando autenticação
+import { getFirestore } from "firebase/firestore";
+import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "firebase/auth";
+import { getStorage } from "firebase/storage";
 
 // Configuração do Firebase para o novo projeto
 const firebaseConfig = {
@@ -19,14 +19,18 @@ const firebaseConfig = {
   measurementId: "G-QKN9NFXZZQ"
 };
 
-// Inicializar Firebase
+// Inicializar Firebase apenas uma vez
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-const db = getFirestore(app); // Inicializar Firestore, se necessário
-const auth = getAuth(app); // Inicializar Auth, se necessário
+const db = getFirestore(app);
+const auth = getAuth(app);
+const storage = getStorage(app);
 
-export { app, analytics, db, auth };
+setPersistence(auth, browserLocalPersistence)
+  .then(() => console.log("Persistência ativada!"))
+  .catch((error) => console.error("Erro na persistência:", error));
 
+export { app, analytics, db, auth, storage };
 
 
 
