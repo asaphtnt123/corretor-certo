@@ -12,10 +12,15 @@
   measurementId: "G-QKN9NFXZZQ"
 };
 
+
+// Inicialize o Firebase
+    firebase.initializeApp(firebaseConfig);
+ // Obtenha uma referência para o Firestore
+    const firestore = firebase.firestore();
+
+
 // Inicializar Firebase apenas uma vez
-const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 
