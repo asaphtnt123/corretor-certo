@@ -247,6 +247,20 @@ perfilForm.addEventListener("submit", async (e) => {
 });
 
 
+// Verificar hash na URL para ativar a aba correta
+window.addEventListener('DOMContentLoaded', () => {
+    const hash = window.location.hash;
+    if (hash === '#meus-anuncios') {
+        // Simula clique na aba "Meus Anúncios"
+        const tabAnuncios = document.querySelector('a[href="#meus-anuncios"]');
+        if (tabAnuncios) {
+            tabAnuncios.click();
+        }
+    }
+});
+
+
+
   // Função de logout
         document.getElementById('logout-btn').addEventListener('click', () => {
             auth.signOut().then(() => {
