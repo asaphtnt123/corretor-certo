@@ -114,22 +114,16 @@
             <div class="col-lg-8">
                 <!-- Form Container -->
                 <div class="form-container">
-                    <!-- Type Selector -->
-                    <div class="type-selector">
-                        <h3 class="text-center mb-3">Selecione o tipo de anúncio</h3>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <button id="btn-imovel" class="btn btn-outline-primary type-btn active">
-                                    <i class="fas fa-home me-2"></i>Imóvel
-                                </button>
-                            </div>
-                            <div class="col-md-6">
-                                <button id="btn-automovel" class="btn btn-outline-primary type-btn">
-                                    <i class="fas fa-car me-2"></i>Automóvel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                  <!-- Adicione name aos campos obrigatórios -->
+<select class="form-select" id="tipo-imovel" name="tipo-imovel" required>
+    <option value="" disabled selected>Selecione o tipo</option>
+    <option value="casa">Casa</option>
+    <option value="apartamento">Apartamento</option>
+    <option value="terreno">Terreno</option>
+    <option value="comercial">Comercial</option>
+</select>
+
+<input type="text" class="form-control" id="bairro" name="bairro" required placeholder="Digite o bairro">
 
                     <!-- Common Fields -->
                     <form id="anuncio-form">
