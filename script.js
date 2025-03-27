@@ -36,16 +36,8 @@ export { app, db, auth, storage };
 
 
 
-// Variável global para armazenar os dados do anúncio atual
 let currentAdData = null;
 
-
-/**
- * Cria um card de anúncio com evento de clique no botão "Ver Mais"
- * @param {Object} dados - Dados do anúncio (imóvel ou automóvel)
- * @param {boolean} isAutomovel - Indica se é um anúncio de automóvel
- * @returns {HTMLElement} - Retorna o elemento do card criado
- */
 function criarCardComEvento(dados, isAutomovel = false) {
     const card = document.createElement('div');
     card.className = 'card';
@@ -290,8 +282,7 @@ function mudarImagem(carrosselId, direcao) {
 }
 
 
-// Torna a função mudarImagem acessível globalmente
-window.mudarImagem = mudarImagem;
+
 
 async function carregarImoveisDestaque() {
     try {
@@ -800,4 +791,3 @@ document.getElementById("btn-anunciar").addEventListener("click", () => {
 
 // Torna a função mudarImagem acessível globalmente
 window.mudarImagem = mudarImagem;
-
