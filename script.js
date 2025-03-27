@@ -775,6 +775,55 @@ document.getElementById("btn-anunciar").addEventListener("click", () => {
     window.location.href = "anunciar.html";
 });
 
+
+function criarCardComEvento(dados, isAutomovel = false) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    
+    const imagens = dados.imagens || ["images/default.jpg"];
+    const carrosselId = `carrossel-${dados.id || Math.random().toString(36).substr(2, 9)}`;
+    
+    card.innerHTML = `
+        <div class="carrossel" id="${carrosselId}">
+            <div class="carrossel-imagens">
+                ${imagens.map((imagem, index) => `
+                    <img src="${imagem}" alt="${dados.titulo}" class="carrossel-img" 
+                         style="display: ${index === 0 ? 'block' : 'none'}" loading="lazy">
+                `).join('')}
+            </div>
+            <button class="carrossel-seta carrossel-seta-esquerda" onclick="mudarImagem('${carrosselId}', -1)">&#10094;</button>
+            <button class="carrossel-seta carrossel-seta-direita" onclick="mudarImagem('${carrosselId}', 1)">&#10095;</button>
+        </div>
+        <div class="card-content">
+            <h4>${dados.titulo || 'Sem título'}</h4>
+            
+            ${isAutomovel ? `
+                <p><strong>Marca:</strong> ${dados.marca || 'Não informada'}</p>
+                <p><strong>Modelo:</strong> ${dados.modelo || 'Não informado'}</p>
+                <p><strong>Ano:</strong> ${dados.ano || 'Não informado'}</p>
+            ` : `
+                <p><strong>Bairro:</strong> ${dados.bairro || 'Não informado'}</p>
+                <p><strong>Tipo:</strong> ${dados.tipo || 'Não informado'}</p>
+            `}
+            
+            <p><strong>Preço:</strong> R$ ${dados.preco ? dados.preco.toLocaleString('pt-BR') : 'Não informado'}</p>
+            <a href="#" class="btn-view-more">Ver Mais</a>
+        </div>
+    `;
+    
+    // Configura o evento de clique no botão "Ver Mais" - FORMA CORRIGIDA
+    const verMaisBtn = card.querySelector('.btn-view-more');
+    verMaisBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        openDetailsModal(dados, isAutomovel);
+    });
+    
+    return card;
+}
+
+
 // Torna a função mudarImagem acessível globalmente
 window.mudarImagem = mudarImagem;
+// Torna a função acessível globalmente
+window.openDetailsModal = openDetailsModal;
 
