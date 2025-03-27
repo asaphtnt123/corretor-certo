@@ -52,6 +52,13 @@ const anuncioForm = document.getElementById('anuncio-form');
 const imagensInput = document.getElementById('imagens');
 const imagePreview = document.getElementById('image-preview');
 
+// Elementos dos formulários específicos
+const tipoImovelInput = document.getElementById('tipo-imovel');
+const bairroInput = document.getElementById('bairro');
+const marcaInput = document.getElementById('marca');
+const modeloInput = document.getElementById('modelo');
+const anoInput = document.getElementById('ano');
+
 // Verificação de autenticação
 onAuthStateChanged(auth, (user) => {
     if (!user) {
@@ -60,25 +67,45 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-// Elementos DOM
+// Função para alternar entre formulários
+function toggleFormularios(isImovel) {
+    if (isImovel) {
+        // Mostrar formulário de imóvel
+        btnImovel.classList.add('active');
+        btnAutomovel.classList.remove('active');
+        imovelFields.classList.remove('hidden');
+        automovelFields.classList.add('hidden');
+        
+        // Configurar campos obrigatórios
+        tipoImovelInput.required = true;
+        bairroInput.required = true;
+        marcaInput.required = false;
+        modeloInput.required = false;
+        anoInput.required = false;
+    } else {
+        // Mostrar formulário de automóvel
+        btnAutomovel.classList.add('active');
+        btnImovel.classList.remove('active');
+        automovelFields.classList.remove('hidden');
+        imovelFields.classList.add('hidden');
+        
+        // Configurar campos obrigatórios
+        tipoImovelInput.required = false;
+        bairroInput.required = false;
+        marcaInput.required = true;
+        modeloInput.required = true;
+        anoInput.required = true;
+    }
+}
 
-// Inicialmente, mostra apenas o formulário de imóvel (já que ele começa ativo)
+// Inicialização dos formulários
 automovelFields.classList.add('hidden');
+toggleFormularios(true); // Começa com imóvel ativo
 
-// Alternar entre imóvel e automóvel
-btnImovel.addEventListener('click', () => {
-    btnImovel.classList.add('active');
-    btnAutomovel.classList.remove('active');
-    imovelFields.classList.remove('hidden');
-    automovelFields.classList.add('hidden');
-});
+// Event listeners para alternar entre formulários
+btnImovel.addEventListener('click', () => toggleFormularios(true));
+btnAutomovel.addEventListener('click', () => toggleFormularios(false));
 
-btnAutomovel.addEventListener('click', () => {
-    btnAutomovel.classList.add('active');
-    btnImovel.classList.remove('active');
-    automovelFields.classList.remove('hidden');
-    imovelFields.classList.add('hidden');
-});
 // Pré-visualização de imagens
 imagensInput.addEventListener('change', function() {
     imagePreview.innerHTML = '';
@@ -165,6 +192,31 @@ async function criarAnuncio(event) {
             return;
         }
 
+        // Validações específicas
+        if (isImovel) {
+            if (!tipoImovelInput.value) {
+                alert("Selecione o tipo de imóvel!");
+                return;
+            }
+            if (!bairroInput.value.trim()) {
+                alert("Preencha o bairro!");
+                return;
+            }
+        } else {
+            if (!marcaInput.value.trim()) {
+                alert("Preencha a marca do veículo!");
+                return;
+            }
+            if (!modeloInput.value.trim()) {
+                alert("Preencha o modelo do veículo!");
+                return;
+            }
+            if (!anoInput.value) {
+                alert("Preencha o ano do veículo!");
+                return;
+            }
+        }
+
         // Dados comuns a todos os anúncios
         const anuncioData = {
             titulo,
@@ -182,18 +234,18 @@ async function criarAnuncio(event) {
 
         // Adiciona campos específicos conforme o tipo de anúncio
         if (isImovel) {
-            anuncioData.tipo = document.getElementById("tipo-imovel").value;
+            anuncioData.tipo = tipoImovelInput.value;
             anuncioData.quartos = parseInt(document.getElementById("quartos").value) || 0;
             anuncioData.banheiros = parseInt(document.getElementById("banheiros").value) || 0;
-            anuncioData.bairro = document.getElementById("bairro").value.trim();
+            anuncioData.bairro = bairroInput.value.trim();
             anuncioData.area = parseFloat(document.getElementById("area").value) || 0;
             
             // Salva na coleção de imóveis
             await addDoc(collection(db, "imoveis"), anuncioData);
         } else {
-            anuncioData.marca = document.getElementById("marca").value.trim();
-            anuncioData.modelo = document.getElementById("modelo").value.trim();
-            anuncioData.ano = parseInt(document.getElementById("ano").value);
+            anuncioData.marca = marcaInput.value.trim();
+            anuncioData.modelo = modeloInput.value.trim();
+            anuncioData.ano = parseInt(anoInput.value);
             anuncioData.km = parseInt(document.getElementById("km").value) || 0;
             anuncioData.cor = document.getElementById("cor")?.value.trim() || '';
             anuncioData.combustivel = document.getElementById("combustivel")?.value || '';
