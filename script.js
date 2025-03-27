@@ -34,214 +34,7 @@ console.log("Firebase inicializado com sucesso!");
 
 export { app, db, auth, storage };
 
-
-
-let currentAdData = null;
-
-function criarCardComEvento(dados, isAutomovel = false) {
-    const card = document.createElement('div');
-    card.className = 'card';
-    
-    const imagens = dados.imagens || ["images/default.jpg"];
-    const carrosselId = `carrossel-${dados.id || Math.random().toString(36).substr(2, 9)}`;
-    
-    card.innerHTML = `
-        <div class="carrossel" id="${carrosselId}">
-            <div class="carrossel-imagens">
-                ${imagens.map((imagem, index) => `
-                    <img src="${imagem}" alt="${dados.titulo}" class="carrossel-img" 
-                         style="display: ${index === 0 ? 'block' : 'none'}" loading="lazy">
-                `).join('')}
-            </div>
-            <button class="carrossel-seta carrossel-seta-esquerda" onclick="mudarImagem('${carrosselId}', -1)">&#10094;</button>
-            <button class="carrossel-seta carrossel-seta-direita" onclick="mudarImagem('${carrosselId}', 1)">&#10095;</button>
-        </div>
-        <div class="card-content">
-            <h4>${dados.titulo || 'Sem título'}</h4>
-            
-            ${isAutomovel ? `
-                <p><strong>Marca:</strong> ${dados.marca || 'Não informada'}</p>
-                <p><strong>Modelo:</strong> ${dados.modelo || 'Não informado'}</p>
-                <p><strong>Ano:</strong> ${dados.ano || 'Não informado'}</p>
-            ` : `
-                <p><strong>Bairro:</strong> ${dados.bairro || 'Não informado'}</p>
-                <p><strong>Tipo:</strong> ${dados.tipo || 'Não informado'}</p>
-            `}
-            
-            <p><strong>Preço:</strong> R$ ${dados.preco ? dados.preco.toLocaleString('pt-BR') : 'Não informado'}</p>
-            <a href="#" class="btn-view-more">Ver Mais</a>
-        </div>
-    `;
-    
-    // Configura o evento de clique no botão "Ver Mais"
-    const verMaisBtn = card.querySelector('.btn-view-more');
-    verMaisBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        openDetailsModal(dados, isAutomovel);
-    });
-    
-    return card;
-}
-// Função para abrir o modal com os detalhes
-function openDetailsModal(adData, isAutomovel = false) {
-    currentAdData = adData;
-    const modal = document.getElementById('detalhesModal');
-    const carrossel = document.getElementById('modalCarrossel');
-    
-    // Limpa o carrossel
-    carrossel.innerHTML = '';
-    
-    // Adiciona as imagens ao carrossel
-    const imagens = adData.imagens || ["images/default.jpg"];
-    imagens.forEach((img, index) => {
-        const imgElement = document.createElement('img');
-        imgElement.src = img;
-        imgElement.alt = adData.titulo;
-        imgElement.style.display = index === 0 ? 'block' : 'none';
-        imgElement.classList.add(index === 0 ? 'active' : '');
-        carrossel.appendChild(imgElement);
-    });
-    
-    if (isAutomovel) {
-        // Configura para automóvel
-        document.getElementById('detalhesImovel').style.display = 'none';
-        document.getElementById('detalhesAutomovel').style.display = 'block';
-        
-        // Preenche os dados do automóvel
-        document.getElementById('modalTituloAuto').textContent = adData.titulo;
-        document.getElementById('modalMarca').textContent = `Marca: ${adData.marca || 'Não informado'}`;
-        document.getElementById('modalModelo').textContent = `Modelo: ${adData.modelo || 'Não informado'}`;
-        document.getElementById('modalAno').textContent = `Ano: ${adData.ano || 'Não informado'}`;
-        document.getElementById('modalKm').textContent = `KM: ${adData.km ? `${adData.km} km` : 'Não informado'}`;
-        document.getElementById('modalCombustivel').textContent = `Combustível: ${adData.combustivel || 'Não informado'}`;
-        document.getElementById('modalPrecoAuto').textContent = `R$ ${adData.preco?.toLocaleString('pt-BR') || 'Preço não informado'}`;
-        document.getElementById('modalDescricaoAuto').textContent = adData.descricao || 'Sem descrição';
-        
-        // Preenche as especificações técnicas
-        const especificacoesList = document.getElementById('modalEspecificacoes');
-        especificacoesList.innerHTML = '';
-        
-        const specs = [
-            `Cor: ${adData.cor || 'Não informada'}`,
-            `Portas: ${adData.portas || 'Não informado'}`,
-            `Câmbio: ${adData.cambio || 'Não informado'}`,
-            `Direção: ${adData.direcao || 'Não informado'}`,
-            `Airbag: ${adData.airbag ? 'Sim' : 'Não'}`,
-            `ABS: ${adData.abs ? 'Sim' : 'Não'}`
-        ];
-        
-        specs.forEach(spec => {
-            const li = document.createElement('li');
-            li.textContent = spec;
-            especificacoesList.appendChild(li);
-        });
-    } else {
-        // Configura para imóvel
-        document.getElementById('detalhesImovel').style.display = 'block';
-        document.getElementById('detalhesAutomovel').style.display = 'none';
-        
-        // Preenche os dados do imóvel
-        document.getElementById('modalTitulo').textContent = adData.titulo;
-        document.getElementById('modalTipo').textContent = `Tipo: ${adData.tipo || 'Não informado'}`;
-        document.getElementById('modalBairro').textContent = `Localização: ${adData.bairro || 'Não informado'}`;
-        document.getElementById('modalArea').textContent = `Área: ${adData.area ? `${adData.area} m²` : 'Não informado'}`;
-        document.getElementById('modalQuartos').textContent = `Quartos: ${adData.quartos || '0'}`;
-        document.getElementById('modalBanheiros').textContent = `Banheiros: ${adData.banheiros || '0'}`;
-        document.getElementById('modalPreco').textContent = `R$ ${adData.preco?.toLocaleString('pt-BR') || 'Preço não informado'}`;
-        document.getElementById('modalDescricao').textContent = adData.descricao || 'Sem descrição';
-        
-        // Preenche as características
-        const caracteristicasList = document.getElementById('modalCaracteristicas');
-        caracteristicasList.innerHTML = '';
-        
-        const features = [
-            `Mobiliado: ${adData.mobiliado ? 'Sim' : 'Não'}`,
-            `Garagem: ${adData.vagas ? `${adData.vagas} vagas` : 'Não'}`,
-            `Condomínio: ${adData.condominio ? `R$ ${adData.condominio.toLocaleString('pt-BR')}` : 'Não informado'}`,
-            `IPTU: ${adData.iptu ? `R$ ${adData.iptu.toLocaleString('pt-BR')}` : 'Não informado'}`,
-            `Andar: ${adData.andar || 'Não informado'}`,
-            `Elevador: ${adData.elevador ? 'Sim' : 'Não'}`
-        ];
-        
-        features.forEach(feature => {
-            const li = document.createElement('li');
-            li.textContent = feature;
-            caracteristicasList.appendChild(li);
-        });
-    }
-    
-    // Exibe o modal
-    modal.style.display = 'block';
-    document.body.style.overflow = 'hidden';
-}
-
-// Função para fechar o modal
-function closeDetailsModal() {
-    document.getElementById('detalhesModal').style.display = 'none';
-    document.body.style.overflow = 'auto';
-}
-
-// Event listeners para o modal
-document.querySelector('.close-modal').addEventListener('click', closeDetailsModal);
-document.getElementById('detalhesModal').addEventListener('click', (e) => {
-    if (e.target === document.getElementById('detalhesModal')) {
-        closeDetailsModal();
-    }
-});
-
-// Event listener para o botão de contato
-document.getElementById('btnContato').addEventListener('click', () => {
-    if (currentAdData && currentAdData.userId) {
-        // Aqui você pode implementar a lógica para contatar o corretor
-        // Por exemplo, abrir um chat ou redirecionar para uma página de contato
-        alert('Redirecionando para o chat com o corretor...');
-    }
-});
-
-// Função para navegar entre as imagens do carrossel no modal
-function mudarImagemModal(direcao) {
-    const imagens = document.querySelectorAll('#modalCarrossel img');
-    let indexAtivo = -1;
-
-    imagens.forEach((img, index) => {
-        if (img.classList.contains('active')) {
-            indexAtivo = index;
-        }
-    });
-
-    if (indexAtivo !== -1) {
-        imagens[indexAtivo].classList.remove('active');
-        imagens[indexAtivo].style.display = 'none';
-        
-        let novoIndex = indexAtivo + direcao;
-        if (novoIndex < 0) novoIndex = imagens.length - 1;
-        if (novoIndex >= imagens.length) novoIndex = 0;
-        
-        imagens[novoIndex].classList.add('active');
-        imagens[novoIndex].style.display = 'block';
-    }
-}
-
-// Adicione setas de navegação ao carrossel do modal
-document.addEventListener('DOMContentLoaded', () => {
-    const carrossel = document.getElementById('modalCarrossel');
-    if (carrossel) {
-        const leftArrow = document.createElement('button');
-        leftArrow.className = 'carrossel-seta carrossel-seta-esquerda';
-        leftArrow.innerHTML = '&#10094;';
-        leftArrow.onclick = () => mudarImagemModal(-1);
-        
-        const rightArrow = document.createElement('button');
-        rightArrow.className = 'carrossel-seta carrossel-seta-direita';
-        rightArrow.innerHTML = '&#10095;';
-        rightArrow.onclick = () => mudarImagemModal(1);
-        
-        carrossel.appendChild(leftArrow);
-        carrossel.appendChild(rightArrow);
-    }
-});
-
-
+  
   
   
 // Carregar imóveis em destaque ao carregar a página
@@ -282,7 +75,8 @@ function mudarImagem(carrosselId, direcao) {
 }
 
 
-
+// Torna a função mudarImagem acessível globalmente
+window.mudarImagem = mudarImagem;
 
 async function carregarImoveisDestaque() {
     try {
@@ -559,105 +353,128 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-   async function buscarCarros(precoMin, precoMax, marca, modelo, ano) {
-    try {
-        const carrosRef = collection(db, "automoveis");
-        let q = query(carrosRef);
+    // Função para buscar carros
+    async function buscarCarros(precoMin, precoMax, marca, modelo, ano) {
+        try {
+            const carrosRef = collection(db, "automoveis");
+            let q = query(carrosRef);
 
-        // Adiciona filtros conforme os parâmetros
-        if (marca) {
-            q = query(q, where("marca", "==", marca));
-        }
-        if (modelo) {
-            q = query(q, where("modelo", "==", modelo));
-        }
-        if (ano) {
-            q = query(q, where("ano", "==", parseInt(ano)));
-        }
-        if (precoMin) {
-            q = query(q, where("preco", ">=", precoMin));
-        }
-        if (precoMax) {
-            q = query(q, where("preco", "<=", precoMax));
-        }
+            // Filtros de marca, modelo e ano
+            if (marca) {
+                q = query(q, where("marca", "==", marca));
+            }
+            if (modelo) {
+                q = query(q, where("modelo", "==", modelo));
+            }
+            if (ano) {
+                q = query(q, where("ano", "==", parseInt(ano)));
+            }
 
-        const querySnapshot = await getDocs(q);
-        console.log("Número de automóveis encontrados:", querySnapshot.size);
+            // Filtros de preço
+            if (precoMin) {
+                q = query(q, where("preco", ">=", precoMin));
+            }
+            if (precoMax) {
+                q = query(q, where("preco", "<=", precoMax));
+            }
 
-        let resultadosHTML = "<h3>Resultados da Busca:</h3>";
-        
-        if (querySnapshot.empty) {
-            resultadosHTML += "<p>Nenhum automóvel encontrado com os critérios especificados.</p>";
-        } else {
+            const querySnapshot = await getDocs(q);
+            console.log("Número de documentos encontrados:", querySnapshot.size);
+
+            let resultadosHTML = "<h3>Resultados da Busca:</h3>";
+
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
-                data.id = doc.id; // Adiciona o ID do documento
-                
-                // Cria o card usando a função auxiliar
-                const card = criarCardComEvento(data, true);
-                resultadosHTML += card.outerHTML;
+                const imagens = data.imagens || ["images/default.jpg"];
+                const carrosselId = `carrossel-${doc.id}`;
+
+                resultadosHTML += `
+                    <div class="card">
+                        <div class="carrossel" id="${carrosselId}">
+                            <div class="carrossel-imagens">
+                                ${imagens.map((imagem, index) => `
+                                    <img src="${imagem}" alt="${data.titulo}" class="carrossel-img" style="display: ${index === 0 ? "block" : "none"}" loading="lazy">
+                                `).join("")}
+                            </div>
+                            <button class="carrossel-seta carrossel-seta-esquerda" onclick="mudarImagem('${carrosselId}', -1)">&#10094;</button>
+                            <button class="carrossel-seta carrossel-seta-direita" onclick="mudarImagem('${carrosselId}', 1)">&#10095;</button>
+                        </div>
+                        <div class="card-content">
+                            <h4>${data.titulo}</h4>
+                            <p><strong>Marca:</strong> ${data.marca}</p>
+                            <p><strong>Modelo:</strong> ${data.modelo}</p>
+                            <p><strong>Ano:</strong> ${data.ano}</p>
+                            <p><strong>Preço:</strong> R$ ${data.preco}</p>
+                            <a href="#" class="btn-view-more">Ver Mais</a>
+                        </div>
+                    </div>
+                `;
             });
-        }
 
-        document.getElementById("resultados").innerHTML = resultadosHTML;
-    } catch (error) {
-        console.error("Erro ao buscar carros:", error);
-        document.getElementById("resultados").innerHTML = `
-            <div class="error-message">
-                <p>Ocorreu um erro ao buscar automóveis.</p>
-                <p>Por favor, tente novamente mais tarde.</p>
-            </div>
-        `;
+            document.getElementById("resultados").innerHTML = querySnapshot.empty ? "<p>Nenhum resultado encontrado.</p>" : resultadosHTML;
+        } catch (error) {
+            console.error("Erro ao buscar carros: ", error);
+            document.getElementById("resultados").innerHTML = "<p>Erro ao realizar a busca.</p>";
+        }
     }
-}
 
-  async function buscarCasas(precoMin, precoMax, bairro) {
-    try {
-        bairro = bairro.toLowerCase();
-        console.log("Bairro pesquisado:", bairro);
+    // Função para buscar imóveis
+    async function buscarCasas(precoMin, precoMax, bairro) {
+        try {
+            bairro = bairro.toLowerCase(); // Converte o bairro para minúsculas
+            console.log("Bairro pesquisado:", bairro); // Verifique o valor do bairro
 
-        const casasRef = collection(db, "imoveis");
-        
-        // Cria a query de busca
-        let q = query(casasRef, where("bairro", "==", bairro));
-        
-        // Adiciona filtros de preço se existirem
-        if (precoMin) {
-            q = query(q, where("preco", ">=", precoMin));
-        }
-        if (precoMax) {
-            q = query(q, where("preco", "<=", precoMax));
-        }
+            const casasRef = collection(db, "imoveis");
+            
+            // Realiza a busca com o valor de bairro em minúsculas
+            const q = query(
+                casasRef,
+                where("bairro", "==", bairro) // O bairro do Firestore também deve estar em minúsculas
+            );
 
-        const querySnapshot = await getDocs(q);
-        console.log("Número de imóveis encontrados:", querySnapshot.size);
+            const querySnapshot = await getDocs(q);
+            console.log("Número de documentos encontrados:", querySnapshot.size); // Verifique quantos documentos foram encontrados
 
-        let resultadosHTML = "<h3>Resultados da Busca:</h3>";
-        
-        if (querySnapshot.empty) {
-            resultadosHTML += "<p>Nenhum imóvel encontrado com os critérios especificados.</p>";
-        } else {
+            let resultadosHTML = "<h3>Resultados da Busca:</h3>";
+            
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
-                data.id = doc.id; // Adiciona o ID do documento
-                
-                // Cria o card usando a função auxiliar
-                const card = criarCardComEvento(data, false);
-                resultadosHTML += card.outerHTML;
-            });
-        }
+                console.log("Dados do documento:", data); // Verifique os dados de cada documento
 
-        document.getElementById("resultados").innerHTML = resultadosHTML;
-    } catch (error) {
-        console.error("Erro ao buscar casas:", error);
-        document.getElementById("resultados").innerHTML = `
-            <div class="error-message">
-                <p>Ocorreu um erro ao buscar imóveis.</p>
-                <p>Por favor, tente novamente mais tarde.</p>
-            </div>
-        `;
+                const imagens = data.imagens || ["images/default.jpg"];
+                const carrosselId = `carrossel-${doc.id}`; // ID único para cada carrossel
+
+                // Criação do card com carrossel
+                resultadosHTML += `
+                    <div class="card">
+                        <div class="carrossel" id="${carrosselId}">
+                            <div class="carrossel-imagens">
+                                ${imagens.map((imagem, index) => `
+                                    <img src="${imagem}" alt="${data.titulo}" class="carrossel-img" style="display: ${index === 0 ? "block" : "none"}" loading="lazy">
+                                `).join("")}
+                            </div>
+                            <button class="carrossel-seta carrossel-seta-esquerda" onclick="mudarImagem('${carrosselId}', -1)">&#10094;</button>
+                            <button class="carrossel-seta carrossel-seta-direita" onclick="mudarImagem('${carrosselId}', 1)">&#10095;</button>
+                        </div>
+                        <div class="card-content">
+                            <h4>${data.titulo}</h4>
+                            <p><strong>Bairro:</strong> ${data.bairro}</p>
+                            <p><strong>Preço:</strong> R$ ${data.preco}</p>
+                            <p><strong>Tipo:</strong> ${data.tipo}</p>
+                            <a href="#" class="btn-view-more">Ver Mais</a>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Exibe os resultados ou uma mensagem de erro
+            document.getElementById("resultados").innerHTML = querySnapshot.empty ? "<p>Nenhum resultado encontrado.</p>" : resultadosHTML;
+        } catch (error) {
+            console.error("Erro ao buscar casas: ", error);
+            document.getElementById("resultados").innerHTML = "<p>Erro ao realizar a busca.</p>";
+        }
     }
-}
+});
 
 
 const menuToggle = document.getElementById('menu-toggle');
@@ -791,3 +608,4 @@ document.getElementById("btn-anunciar").addEventListener("click", () => {
 
 // Torna a função mudarImagem acessível globalmente
 window.mudarImagem = mudarImagem;
+
