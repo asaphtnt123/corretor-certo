@@ -40,12 +40,7 @@ export { app, db, auth, storage };
 let currentAdData = null;
 
 
-/**
- * Cria um card de anúncio com evento de clique no botão "Ver Mais"
- * @param {Object} dados - Dados do anúncio (imóvel ou automóvel)
- * @param {boolean} isAutomovel - Indica se é um anúncio de automóvel
- * @returns {HTMLElement} - Retorna o elemento do card criado
- */
+
 function criarCardComEvento(dados, isAutomovel = false) {
     const card = document.createElement('div');
     card.className = 'card';
