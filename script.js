@@ -599,9 +599,6 @@ sync function buscarCasas(precoMin, precoMax, bairro) {
     }
 } // Fecha buscarCasas corretamente
 
-// Fechamento final do DOMContentLoaded
-}); // Este é o ÚNICO fechamento que deve existir no final
-
 const menuToggle = document.getElementById('menu-toggle');
 const navMenu = document.getElementById('nav-menu');
 
@@ -777,6 +774,9 @@ function criarCardComEvento(dados, isAutomovel = false) {
     
     return card;
 }
+
+// Fechamento final do DOMContentLoaded
+}); // Este é o ÚNICO fechamento que deve existir no final
 
 
 // Verifique se todas estas funções estão definidas e fechadas:
