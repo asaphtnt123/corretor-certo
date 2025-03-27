@@ -182,6 +182,38 @@ function closeDetailsModal() {
     document.body.style.overflow = 'auto';
 }
 
+
+
+async function carregarImoveisDestaque() {
+    try {
+        const destaqueRef = collection(db, "imoveis");
+        const destaqueQuery = query(destaqueRef, where("destaque", "==", true));
+        const querySnapshot = await getDocs(destaqueQuery);
+
+        if (querySnapshot.empty) {
+            console.log("Nenhum imóvel em destaque encontrado.");
+            return;
+        }
+
+        const destaqueContainer = document.getElementById("destaqueContainer");
+        destaqueContainer.innerHTML = '';
+
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            data.id = doc.id;
+            const card = criarCardComEvento(data, false);
+            destaqueContainer.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error("Erro ao carregar destaques:", error);
+        document.getElementById("destaqueContainer").innerHTML = `
+            <p>Erro ao carregar destaques. Verifique suas permissões.</p>
+        `;
+    }
+}
+
+
 // ============== INICIALIZAÇÃO ==============
 document.addEventListener("DOMContentLoaded", function() {
     // Configuração inicial
@@ -189,9 +221,16 @@ document.addEventListener("DOMContentLoaded", function() {
         .then(() => console.log("Persistência ativada!"))
         .catch((error) => console.error("Erro na persistência:", error));
 
-    // Carregar dados iniciais
-    carregarImoveisDestaque();
-    preencherBairros();
+    // Carregar dados iniciais (agora com verificação)
+    if (typeof carregarImoveisDestaque === 'function') {
+        carregarImoveisDestaque();
+    } else {
+        console.error("Função carregarImoveisDestaque não encontrada");
+    }
+
+    if (typeof preencherBairros === 'function') {
+        preencherBairros();
+    }
 
     // Event Listeners
     document.querySelector('.close-modal').addEventListener('click', closeDetailsModal);
@@ -210,8 +249,32 @@ document.addEventListener("DOMContentLoaded", function() {
     // Outros listeners...
 });
 
+
+
+function preencherBairros() {
+    const bairros = [
+        'Boa Vista', 'Centro', 'Chácara Freitas', 
+        // ... sua lista completa de bairros ...
+    ];
+
+    const datalist = document.getElementById('bairros');
+    if (datalist) {
+        bairros.forEach(bairro => {
+            const option = document.createElement('option');
+            option.value = bairro;
+            datalist.appendChild(option);
+        });
+    }
+}
+
+// Não esqueça de exportar
+window.preencherBairros = preencherBairros;
+
+
+
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
 window.openDetailsModal = openDetailsModal;
 window.buscarCarros = buscarCarros;
 window.buscarCasas = buscarCasas;
+window.carregarImoveisDestaque = carregarImoveisDestaque;
