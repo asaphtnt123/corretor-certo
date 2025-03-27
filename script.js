@@ -564,13 +564,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 }
 
-async function buscarCasas(precoMin, precoMax, bairro) {
+sync function buscarCasas(precoMin, precoMax, bairro) {
     try {
         bairro = bairro.toLowerCase();
         const casasRef = collection(db, "imoveis");
         let q = query(casasRef, where("bairro", "==", bairro));
 
-        // Filtros de preço
         if (precoMin) q = query(q, where("preco", ">=", precoMin));
         if (precoMax) q = query(q, where("preco", "<=", precoMax));
 
@@ -584,9 +583,8 @@ async function buscarCasas(precoMin, precoMax, bairro) {
 
         querySnapshot.forEach((doc) => {
             const data = doc.data();
-            data.id = doc.id; // Adiciona o ID aos dados
-            
-            const card = criarCardComEvento(data, false); // false indica que é imóvel
+            data.id = doc.id;
+            const card = criarCardComEvento(data, false);
             resultadosContainer.appendChild(card);
         });
 
@@ -599,8 +597,10 @@ async function buscarCasas(precoMin, precoMax, bairro) {
             </div>
         `;
     }
-}
+} // Fecha buscarCasas corretamente
 
+// Fechamento final do DOMContentLoaded
+}); // Este é o ÚNICO fechamento que deve existir no final
 
 const menuToggle = document.getElementById('menu-toggle');
 const navMenu = document.getElementById('nav-menu');
