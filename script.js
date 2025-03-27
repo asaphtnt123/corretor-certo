@@ -778,10 +778,12 @@ function criarCardComEvento(dados, isAutomovel = false) {
     return card;
 }
 
-// Torna funções acessíveis globalmente
+
+// Verifique se todas estas funções estão definidas e fechadas:
+window.mudarImagem = mudarImagem;
+window.openDetailsModal = openDetailsModal;
+window.criarCardComEvento = criarCardComEvento;
 window.buscarCarros = buscarCarros;
 window.buscarCasas = buscarCasas;
-window.criarCardComEvento = criarCardComEvento;
-window.openDetailsModal = openDetailsModal;
 
-
+console.log("Script carregado completamente"); // Debug final
