@@ -35,26 +35,35 @@ setPersistence(auth, browserLocalPersistence)
     .catch((error) => console.error("Erro na persistência:", error));
 
 // Elementos DOM
-const loginTab = document.getElementById('loginTab');
-const registerTab = document.getElementById('registerTab');
-const loginForm = document.getElementById('loginForm');
-const registerForm = document.getElementById('registerForm');
-const showLogin = document.getElementById('showLogin');
 const togglePasswordBtns = document.querySelectorAll('.toggle-password');
 const userTypeRadios = document.querySelectorAll('input[name="userType"]');
 const professionalFields = document.getElementById('professionalFields');
 const professionalAreaSelect = document.getElementById('professionalArea');
 const creciField = document.getElementById('creciField');
 
+// Elementos DOM
+const loginTab = document.getElementById('loginTab');
+const registerTab = document.getElementById('registerTab');
+const loginForm = document.getElementById('loginForm');
+const registerForm = document.getElementById('registerForm');
+const showLogin = document.getElementById('showLogin');
+
+// Inicialização - Garantir que apenas o login esteja visível inicialmente
+registerForm.classList.add('hidden');
+loginTab.classList.add('active');
+registerTab.classList.remove('active');
+
 // Alternar entre login e cadastro
-loginTab.addEventListener('click', () => {
+loginTab.addEventListener('click', (e) => {
+    e.preventDefault();
     loginTab.classList.add('active');
     registerTab.classList.remove('active');
     loginForm.classList.remove('hidden');
     registerForm.classList.add('hidden');
 });
 
-registerTab.addEventListener('click', () => {
+registerTab.addEventListener('click', (e) => {
+    e.preventDefault();
     registerTab.classList.add('active');
     loginTab.classList.remove('active');
     registerForm.classList.remove('hidden');
@@ -63,7 +72,7 @@ registerTab.addEventListener('click', () => {
 
 showLogin.addEventListener('click', (e) => {
     e.preventDefault();
-    loginTab.click();
+    loginTab.click(); // Simula o clique na aba de login
 });
 
 // Mostrar/ocultar senha
