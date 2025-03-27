@@ -1,3 +1,9 @@
+
+.hidden {
+    display: none;
+}
+
+
 /* Estilos para o formulário de anúncio */
 .form-anuncio {
     max-width: 800px;
