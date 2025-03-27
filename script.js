@@ -78,6 +78,175 @@ function mudarImagem(carrosselId, direcao) {
 // Torna a função mudarImagem acessível globalmente
 window.mudarImagem = mudarImagem;
 
+
+// Variável global para armazenar os dados do anúncio atual
+let currentAdData = null;
+
+/**
+ * Abre o modal com os detalhes do anúncio
+ * @param {Object} adData - Dados do anúncio
+ * @param {boolean} isAutomovel - Indica se é um anúncio de automóvel
+ */
+function openDetailsModal(adData, isAutomovel = false) {
+    currentAdData = adData;
+    const modal = document.getElementById('detalhesModal');
+    const carrossel = document.getElementById('modalCarrossel');
+    
+    // Limpa o carrossel
+    carrossel.innerHTML = '';
+    
+    // Adiciona as imagens ao carrossel
+    const imagens = adData.imagens || ["images/default.jpg"];
+    imagens.forEach((img, index) => {
+        const imgElement = document.createElement('img');
+        imgElement.src = img;
+        imgElement.alt = adData.titulo;
+        imgElement.style.display = index === 0 ? 'block' : 'none';
+        imgElement.classList.add(index === 0 ? 'active' : '');
+        carrossel.appendChild(imgElement);
+    });
+    
+    if (isAutomovel) {
+        // Configura para automóvel
+        document.getElementById('detalhesImovel').style.display = 'none';
+        document.getElementById('detalhesAutomovel').style.display = 'block';
+        
+        // Preenche os dados do automóvel
+        document.getElementById('modalTituloAuto').textContent = adData.titulo;
+        document.getElementById('modalMarca').textContent = `Marca: ${adData.marca || 'Não informado'}`;
+        document.getElementById('modalModelo').textContent = `Modelo: ${adData.modelo || 'Não informado'}`;
+        document.getElementById('modalAno').textContent = `Ano: ${adData.ano || 'Não informado'}`;
+        document.getElementById('modalKm').textContent = `KM: ${adData.km ? `${adData.km} km` : 'Não informado'}`;
+        document.getElementById('modalCombustivel').textContent = `Combustível: ${adData.combustivel || 'Não informado'}`;
+        document.getElementById('modalPrecoAuto').textContent = `R$ ${adData.preco?.toLocaleString('pt-BR') || 'Preço não informado'}`;
+        document.getElementById('modalDescricaoAuto').textContent = adData.descricao || 'Sem descrição';
+        
+        // Preenche as especificações técnicas
+        const especificacoesList = document.getElementById('modalEspecificacoes');
+        especificacoesList.innerHTML = '';
+        
+        const specs = [
+            `Cor: ${adData.cor || 'Não informada'}`,
+            `Portas: ${adData.portas || 'Não informado'}`,
+            `Câmbio: ${adData.cambio || 'Não informado'}`,
+            `Direção: ${adData.direcao || 'Não informado'}`,
+            `Airbag: ${adData.airbag ? 'Sim' : 'Não'}`,
+            `ABS: ${adData.abs ? 'Sim' : 'Não'}`
+        ];
+        
+        specs.forEach(spec => {
+            const li = document.createElement('li');
+            li.textContent = spec;
+            especificacoesList.appendChild(li);
+        });
+    } else {
+        // Configura para imóvel
+        document.getElementById('detalhesImovel').style.display = 'block';
+        document.getElementById('detalhesAutomovel').style.display = 'none';
+        
+        // Preenche os dados do imóvel
+        document.getElementById('modalTitulo').textContent = adData.titulo;
+        document.getElementById('modalTipo').textContent = `Tipo: ${adData.tipo || 'Não informado'}`;
+        document.getElementById('modalBairro').textContent = `Localização: ${adData.bairro || 'Não informado'}`;
+        document.getElementById('modalArea').textContent = `Área: ${adData.area ? `${adData.area} m²` : 'Não informado'}`;
+        document.getElementById('modalQuartos').textContent = `Quartos: ${adData.quartos || '0'}`;
+        document.getElementById('modalBanheiros').textContent = `Banheiros: ${adData.banheiros || '0'}`;
+        document.getElementById('modalPreco').textContent = `R$ ${adData.preco?.toLocaleString('pt-BR') || 'Preço não informado'}`;
+        document.getElementById('modalDescricao').textContent = adData.descricao || 'Sem descrição';
+        
+        // Preenche as características
+        const caracteristicasList = document.getElementById('modalCaracteristicas');
+        caracteristicasList.innerHTML = '';
+        
+        const features = [
+            `Mobiliado: ${adData.mobiliado ? 'Sim' : 'Não'}`,
+            `Garagem: ${adData.vagas ? `${adData.vagas} vagas` : 'Não'}`,
+            `Condomínio: ${adData.condominio ? `R$ ${adData.condominio.toLocaleString('pt-BR')}` : 'Não informado'}`,
+            `IPTU: ${adData.iptu ? `R$ ${adData.iptu.toLocaleString('pt-BR')}` : 'Não informado'}`,
+            `Andar: ${adData.andar || 'Não informado'}`,
+            `Elevador: ${adData.elevador ? 'Sim' : 'Não'}`
+        ];
+        
+        features.forEach(feature => {
+            const li = document.createElement('li');
+            li.textContent = feature;
+            caracteristicasList.appendChild(li);
+        });
+    }
+    
+    // Exibe o modal
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+// Função para fechar o modal
+function closeDetailsModal() {
+    document.getElementById('detalhesModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Event listeners para o modal
+document.querySelector('.close-modal').addEventListener('click', closeDetailsModal);
+document.getElementById('detalhesModal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('detalhesModal')) {
+        closeDetailsModal();
+    }
+});
+
+// Event listener para o botão de contato
+document.getElementById('btnContato').addEventListener('click', () => {
+    if (currentAdData && currentAdData.userId) {
+        // Aqui você pode implementar a lógica para contatar o corretor
+        // Por exemplo, abrir um chat ou redirecionar para uma página de contato
+        alert('Redirecionando para o chat com o corretor...');
+    }
+});
+
+// Função para navegar entre as imagens do carrossel no modal
+function mudarImagemModal(direcao) {
+    const imagens = document.querySelectorAll('#modalCarrossel img');
+    let indexAtivo = -1;
+
+    imagens.forEach((img, index) => {
+        if (img.classList.contains('active')) {
+            indexAtivo = index;
+        }
+    });
+
+    if (indexAtivo !== -1) {
+        imagens[indexAtivo].classList.remove('active');
+        imagens[indexAtivo].style.display = 'none';
+        
+        let novoIndex = indexAtivo + direcao;
+        if (novoIndex < 0) novoIndex = imagens.length - 1;
+        if (novoIndex >= imagens.length) novoIndex = 0;
+        
+        imagens[novoIndex].classList.add('active');
+        imagens[novoIndex].style.display = 'block';
+    }
+}
+
+// Adicione setas de navegação ao carrossel do modal
+document.addEventListener('DOMContentLoaded', () => {
+    const carrossel = document.getElementById('modalCarrossel');
+    if (carrossel) {
+        const leftArrow = document.createElement('button');
+        leftArrow.className = 'carrossel-seta carrossel-seta-esquerda';
+        leftArrow.innerHTML = '&#10094;';
+        leftArrow.onclick = () => mudarImagemModal(-1);
+        
+        const rightArrow = document.createElement('button');
+        rightArrow.className = 'carrossel-seta carrossel-seta-direita';
+        rightArrow.innerHTML = '&#10095;';
+        rightArrow.onclick = () => mudarImagemModal(1);
+        
+        carrossel.appendChild(leftArrow);
+        carrossel.appendChild(rightArrow);
+    }
+});
+
+
+
 async function carregarImoveisDestaque() {
     try {
         console.log("Iniciando a busca de imóveis em destaque...");
