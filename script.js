@@ -246,7 +246,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-
 async function carregarImoveisDestaque() {
     try {
         console.log("Iniciando a busca de imóveis em destaque...");
@@ -267,6 +266,7 @@ async function carregarImoveisDestaque() {
 
         querySnapshot.forEach((doc) => {
             const data = doc.data();
+            data.id = doc.id; // Adiciona o ID do documento aos dados
             console.log("Dados do documento:", data);
 
             const titulo = data.titulo || "Título não disponível";
@@ -289,9 +289,17 @@ async function carregarImoveisDestaque() {
                 </div>
                 <h3>${titulo}</h3>
                 <p>${data.descricao || "Sem descrição"}</p>
-                <p><strong>Preço:</strong> R$ ${data.preco || "Preço não informado"}</p>
-                <a href="#" class="btn-view-more">Ver Mais</a>
+                <p><strong>Preço:</strong> R$ ${data.preco?.toLocaleString('pt-BR') || "Preço não informado"}</p>
+                <a href="#" class="btn-view-more" data-id="${doc.id}">Ver Mais</a>
             `;
+
+            // Adiciona o evento de clique diretamente ao botão
+            const verMaisBtn = itemDiv.querySelector('.btn-view-more');
+            verMaisBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log("Clicou em Ver Mais para o ID:", doc.id); // Debug
+                openDetailsModal(data, false); // false indica que não é automóvel
+            });
 
             destaqueContainer.appendChild(itemDiv);
         });
@@ -301,7 +309,6 @@ async function carregarImoveisDestaque() {
         document.getElementById("destaqueContainer").innerHTML = "<p>Erro ao carregar destaques. Verifique suas permissões.</p>";
     }
 }
-
 
 
 async function uploadImagens(imagens, tipo) {
