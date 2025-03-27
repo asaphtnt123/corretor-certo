@@ -60,6 +60,11 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
+// Elementos DOM
+
+// Inicialmente, mostra apenas o formulário de imóvel (já que ele começa ativo)
+automovelFields.classList.add('hidden');
+
 // Alternar entre imóvel e automóvel
 btnImovel.addEventListener('click', () => {
     btnImovel.classList.add('active');
@@ -74,7 +79,6 @@ btnAutomovel.addEventListener('click', () => {
     automovelFields.classList.remove('hidden');
     imovelFields.classList.add('hidden');
 });
-
 // Pré-visualização de imagens
 imagensInput.addEventListener('change', function() {
     imagePreview.innerHTML = '';
