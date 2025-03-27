@@ -563,44 +563,41 @@ document.addEventListener("DOMContentLoaded", function () {
         `;
     }
 }
+// Todas suas funções normais aqui (sem estar dentro de DOMContentLoaded)
+async function buscarCasas(precoMin, precoMax, bairro) {
+    try {
+        bairro = bairro.toLowerCase();
+        const casasRef = collection(db, "imoveis");
+        let q = query(casasRef, where("bairro", "==", bairro));
 
-// Função buscarCasas corrigida:
-    const buscarCasas = async function(precoMin, precoMax, bairro) {
-        try {
-            bairro = bairro.toLowerCase();
-            const casasRef = collection(db, "imoveis");
-            let q = query(casasRef, where("bairro", "==", bairro));
+        if (precoMin) q = query(q, where("preco", ">=", precoMin));
+        if (precoMax) q = query(q, where("preco", "<=", precoMax));
 
-            if (precoMin) q = query(q, where("preco", ">=", precoMin));
-            if (precoMax) q = query(q, where("preco", "<=", precoMax));
+        const querySnapshot = await getDocs(q);
+        console.log("Imóveis encontrados:", querySnapshot.size);
 
-            const querySnapshot = await getDocs(q);
-            console.log("Imóveis encontrados:", querySnapshot.size);
+        const resultadosContainer = document.getElementById("resultados");
+        resultadosContainer.innerHTML = querySnapshot.empty 
+            ? "<p>Nenhum imóvel encontrado.</p>" 
+            : "<h3>Resultados da Busca:</h3>";
 
-            const resultadosContainer = document.getElementById("resultados");
-            resultadosContainer.innerHTML = querySnapshot.empty 
-                ? "<p>Nenhum imóvel encontrado.</p>" 
-                : "<h3>Resultados da Busca:</h3>";
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            data.id = doc.id;
+            const card = criarCardComEvento(data, false);
+            resultadosContainer.appendChild(card);
+        });
 
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                data.id = doc.id;
-                const card = criarCardComEvento(data, false);
-                resultadosContainer.appendChild(card);
-            });
-
-        } catch (error) {
-            console.error("Erro ao buscar casas:", error);
-            document.getElementById("resultados").innerHTML = `
-                <div class="error-message">
-                    <p>Erro ao buscar imóveis.</p>
-                    <p>${error.message}</p>
-                </div>
-            `;
-        }
-    };
-
-
+    } catch (error) {
+        console.error("Erro ao buscar casas:", error);
+        document.getElementById("resultados").innerHTML = `
+            <div class="error-message">
+                <p>Erro ao buscar imóveis.</p>
+                <p>${error.message}</p>
+            </div>
+        `;
+    }
+}
 const menuToggle = document.getElementById('menu-toggle');
 const navMenu = document.getElementById('nav-menu');
 
@@ -777,8 +774,6 @@ function criarCardComEvento(dados, isAutomovel = false) {
     return card;
 }
 
-// Fechamento final do DOMContentLoaded
-}); // Este é o ÚNICO fechamento que deve existir no final
 
 
 // Verifique se todas estas funções estão definidas e fechadas:
