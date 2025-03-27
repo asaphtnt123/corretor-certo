@@ -811,19 +811,21 @@ function criarCardComEvento(dados, isAutomovel = false) {
         </div>
     `;
     
-    // Configura o evento de clique no botão "Ver Mais" - FORMA CORRIGIDA
+    // ADICIONE ESTA PARTE PARA O BOTÃO VER MAIS:
     const verMaisBtn = card.querySelector('.btn-view-more');
-    verMaisBtn.addEventListener('click', (e) => {
+    verMaisBtn.addEventListener('click', function(e) {
         e.preventDefault();
+        console.log("Botão Ver Mais clicado", dados); // Para debug
         openDetailsModal(dados, isAutomovel);
     });
     
     return card;
 }
 
-
 // Torna a função mudarImagem acessível globalmente
 window.mudarImagem = mudarImagem;
 // Torna a função acessível globalmente
 window.openDetailsModal = openDetailsModal;
+window.criarCardComEvento = criarCardComEvento;
+
 
