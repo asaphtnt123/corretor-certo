@@ -564,7 +564,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 }
 
-   async function buscarCasas(precoMin, precoMax, bairro) {
+async function buscarCasas(precoMin, precoMax, bairro) {
     try {
         bairro = bairro.toLowerCase();
         const casasRef = collection(db, "imoveis");
