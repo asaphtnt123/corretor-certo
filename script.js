@@ -793,6 +793,5 @@ document.getElementById("btn-anunciar").addEventListener("click", () => {
     window.location.href = "anunciar.html";
 });
 
-// Torna a função mudarImagem acessível globalmente
-window.mudarImagem = mudarImagem;
+
 
