@@ -79,7 +79,7 @@ const formAutomoveis = document.getElementById("form-automoveis");
 
 async function carregarInformacoesUsuario(user) {
     try {
-        const userDocRef = doc(db, "usuarios", user.uid);
+        const userDocRef = doc(db, "users", user.uid);
         const userDoc = await getDoc(userDocRef);
         
         if (userDoc.exists()) {
@@ -298,7 +298,7 @@ perfilForm.addEventListener("submit", async (e) => {
 
         try {
             // Salva os dados no Firestore
-            await setDoc(doc(db, "usuarios", user.uid), userData);
+            await setDoc(doc(db, "users", user.uid), userData);
             alert("Perfil salvo com sucesso!");
 
             // Atualiza o card com as novas informações
