@@ -82,11 +82,7 @@ window.mudarImagem = mudarImagem;
 // Variável global para armazenar os dados do anúncio atual
 let currentAdData = null;
 
-/**
- * Abre o modal com os detalhes do anúncio
- * @param {Object} adData - Dados do anúncio
- * @param {boolean} isAutomovel - Indica se é um anúncio de automóvel
- */
+
 function openDetailsModal(adData, isAutomovel = false) {
     currentAdData = adData;
     const modal = document.getElementById('detalhesModal');
