@@ -125,67 +125,83 @@ async function carregarInformacoesUsuario(user) {
     }
 }
 
-// Função para carregar os anúncios
+// Função para carregar os anúncios do usuário
 async function carregarMeusAnuncios() {
     try {
-        const userId = auth.currentUser.uid;
+        const user = auth.currentUser;
+        if (!user) {
+            showAlert('Você precisa estar logado para ver seus anúncios', 'error');
+            return;
+        }
+
+        // Referências das coleções
+        const imoveisRef = collection(db, "imoveis");
+        const automoveisRef = collection(db, "automoveis");
         
-        // Busca em ambas as coleções
+        // Consultas para buscar os anúncios do usuário
+        const qImoveis = query(imoveisRef, where("userId", "==", user.uid));
+        const qAutomoveis = query(automoveisRef, where("userId", "==", user.uid));
+        
+        // Executa as consultas em paralelo
         const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
-            getDocs(query(collection(db, "imoveis"), where("userId", "==", userId))),
-            getDocs(query(collection(db, "automoveis"), where("userId", "==", userId)))
+            getDocs(qImoveis),
+            getDocs(qAutomoveis)
         ]);
 
+        // Elementos DOM
         const anunciosContainer = document.getElementById("anuncios-container");
+        const containerAtivos = document.getElementById("anuncios-ativos");
+        const containerInativos = document.getElementById("anuncios-inativos");
+        const containerDestaques = document.getElementById("anuncios-destaques");
         const noAnuncios = document.getElementById("no-anuncios");
-        
+
         // Limpa os containers
         anunciosContainer.innerHTML = "";
-        document.getElementById("anuncios-ativos").innerHTML = "";
-        document.getElementById("anuncios-inativos").innerHTML = "";
-        document.getElementById("anuncios-destaques").innerHTML = "";
-        
+        containerAtivos.innerHTML = "";
+        containerInativos.innerHTML = "";
+        containerDestaques.innerHTML = "";
+
         // Contadores
         let countTodos = 0;
         let countAtivos = 0;
         let countInativos = 0;
         let countDestaques = 0;
 
-        // Processa os anúncios
-        const processarAnuncio = (data, tipo, id) => {
+        // Função para processar cada anúncio
+        const processarAnuncio = (doc, tipo) => {
+            const data = doc.data();
+            const id = doc.id;
+            
+            // Atualiza contadores
             countTodos++;
             if (data.status === 'ativo') countAtivos++;
             if (data.status === 'inativo') countInativos++;
             if (data.destaque) countDestaques++;
             
+            // Cria o card do anúncio
             const cardHTML = criarCardAnuncio(data, tipo, id);
             
-            // Adiciona ao container principal
+            // Adiciona aos containers apropriados
             anunciosContainer.innerHTML += cardHTML;
             
-            // Adiciona aos containers específicos
             if (data.status === 'ativo') {
-                document.getElementById("anuncios-ativos").innerHTML += cardHTML;
+                containerAtivos.innerHTML += cardHTML;
             } else if (data.status === 'inativo') {
-                document.getElementById("anuncios-inativos").innerHTML += cardHTML;
+                containerInativos.innerHTML += cardHTML;
             }
             
             if (data.destaque) {
-                document.getElementById("anuncios-destaques").innerHTML += cardHTML;
+                containerDestaques.innerHTML += cardHTML;
             }
         };
 
         // Processa imóveis
-        imoveisSnapshot.forEach((doc) => {
-            processarAnuncio(doc.data(), "Imóvel", doc.id);
-        });
-
+        imoveisSnapshot.forEach(doc => processarAnuncio(doc, "Imóvel"));
+        
         // Processa automóveis
-        automoveisSnapshot.forEach((doc) => {
-            processarAnuncio(doc.data(), "Automóvel", doc.id);
-        });
+        automoveisSnapshot.forEach(doc => processarAnuncio(doc, "Automóvel"));
 
-        // Atualiza contadores
+        // Atualiza os contadores na interface
         document.getElementById("count-todos").textContent = countTodos;
         document.getElementById("count-ativos").textContent = countAtivos;
         document.getElementById("count-inativos").textContent = countInativos;
@@ -198,7 +214,7 @@ async function carregarMeusAnuncios() {
             noAnuncios.classList.add("d-none");
         }
 
-        // Inicializa tooltips e eventos
+        // Inicializa eventos dos anúncios
         inicializarEventosAnuncios();
 
     } catch (error) {
@@ -209,13 +225,14 @@ async function carregarMeusAnuncios() {
 
 // Função para inicializar eventos dos anúncios
 function inicializarEventosAnuncios() {
-    // Evento de filtro por tipo
+    // Filtro por tipo
     document.getElementById("filtro-tipo").addEventListener("change", function() {
         const tipo = this.value;
         const cards = document.querySelectorAll("#anuncios-container .anuncio-card");
         
         cards.forEach(card => {
-            if (tipo === "todos" || card.dataset.tipo === tipo) {
+            const cardTipo = card.querySelector(".anuncio-badge").textContent.toLowerCase();
+            if (tipo === "todos" || cardTipo.includes(tipo)) {
                 card.style.display = "";
             } else {
                 card.style.display = "none";
@@ -223,53 +240,90 @@ function inicializarEventosAnuncios() {
         });
     });
     
-    // Evento de busca
+    // Busca por texto
     document.getElementById("busca-anuncios").addEventListener("input", function() {
         const termo = this.value.toLowerCase();
         const cards = document.querySelectorAll("#anuncios-container .anuncio-card");
         
         cards.forEach(card => {
             const textoCard = card.textContent.toLowerCase();
-            if (textoCard.includes(termo)) {
-                card.style.display = "";
-            } else {
-                card.style.display = "none";
-            }
+            card.style.display = textoCard.includes(termo) ? "" : "none";
         });
     });
     
-    // Eventos dos botões de ação
-    document.querySelectorAll(".btn-editar").forEach(btn => {
-        btn.addEventListener("click", function() {
-            const id = this.dataset.id;
-            const tipo = this.dataset.tipo;
+    // Botões de ação
+    document.addEventListener("click", function(e) {
+        // Editar
+        if (e.target.closest(".btn-editar")) {
+            const btn = e.target.closest(".btn-editar");
+            const id = btn.dataset.id;
+            const tipo = btn.dataset.tipo;
             window.location.href = `editar-anuncio.html?id=${id}&tipo=${tipo}`;
-        });
-    });
-    
-    document.querySelectorAll(".btn-excluir").forEach(btn => {
-        btn.addEventListener("click", function() {
-            const id = this.dataset.id;
-            const tipo = this.dataset.tipo;
+        }
+        
+        // Excluir
+        if (e.target.closest(".btn-excluir")) {
+            const btn = e.target.closest(".btn-excluir");
+            const id = btn.dataset.id;
+            const tipo = btn.dataset.tipo;
             confirmarExclusaoAnuncio(id, tipo);
-        });
+        }
+        
+        // Alterar status (ativo/inativo)
+        if (e.target.closest(".btn-status")) {
+            const btn = e.target.closest(".btn-status");
+            const id = btn.dataset.id;
+            const tipo = btn.dataset.tipo;
+            const statusAtual = btn.dataset.status;
+            toggleStatusAnuncio(id, tipo, statusAtual);
+        }
     });
 }
 
+// Função para alternar status do anúncio
+async function toggleStatusAnuncio(id, tipo, statusAtual) {
+    try {
+        const collectionName = tipo === "imovel" ? "imoveis" : "automoveis";
+        const novoStatus = statusAtual === "ativo" ? "inativo" : "ativo";
+        
+        await updateDoc(doc(db, collectionName, id), {
+            status: novoStatus
+        });
+        
+        showAlert(`Anúncio ${novoStatus === "ativo" ? "ativado" : "desativado"} com sucesso!`, "success");
+        carregarMeusAnuncios(); // Recarrega a lista
+    } catch (error) {
+        console.error("Erro ao alterar status:", error);
+        showAlert("Erro ao alterar status do anúncio", "error");
+    }
+}
+
 // Função para confirmar exclusão
-function confirmarExclusaoAnuncio(id, tipo) {
+async function confirmarExclusaoAnuncio(id, tipo) {
     Swal.fire({
-        title: 'Confirmar Exclusão',
-        text: 'Tem certeza que deseja excluir este anúncio? Esta ação não pode ser desfeita.',
-        icon: 'warning',
+        title: "Tem certeza?",
+        text: "Você não poderá reverter isso!",
+        icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Sim, excluir!',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Sim, excluir!",
+        cancelButtonText: "Cancelar"
+    }).then(async (result) => {
         if (result.isConfirmed) {
-            excluirAnuncio(id, tipo);
+            try {
+                const collectionName = tipo === "imovel" ? "imoveis" : "automoveis";
+                await deleteDoc(doc(db, collectionName, id));
+                
+                // Remove imagens do Storage (se aplicável)
+                // ... código para deletar imagens ...
+                
+                showAlert("Anúncio excluído com sucesso!", "success");
+                carregarMeusAnuncios(); // Recarrega a lista
+            } catch (error) {
+                console.error("Erro ao excluir anúncio:", error);
+                showAlert("Erro ao excluir anúncio", "error");
+            }
         }
     });
 }
