@@ -42,120 +42,196 @@ setPersistence(auth, browserLocalPersistence)
   .catch((error) => console.error("Erro na persistência:", error));
 
 // Elementos DOM
+const anuncioForm = document.getElementById('anuncio-form');
+const imagensInput = document.getElementById('imagens');
+const imagePreview = document.getElementById('image-preview');
+const submitBtn = document.querySelector('button[type="submit"]');
 const btnImovel = document.getElementById('btn-imovel');
 const btnAutomovel = document.getElementById('btn-automovel');
 const imovelFields = document.getElementById('imovel-fields');
 const automovelFields = document.getElementById('automovel-fields');
-const anuncioForm = document.getElementById('anuncio-form');
-const imagensInput = document.getElementById('imagens');
-const imagePreview = document.getElementById('image-preview');
-const submitBtn = document.getElementById('submit-btn');
-
-// Elementos dos formulários específicos
-const tipoImovelInput = document.getElementById('tipo-imovel');
-const bairroInput = document.getElementById('bairro');
-const marcaInput = document.getElementById('marca');
-const modeloInput = document.getElementById('modelo');
-const anoInput = document.getElementById('ano');
 
 // Estado do aplicativo
 const state = {
   selectedFiles: [],
-  isSubmitting: false
+  isSubmitting: false,
+  currentStep: 1
 };
 
-// Verificação de autenticação
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    showAlert('Acesso restrito! Faça login para continuar.', 'error');
-    setTimeout(() => window.location.href = "login.html", 2000);
-  }
+// Inicialização
+document.addEventListener('DOMContentLoaded', function() {
+  setupEventListeners();
+  initStepper();
+  toggleFormularios(true); // Começa com imóvel ativo
 });
 
-// Funções auxiliares
-function showAlert(message, type = 'success') {
-  const alertDiv = document.createElement('div');
-  alertDiv.className = `alert alert-${type}`;
-  alertDiv.textContent = message;
-  alertDiv.style.position = 'fixed';
-  alertDiv.style.top = '20px';
-  alertDiv.style.right = '20px';
-  alertDiv.style.zIndex = '1000';
-  alertDiv.style.padding = '1rem 2rem';
-  alertDiv.style.borderRadius = '8px';
-  alertDiv.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-  alertDiv.style.animation = 'fadeIn 0.3s ease';
+function setupEventListeners() {
+  // Alternância entre imóvel e automóvel
+  btnImovel.addEventListener('change', () => toggleFormularios(true));
+  btnAutomovel.addEventListener('change', () => toggleFormularios(false));
   
-  if (type === 'error') {
-    alertDiv.style.backgroundColor = '#e74c3c';
-    alertDiv.style.color = 'white';
-  } else {
-    alertDiv.style.backgroundColor = '#2ecc71';
-    alertDiv.style.color = 'white';
-  }
+  // Navegação entre steps
+  document.querySelectorAll('.next-step').forEach(btn => {
+    btn.addEventListener('click', nextStep);
+  });
   
-  document.body.appendChild(alertDiv);
+  document.querySelectorAll('.prev-step').forEach(btn => {
+    btn.addEventListener('click', prevStep);
+  });
   
-  setTimeout(() => {
-    alertDiv.style.animation = 'fadeOut 0.3s ease';
-    setTimeout(() => alertDiv.remove(), 300);
-  }, 5000);
+  // Upload de imagens
+  imagensInput.addEventListener('change', handleImageUpload);
+  
+  // Submissão do formulário
+  anuncioForm.addEventListener('submit', criarAnuncio);
 }
 
-function toggleLoading(isLoading) {
-  state.isSubmitting = isLoading;
-  submitBtn.disabled = isLoading;
-  
-  if (isLoading) {
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publicando...';
-  } else {
-    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Publicar Anúncio';
-  }
-}
-
-// Função para alternar entre formulários
 function toggleFormularios(isImovel) {
   if (isImovel) {
-    btnImovel.classList.add('active');
-    btnAutomovel.classList.remove('active');
-    imovelFields.classList.add('active');
-    automovelFields.classList.remove('active');
+    imovelFields.style.display = 'block';
+    automovelFields.style.display = 'none';
     
     // Configurar campos obrigatórios
-    tipoImovelInput.required = true;
-    bairroInput.required = true;
-    marcaInput.required = false;
-    modeloInput.required = false;
-    anoInput.required = false;
+    document.getElementById('tipo-imovel').required = true;
+    document.getElementById('bairro').required = true;
+    document.getElementById('marca').required = false;
+    document.getElementById('modelo').required = false;
+    document.getElementById('ano').required = false;
   } else {
-    btnAutomovel.classList.add('active');
-    btnImovel.classList.remove('active');
-    automovelFields.classList.add('active');
-    imovelFields.classList.remove('active');
+    imovelFields.style.display = 'none';
+    automovelFields.style.display = 'block';
     
     // Configurar campos obrigatórios
-    tipoImovelInput.required = false;
-    bairroInput.required = false;
-    marcaInput.required = true;
-    modeloInput.required = true;
-    anoInput.required = true;
+    document.getElementById('tipo-imovel').required = false;
+    document.getElementById('bairro').required = false;
+    document.getElementById('marca').required = true;
+    document.getElementById('modelo').required = true;
+    document.getElementById('ano').required = true;
   }
 }
 
-// Inicialização dos formulários
-automovelFields.classList.remove('active');
-toggleFormularios(true); // Começa com imóvel ativo
+function initStepper() {
+  showStep(1);
+}
 
-// Event listeners para alternar entre formulários
-btnImovel.addEventListener('click', () => toggleFormularios(true));
-btnAutomovel.addEventListener('click', () => toggleFormularios(false));
+function showStep(stepNumber) {
+  // Esconde todos os steps
+  document.querySelectorAll('.form-step').forEach(step => {
+    step.classList.remove('active');
+  });
+  
+  // Mostra o step atual
+  document.getElementById(`step-${stepNumber}`).classList.add('active');
+  
+  // Atualiza o stepper visual
+  document.querySelectorAll('.step').forEach((step, index) => {
+    if (index < stepNumber) {
+      step.classList.add('completed');
+      step.classList.add('active');
+    } else if (index === stepNumber - 1) {
+      step.classList.add('active');
+      step.classList.remove('completed');
+    } else {
+      step.classList.remove('active');
+      step.classList.remove('completed');
+    }
+  });
+  
+  state.currentStep = stepNumber;
+}
 
-// Pré-visualização de imagens
-function updateImagePreview() {
+function nextStep() {
+  if (validateStep(state.currentStep)) {
+    showStep(state.currentStep + 1);
+  }
+}
+
+function prevStep() {
+  showStep(state.currentStep - 1);
+}
+
+function validateStep(step) {
+  // Validação básica para cada passo
+  if (step === 1) {
+    const titulo = document.getElementById('titulo').value.trim();
+    const descricao = document.getElementById('descricao').value.trim();
+    const preco = document.getElementById('preco').value;
+    
+    if (!titulo || titulo.length < 10) {
+      showAlert('O título deve ter pelo menos 10 caracteres', 'error');
+      return false;
+    }
+    
+    if (!descricao || descricao.length < 30) {
+      showAlert('A descrição deve ter pelo menos 30 caracteres', 'error');
+      return false;
+    }
+    
+    if (!preco || isNaN(preco)) {
+      showAlert('Por favor, insira um preço válido', 'error');
+      return false;
+    }
+  }
+  
+  if (step === 2) {
+    const isImovel = btnImovel.checked;
+    
+    if (isImovel) {
+      const tipoImovel = document.getElementById('tipo-imovel').value;
+      const bairro = document.getElementById('bairro').value.trim();
+      
+      if (!tipoImovel) {
+        showAlert('Selecione o tipo de imóvel', 'error');
+        return false;
+      }
+      
+      if (!bairro) {
+        showAlert('Informe o bairro', 'error');
+        return false;
+      }
+    } else {
+      const marca = document.getElementById('marca').value;
+      const modelo = document.getElementById('modelo').value.trim();
+      const ano = document.getElementById('ano').value;
+      
+      if (!marca) {
+        showAlert('Selecione a marca do veículo', 'error');
+        return false;
+      }
+      
+      if (!modelo) {
+        showAlert('Informe o modelo do veículo', 'error');
+        return false;
+      }
+      
+      if (!ano) {
+        showAlert('Selecione o ano do veículo', 'error');
+        return false;
+      }
+    }
+  }
+  
+  if (step === 3) {
+    if (state.selectedFiles.length === 0) {
+      showAlert('Adicione pelo menos uma imagem', 'error');
+      return false;
+    }
+  }
+  
+  return true;
+}
+
+function handleImageUpload() {
   imagePreview.innerHTML = '';
+  state.selectedFiles = Array.from(this.files);
   
   if (state.selectedFiles.length === 0) {
-    imagePreview.innerHTML = '<p class="text-muted">Nenhuma imagem selecionada</p>';
+    imagePreview.innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-images fa-3x mb-3 text-muted"></i>
+        <p class="text-muted">Nenhuma imagem selecionada</p>
+      </div>
+    `;
     return;
   }
   
@@ -164,20 +240,27 @@ function updateImagePreview() {
     
     reader.onload = function(e) {
       const imgContainer = document.createElement('div');
-      imgContainer.className = 'image-preview-item';
+      imgContainer.className = 'image-preview-item d-inline-block m-2';
+      imgContainer.style.width = '120px';
+      imgContainer.style.height = '120px';
+      imgContainer.style.position = 'relative';
       
       const img = document.createElement('img');
       img.src = e.target.result;
-      img.alt = 'Pré-visualização do anúncio';
+      img.className = 'img-thumbnail h-100 w-100';
+      img.style.objectFit = 'cover';
       
       const removeBtn = document.createElement('button');
-      removeBtn.className = 'remove-image';
-      removeBtn.innerHTML = '&times;';
-      removeBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
+      removeBtn.className = 'btn btn-danger btn-sm';
+      removeBtn.style.position = 'absolute';
+      removeBtn.style.top = '5px';
+      removeBtn.style.right = '5px';
+      removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+      removeBtn.onclick = (e) => {
+        e.preventDefault();
         state.selectedFiles.splice(index, 1);
-        updateImagePreview();
-      });
+        handleImageUpload(); // Recria o preview
+      };
       
       imgContainer.appendChild(img);
       imgContainer.appendChild(removeBtn);
@@ -188,104 +271,6 @@ function updateImagePreview() {
   });
 }
 
-// Upload de imagens
-async function uploadImagens(files, tipo) {
-  try {
-    const user = auth.currentUser;
-    if (!user) throw new Error("Usuário não autenticado");
-    
-    const urls = [];
-    const uploadPromises = [];
-    
-    // Limitar a 10 imagens e 5MB cada
-    const validFiles = Array.from(files)
-      .slice(0, 10)
-      .filter(file => file.size <= 5 * 1024 * 1024);
-    
-    if (validFiles.length === 0) {
-      throw new Error("Nenhuma imagem válida (máx. 5MB cada)");
-    }
-    
-    for (const file of validFiles) {
-      const fileName = file.name.replace(/[^\w.]/g, "_");
-      const storageRef = ref(storage, `${tipo}/${user.uid}/${Date.now()}_${fileName}`);
-      
-      uploadPromises.push(
-        uploadBytes(storageRef, file)
-          .then(snapshot => getDownloadURL(snapshot.ref))
-      );
-    }
-    
-    // Executar uploads em paralelo
-    const results = await Promise.all(uploadPromises);
-    urls.push(...results);
-    
-    return urls;
-  } catch (error) {
-    console.error("Erro no upload:", error);
-    throw error;
-  }
-}
-
-// Validação do formulário
-function validateForm(isImovel) {
-  const titulo = document.getElementById("titulo").value.trim();
-  const descricao = document.getElementById("descricao").value.trim();
-  const preco = parseFloat(document.getElementById("preco").value);
-  
-  // Validações básicas
-  if (!titulo || titulo.length < 10) {
-    showAlert("O título deve ter pelo menos 10 caracteres", "error");
-    return false;
-  }
-  
-  if (!descricao || descricao.length < 30) {
-    showAlert("A descrição deve ter pelo menos 30 caracteres", "error");
-    return false;
-  }
-  
-  if (isNaN(preco) {
-    showAlert("Preço inválido", "error");
-    return false;
-  }
-  
-  if (state.selectedFiles.length === 0) {
-    showAlert("Adicione pelo menos uma imagem", "error");
-    return false;
-  }
-  
-  // Validações específicas
-  if (isImovel) {
-    if (!tipoImovelInput.value) {
-      showAlert("Selecione o tipo de imóvel", "error");
-      return false;
-    }
-    
-    if (!bairroInput.value.trim()) {
-      showAlert("Preencha o bairro", "error");
-      return false;
-    }
-  } else {
-    if (!marcaInput.value.trim()) {
-      showAlert("Preencha a marca do veículo", "error");
-      return false;
-    }
-    
-    if (!modeloInput.value.trim()) {
-      showAlert("Preencha o modelo do veículo", "error");
-      return false;
-    }
-    
-    if (!anoInput.value) {
-      showAlert("Preencha o ano do veículo", "error");
-      return false;
-    }
-  }
-  
-  return true;
-}
-
-// Criar anúncio
 async function criarAnuncio(event) {
   event.preventDefault();
   
@@ -293,122 +278,135 @@ async function criarAnuncio(event) {
   
   const user = auth.currentUser;
   if (!user) {
-    showAlert("Você precisa estar logado para criar anúncios!", "error");
-    setTimeout(() => window.location.href = "login.html", 2000);
+    showAlert('Você precisa estar logado para criar anúncios!', 'error');
+    setTimeout(() => window.location.href = 'login.html', 2000);
     return;
   }
   
-  const isImovel = btnImovel.classList.contains('active');
-  const tipoAnuncio = isImovel ? 'imovel' : 'automovel';
-  
-  // Validar formulário
-  if (!validateForm(isImovel)) return;
+  if (!validateStep(4)) return;
   
   try {
     toggleLoading(true);
     
-    // Obter dados do formulário
-    const titulo = document.getElementById("titulo").value.trim();
-    const descricao = document.getElementById("descricao").value.trim();
-    const preco = parseFloat(document.getElementById("preco").value);
-    
-    // Dados comuns a todos os anúncios
+    // Obter dados básicos
     const anuncioData = {
-      titulo,
-      descricao,
-      preco,
+      titulo: document.getElementById('titulo').value.trim(),
+      descricao: document.getElementById('descricao').value.trim(),
+      preco: parseFloat(document.getElementById('preco').value),
+      negociacao: document.querySelector('input[name="negociacao"]:checked').value,
       userId: user.uid,
       userEmail: user.email,
       data: serverTimestamp(),
-      destaque: false,
-      status: "ativo",
-      visualizacoes: 0
+      status: 'ativo'
     };
     
-    // Upload de imagens
-    anuncioData.imagens = await uploadImagens(state.selectedFiles, tipoAnuncio);
-    
-    // Adiciona campos específicos conforme o tipo de anúncio
-    if (isImovel) {
-      anuncioData.tipo = tipoImovelInput.value;
-      anuncioData.quartos = parseInt(document.getElementById("quartos").value) || 0;
-      anuncioData.banheiros = parseInt(document.getElementById("banheiros").value) || 0;
-      anuncioData.bairro = bairroInput.value.trim();
-      anuncioData.area = parseFloat(document.getElementById("area").value) || 0;
-      anuncioData.mobiliado = document.getElementById("mobiliado").checked;
-      anuncioData.condominio = parseFloat(document.getElementById("condominio").value) || 0;
+    // Adicionar campos específicos
+    if (btnImovel.checked) {
+      anuncioData.tipo = 'imóvel';
+      anuncioData.tipoImovel = document.getElementById('tipo-imovel').value;
+      anuncioData.bairro = document.getElementById('bairro').value.trim();
+      anuncioData.quartos = document.getElementById('quartos').value;
+      anuncioData.banheiros = document.getElementById('banheiros').value;
+      anuncioData.garagem = document.getElementById('garagem').value;
+      anuncioData.area = parseFloat(document.getElementById('area').value);
       
-      // Salva na coleção de imóveis
-      await addDoc(collection(db, "imoveis"), anuncioData);
+      // Características
+      anuncioData.caracteristicas = [];
+      document.querySelectorAll('#imovel-fields input[type="checkbox"]:checked').forEach(cb => {
+        anuncioData.caracteristicas.push(cb.name);
+      });
     } else {
-      anuncioData.marca = marcaInput.value.trim();
-      anuncioData.modelo = modeloInput.value.trim();
-      anuncioData.ano = parseInt(anoInput.value);
-      anuncioData.km = parseInt(document.getElementById("km").value) || 0;
-      anuncioData.cor = document.getElementById("cor")?.value.trim() || '';
-      anuncioData.combustivel = document.getElementById("combustivel")?.value || '';
-      anuncioData.cambio = document.getElementById("cambio")?.value || '';
-      anuncioData.portas = parseInt(document.getElementById("portas").value) || 4;
+      anuncioData.tipo = 'automóvel';
+      anuncioData.marca = document.getElementById('marca').value;
+      anuncioData.modelo = document.getElementById('modelo').value.trim();
+      anuncioData.ano = document.getElementById('ano').value;
+      anuncioData.km = document.getElementById('km').value;
+      anuncioData.cor = document.getElementById('cor').value;
+      anuncioData.combustivel = document.getElementById('combustivel').value;
+      anuncioData.cambio = document.getElementById('cambio').value;
       
-      // Salva na coleção de automóveis
-      await addDoc(collection(db, "automoveis"), anuncioData);
+      // Características
+      anuncioData.caracteristicas = [];
+      document.querySelectorAll('#automovel-fields input[type="checkbox"]:checked').forEach(cb => {
+        anuncioData.caracteristicas.push(cb.name);
+      });
     }
     
-    showAlert("Anúncio publicado com sucesso!");
-    setTimeout(() => window.location.href = "perfil.html#anuncios", 1500);
+    // Upload de imagens
+    anuncioData.imagens = await uploadImagens(state.selectedFiles, anuncioData.tipo);
+    
+    // Salvar no Firestore
+    await addDoc(collection(db, 'anuncios'), anuncioData);
+    
+    showAlert('Anúncio publicado com sucesso!', 'success');
+    setTimeout(() => window.location.href = 'perfil.html#anuncios', 1500);
   } catch (error) {
-    console.error("Erro ao publicar anúncio:", error);
-    showAlert("Erro ao publicar anúncio: " + error.message, "error");
+    console.error('Erro ao publicar anúncio:', error);
+    showAlert(`Erro ao publicar anúncio: ${error.message}`, 'error');
   } finally {
     toggleLoading(false);
   }
 }
 
-// Event listeners
-imagensInput.addEventListener('change', function() {
-  state.selectedFiles = Array.from(this.files);
-  updateImagePreview();
-});
-
-anuncioForm.addEventListener('submit', criarAnuncio);
-
-// Drag and drop para imagens
-const uploadSection = document.querySelector('.upload-section');
-
-uploadSection.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  uploadSection.style.borderColor = '#3498db';
-  uploadSection.style.backgroundColor = '#f8fbfe';
-});
-
-uploadSection.addEventListener('dragleave', () => {
-  uploadSection.style.borderColor = '#bdc3c7';
-  uploadSection.style.backgroundColor = '';
-});
-
-uploadSection.addEventListener('drop', (e) => {
-  e.preventDefault();
-  uploadSection.style.borderColor = '#bdc3c7';
-  uploadSection.style.backgroundColor = '';
-  
-  if (e.dataTransfer.files.length > 0) {
-    imagensInput.files = e.dataTransfer.files;
-    state.selectedFiles = Array.from(e.dataTransfer.files);
-    updateImagePreview();
+async function uploadImagens(files, tipo) {
+  try {
+    const user = auth.currentUser;
+    if (!user) throw new Error('Usuário não autenticado');
+    
+    const urls = [];
+    
+    for (const file of files.slice(0, 10)) { // Limita a 10 imagens
+      const fileName = file.name.replace(/[^\w.]/g, '_');
+      const storageRef = ref(storage, `${tipo}/${user.uid}/${Date.now()}_${fileName}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      urls.push(downloadURL);
+    }
+    
+    return urls;
+  } catch (error) {
+    console.error('Erro no upload:', error);
+    throw error;
   }
-});
-
-// Máscara para preço
-const precoInput = document.getElementById('preco');
-if (precoInput) {
-  precoInput.addEventListener('input', function(e) {
-    let value = this.value.replace(/\D/g, '');
-    value = (value / 100).toFixed(2);
-    this.value = value ? 'R$ ' + value.replace('.', ',') : '';
-  });
 }
 
-// Inicialização
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("Sistema de anúncios inicializado");
+function toggleLoading(isLoading) {
+  state.isSubmitting = isLoading;
+  submitBtn.disabled = isLoading;
+  
+  if (isLoading) {
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Publicando...';
+  } else {
+    submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i> Publicar Anúncio';
+  }
+}
+
+function showAlert(message, type = 'success') {
+  const alertDiv = document.createElement('div');
+  alertDiv.className = `alert alert-${type} position-fixed`;
+  alertDiv.style.top = '20px';
+  alertDiv.style.right = '20px';
+  alertDiv.style.zIndex = '1000';
+  alertDiv.style.animation = 'fadeIn 0.3s ease';
+  alertDiv.innerHTML = `
+    <div class="d-flex align-items-center">
+      <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'} me-2"></i>
+      ${message}
+    </div>
+  `;
+  
+  document.body.appendChild(alertDiv);
+  
+  setTimeout(() => {
+    alertDiv.style.animation = 'fadeOut 0.3s ease';
+    setTimeout(() => alertDiv.remove(), 300);
+  }, 5000);
+}
+
+// Verificação de autenticação
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    showAlert('Acesso restrito! Faça login para continuar.', 'error');
+    setTimeout(() => window.location.href = 'login.html', 2000);
+  }
 });
