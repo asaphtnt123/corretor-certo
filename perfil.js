@@ -429,6 +429,43 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
+
+    // Busca em ambas as coleções
+    const imoveisRef = collection(db, "imoveis");
+    const automoveisRef = collection(db, "automoveis");
+    
+    const qImoveis = query(imoveisRef, where("userId", "==", userId));
+    const qAutomoveis = query(automoveisRef, where("userId", "==", userId));
+
+    const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
+        getDocs(qImoveis),
+        getDocs(qAutomoveis)
+    ]);
+
+    const anunciosContainer = document.getElementById("anuncios-container");
+    const noAnuncios = document.getElementById("no-anuncios");
+    
+    anunciosContainer.innerHTML = "";
+    noAnuncios.classList.add("hidden");
+
+    // Verifica se há resultados
+    if (imoveisSnapshot.empty && automoveisSnapshot.empty) {
+        noAnuncios.classList.remove("hidden");
+        return;
+    }
+
+    // Processa imóveis
+    imoveisSnapshot.forEach((doc) => {
+        const data = doc.data();
+        anunciosContainer.innerHTML += criarCardAnuncio(data, "Imóvel", doc.id);
+    });
+
+    // Processa automóveis
+    automoveisSnapshot.forEach((doc) => {
+        const data = doc.data();
+        anunciosContainer.innerHTML += criarCardAnuncio(data, "Automóvel", doc.id);
+    });
+}
 // Alternar entre formulários de usuário comum e comercial
 tipoUsuarioInput.addEventListener("change", () => {
     const tipoSelecionado = tipoUsuarioInput.value;
