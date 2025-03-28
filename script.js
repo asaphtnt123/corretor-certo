@@ -85,57 +85,86 @@ function criarCardComEvento(dados, isAutomovel = false) {
     return card;
 }
 
-// ============== MODAL DE DETALHES ==============
 function openDetailsModal(adData, isAutomovel = false) {
     currentAdData = adData;
     const modal = document.getElementById('detalhesModal');
     const modalContent = document.getElementById('modalContent');
     
+    // Fechar modal se já estiver aberto
+    if(modal.style.display === 'block') {
+        closeDetailsModal();
+        return;
+    }
+
+    // Criar conteúdo do modal
     modalContent.innerHTML = `
+        <span class="close-modal">&times;</span>
         <div class="modal-carrossel" id="modalCarrossel">
             ${(adData.imagens || ["images/default.jpg"]).map((img, index) => `
-                <img src="${img}" alt="${adData.titulo}" class="modal-img" style="display: ${index === 0 ? 'block' : 'none'}">
+                <img src="${img}" alt="${adData.titulo}" class="modal-img" 
+                     style="display: ${index === 0 ? 'block' : 'none'}">
             `).join('')}
-            ${(adData.imagens?.length > 1) ? `
-                <button class="carrossel-seta carrossel-seta-esquerda" onclick="mudarImagem('modalCarrossel', -1)">&#10094;</button>
-                <button class="carrossel-seta carrossel-seta-direita" onclick="mudarImagem('modalCarrossel', 1)">&#10095;</button>
-            ` : ''}
         </div>
         <div class="modal-details">
             <h2>${adData.titulo || 'Sem título'}</h2>
-            ${isAutomovel ? `
-                <p><strong>Marca:</strong> ${adData.marca || 'Não informada'}</p>
-                <p><strong>Modelo:</strong> ${adData.modelo || 'Não informado'}</p>
-                <p><strong>Ano:</strong> ${adData.ano || 'Não informado'}</p>
-                <p><strong>Quilometragem:</strong> ${adData.quilometragem || 'Não informada'} km</p>
-                <p><strong>Combustível:</strong> ${adData.combustivel || 'Não informado'}</p>
-            ` : `
-                <p><strong>Bairro:</strong> ${adData.bairro || 'Não informado'}</p>
-                <p><strong>Tipo:</strong> ${adData.tipo || 'Não informado'}</p>
-                <p><strong>Área:</strong> ${adData.tamanho || 'Não informada'} m²</p>
-                <p><strong>Quartos:</strong> ${adData.quartos || 'Não informados'}</p>
-                <p><strong>Banheiros:</strong> ${adData.banheiros || 'Não informados'}</p>
-            `}
-            <p><strong>Preço:</strong> R$ ${adData.preco?.toLocaleString('pt-BR') || 'Não informado'}</p>
-            <p><strong>Descrição:</strong></p>
-            <p>${adData.descricao || 'Nenhuma descrição fornecida.'}</p>
+            <div class="details-grid">
+                ${isAutomovel ? `
+                    <div class="detail-item">
+                        <span class="detail-label">Marca</span>
+                        <span class="detail-value">${adData.marca || 'Não informada'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Modelo</span>
+                        <span class="detail-value">${adData.modelo || 'Não informado'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Ano</span>
+                        <span class="detail-value">${adData.ano || 'Não informado'}</span>
+                    </div>
+                ` : `
+                    <div class="detail-item">
+                        <span class="detail-label">Bairro</span>
+                        <span class="detail-value">${adData.bairro || 'Não informado'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Tipo</span>
+                        <span class="detail-value">${adData.tipo || 'Não informado'}</span>
+                    </div>
+                `}
+                <div class="detail-item price">
+                    <span class="detail-label">Preço</span>
+                    <span class="detail-value">R$ ${adData.preco?.toLocaleString('pt-BR') || 'Não informado'}</span>
+                </div>
+            </div>
+            <div class="description-section">
+                <h3 class="details-title">Descrição</h3>
+                <p class="description-text">${adData.descricao || 'Nenhuma descrição fornecida.'}</p>
+            </div>
             <button id="btnContato" class="btn-contato">Entrar em Contato</button>
         </div>
     `;
 
+    // Adicionar eventos após criar o conteúdo
+    document.querySelector('.close-modal').addEventListener('click', closeDetailsModal);
     document.getElementById('btnContato').addEventListener('click', () => {
-        if (currentAdData?.userId) {
-            alert('Redirecionando para o chat com o corretor...');
+        if (adData.userId) {
+            alert('Redirecionando para o chat...');
         }
     });
 
-    modal.style.display = 'block';
+    // Mostrar modal com animação
     document.body.style.overflow = 'hidden';
+    modal.style.display = 'block';
+    modal.classList.add('show');
 }
 
 function closeDetailsModal() {
-    document.getElementById('detalhesModal').style.display = 'none';
-    document.body.style.overflow = 'auto';
+    const modal = document.getElementById('detalhesModal');
+    modal.classList.remove('show');
+    setTimeout(() => {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }, 300); // Tempo da animação de fadeOut
 }
 
 // ============== FUNÇÕES DE BUSCA ==============
