@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Anúncio | Corretor Certo</title>
+    <link rel="stylesheet" href="detalhes.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Cabeçalho -->
+        <header class="header">
+            <div class="logo">
+                <img src="logo.png" alt="Corretor Certo">
+            </div>
+            <nav class="nav-menu">
+                <!-- Seu menu de navegação aqui -->
+            </nav>
+        </header>
+
+        <!-- Conteúdo Principal -->
+        <main class="main-content">
+            <div class="property-details">
+                <!-- Carrossel de Imagens -->
+                <div class="image-carousel">
+                    <div id="mainCarousel" class="carrossel-principal">
+                        <!-- Imagens serão inseridas via JS -->
+                    </div>
+                    <div class="carousel-thumbnails">
+                        <!-- Miniaturas serão inseridas via JS -->
+                    </div>
+                </div>
+
+                <!-- Detalhes do Anúncio -->
+                <div class="property-info">
+                    <h1 id="detailTitle">Título do Imóvel</h1>
+                    <div class="price-tag" id="detailPrice">R$ 0,00</div>
+                    
+                    <div class="basic-info-grid">
+                        <div class="info-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span id="detailLocation">Localização</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-ruler-combined"></i>
+                            <span id="detailArea">Área</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-bed"></i>
+                            <span id="detailBedrooms">Quartos</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-bath"></i>
+                            <span id="detailBathrooms">Banheiros</span>
+                        </div>
+                    </div>
+
+                    <div class="description-section">
+                        <h2>Descrição</h2>
+                        <p id="detailDescription">Descrição detalhada aqui...</p>
+                    </div>
+
+                    <div class="features-section">
+                        <h2>Características</h2>
+                        <ul class="features-list" id="detailFeatures">
+                            <!-- Características serão inseridas via JS -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Contato -->
+                <div class="contact-card">
+                    <div class="agent-info">
+                        <img src="agent-placeholder.jpg" alt="Corretor" class="agent-photo">
+                        <div class="agent-details">
+                            <h3>Nome do Corretor</h3>
+                            <p class="agent-company">Imobiliária</p>
+                            <div class="agent-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                                <span>(25 avaliações)</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-actions">
+                        <button class="btn-contact whatsapp-btn">
+                            <i class="fab fa-whatsapp"></i> WhatsApp
+                        </button>
+                        <button class="btn-contact phone-btn">
+                            <i class="fas fa-phone"></i> Ligar
+                        </button>
+                        <button class="btn-contact email-btn">
+                            <i class="fas fa-envelope"></i> Email
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Rodapé -->
+        <footer class="footer">
+            <!-- Seu rodapé aqui -->
+        </footer>
+    </div>
+
+    <script src="detalhes.js"></script>
+</body>
+</html>
