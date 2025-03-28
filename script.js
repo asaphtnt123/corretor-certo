@@ -98,6 +98,7 @@ async function carregarImoveisDestaque() {
 
         querySnapshot.forEach((doc) => {
             const data = doc.data();
+            data.id = doc.id; // Adiciona o ID do documento aos dados
             console.log("Dados do documento:", data);
 
             const titulo = data.titulo || "Título não disponível";
@@ -121,8 +122,15 @@ async function carregarImoveisDestaque() {
                 <h3>${titulo}</h3>
                 <p>${data.descricao || "Sem descrição"}</p>
                 <p><strong>Preço:</strong> R$ ${data.preco || "Preço não informado"}</p>
-                <a href="#" class="btn-view-more">Ver Mais</a>
+                <a href="#" class="btn-view-more" data-id="${doc.id}">Ver Mais</a>
             `;
+
+            // Adiciona o evento de clique ao botão "Ver Mais"
+            const btnViewMore = itemDiv.querySelector('.btn-view-more');
+            btnViewMore.addEventListener('click', (e) => {
+                e.preventDefault();
+                openDetailsModal(data, false); // false = não é automóvel
+            });
 
             destaqueContainer.appendChild(itemDiv);
         });
@@ -132,6 +140,68 @@ async function carregarImoveisDestaque() {
         document.getElementById("destaqueContainer").innerHTML = "<p>Erro ao carregar destaques. Verifique suas permissões.</p>";
     }
 }
+
+// Função para abrir o modal com os detalhes
+function openDetailsModal(adData, isAutomovel = false) {
+    const modal = document.getElementById('detalhesModal');
+    const modalContent = document.getElementById('modalContent');
+    
+    modalContent.innerHTML = `
+        <div class="modal-carrossel" id="modalCarrossel">
+            ${(adData.imagens || ["images/default.jpg"]).map((img, index) => `
+                <img src="${img}" alt="${adData.titulo}" class="modal-img" style="display: ${index === 0 ? 'block' : 'none'}">
+            `).join('')}
+            ${(adData.imagens?.length > 1) ? `
+                <button class="carrossel-seta carrossel-seta-esquerda" onclick="mudarImagem('modalCarrossel', -1)">&#10094;</button>
+                <button class="carrossel-seta carrossel-seta-direita" onclick="mudarImagem('modalCarrossel', 1)">&#10095;</button>
+            ` : ''}
+        </div>
+        <div class="modal-details">
+            <h2>${adData.titulo || 'Sem título'}</h2>
+            <p><strong>Bairro:</strong> ${adData.bairro || 'Não informado'}</p>
+            <p><strong>Tipo:</strong> ${adData.tipo || 'Não informado'}</p>
+            <p><strong>Preço:</strong> R$ ${adData.preco?.toLocaleString('pt-BR') || 'Não informado'}</p>
+            <p><strong>Área:</strong> ${adData.area || 'Não informada'} m²</p>
+            <p><strong>Quartos:</strong> ${adData.quartos || 'Não informados'}</p>
+            <p><strong>Banheiros:</strong> ${adData.banheiros || 'Não informados'}</p>
+            <p><strong>Descrição:</strong></p>
+            <p>${adData.descricao || 'Nenhuma descrição fornecida.'}</p>
+            <button id="btnContato" class="btn-contato">Entrar em Contato</button>
+        </div>
+    `;
+
+    // Configura o botão de contato
+    document.getElementById('btnContato')?.addEventListener('click', () => {
+        if (adData.userId) {
+            alert('Redirecionando para o chat com o corretor...');
+            // Implemente a lógica de redirecionamento para o chat aqui
+        }
+    });
+
+    // Mostra o modal
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+// Função para fechar o modal
+function closeDetailsModal() {
+    document.getElementById('detalhesModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Adiciona os event listeners para fechar o modal
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelector('.close-modal')?.addEventListener('click', closeDetailsModal);
+    document.getElementById('detalhesModal')?.addEventListener('click', (e) => {
+        if (e.target === document.getElementById('detalhesModal')) {
+            closeDetailsModal();
+        }
+    });
+});
+
+// Torna as funções acessíveis globalmente
+window.openDetailsModal = openDetailsModal;
+window.closeDetailsModal = closeDetailsModal;
 
 
 
