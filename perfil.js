@@ -125,42 +125,165 @@ async function carregarInformacoesUsuario(user) {
     }
 }
 
-async function carregarAnuncios(userId) {
-    // Busca em ambas as coleções
-    const imoveisRef = collection(db, "imoveis");
-    const automoveisRef = collection(db, "automoveis");
-    
-    const qImoveis = query(imoveisRef, where("userId", "==", userId));
-    const qAutomoveis = query(automoveisRef, where("userId", "==", userId));
+// Função para carregar os anúncios
+async function carregarMeusAnuncios() {
+    try {
+        const userId = auth.currentUser.uid;
+        
+        // Busca em ambas as coleções
+        const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
+            getDocs(query(collection(db, "imoveis"), where("userId", "==", userId))),
+            getDocs(query(collection(db, "automoveis"), where("userId", "==", userId)))
+        ]);
 
-    const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
-        getDocs(qImoveis),
-        getDocs(qAutomoveis)
-    ]);
+        const anunciosContainer = document.getElementById("anuncios-container");
+        const noAnuncios = document.getElementById("no-anuncios");
+        
+        // Limpa os containers
+        anunciosContainer.innerHTML = "";
+        document.getElementById("anuncios-ativos").innerHTML = "";
+        document.getElementById("anuncios-inativos").innerHTML = "";
+        document.getElementById("anuncios-destaques").innerHTML = "";
+        
+        // Contadores
+        let countTodos = 0;
+        let countAtivos = 0;
+        let countInativos = 0;
+        let countDestaques = 0;
 
-    const anunciosContainer = document.getElementById("anuncios-container");
-    const noAnuncios = document.getElementById("no-anuncios");
-    
-    anunciosContainer.innerHTML = "";
-    noAnuncios.classList.add("hidden");
+        // Processa os anúncios
+        const processarAnuncio = (data, tipo, id) => {
+            countTodos++;
+            if (data.status === 'ativo') countAtivos++;
+            if (data.status === 'inativo') countInativos++;
+            if (data.destaque) countDestaques++;
+            
+            const cardHTML = criarCardAnuncio(data, tipo, id);
+            
+            // Adiciona ao container principal
+            anunciosContainer.innerHTML += cardHTML;
+            
+            // Adiciona aos containers específicos
+            if (data.status === 'ativo') {
+                document.getElementById("anuncios-ativos").innerHTML += cardHTML;
+            } else if (data.status === 'inativo') {
+                document.getElementById("anuncios-inativos").innerHTML += cardHTML;
+            }
+            
+            if (data.destaque) {
+                document.getElementById("anuncios-destaques").innerHTML += cardHTML;
+            }
+        };
 
-    // Verifica se há resultados
-    if (imoveisSnapshot.empty && automoveisSnapshot.empty) {
-        noAnuncios.classList.remove("hidden");
-        return;
+        // Processa imóveis
+        imoveisSnapshot.forEach((doc) => {
+            processarAnuncio(doc.data(), "Imóvel", doc.id);
+        });
+
+        // Processa automóveis
+        automoveisSnapshot.forEach((doc) => {
+            processarAnuncio(doc.data(), "Automóvel", doc.id);
+        });
+
+        // Atualiza contadores
+        document.getElementById("count-todos").textContent = countTodos;
+        document.getElementById("count-ativos").textContent = countAtivos;
+        document.getElementById("count-inativos").textContent = countInativos;
+        document.getElementById("count-destaques").textContent = countDestaques;
+
+        // Mostra mensagem se não houver anúncios
+        if (countTodos === 0) {
+            noAnuncios.classList.remove("d-none");
+        } else {
+            noAnuncios.classList.add("d-none");
+        }
+
+        // Inicializa tooltips e eventos
+        inicializarEventosAnuncios();
+
+    } catch (error) {
+        console.error("Erro ao carregar anúncios:", error);
+        showAlert("Erro ao carregar seus anúncios. Tente novamente.", "error");
     }
+}
 
-    // Processa imóveis
-    imoveisSnapshot.forEach((doc) => {
-        const data = doc.data();
-        anunciosContainer.innerHTML += criarCardAnuncio(data, "Imóvel", doc.id);
+// Função para inicializar eventos dos anúncios
+function inicializarEventosAnuncios() {
+    // Evento de filtro por tipo
+    document.getElementById("filtro-tipo").addEventListener("change", function() {
+        const tipo = this.value;
+        const cards = document.querySelectorAll("#anuncios-container .anuncio-card");
+        
+        cards.forEach(card => {
+            if (tipo === "todos" || card.dataset.tipo === tipo) {
+                card.style.display = "";
+            } else {
+                card.style.display = "none";
+            }
+        });
     });
+    
+    // Evento de busca
+    document.getElementById("busca-anuncios").addEventListener("input", function() {
+        const termo = this.value.toLowerCase();
+        const cards = document.querySelectorAll("#anuncios-container .anuncio-card");
+        
+        cards.forEach(card => {
+            const textoCard = card.textContent.toLowerCase();
+            if (textoCard.includes(termo)) {
+                card.style.display = "";
+            } else {
+                card.style.display = "none";
+            }
+        });
+    });
+    
+    // Eventos dos botões de ação
+    document.querySelectorAll(".btn-editar").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const id = this.dataset.id;
+            const tipo = this.dataset.tipo;
+            window.location.href = `editar-anuncio.html?id=${id}&tipo=${tipo}`;
+        });
+    });
+    
+    document.querySelectorAll(".btn-excluir").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const id = this.dataset.id;
+            const tipo = this.dataset.tipo;
+            confirmarExclusaoAnuncio(id, tipo);
+        });
+    });
+}
 
-    // Processa automóveis
-    automoveisSnapshot.forEach((doc) => {
-        const data = doc.data();
-        anunciosContainer.innerHTML += criarCardAnuncio(data, "Automóvel", doc.id);
+// Função para confirmar exclusão
+function confirmarExclusaoAnuncio(id, tipo) {
+    Swal.fire({
+        title: 'Confirmar Exclusão',
+        text: 'Tem certeza que deseja excluir este anúncio? Esta ação não pode ser desfeita.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sim, excluir!',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            excluirAnuncio(id, tipo);
+        }
     });
+}
+
+// Função para excluir anúncio
+async function excluirAnuncio(id, tipo) {
+    try {
+        await deleteDoc(doc(db, tipo === 'imovel' ? 'imoveis' : 'automoveis', id));
+        showAlert('Anúncio excluído com sucesso!', 'success');
+        carregarMeusAnuncios(); // Recarrega a lista
+    } catch (error) {
+        console.error("Erro ao excluir anúncio:", error);
+        showAlert('Erro ao excluir anúncio. Tente novamente.', 'error');
+    }
 }
 
 function criarCardAnuncio(data, tipo, id) {
