@@ -423,128 +423,224 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Função para buscar carros
-    async function buscarCarros(precoMin, precoMax, marca, modelo, ano) {
-        try {
-            const carrosRef = collection(db, "automoveis");
-            let q = query(carrosRef);
+   // Função para buscar carros (com modal de detalhes)
+async function buscarCarros(precoMin, precoMax, marca, modelo, ano) {
+    try {
+        const carrosRef = collection(db, "automoveis");
+        let q = query(carrosRef);
 
-            // Filtros de marca, modelo e ano
-            if (marca) {
-                q = query(q, where("marca", "==", marca));
-            }
-            if (modelo) {
-                q = query(q, where("modelo", "==", modelo));
-            }
-            if (ano) {
-                q = query(q, where("ano", "==", parseInt(ano)));
-            }
+        // Filtros de marca, modelo e ano
+        if (marca) q = query(q, where("marca", "==", marca));
+        if (modelo) q = query(q, where("modelo", "==", modelo));
+        if (ano) q = query(q, where("ano", "==", parseInt(ano)));
 
-            // Filtros de preço
-            if (precoMin) {
-                q = query(q, where("preco", ">=", precoMin));
-            }
-            if (precoMax) {
-                q = query(q, where("preco", "<=", precoMax));
-            }
+        // Filtros de preço
+        if (precoMin) q = query(q, where("preco", ">=", precoMin));
+        if (precoMax) q = query(q, where("preco", "<=", precoMax));
 
-            const querySnapshot = await getDocs(q);
-            console.log("Número de documentos encontrados:", querySnapshot.size);
+        const querySnapshot = await getDocs(q);
+        console.log("Número de carros encontrados:", querySnapshot.size);
 
-            let resultadosHTML = "<h3>Resultados da Busca:</h3>";
+        const resultadosContainer = document.getElementById("resultados");
+        resultadosContainer.innerHTML = querySnapshot.empty 
+            ? "<p>Nenhum carro encontrado.</p>" 
+            : "<h3>Resultados da Busca:</h3>";
 
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                const imagens = data.imagens || ["images/default.jpg"];
-                const carrosselId = `carrossel-${doc.id}`;
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            data.id = doc.id; // Adiciona o ID do documento
+            const imagens = data.imagens || ["images/default.jpg"];
+            const carrosselId = `carrossel-${doc.id}`;
 
-                resultadosHTML += `
-                    <div class="card">
-                        <div class="carrossel" id="${carrosselId}">
-                            <div class="carrossel-imagens">
-                                ${imagens.map((imagem, index) => `
-                                    <img src="${imagem}" alt="${data.titulo}" class="carrossel-img" style="display: ${index === 0 ? "block" : "none"}" loading="lazy">
-                                `).join("")}
-                            </div>
-                            <button class="carrossel-seta carrossel-seta-esquerda" onclick="mudarImagem('${carrosselId}', -1)">&#10094;</button>
-                            <button class="carrossel-seta carrossel-seta-direita" onclick="mudarImagem('${carrosselId}', 1)">&#10095;</button>
-                        </div>
-                        <div class="card-content">
-                            <h4>${data.titulo}</h4>
-                            <p><strong>Marca:</strong> ${data.marca}</p>
-                            <p><strong>Modelo:</strong> ${data.modelo}</p>
-                            <p><strong>Ano:</strong> ${data.ano}</p>
-                            <p><strong>Preço:</strong> R$ ${data.preco}</p>
-                            <a href="#" class="btn-view-more">Ver Mais</a>
-                        </div>
+            const card = document.createElement("div");
+            card.className = "card";
+            card.innerHTML = `
+                <div class="carrossel" id="${carrosselId}">
+                    <div class="carrossel-imagens">
+                        ${imagens.map((imagem, index) => `
+                            <img src="${imagem}" alt="${data.titulo}" class="carrossel-img" style="display: ${index === 0 ? "block" : "none"}" loading="lazy">
+                        `).join("")}
                     </div>
-                `;
+                    <button class="carrossel-seta carrossel-seta-esquerda">&#10094;</button>
+                    <button class="carrossel-seta carrossel-seta-direita">&#10095;</button>
+                </div>
+                <div class="card-content">
+                    <h4>${data.titulo}</h4>
+                    <p><strong>Marca:</strong> ${data.marca}</p>
+                    <p><strong>Modelo:</strong> ${data.modelo}</p>
+                    <p><strong>Ano:</strong> ${data.ano}</p>
+                    <p><strong>Preço:</strong> R$ ${data.preco?.toLocaleString('pt-BR') || 'Não informado'}</p>
+                    <a href="#" class="btn-view-more">Ver Mais</a>
+                </div>
+            `;
+
+            // Adiciona eventos para o carrossel
+            card.querySelector('.carrossel-seta-esquerda').addEventListener('click', () => mudarImagem(carrosselId, -1));
+            card.querySelector('.carrossel-seta-direita').addEventListener('click', () => mudarImagem(carrosselId, 1));
+
+            // Adiciona evento para o botão "Ver Mais"
+            card.querySelector('.btn-view-more').addEventListener('click', (e) => {
+                e.preventDefault();
+                openDetailsModal(data, true); // true = é automóvel
             });
 
-            document.getElementById("resultados").innerHTML = querySnapshot.empty ? "<p>Nenhum resultado encontrado.</p>" : resultadosHTML;
-        } catch (error) {
-            console.error("Erro ao buscar carros: ", error);
-            document.getElementById("resultados").innerHTML = "<p>Erro ao realizar a busca.</p>";
-        }
+            resultadosContainer.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error("Erro ao buscar carros:", error);
+        document.getElementById("resultados").innerHTML = `
+            <div class="error-message">
+                <p>Erro ao buscar carros.</p>
+                <p>${error.message}</p>
+            </div>
+        `;
     }
+}
 
-    // Função para buscar imóveis
-    async function buscarCasas(precoMin, precoMax, bairro) {
-        try {
-            bairro = bairro.toLowerCase(); // Converte o bairro para minúsculas
-            console.log("Bairro pesquisado:", bairro); // Verifique o valor do bairro
+// Função para abrir modal de detalhes (compatível com carros e imóveis)
+function openDetailsModal(adData, isAutomovel = false) {
+    const modal = document.getElementById('detalhesModal');
+    const modalContent = document.getElementById('modalContent');
+    
+    modalContent.innerHTML = `
+        <div class="modal-carrossel" id="modalCarrossel">
+            ${(adData.imagens || ["images/default.jpg"]).map((img, index) => `
+                <img src="${img}" alt="${adData.titulo}" class="modal-img" style="display: ${index === 0 ? 'block' : 'none'}">
+            `).join('')}
+            ${(adData.imagens?.length > 1) ? `
+                <button class="carrossel-seta carrossel-seta-esquerda" onclick="mudarImagem('modalCarrossel', -1)">&#10094;</button>
+                <button class="carrossel-seta carrossel-seta-direita" onclick="mudarImagem('modalCarrossel', 1)">&#10095;</button>
+            ` : ''}
+        </div>
+        <div class="modal-details">
+            <h2>${adData.titulo || 'Sem título'}</h2>
+            ${isAutomovel ? `
+                <p><strong>Marca:</strong> ${adData.marca || 'Não informada'}</p>
+                <p><strong>Modelo:</strong> ${adData.modelo || 'Não informado'}</p>
+                <p><strong>Ano:</strong> ${adData.ano || 'Não informado'}</p>
+                <p><strong>Quilometragem:</strong> ${adData.quilometragem || 'Não informada'} km</p>
+                <p><strong>Combustível:</strong> ${adData.combustivel || 'Não informado'}</p>
+            ` : `
+                <p><strong>Bairro:</strong> ${adData.bairro || 'Não informado'}</p>
+                <p><strong>Tipo:</strong> ${adData.tipo || 'Não informado'}</p>
+                <p><strong>Área:</strong> ${adData.area || 'Não informada'} m²</p>
+                <p><strong>Quartos:</strong> ${adData.quartos || 'Não informados'}</p>
+            `}
+            <p><strong>Preço:</strong> R$ ${adData.preco?.toLocaleString('pt-BR') || 'Não informado'}</p>
+            <p><strong>Descrição:</strong></p>
+            <p>${adData.descricao || 'Nenhuma descrição fornecida.'}</p>
+            <button id="btnContato" class="btn-contato">Entrar em Contato</button>
+        </div>
+    `;
 
-            const casasRef = collection(db, "imoveis");
-            
-            // Realiza a busca com o valor de bairro em minúsculas
-            const q = query(
-                casasRef,
-                where("bairro", "==", bairro) // O bairro do Firestore também deve estar em minúsculas
-            );
-
-            const querySnapshot = await getDocs(q);
-            console.log("Número de documentos encontrados:", querySnapshot.size); // Verifique quantos documentos foram encontrados
-
-            let resultadosHTML = "<h3>Resultados da Busca:</h3>";
-            
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                console.log("Dados do documento:", data); // Verifique os dados de cada documento
-
-                const imagens = data.imagens || ["images/default.jpg"];
-                const carrosselId = `carrossel-${doc.id}`; // ID único para cada carrossel
-
-                // Criação do card com carrossel
-                resultadosHTML += `
-                    <div class="card">
-                        <div class="carrossel" id="${carrosselId}">
-                            <div class="carrossel-imagens">
-                                ${imagens.map((imagem, index) => `
-                                    <img src="${imagem}" alt="${data.titulo}" class="carrossel-img" style="display: ${index === 0 ? "block" : "none"}" loading="lazy">
-                                `).join("")}
-                            </div>
-                            <button class="carrossel-seta carrossel-seta-esquerda" onclick="mudarImagem('${carrosselId}', -1)">&#10094;</button>
-                            <button class="carrossel-seta carrossel-seta-direita" onclick="mudarImagem('${carrosselId}', 1)">&#10095;</button>
-                        </div>
-                        <div class="card-content">
-                            <h4>${data.titulo}</h4>
-                            <p><strong>Bairro:</strong> ${data.bairro}</p>
-                            <p><strong>Preço:</strong> R$ ${data.preco}</p>
-                            <p><strong>Tipo:</strong> ${data.tipo}</p>
-                            <a href="#" class="btn-view-more">Ver Mais</a>
-                        </div>
-                    </div>
-                `;
-            });
-
-            // Exibe os resultados ou uma mensagem de erro
-            document.getElementById("resultados").innerHTML = querySnapshot.empty ? "<p>Nenhum resultado encontrado.</p>" : resultadosHTML;
-        } catch (error) {
-            console.error("Erro ao buscar casas: ", error);
-            document.getElementById("resultados").innerHTML = "<p>Erro ao realizar a busca.</p>";
+    // Configura o botão de contato
+    document.getElementById('btnContato')?.addEventListener('click', () => {
+        if (adData.userId) {
+            alert('Redirecionando para o chat com o vendedor...');
+            // Implemente a lógica de redirecionamento para o chat aqui
         }
-    }
+    });
+
+    // Mostra o modal
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+// Função para fechar o modal
+function closeDetailsModal() {
+    document.getElementById('detalhesModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Adiciona eventos para fechar o modal
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelector('.close-modal')?.addEventListener('click', closeDetailsModal);
+    document.getElementById('detalhesModal')?.addEventListener('click', (e) => {
+        if (e.target === document.getElementById('detalhesModal')) {
+            closeDetailsModal();
+        }
+    });
 });
+
+// Torna as funções acessíveis globalmente
+window.mudarImagem = mudarImagem;
+window.openDetailsModal = openDetailsModal;
+window.closeDetailsModal = closeDetailsModal;
+window.buscarCarros = buscarCarros;
+
+   // Função para buscar imóveis (com modal de detalhes)
+async function buscarCasas(precoMin, precoMax, bairro) {
+    try {
+        bairro = bairro.toLowerCase();
+        console.log("Bairro pesquisado:", bairro);
+
+        const casasRef = collection(db, "imoveis");
+        let q = query(casasRef, where("bairro", "==", bairro));
+
+        // Filtros de preço
+        if (precoMin) q = query(q, where("preco", ">=", precoMin));
+        if (precoMax) q = query(q, where("preco", "<=", precoMax));
+
+        const querySnapshot = await getDocs(q);
+        console.log("Número de imóveis encontrados:", querySnapshot.size);
+
+        const resultadosContainer = document.getElementById("resultados");
+        resultadosContainer.innerHTML = querySnapshot.empty 
+            ? "<p>Nenhum imóvel encontrado.</p>" 
+            : "<h3>Resultados da Busca:</h3>";
+
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            data.id = doc.id; // Adiciona o ID do documento
+            const imagens = data.imagens || ["images/default.jpg"];
+            const carrosselId = `carrossel-${doc.id}`;
+
+            const card = document.createElement("div");
+            card.className = "card";
+            card.innerHTML = `
+                <div class="carrossel" id="${carrosselId}">
+                    <div class="carrossel-imagens">
+                        ${imagens.map((imagem, index) => `
+                            <img src="${imagem}" alt="${data.titulo}" class="carrossel-img" style="display: ${index === 0 ? "block" : "none"}" loading="lazy">
+                        `).join("")}
+                    </div>
+                    <button class="carrossel-seta carrossel-seta-esquerda">&#10094;</button>
+                    <button class="carrossel-seta carrossel-seta-direita">&#10095;</button>
+                </div>
+                <div class="card-content">
+                    <h4>${data.titulo}</h4>
+                    <p><strong>Bairro:</strong> ${data.bairro}</p>
+                    <p><strong>Preço:</strong> R$ ${data.preco?.toLocaleString('pt-BR') || 'Não informado'}</p>
+                    <p><strong>Tipo:</strong> ${data.tipo}</p>
+                    <a href="#" class="btn-view-more">Ver Mais</a>
+                </div>
+            `;
+
+            // Adiciona eventos para o carrossel
+            card.querySelector('.carrossel-seta-esquerda').addEventListener('click', () => mudarImagem(carrosselId, -1));
+            card.querySelector('.carrossel-seta-direita').addEventListener('click', () => mudarImagem(carrosselId, 1));
+
+            // Adiciona evento para o botão "Ver Mais"
+            card.querySelector('.btn-view-more').addEventListener('click', (e) => {
+                e.preventDefault();
+                openDetailsModal(data, false); // false = não é automóvel
+            });
+
+            resultadosContainer.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error("Erro ao buscar imóveis:", error);
+        document.getElementById("resultados").innerHTML = `
+            <div class="error-message">
+                <p>Erro ao buscar imóveis.</p>
+                <p>${error.message}</p>
+            </div>
+        `;
+    }
+}
+
 
 
 const menuToggle = document.getElementById('menu-toggle');
