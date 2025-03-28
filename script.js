@@ -1,10 +1,9 @@
-// Importar funções do Firebase corretamente
+// ============== CONFIGURAÇÃO DO FIREBASE ==============
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-// Configuração do Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyA-7HOp-Ycvyf3b_03ev__8aJEwAbWSQZY",
   authDomain: "connectfamilia-312dc.firebaseapp.com",
@@ -15,20 +14,12 @@ const firebaseConfig = {
   measurementId: "G-QKN9NFXZZQ"
 };
 
-// Inicializar Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 
-// Ativar persistência da autenticação
-setPersistence(auth, browserLocalPersistence)
-  .then(() => console.log("Persistência ativada!"))
-  .catch((error) => console.error("Erro na persistência:", error));
-
-console.log("Firebase inicializado com sucesso!");
-
-// Variável global para armazenar dados do anúncio atual
+// ============== VARIÁVEIS GLOBAIS ==============
 let currentAdData = null;
 
 // ============== FUNÇÕES GLOBAIS ==============
@@ -51,6 +42,50 @@ function mudarImagem(carrosselId, direcao) {
     }
 }
 
+function criarCardComEvento(dados, isAutomovel = false) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    
+    const imagens = dados.imagens || ["images/default.jpg"];
+    const carrosselId = `carrossel-${dados.id}`;
+    
+    card.innerHTML = `
+        <div class="carrossel" id="${carrosselId}">
+            <div class="carrossel-imagens">
+                ${imagens.map((imagem, index) => `
+                    <img src="${imagem}" alt="${dados.titulo}" class="carrossel-img" 
+                         style="display: ${index === 0 ? 'block' : 'none'}" loading="lazy">
+                `).join('')}
+            </div>
+            <button class="carrossel-seta carrossel-seta-esquerda">&#10094;</button>
+            <button class="carrossel-seta carrossel-seta-direita">&#10095;</button>
+        </div>
+        <div class="card-content">
+            <h4>${dados.titulo || 'Sem título'}</h4>
+            ${isAutomovel ? `
+                <p><strong>Marca:</strong> ${dados.marca || 'Não informada'}</p>
+                <p><strong>Modelo:</strong> ${dados.modelo || 'Não informado'}</p>
+                <p><strong>Ano:</strong> ${dados.ano || 'Não informado'}</p>
+            ` : `
+                <p><strong>Bairro:</strong> ${dados.bairro || 'Não informado'}</p>
+                <p><strong>Tipo:</strong> ${dados.tipo || 'Não informado'}</p>
+            `}
+            <p><strong>Preço:</strong> R$ ${dados.preco?.toLocaleString('pt-BR') || 'Não informado'}</p>
+            <a href="#" class="btn-view-more">Ver Mais</a>
+        </div>
+    `;
+    
+    card.querySelector('.carrossel-seta-esquerda').addEventListener('click', () => mudarImagem(carrosselId, -1));
+    card.querySelector('.carrossel-seta-direita').addEventListener('click', () => mudarImagem(carrosselId, 1));
+    card.querySelector('.btn-view-more').addEventListener('click', (e) => {
+        e.preventDefault();
+        openDetailsModal(dados, isAutomovel);
+    });
+    
+    return card;
+}
+
+// ============== MODAL DE DETALHES ==============
 function openDetailsModal(adData, isAutomovel = false) {
     currentAdData = adData;
     const modal = document.getElementById('detalhesModal');
@@ -88,9 +123,9 @@ function openDetailsModal(adData, isAutomovel = false) {
         </div>
     `;
 
-    document.getElementById('btnContato')?.addEventListener('click', () => {
-        if (adData.userId) {
-            alert('Redirecionando para o chat com o vendedor...');
+    document.getElementById('btnContato').addEventListener('click', () => {
+        if (currentAdData?.userId) {
+            alert('Redirecionando para o chat com o corretor...');
         }
     });
 
@@ -124,8 +159,7 @@ async function buscarCarros(precoMin, precoMax, marca, modelo, ano) {
         querySnapshot.forEach((doc) => {
             const data = doc.data();
             data.id = doc.id;
-            const card = criarCardComEvento(data, true);
-            resultadosContainer.appendChild(card);
+            resultadosContainer.appendChild(criarCardComEvento(data, true));
         });
 
     } catch (error) {
@@ -157,8 +191,7 @@ async function buscarCasas(precoMin, precoMax, bairro) {
         querySnapshot.forEach((doc) => {
             const data = doc.data();
             data.id = doc.id;
-            const card = criarCardComEvento(data, false);
-            resultadosContainer.appendChild(card);
+            resultadosContainer.appendChild(criarCardComEvento(data, false));
         });
 
     } catch (error) {
@@ -170,50 +203,6 @@ async function buscarCasas(precoMin, precoMax, bairro) {
             </div>
         `;
     }
-}
-
-function criarCardComEvento(dados, isAutomovel = false) {
-    const card = document.createElement('div');
-    card.className = 'card';
-    
-    const imagens = dados.imagens || ["images/default.jpg"];
-    const carrosselId = `carrossel-${dados.id}`;
-    
-    card.innerHTML = `
-        <div class="carrossel" id="${carrosselId}">
-            <div class="carrossel-imagens">
-                ${imagens.map((imagem, index) => `
-                    <img src="${imagem}" alt="${dados.titulo}" class="carrossel-img" 
-                         style="display: ${index === 0 ? 'block' : 'none'}" loading="lazy">
-                `).join('')}
-            </div>
-            <button class="carrossel-seta carrossel-seta-esquerda">&#10094;</button>
-            <button class="carrossel-seta carrossel-seta-direita">&#10095;</button>
-        </div>
-        <div class="card-content">
-            <h4>${dados.titulo || 'Sem título'}</h4>
-            ${isAutomovel ? `
-                <p><strong>Marca:</strong> ${dados.marca || 'Não informada'}</p>
-                <p><strong>Modelo:</strong> ${dados.modelo || 'Não informado'}</p>
-                <p><strong>Ano:</strong> ${dados.ano || 'Não informado'}</p>
-            ` : `
-                <p><strong>Bairro:</strong> ${dados.bairro || 'Não informado'}</p>
-                <p><strong>Tipo:</strong> ${dados.tipo || 'Não informado'}</p>
-            `}
-            <p><strong>Preço:</strong> R$ ${dados.preco?.toLocaleString('pt-BR') || 'Não informado'}</p>
-            <a href="#" class="btn-view-more">Ver Mais</a>
-        </div>
-    `;
-    
-    // Event listeners
-    card.querySelector('.carrossel-seta-esquerda').addEventListener('click', () => mudarImagem(carrosselId, -1));
-    card.querySelector('.carrossel-seta-direita').addEventListener('click', () => mudarImagem(carrosselId, 1));
-    card.querySelector('.btn-view-more').addEventListener('click', (e) => {
-        e.preventDefault();
-        openDetailsModal(dados, isAutomovel);
-    });
-    
-    return card;
 }
 
 // ============== FUNÇÕES DE CARREGAMENTO ==============
@@ -234,8 +223,7 @@ async function carregarImoveisDestaque() {
         querySnapshot.forEach((doc) => {
             const data = doc.data();
             data.id = doc.id;
-            const card = criarCardComEvento(data, false);
-            destaqueContainer.appendChild(card);
+            destaqueContainer.appendChild(criarCardComEvento(data, false));
         });
 
     } catch (error) {
@@ -288,40 +276,121 @@ async function uploadImagens(imagens, tipo) {
     return urls;
 }
 
-// ============== EVENT LISTENERS ==============
+// ============== FORMULÁRIOS ==============
+document.getElementById("form-imovel")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const titulo = document.getElementById("titulo").value;
+    const descricao = document.getElementById("descricao").value;
+    const tipo = document.getElementById("tipo").value;
+    const preco = parseFloat(document.getElementById("preco").value);
+    const quartos = parseInt(document.getElementById("quartos").value);
+    const banheiros = parseInt(document.getElementById("banheiros").value);
+    const bairro = document.getElementById("bairro").value;
+    const imagens = document.getElementById("imagens").files;
+
+    if (imagens.length === 0) {
+        alert("Por favor, selecione pelo menos uma imagem.");
+        return;
+    }
+
+    const imagensURLs = await uploadImagens(imagens, "imoveis");
+
+    if (imagensURLs.length === 0) {
+        alert("Erro ao enviar imagens. Verifique sua conexão e tente novamente.");
+        return;
+    }
+
+    try {
+        await addDoc(collection(db, "imoveis"), {
+            titulo,
+            descricao,
+            tipo,
+            preco,
+            quartos,
+            banheiros,
+            bairro,
+            imagens: imagensURLs,
+            userId: auth.currentUser.uid,
+            data: new Date()
+        });
+        alert("Imóvel anunciado com sucesso!");
+        window.location.href = "index.html";
+    } catch (error) {
+        console.error("Erro ao anunciar imóvel:", error);
+        alert("Erro ao anunciar imóvel. Tente novamente.");
+    }
+});
+
+document.getElementById("form-automovel")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const titulo = document.getElementById("titulo").value;
+    const descricao = document.getElementById("descricao").value;
+    const marca = document.getElementById("marca").value;
+    const modelo = document.getElementById("modelo").value;
+    const ano = parseInt(document.getElementById("ano").value;
+    const preco = parseFloat(document.getElementById("preco").value);
+    const imagens = document.getElementById("imagens").files;
+
+    const imagensURLs = await uploadImagens(imagens, "automoveis");
+
+    try {
+        await addDoc(collection(db, "automoveis"), {
+            titulo,
+            descricao,
+            marca,
+            modelo,
+            ano,
+            preco,
+            imagens: imagensURLs,
+            userId: auth.currentUser.uid,
+            data: new Date()
+        });
+        alert("Automóvel anunciado com sucesso!");
+        window.location.href = "index.html";
+    } catch (error) {
+        console.error("Erro ao anunciar automóvel:", error);
+        alert("Erro ao anunciar automóvel. Tente novamente.");
+    }
+});
+
+// ============== INTERFACE ==============
+function preencherBairros() {
+    const bairros = [
+        'Boa Vista', 'Centro', 'Chácara Freitas', 'Chácara Santa Fé',
+        // ... lista completa de bairros ...
+    ];
+
+    const datalist = document.getElementById('bairros');
+    if (datalist) {
+        bairros.forEach(bairro => {
+            const option = document.createElement('option');
+            option.value = bairro;
+            datalist.appendChild(option);
+        });
+    }
+}
+
+function toggleFields(tipo) {
+    document.getElementById("resultados").innerHTML = "";
+    document.getElementById("campo-imovel").style.display = tipo === "imovel" ? "block" : "none";
+    document.getElementById("campo-carro").style.display = tipo === "carro" ? "block" : "none";
+}
+
+// ============== INICIALIZAÇÃO ==============
 document.addEventListener("DOMContentLoaded", function() {
+    // Configuração inicial
+    setPersistence(auth, browserLocalPersistence)
+        .then(() => console.log("Persistência ativada!"))
+        .catch((error) => console.error("Erro na persistência:", error));
+
     // Carregar dados iniciais
     carregarImoveisDestaque();
     carregarLogo();
     preencherBairros();
 
-    // Event Listeners do modal
-    document.querySelector('.close-modal')?.addEventListener('click', closeDetailsModal);
-    document.getElementById('detalhesModal')?.addEventListener('click', (e) => {
-        if (e.target === document.getElementById('detalhesModal')) {
-            closeDetailsModal();
-        }
-    });
-
-    // Event Listeners de formulários
-    document.getElementById('form-pesquisa')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const tipo = document.getElementById('tipo').value;
-        const precoMin = parseInt(document.getElementById('preco-min').value) || 0;
-        const precoMax = parseInt(document.getElementById('preco-max').value) || 0;
-
-        if (tipo === 'imovel') {
-            const bairro = document.getElementById('bairro').value;
-            buscarCasas(precoMin, precoMax, bairro);
-        } else if (tipo === 'carro') {
-            const marca = document.getElementById('marca').value;
-            const modelo = document.getElementById('modelo').value;
-            const ano = document.getElementById('ano').value;
-            buscarCarros(precoMin, precoMax, marca, modelo, ano);
-        }
-    });
-
-    // Outros listeners...
+    // Configuração do menu mobile
     const menuToggle = document.getElementById('menu-toggle');
     const navMenu = document.getElementById('nav-menu');
     if (menuToggle && navMenu) {
@@ -331,7 +400,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // Login button
+    // Configuração do botão de login
     const loginBtn = document.getElementById('login-btn');
     if (loginBtn) {
         onAuthStateChanged(auth, (user) => {
@@ -348,24 +417,61 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     }
-});
 
-// ============== FUNÇÕES AUXILIARES ==============
-function preencherBairros() {
-    const bairros = [
-        'Boa Vista', 'Centro', 'Chácara Freitas', 'Chácara Santa Fé',
-        // ... lista completa de bairros ...
-    ];
+    // Configuração do modal
+    document.querySelector('.close-modal')?.addEventListener('click', closeDetailsModal);
+    document.getElementById('detalhesModal')?.addEventListener('click', (e) => {
+        if (e.target === document.getElementById('detalhesModal')) {
+            closeDetailsModal();
+        }
+    });
 
-    const datalist = document.getElementById('bairros');
-    if (datalist) {
-        bairros.forEach(bairro => {
-            const option = document.createElement('option');
-            option.value = bairro;
-            datalist.appendChild(option);
+    // Configuração da pesquisa
+    document.getElementById("form-pesquisa")?.addEventListener("submit", function(e) {
+        e.preventDefault();
+        const tipo = document.getElementById("tipo").value;
+        const precoMin = parseInt(document.getElementById("preco-min").value) || 0;
+        const precoMax = parseInt(document.getElementById("preco-max").value) || 0;
+
+        if (tipo === "imovel") {
+            const bairro = document.getElementById("bairro").value;
+            buscarCasas(precoMin, precoMax, bairro);
+        } else if (tipo === "carro") {
+            const marca = document.getElementById("marca").value;
+            const modelo = document.getElementById("modelo").value;
+            const ano = document.getElementById("ano").value;
+            buscarCarros(precoMin, precoMax, marca, modelo, ano);
+        }
+    });
+
+    // Configuração dos botões de tipo
+    const tipoOptions = document.querySelectorAll(".tipo-option");
+    const tipoInput = document.getElementById("tipo");
+    if (tipoOptions.length > 0) {
+        tipoOptions.forEach((option) => {
+            option.addEventListener("click", function() {
+                tipoOptions.forEach((opt) => opt.classList.remove("active"));
+                this.classList.add("active");
+                tipoInput.value = this.getAttribute("data-tipo");
+                toggleFields(tipoInput.value);
+            });
         });
+        tipoOptions[0].classList.add("active");
+        toggleFields("imovel");
     }
-}
+
+    // Configuração do botão de anunciar
+    document.getElementById("btn-anunciar")?.addEventListener("click", () => {
+        window.location.href = "anunciar.html";
+    });
+
+    // Configuração do formulário de seleção de tipo
+    document.getElementById('form-anuncio')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const tipo = document.getElementById('tipo-anuncio').value;
+        window.location.href = "anunciar.html?tipo=" + encodeURIComponent(tipo);
+    });
+});
 
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
