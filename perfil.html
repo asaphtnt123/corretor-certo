@@ -43,13 +43,22 @@
             margin-top: 10px;
         }
 
-        .anuncio-imagem-principal {
-    width: 100%; /* Ocupa toda a largura do container */
-    height: auto; /* Mantém a proporção da imagem */
-    max-height: 250px; /* Altura máxima para telas maiores */
-    object-fit: cover; /* Garante que a imagem cubra o espaço sem distorcer */
-    display: block; /* Remove espaços extras abaixo da imagem */
-    border-radius: 4px 4px 0 0; /* Borda arredondada apenas no topo */
+      /* MANTENHA OU AJUSTE ESTE */
+.anuncio-header {
+    position: relative;
+    overflow: hidden;
+    height: 0;
+    padding-top: 56.25%; /* Proporção 16:9 - ajuste conforme necessário */
+    border-radius: 4px 4px 0 0;
+}
+
+.anuncio-imagem-principal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 /* Opcional: ajustes para diferentes tamanhos de tela */
@@ -65,13 +74,7 @@
     }
 }
 
-        .anuncio-header {
-    position: relative;
-    overflow: hidden; /* Garante que a imagem não ultrapasse os limites */
-    height: 0;
-    padding-top: 56.25%; /* Proporção 16:9 (ajuste conforme necessário) */
-}
-
+      
         
     </style>
 </head>
@@ -102,6 +105,7 @@
         <div class="tab-content" id="myTabContent">
             <!-- Tab Perfil -->
             <div class="tab-pane fade show active" id="perfil" role="tabpanel" aria-labelledby="perfil-tab">
+
                 <!-- Card de Informações do Usuário -->
                 <div id="user-card" class="card hidden">
                     <div class="card-header">
