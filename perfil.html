@@ -6,6 +6,8 @@
     <title>Meu Perfil</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -208,16 +210,116 @@
             </div>
 
             <!-- Tab Meus Anúncios -->
-            <div class="tab-pane fade" id="anuncios" role="tabpanel" aria-labelledby="anuncios-tab">
-                <h2>Meus Anúncios</h2>
-                <div id="anuncios-container" class="row">
-                    <!-- Anúncios serão carregados dinamicamente aqui -->
-                    <div class="col-12 text-center py-5" id="no-anuncios">
-                        <p class="text-muted">Você ainda não tem anúncios cadastrados.</p>
-                        <a href="anunciar.html" class="btn btn-primary">Criar meu primeiro anúncio</a>
+            <!-- Tab Meus Anúncios -->
+<div class="tab-pane fade show active" id="anuncios" role="tabpanel" aria-labelledby="anuncios-tab">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-bullhorn text-primary me-2"></i>Meus Anúncios
+        </h2>
+        <a href="anunciar.html" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Novo Anúncio
+        </a>
+    </div>
+
+    <!-- Filtros e Busca -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="filtro-tipo" class="form-label">Filtrar por Tipo</label>
+                    <select id="filtro-tipo" class="form-select">
+                        <option value="todos">Todos os Anúncios</option>
+                        <option value="imovel">Imóveis</option>
+                        <option value="automovel">Automóveis</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="busca-anuncios" class="form-label">Buscar</label>
+                    <div class="input-group">
+                        <input type="text" id="busca-anuncios" class="form-control" placeholder="Digite para buscar...">
+                        <button class="btn btn-outline-secondary" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Status dos Anúncios -->
+    <div class="d-flex mb-4 overflow-auto pb-2">
+        <div class="nav nav-pills me-3" id="status-anuncios" role="tablist">
+            <button class="nav-link active" id="todos-tab" data-bs-toggle="pill" data-bs-target="#todos" type="button">
+                Todos <span class="badge bg-secondary ms-2" id="count-todos">0</span>
+            </button>
+            <button class="nav-link" id="ativos-tab" data-bs-toggle="pill" data-bs-target="#ativos" type="button">
+                Ativos <span class="badge bg-success ms-2" id="count-ativos">0</span>
+            </button>
+            <button class="nav-link" id="inativos-tab" data-bs-toggle="pill" data-bs-target="#inativos" type="button">
+                Inativos <span class="badge bg-warning ms-2" id="count-inativos">0</span>
+            </button>
+            <button class="nav-link" id="destaques-tab" data-bs-toggle="pill" data-bs-target="#destaques" type="button">
+                Destaques <span class="badge bg-primary ms-2" id="count-destaques">0</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Conteúdo dos Anúncios -->
+    <div class="tab-content" id="anuncios-content">
+        <div class="tab-pane fade show active" id="todos" role="tabpanel" aria-labelledby="todos-tab">
+            <div class="row g-4" id="anuncios-container">
+                <!-- Anúncios serão carregados dinamicamente aqui -->
+            </div>
+        </div>
+        
+        <div class="tab-pane fade" id="ativos" role="tabpanel" aria-labelledby="ativos-tab">
+            <div class="row g-4" id="anuncios-ativos">
+                <!-- Anúncios ativos serão carregados aqui -->
+            </div>
+        </div>
+        
+        <div class="tab-pane fade" id="inativos" role="tabpanel" aria-labelledby="inativos-tab">
+            <div class="row g-4" id="anuncios-inativos">
+                <!-- Anúncios inativos serão carregados aqui -->
+            </div>
+        </div>
+        
+        <div class="tab-pane fade" id="destaques" role="tabpanel" aria-labelledby="destaques-tab">
+            <div class="row g-4" id="anuncios-destaques">
+                <!-- Anúncios em destaque serão carregados aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensagem quando não há anúncios -->
+    <div class="text-center py-5" id="no-anuncios">
+        <div class="card border-0 shadow-sm py-5">
+            <div class="card-body">
+                <i class="fas fa-box-open fa-4x text-muted mb-4"></i>
+                <h4 class="text-muted mb-3">Nenhum anúncio encontrado</h4>
+                <p class="text-muted mb-4">Você ainda não criou nenhum anúncio ou não há resultados para os filtros aplicados</p>
+                <a href="anunciar.html" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>Criar Primeiro Anúncio
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paginação -->
+    <nav aria-label="Navegação de anúncios" class="mt-4" id="paginacao-anuncios">
+        <ul class="pagination justify-content-center">
+            <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>
+            </li>
+            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <li class="page-item">
+                <a class="page-link" href="#">Próximo</a>
+            </li>
+        </ul>
+    </nav>
+</div>
 
             <!-- Tab Favoritos -->
             <div class="tab-pane fade" id="favoritos" role="tabpanel" aria-labelledby="favoritos-tab">
