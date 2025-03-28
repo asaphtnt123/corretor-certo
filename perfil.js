@@ -429,6 +429,7 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
+async function carregarAnuncios(userId) {
 
     // Busca em ambas as coleções
     const imoveisRef = collection(db, "imoveis");
