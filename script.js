@@ -601,6 +601,86 @@ loginBtn.addEventListener("click", (event) => {
 });
 
 
+
+
+
+
+// Adicione esta função ao seu script (9).js
+function openDetailsModal(adData, isAutomovel = false) {
+    currentAdData = adData;
+    const modal = document.getElementById('detalhesModal');
+    const modalContent = document.getElementById('modalContent');
+    
+    // Preenche o conteúdo do modal
+    modalContent.innerHTML = `
+        <div class="modal-carrossel" id="modalCarrossel">
+            ${(adData.imagens || ["images/default.jpg"]).map((img, index) => `
+                <img src="${img}" alt="${adData.titulo}" class="modal-img" style="display: ${index === 0 ? 'block' : 'none'}">
+            `).join('')}
+            ${(adData.imagens?.length > 1) ? `
+                <button class="carrossel-seta carrossel-seta-esquerda" onclick="mudarImagem('modalCarrossel', -1)">&#10094;</button>
+                <button class="carrossel-seta carrossel-seta-direita" onclick="mudarImagem('modalCarrossel', 1)">&#10095;</button>
+            ` : ''}
+        </div>
+        <div class="modal-details">
+            <h2>${adData.titulo || 'Sem título'}</h2>
+            ${isAutomovel ? `
+                <p><strong>Marca:</strong> ${adData.marca || 'Não informada'}</p>
+                <p><strong>Modelo:</strong> ${adData.modelo || 'Não informado'}</p>
+                <p><strong>Ano:</strong> ${adData.ano || 'Não informado'}</p>
+                <p><strong>Quilometragem:</strong> ${adData.quilometragem || 'Não informada'} km</p>
+            ` : `
+                <p><strong>Bairro:</strong> ${adData.bairro || 'Não informado'}</p>
+                <p><strong>Tipo:</strong> ${adData.tipo || 'Não informado'}</p>
+                <p><strong>Área:</strong> ${adData.area || 'Não informada'} m²</p>
+                <p><strong>Quartos:</strong> ${adData.quartos || 'Não informados'}</p>
+                <p><strong>Banheiros:</strong> ${adData.banheiros || 'Não informados'}</p>
+            `}
+            <p><strong>Preço:</strong> R$ ${adData.preco?.toLocaleString('pt-BR') || 'Não informado'}</p>
+            <p><strong>Descrição:</strong></p>
+            <p>${adData.descricao || 'Nenhuma descrição fornecida.'}</p>
+            <button id="btnContato" class="btn-contato">Entrar em Contato</button>
+        </div>
+    `;
+
+    // Configura o botão de contato
+    document.getElementById('btnContato')?.addEventListener('click', () => {
+        if (adData.userId) {
+            alert('Redirecionando para o chat com o vendedor...');
+            // Implemente a lógica de redirecionamento para o chat aqui
+        }
+    });
+
+    // Mostra o modal
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+// Função para fechar o modal
+function closeDetailsModal() {
+    document.getElementById('detalhesModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Adicione ao final do seu arquivo, antes do DOMContentLoaded:
+window.openDetailsModal = openDetailsModal;
+window.closeDetailsModal = closeDetailsModal;
+
+// Modifique o evento DOMContentLoaded para incluir o fechamento do modal
+document.addEventListener("DOMContentLoaded", function() {
+    // ... seu código existente ...
+
+    // Adicione estes event listeners para o modal
+    document.querySelector('.close-modal')?.addEventListener('click', closeDetailsModal);
+    document.getElementById('detalhesModal')?.addEventListener('click', (e) => {
+        if (e.target === document.getElementById('detalhesModal')) {
+            closeDetailsModal();
+        }
+    });
+});
+
+
+
 document.getElementById("btn-anunciar").addEventListener("click", () => {
     // Redireciona para a página de anúncio
     window.location.href = "anunciar.html";
