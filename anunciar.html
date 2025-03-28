@@ -277,7 +277,7 @@
                             </div>
 
                             <!-- Automóvel Fields -->
-                            <div id="automovel-fields" class="d-none">
+                            <div id="automovel-fields" style="display: none;">
                                 <div class="row">
                                     <div class="col-md-6 mb-4">
                                         <label for="marca" class="form-label">Marca*</label>
@@ -586,5 +586,65 @@
     
     <!-- Seu JavaScript -->
     <script src="js/anuncio.js" type="module"></script>
+    
+    <!-- Script para alternância entre imóvel e automóvel -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elementos do DOM
+            const btnImovel = document.getElementById('btn-imovel');
+            const btnAutomovel = document.getElementById('btn-automovel');
+            const imovelFields = document.getElementById('imovel-fields');
+            const automovelFields = document.getElementById('automovel-fields');
+            
+            // Função para alternar entre formulários
+            function toggleFormularios(isImovel) {
+                if (isImovel) {
+                    imovelFields.style.display = 'block';
+                    automovelFields.style.display = 'none';
+                    
+                    // Atualiza a classe active nos botões
+                    btnImovel.parentElement.classList.add('active');
+                    btnAutomovel.parentElement.classList.remove('active');
+                    
+                    // Configura campos obrigatórios
+                    document.getElementById('tipo-imovel').required = true;
+                    document.getElementById('bairro').required = true;
+                    document.getElementById('marca').required = false;
+                    document.getElementById('modelo').required = false;
+                    document.getElementById('ano').required = false;
+                } else {
+                    imovelFields.style.display = 'none';
+                    automovelFields.style.display = 'block';
+                    
+                    // Atualiza a classe active nos botões
+                    btnAutomovel.parentElement.classList.add('active');
+                    btnImovel.parentElement.classList.remove('active');
+                    
+                    // Configura campos obrigatórios
+                    document.getElementById('tipo-imovel').required = false;
+                    document.getElementById('bairro').required = false;
+                    document.getElementById('marca').required = true;
+                    document.getElementById('modelo').required = true;
+                    document.getElementById('ano').required = true;
+                }
+            }
+            
+            // Event listeners para os botões
+            btnImovel.addEventListener('change', function() {
+                if (this.checked) {
+                    toggleFormularios(true);
+                }
+            });
+            
+            btnAutomovel.addEventListener('change', function() {
+                if (this.checked) {
+                    toggleFormularios(false);
+                }
+            });
+            
+            // Inicia com imóvel ativo
+            toggleFormularios(true);
+        });
+    </script>
 </body>
 </html>
