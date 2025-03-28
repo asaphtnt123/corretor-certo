@@ -161,17 +161,99 @@ function updateNavigationButtons() {
   
   // Atualiza botão próximo
   nextButtons.forEach(btn => {
-    btn.textContent = state.currentStep === 3 ? 'Revisar' : 'Próximo';
-    btn.innerHTML = state.currentStep === 3 ? 
-      'Revisar <i class="fas fa-arrow-right ms-2"></i>' : 
-      'Próximo <i class="fas fa-arrow-right ms-2"></i>';
+    if (state.currentStep === 3) {
+      btn.innerHTML = 'Revisar <i class="fas fa-arrow-right ms-2"></i>';
+    } else {
+      btn.innerHTML = 'Próximo <i class="fas fa-arrow-right ms-2"></i>';
+    }
   });
+}
+  
+function updateReviewStep() {
+  // Informações Básicas
+  document.getElementById('review-titulo').textContent = document.getElementById('titulo').value;
+  document.getElementById('review-descricao').textContent = document.getElementById('descricao').value;
+  document.getElementById('review-preco').textContent = parseFloat(document.getElementById('preco').value).toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+  
+  // Tipo de Negociação
+  const negociacao = document.querySelector('input[name="negociacao"]:checked').value;
+  document.getElementById('review-negociacao').textContent = negociacao === 'venda' ? 'Venda' : 'Aluguel';
+  
+  // Tipo de Anúncio
+  const isImovel = document.getElementById('btn-imovel').checked;
+  document.getElementById('review-tipo').textContent = isImovel ? 'Imóvel' : 'Automóvel';
+  
+  // Mostra a seção correta (imóvel ou automóvel)
+  document.getElementById('review-imovel-details').style.display = isImovel ? 'block' : 'none';
+  document.getElementById('review-automovel-details').style.display = isImovel ? 'none' : 'block';
+  
+  if (isImovel) {
+    // Detalhes do Imóvel
+    document.getElementById('review-bairro').textContent = document.getElementById('bairro').value;
+    document.getElementById('review-quartos').textContent = document.getElementById('quartos').value;
+    document.getElementById('review-banheiros').textContent = document.getElementById('banheiros').value;
+    document.getElementById('review-garagem').textContent = document.getElementById('garagem').value;
+    document.getElementById('review-area').textContent = document.getElementById('area').value;
+    
+    // Características do Imóvel
+    const caracteristicas = [];
+    document.querySelectorAll('#imovel-fields input[type="checkbox"]:checked').forEach(cb => {
+      caracteristicas.push(cb.nextElementSibling.textContent);
+    });
+    document.getElementById('review-caracteristicas').textContent = caracteristicas.join(', ') || 'Nenhuma';
+  } else {
+    // Detalhes do Automóvel
+    document.getElementById('review-marca-modelo').textContent = 
+      `${document.getElementById('marca').options[document.getElementById('marca').selectedIndex].text} ${document.getElementById('modelo').value}`;
+    document.getElementById('review-ano').textContent = document.getElementById('ano').value;
+    document.getElementById('review-cor').textContent = document.getElementById('cor').value;
+    document.getElementById('review-km').textContent = document.getElementById('km').value ? 
+      `${document.getElementById('km').value} km` : 'Não informado';
+    document.getElementById('review-combustivel').textContent = document.getElementById('combustivel').value || 'Não informado';
+    document.getElementById('review-cambio').textContent = document.getElementById('cambio').value || 'Não informado';
+  }
+  
+  // Pré-visualização das imagens
+  const reviewImagesContainer = document.getElementById('review-images');
+  reviewImagesContainer.innerHTML = '';
+  
+  if (state.selectedFiles.length > 0) {
+    state.selectedFiles.slice(0, 4).forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.className = 'img-thumbnail me-2 mb-2';
+        img.style.height = '100px';
+        img.style.objectFit = 'cover';
+        reviewImagesContainer.appendChild(img);
+        
+        if (index === 3 && state.selectedFiles.length > 4) {
+          const moreBadge = document.createElement('span');
+          moreBadge.className = 'badge bg-secondary';
+          moreBadge.textContent = `+${state.selectedFiles.length - 4} mais`;
+          reviewImagesContainer.appendChild(moreBadge);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  } else {
+    reviewImagesContainer.innerHTML = '<p class="text-muted">Nenhuma imagem adicionada</p>';
+  }
 }
 
 function nextStep() {
-  if (validateStep(state.currentStep)) {
-    showStep(state.currentStep + 1);
+  if (!validateStep(state.currentStep)) return;
+  
+  // Se está indo para o passo de revisão (4), atualiza os dados
+  if (state.currentStep === 3) {
+    updateReviewStep();
   }
+  
+  showStep(state.currentStep + 1);
 }
 
 function prevStep() {
