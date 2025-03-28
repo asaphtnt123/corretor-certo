@@ -112,7 +112,7 @@ function openDetailsModal(adData, isAutomovel = false) {
             ` : `
                 <p><strong>Bairro:</strong> ${adData.bairro || 'Não informado'}</p>
                 <p><strong>Tipo:</strong> ${adData.tipo || 'Não informado'}</p>
-                <p><strong>Área:</strong> ${adData.area || 'Não informada'} m²</p>
+                <p><strong>Área:</strong> ${adData.tamanho || 'Não informada'} m²</p>
                 <p><strong>Quartos:</strong> ${adData.quartos || 'Não informados'}</p>
                 <p><strong>Banheiros:</strong> ${adData.banheiros || 'Não informados'}</p>
             `}
