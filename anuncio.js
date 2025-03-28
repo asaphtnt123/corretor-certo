@@ -65,6 +65,16 @@ document.addEventListener('DOMContentLoaded', function() {
   toggleFormularios(true); // Começa com imóvel ativo
 });
 
+
+function checkFormValidity() {
+    const currentStep = state.currentStep;
+    let isValid = validateStep(currentStep, false); // Valida sem alertas
+    document.querySelector(`#step-${currentStep} .next-step`).disabled = !isValid;
+}
+
+
+
+
 function setupEventListeners() {
   // Alternância entre imóvel e automóvel
   btnImovel.addEventListener('change', () => toggleFormularios(true));
@@ -111,8 +121,10 @@ function toggleFormularios(isImovel) {
 }
 
 function initStepper() {
-  showStep(1);
+    showStep(1);
+    checkFormValidity();
 }
+
 
 function showStep(stepNumber) {
   // Esconde todos os steps
@@ -141,85 +153,88 @@ function showStep(stepNumber) {
 }
 
 function nextStep() {
-  if (validateStep(state.currentStep)) {
-    showStep(state.currentStep + 1);
-  }
+    if (validateStep(state.currentStep, true)) {
+        showStep(state.currentStep + 1);
+    }
 }
 
 function prevStep() {
-  showStep(state.currentStep - 1);
+    showStep(state.currentStep - 1);
 }
 
-function validateStep(step) {
-  // Validação básica para cada passo
-  if (step === 1) {
-    const titulo = document.getElementById('titulo').value.trim();
-    const descricao = document.getElementById('descricao').value.trim();
-    const preco = document.getElementById('preco').value;
-    
-    if (!titulo || titulo.length < 10) {
-      showAlert('O título deve ter pelo menos 10 caracteres', 'error');
-      return false;
-    }
-    
-    if (!descricao || descricao.length < 30) {
-      showAlert('A descrição deve ter pelo menos 30 caracteres', 'error');
-      return false;
-    }
-    
-    if (!preco || isNaN(preco)) {
-      showAlert('Por favor, insira um preço válido', 'error');
-      return false;
-    }
-  }
+
+function validateStep(step, showAlerts = true) {
+    let isValid = true;
   
-  if (step === 2) {
-    const isImovel = btnImovel.checked;
+    if (step === 1) {
+        const titulo = document.getElementById('titulo').value.trim();
+        const descricao = document.getElementById('descricao').value.trim();
+        const preco = document.getElementById('preco').value;
     
-    if (isImovel) {
-      const tipoImovel = document.getElementById('tipo-imovel').value;
-      const bairro = document.getElementById('bairro').value.trim();
-      
-      if (!tipoImovel) {
-        showAlert('Selecione o tipo de imóvel', 'error');
-        return false;
-      }
-      
-      if (!bairro) {
-        showAlert('Informe o bairro', 'error');
-        return false;
-      }
-    } else {
-      const marca = document.getElementById('marca').value;
-      const modelo = document.getElementById('modelo').value.trim();
-      const ano = document.getElementById('ano').value;
-      
-      if (!marca) {
-        showAlert('Selecione a marca do veículo', 'error');
-        return false;
-      }
-      
-      if (!modelo) {
-        showAlert('Informe o modelo do veículo', 'error');
-        return false;
-      }
-      
-      if (!ano) {
-        showAlert('Selecione o ano do veículo', 'error');
-        return false;
-      }
+        if (!titulo || titulo.length < 10) {
+            if (showAlerts) showAlert('O título deve ter pelo menos 10 caracteres', 'error');
+            isValid = false;
+        }
+    
+        if (!descricao || descricao.length < 30) {
+            if (showAlerts) showAlert('A descrição deve ter pelo menos 30 caracteres', 'error');
+            isValid = false;
+        }
+    
+        if (!preco || isNaN(preco)) {
+            if (showAlerts) showAlert('Por favor, insira um preço válido', 'error');
+            isValid = false;
+        }
     }
-  }
   
-  if (step === 3) {
-    if (state.selectedFiles.length === 0) {
-      showAlert('Adicione pelo menos uma imagem', 'error');
-      return false;
+    if (step === 2) {
+        const isImovel = btnImovel.checked;
+    
+        if (isImovel) {
+            const tipoImovel = document.getElementById('tipo-imovel').value;
+            const bairro = document.getElementById('bairro').value.trim();
+        
+            if (!tipoImovel) {
+                if (showAlerts) showAlert('Selecione o tipo de imóvel', 'error');
+                isValid = false;
+            }
+        
+            if (!bairro) {
+                if (showAlerts) showAlert('Informe o bairro', 'error');
+                isValid = false;
+            }
+        } else {
+            const marca = document.getElementById('marca').value;
+            const modelo = document.getElementById('modelo').value.trim();
+            const ano = document.getElementById('ano').value;
+        
+            if (!marca) {
+                if (showAlerts) showAlert('Selecione a marca do veículo', 'error');
+                isValid = false;
+            }
+        
+            if (!modelo) {
+                if (showAlerts) showAlert('Informe o modelo do veículo', 'error');
+                isValid = false;
+            }
+        
+            if (!ano) {
+                if (showAlerts) showAlert('Selecione o ano do veículo', 'error');
+                isValid = false;
+            }
+        }
     }
-  }
   
-  return true;
+    if (step === 3) {
+        if (state.selectedFiles.length === 0) {
+            if (showAlerts) showAlert('Adicione pelo menos uma imagem', 'error');
+            isValid = false;
+        }
+    }
+  
+    return isValid;
 }
+
 
 function handleImageUpload() {
   imagePreview.innerHTML = '';
