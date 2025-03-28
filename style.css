@@ -1012,24 +1012,30 @@ main {
         max-width: 200px;
     }
 }
-atualize o css do meu card de detalhe para que fique igual esse e melhore /* Modal de Detalhes */
+/* Modal de Detalhes */
 .modal {
     display: none;
     position: fixed;
-    z-index: 1000;
+    z-index: 1050;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.85);
     overflow-y: auto;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal.show {
+    opacity: 1;
 }
 
 .modal-content {
     background-color: #fff;
-    margin: 5% auto;
-    padding: 30px;
-    width: 80%;
+    margin: 2% auto;
+    padding: 25px;
+    width: 85%;
     max-width: 900px;
     border-radius: 10px;
     box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
@@ -1038,7 +1044,7 @@ atualize o css do meu card de detalhe para que fique igual esse e melhore /* Mod
 }
 
 @keyframes modalFadeIn {
-    from { opacity: 0; transform: translateY(-50px); }
+    from { opacity: 0; transform: translateY(-20px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
@@ -1051,6 +1057,9 @@ atualize o css do meu card de detalhe para que fique igual esse e melhore /* Mod
     color: #aaa;
     cursor: pointer;
     transition: all 0.3s;
+    background: none;
+    border: none;
+    z-index: 10;
 }
 
 .close-modal:hover {
@@ -1064,90 +1073,47 @@ atualize o css do meu card de detalhe para que fique igual esse e melhore /* Mod
     overflow: hidden;
     position: relative;
     border-radius: 8px;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 }
 
-.modal-carrossel img {
+.modal-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: none;
 }
 
-.modal-carrossel img.active {
+.modal-img.active {
     display: block;
-    animation: fadeIn 0.5s;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0.4; }
-    to { opacity: 1; }
-}
-
-.modal-body {
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-}
-
-.info-grid {
+.details-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 15px;
     margin: 20px 0;
 }
 
-.info-item {
+.detail-item {
     background: #f8f9fa;
     padding: 15px;
     border-radius: 8px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.95rem;
 }
 
-.info-item i {
-    color: #3498db;
-    font-size: 1.1rem;
-}
-
-.info-item.price {
+.detail-item.price {
     background: #e3f2fd;
     font-weight: bold;
 }
 
-.features-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 10px;
-    list-style: none;
-}
-
-.features-list li {
-    padding: 8px 0;
-    border-bottom: 1px solid #eee;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.features-list li::before {
-    content: "•";
-    color: #3498db;
-    font-weight: bold;
-}
-
-.contact-section {
+.description-section {
+    margin: 25px 0;
+    padding: 20px;
     background: #f8f9fa;
-    padding: 25px;
     border-radius: 8px;
-    margin-top: 20px;
-    text-align: center;
 }
 
-.btn-contact {
-    background: #27ae60;
+.btn-contato {
+    background: #3498db;
     color: white;
     border: none;
     padding: 12px 25px;
@@ -1156,46 +1122,17 @@ atualize o css do meu card de detalhe para que fique igual esse e melhore /* Mod
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
-    margin: 15px 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
+    display: block;
+    width: 100%;
+    max-width: 250px;
+    margin: 20px auto 0;
+    text-align: center;
 }
 
-.btn-contact:hover {
-    background: #219653;
+.btn-contato:hover {
+    background: #2980b9;
     transform: translateY(-2px);
-}
-
-.social-links {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 15px;
-}
-
-.social-link {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.2rem;
-    transition: all 0.3s;
-}
-
-.social-link.whatsapp {
-    background: #25D366;
-}
-
-.social-link.email {
-    background: #3498db;
-}
-
-.social-link:hover {
-    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 /* Responsividade */
@@ -1210,7 +1147,7 @@ atualize o css do meu card de detalhe para que fique igual esse e melhore /* Mod
         height: 250px;
     }
     
-    .info-grid {
+    .details-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
