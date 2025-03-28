@@ -111,10 +111,24 @@ function toggleFormularios(isImovel) {
 }
 
 function initStepper() {
-  showStep(1);
+  // Esconde todos os steps
+  document.querySelectorAll('.form-step').forEach(step => {
+    step.classList.remove('active');
+  });
+  
+  // Mostra apenas o primeiro step
+  document.getElementById('step-1').classList.add('active');
+  
+  // Atualiza o estado
+  state.currentStep = 1;
 }
 
 function showStep(stepNumber) {
+  // Valida se pode avançar
+  if (stepNumber > state.currentStep && !validateStep(state.currentStep)) {
+    return;
+  }
+
   // Esconde todos os steps
   document.querySelectorAll('.form-step').forEach(step => {
     step.classList.remove('active');
@@ -125,19 +139,33 @@ function showStep(stepNumber) {
   
   // Atualiza o stepper visual
   document.querySelectorAll('.step').forEach((step, index) => {
-    if (index < stepNumber) {
-      step.classList.add('completed');
-      step.classList.add('active');
-    } else if (index === stepNumber - 1) {
-      step.classList.add('active');
-      step.classList.remove('completed');
-    } else {
-      step.classList.remove('active');
-      step.classList.remove('completed');
-    }
+    step.classList.toggle('active', index === stepNumber - 1);
+    step.classList.toggle('completed', index < stepNumber - 1);
   });
   
+  // Atualiza o estado
   state.currentStep = stepNumber;
+  
+  // Atualiza botões de navegação
+  updateNavigationButtons();
+}
+
+function updateNavigationButtons() {
+  const prevButtons = document.querySelectorAll('.prev-step');
+  const nextButtons = document.querySelectorAll('.next-step');
+  
+  // Atualiza botão anterior
+  prevButtons.forEach(btn => {
+    btn.disabled = state.currentStep === 1;
+  });
+  
+  // Atualiza botão próximo
+  nextButtons.forEach(btn => {
+    btn.textContent = state.currentStep === 3 ? 'Revisar' : 'Próximo';
+    btn.innerHTML = state.currentStep === 3 ? 
+      'Revisar <i class="fas fa-arrow-right ms-2"></i>' : 
+      'Próximo <i class="fas fa-arrow-right ms-2"></i>';
+  });
 }
 
 function nextStep() {
