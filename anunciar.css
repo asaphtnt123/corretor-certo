@@ -97,14 +97,21 @@ body {
     font-weight: 500;
 }
 
-/* Form steps */
+/* Esconde todos os steps por padrão */
 .form-step {
     display: none;
 }
 
+/* Mostra apenas o step ativo */
 .form-step.active {
     display: block;
     animation: fadeIn 0.5s ease-out;
+}
+
+/* Animações */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .form-title {
@@ -177,3 +184,7 @@ body {
         padding: 20px;
     }
 }
+
+
+
+
