@@ -153,6 +153,25 @@ body {
     border-bottom: 1px solid #dee2e6;
 }
 
+/* Estilos para a revisão */
+.review-section p {
+    margin-bottom: 0.5rem;
+}
+
+.review-images img {
+    max-height: 100px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+#review-caracteristicas {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 /* Botões de navegação */
 .next-step, .prev-step {
     min-width: 150px;
