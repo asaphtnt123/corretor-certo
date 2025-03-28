@@ -133,6 +133,7 @@ async function carregarMeusAnuncios() {
             showAlert('Você precisa estar logado para ver seus anúncios', 'error');
             return;
         }
+        console.log('ID do usuário:', user.uid); // Log para depuração
 
         // Referências das coleções
         const imoveisRef = collection(db, "imoveis");
@@ -148,6 +149,9 @@ async function carregarMeusAnuncios() {
             getDocs(qAutomoveis)
         ]);
 
+        console.log('Imóveis encontrados:', imoveisSnapshot.size); // Log
+        console.log('Automóveis encontrados:', automoveisSnapshot.size); // Log
+      
         // Elementos DOM
         const anunciosContainer = document.getElementById("anuncios-container");
         const containerAtivos = document.getElementById("anuncios-ativos");
@@ -167,17 +171,19 @@ async function carregarMeusAnuncios() {
         let countInativos = 0;
         let countDestaques = 0;
 
-        // Função para processar cada anúncio
-        const processarAnuncio = (doc, tipo) => {
-            const data = doc.data();
-            const id = doc.id;
-            
-            // Atualiza contadores
-            countTodos++;
-            if (data.status === 'ativo') countAtivos++;
-            if (data.status === 'inativo') countInativos++;
-            if (data.destaque) countDestaques++;
-            
+      // Processa cada documento
+const processDocs = (snapshot, tipo) => {
+    snapshot.forEach(doc => {
+        const data = doc.data();
+        console.log('Processando anúncio:', doc.id, data); // Log detalhado
+        
+        countTodos++;
+        
+        // Verifica status com fallback para 'ativo' se não existir
+        const status = data.status || 'ativo';
+        if (status === 'ativo') countAtivos++;
+        if (status === 'inativo') countInativos++;
+        if (data.destaque) countDestaques++;
             // Cria o card do anúncio
             const cardHTML = criarCardAnuncio(data, tipo, id);
             
@@ -218,7 +224,8 @@ async function carregarMeusAnuncios() {
         inicializarEventosAnuncios();
 
     } catch (error) {
-        console.error("Erro ao carregar anúncios:", error);
+                console.error("Erro detalhado:", error); // Log mais detalhado
+
         showAlert("Erro ao carregar seus anúncios. Tente novamente.", "error");
     }
 }
@@ -341,6 +348,8 @@ async function excluirAnuncio(id, tipo) {
 }
 
 function criarCardAnuncio(data, tipo, id) {
+      console.log('Criando card para:', { id, tipo, data }); // Log importante
+
     const dataFormatada = data.data?.toDate ? data.data.toDate().toLocaleDateString('pt-BR') : 'Data não disponível';
     const precoFormatado = data.preco?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) || 'Preço não informado';
     
