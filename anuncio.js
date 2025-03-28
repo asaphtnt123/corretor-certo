@@ -398,7 +398,7 @@ async function criarAnuncio(event) {
   try {
     toggleLoading(true);
     
-    // Obter dados básicos
+    // Obter dados básicos (comuns a ambos os tipos)
     const anuncioData = {
       titulo: document.getElementById('titulo').value.trim(),
       descricao: document.getElementById('descricao').value.trim(),
@@ -407,46 +407,51 @@ async function criarAnuncio(event) {
       userId: user.uid,
       userEmail: user.email,
       data: serverTimestamp(),
-      status: 'ativo'
+      status: 'ativo',
+      visualizacoes: 0
     };
     
+    // Determinar o tipo de anúncio
+    const isImovel = document.getElementById('btn-imovel').checked;
+    const collectionName = isImovel ? 'imoveis' : 'automoveis';
+    
     // Adicionar campos específicos
-    if (btnImovel.checked) {
-      anuncioData.tipo = 'imóvel';
+    if (isImovel) {
+      // Campos específicos de imóvel
       anuncioData.tipoImovel = document.getElementById('tipo-imovel').value;
       anuncioData.bairro = document.getElementById('bairro').value.trim();
-      anuncioData.quartos = document.getElementById('quartos').value;
-      anuncioData.banheiros = document.getElementById('banheiros').value;
-      anuncioData.garagem = document.getElementById('garagem').value;
-      anuncioData.area = parseFloat(document.getElementById('area').value);
+      anuncioData.quartos = parseInt(document.getElementById('quartos').value) || 0;
+      anuncioData.banheiros = parseInt(document.getElementById('banheiros').value) || 0;
+      anuncioData.garagem = parseInt(document.getElementById('garagem').value) || 0;
+      anuncioData.area = parseFloat(document.getElementById('area').value) || 0;
       
-      // Características
+      // Características do imóvel
       anuncioData.caracteristicas = [];
       document.querySelectorAll('#imovel-fields input[type="checkbox"]:checked').forEach(cb => {
         anuncioData.caracteristicas.push(cb.name);
       });
     } else {
-      anuncioData.tipo = 'automóvel';
+      // Campos específicos de automóvel
       anuncioData.marca = document.getElementById('marca').value;
       anuncioData.modelo = document.getElementById('modelo').value.trim();
-      anuncioData.ano = document.getElementById('ano').value;
-      anuncioData.km = document.getElementById('km').value;
-      anuncioData.cor = document.getElementById('cor').value;
-      anuncioData.combustivel = document.getElementById('combustivel').value;
-      anuncioData.cambio = document.getElementById('cambio').value;
+      anuncioData.ano = parseInt(document.getElementById('ano').value);
+      anuncioData.km = parseInt(document.getElementById('km').value) || 0;
+      anuncioData.cor = document.getElementById('cor').value || 'Não informado';
+      anuncioData.combustivel = document.getElementById('combustivel').value || 'Não informado';
+      anuncioData.cambio = document.getElementById('cambio').value || 'Não informado';
       
-      // Características
+      // Características do automóvel
       anuncioData.caracteristicas = [];
       document.querySelectorAll('#automovel-fields input[type="checkbox"]:checked').forEach(cb => {
         anuncioData.caracteristicas.push(cb.name);
       });
     }
     
-    // Upload de imagens
-    anuncioData.imagens = await uploadImagens(state.selectedFiles, anuncioData.tipo);
+    // Upload de imagens (usa o nome da coleção como pasta no Storage)
+    anuncioData.imagens = await uploadImagens(state.selectedFiles, collectionName);
     
-    // Salvar no Firestore
-    await addDoc(collection(db, 'anuncios'), anuncioData);
+    // Salvar na coleção correta
+    await addDoc(collection(db, collectionName), anuncioData);
     
     showAlert('Anúncio publicado com sucesso!', 'success');
     setTimeout(() => window.location.href = 'perfil.html#anuncios', 1500);
@@ -458,7 +463,7 @@ async function criarAnuncio(event) {
   }
 }
 
-async function uploadImagens(files, tipo) {
+async function uploadImagens(files, collectionName) {
   try {
     const user = auth.currentUser;
     if (!user) throw new Error('Usuário não autenticado');
@@ -467,7 +472,7 @@ async function uploadImagens(files, tipo) {
     
     for (const file of files.slice(0, 10)) { // Limita a 10 imagens
       const fileName = file.name.replace(/[^\w.]/g, '_');
-      const storageRef = ref(storage, `${tipo}/${user.uid}/${Date.now()}_${fileName}`);
+      const storageRef = ref(storage, `${collectionName}/${user.uid}/${Date.now()}_${fileName}`);
       const snapshot = await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
       urls.push(downloadURL);
@@ -479,7 +484,6 @@ async function uploadImagens(files, tipo) {
     throw error;
   }
 }
-
 function toggleLoading(isLoading) {
   state.isSubmitting = isLoading;
   submitBtn.disabled = isLoading;
