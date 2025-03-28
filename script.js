@@ -329,7 +329,7 @@ document.getElementById("form-automovel")?.addEventListener("submit", async (e) 
     const descricao = document.getElementById("descricao").value;
     const marca = document.getElementById("marca").value;
     const modelo = document.getElementById("modelo").value;
-    const ano = parseInt(document.getElementById("ano").value;
+    const ano = parseInt(document.getElementById("ano").value); // Faltava este parêntese de fechamento
     const preco = parseFloat(document.getElementById("preco").value);
     const imagens = document.getElementById("imagens").files;
 
