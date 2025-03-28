@@ -153,32 +153,111 @@ async function carregarAnuncios(userId) {
     // Processa imóveis
     imoveisSnapshot.forEach((doc) => {
         const data = doc.data();
-        anunciosContainer.innerHTML += criarCardAnuncio(data, "Imóvel");
+        anunciosContainer.innerHTML += criarCardAnuncio(data, "Imóvel", doc.id);
     });
 
     // Processa automóveis
     automoveisSnapshot.forEach((doc) => {
         const data = doc.data();
-        anunciosContainer.innerHTML += criarCardAnuncio(data, "Automóvel");
+        anunciosContainer.innerHTML += criarCardAnuncio(data, "Automóvel", doc.id);
     });
 }
 
-// Função auxiliar para criar o HTML do card de anúncio
-function criarCardAnuncio(data, tipo) {
+function criarCardAnuncio(data, tipo, id) {
+    const dataFormatada = data.data?.toDate ? data.data.toDate().toLocaleDateString('pt-BR') : 'Data não disponível';
+    const precoFormatado = data.preco?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) || 'Preço não informado';
+    
     return `
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img src="${data.imagens[0]}" class="card-img-top" alt="Imagem do Anúncio">
-                <div class="card-body">
-                    <h5 class="card-title">${data.titulo}</h5>
-                    <p class="card-text">${data.descricao}</p>
-                    <p><strong>Tipo:</strong> ${tipo}</p>
-                    <p><strong>Preço:</strong> R$ ${data.preco.toFixed(2)}</p>
-                    ${data.tipo ? `<p><strong>Tipo:</strong> ${data.tipo}</p>` : ''}
-                    ${data.marca ? `<p><strong>Marca:</strong> ${data.marca}</p>` : ''}
-                    <a href="#" class="btn btn-primary">Ver Detalhes</a>
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="anuncio-card">
+                <div class="anuncio-header">
+                    <img src="${data.imagens?.[0] || 'img/sem-imagem.jpg'}" alt="${data.titulo}" class="anuncio-imagem-principal">
+                    <span class="anuncio-badge">${tipo}</span>
+                </div>
+                <div class="anuncio-body">
+                    <h3 class="anuncio-titulo">${data.titulo || 'Sem título'}</h3>
+                    <div class="anuncio-preco">${precoFormatado}</div>
+                    
+                    <div class="anuncio-detalhes">
+                        ${tipo === 'Imóvel' ? gerarDetalhesImovel(data) : gerarDetalhesAutomovel(data)}
+                    </div>
+                    
+                    <p class="anuncio-descricao">${data.descricao || 'Nenhuma descrição fornecida'}</p>
+                </div>
+                <div class="anuncio-footer">
+                    <span class="anuncio-data">${dataFormatada}</span>
+                    <div class="anuncio-acoes">
+                        <button class="btn-editar" data-id="${id}" data-tipo="${tipo.toLowerCase()}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-excluir" data-id="${id}" data-tipo="${tipo.toLowerCase()}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
+        </div>
+    `;
+}
+
+function gerarDetalhesImovel(data) {
+    return `
+        <div class="detalhe-item">
+            <span class="detalhe-icon"><i class="fas fa-home"></i></span>
+            <span>${data.tipoImovel || 'Tipo não especificado'}</span>
+        </div>
+        <div class="detalhe-item">
+            <span class="detalhe-icon"><i class="fas fa-map-marker-alt"></i></span>
+            <span>${data.bairro || 'Local não informado'}</span>
+        </div>
+        <div class="detalhe-item">
+            <span class="detalhe-icon"><i class="fas fa-bed"></i></span>
+            <span>${data.quartos || 0} quarto${data.quartos !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="detalhe-item">
+            <span class="detalhe-icon"><i class="fas fa-bath"></i></span>
+            <span>${data.banheiros || 0} banheiro${data.banheiros !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="detalhe-item">
+            <span class="detalhe-icon">
+                ${data.garagem && data.garagem > 0 ? '<i class="fas fa-car"></i>' : '<span class="emoji">🚫</span>'}
+            </span>
+            <span>${data.garagem && data.garagem > 0 ? `${data.garagem} vaga${data.garagem !== 1 ? 's' : ''}` : 'Sem vaga'}</span>
+        </div>
+        <div class="detalhe-item">
+            <span class="detalhe-icon"><i class="fas fa-ruler-combined"></i></span>
+            <span>${data.area || '?'} m²</span>
+        </div>
+    `;
+}
+
+function gerarDetalhesAutomovel(data) {
+    return `
+        <div class="detalhe-item">
+            <span class="detalhe-icon"><i class="fas fa-car"></i></span>
+            <span>${data.marca || 'Marca não informada'}</span>
+        </div>
+        <div class="detalhe-item">
+            <span class="detalhe-icon"><i class="fas fa-tag"></i></span>
+            <span>${data.modelo || 'Modelo não informado'}</span>
+        </div>
+        <div class="detalhe-item">
+            <span class="detalhe-icon"><i class="fas fa-calendar-alt"></i></span>
+            <span>${data.ano || 'Ano não informado'}</span>
+        </div>
+        <div class="detalhe-item">
+            <span class="detalhe-icon"><i class="fas fa-tachometer-alt"></i></span>
+            <span>${data.km ? `${data.km.toLocaleString('pt-BR')} km` : 'KM não informada'}</span>
+        </div>
+        <div class="detalhe-item">
+            <span class="detalhe-icon"><i class="fas fa-paint-brush"></i></span>
+            <span>${data.cor || 'Cor não informada'}</span>
+        </div>
+        <div class="detalhe-item">
+            <span class="detalhe-icon">
+                ${data.combustivel ? '<i class="fas fa-gas-pump"></i>' : '<span class="emoji">❓</span>'}
+            </span>
+            <span>${data.combustivel || 'Combustível não informado'}</span>
         </div>
     `;
 }
