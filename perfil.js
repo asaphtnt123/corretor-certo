@@ -324,6 +324,7 @@ async function carregarMeusAnuncios() {
         showAlert("Erro ao carregar anúncios", "error");
     }
 }
+}
 
 // Inicializa quando a tab de anúncios é mostrada
 document.getElementById('anuncios-tab')?.addEventListener('shown.bs.tab', () => {
