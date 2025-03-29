@@ -73,38 +73,89 @@ async function carregarDadosAnuncio() {
 document.getElementById("form-editar").addEventListener("submit", async function(event) {
     event.preventDefault();
     
-    // Campos comuns
-    const dadosAtualizados = {
-        titulo: document.getElementById("titulo").value,
-        descricao: document.getElementById("descricao").value,
-        preco: parseFloat(document.getElementById("preco").value),
-        status: document.getElementById("status").checked ? "ativo" : "inativo",
-        destaque: document.getElementById("destaque").checked,
-        dataAtualizacao: new Date()
-    };
-    
-    // Campos específicos
-    if (tipo === "imovel") {
-        dadosAtualizados.quartos = parseInt(document.getElementById("quartos").value) || 0;
-        dadosAtualizados.banheiros = parseInt(document.getElementById("banheiros").value) || 0;
-        dadosAtualizados.garagem = parseInt(document.getElementById("garagem").value) || 0;
-        dadosAtualizados.area = parseInt(document.getElementById("area").value) || 0;
-        dadosAtualizados.bairro = document.getElementById("bairro").value;
-    } else {
-        dadosAtualizados.marca = document.getElementById("marca").value;
-        dadosAtualizados.modelo = document.getElementById("modelo").value;
-        dadosAtualizados.ano = parseInt(document.getElementById("ano").value) || 0;
-        dadosAtualizados.km = parseInt(document.getElementById("km").value) || 0;
-        dadosAtualizados.cor = document.getElementById("cor").value;
-    }
-    
     try {
-        await updateDoc(doc(db, collectionName, id), dadosAtualizados);
-        alert("Anúncio atualizado com sucesso!");
-        window.location.href = "perfil.html";
+        // Verifica autenticação
+        const auth = getAuth();
+        const user = auth.currentUser;
+        
+        if (!user) {
+            alert("Você precisa estar logado para editar anúncios!");
+            window.location.href = "login.html";
+            return;
+        }
+
+        // Verifica se o usuário é o dono do anúncio
+        const docRef = doc(db, collectionName, id);
+        const docSnap = await getDoc(docRef);
+        
+        if (!docSnap.exists()) {
+            alert("Anúncio não encontrado!");
+            window.location.href = "perfil.html";
+            return;
+        }
+        
+        if (docSnap.data().userId !== user.uid) {
+            alert("Você não tem permissão para editar este anúncio");
+            window.location.href = "perfil.html";
+            return;
+        }
+
+        // Prepara dados atualizados
+        const dadosAtualizados = {
+            titulo: document.getElementById("titulo").value,
+            descricao: document.getElementById("descricao").value,
+            preco: parseFloat(document.getElementById("preco").value),
+            status: document.getElementById("status").checked ? "ativo" : "inativo",
+            destaque: document.getElementById("destaque").checked,
+            dataAtualizacao: new Date(),
+            userId: user.uid // Mantém o userId original
+        };
+        
+        // Campos específicos
+        if (tipo === "imovel") {
+            dadosAtualizados.quartos = parseInt(document.getElementById("quartos").value) || 0;
+            dadosAtualizados.banheiros = parseInt(document.getElementById("banheiros").value) || 0;
+            dadosAtualizados.garagem = parseInt(document.getElementById("garagem").value) || 0;
+            dadosAtualizados.area = parseInt(document.getElementById("area").value) || 0;
+            dadosAtualizados.bairro = document.getElementById("bairro").value;
+        } else {
+            dadosAtualizados.marca = document.getElementById("marca").value;
+            dadosAtualizados.modelo = document.getElementById("modelo").value;
+            dadosAtualizados.ano = parseInt(document.getElementById("ano").value) || 0;
+            dadosAtualizados.km = parseInt(document.getElementById("km").value) || 0;
+            dadosAtualizados.cor = document.getElementById("cor").value;
+        }
+        
+        // Atualiza o documento
+        await updateDoc(docRef, dadosAtualizados);
+        
+        // Feedback e redirecionamento
+        Swal.fire({
+            title: 'Sucesso!',
+            text: 'Anúncio atualizado com sucesso',
+            icon: 'success',
+            confirmButtonText: 'OK'
+        }).then(() => {
+            window.location.href = "perfil.html";
+        });
+        
     } catch (error) {
-        console.error("Erro ao atualizar anúncio:", error);
-        alert("Erro ao atualizar anúncio. Por favor, tente novamente.");
+        console.error("Erro detalhado:", error);
+        
+        let errorMessage = "Erro ao atualizar anúncio. Por favor, tente novamente.";
+        
+        if (error.code === 'permission-denied') {
+            errorMessage = "Você não tem permissão para editar este anúncio.";
+        } else if (error.code === 'not-found') {
+            errorMessage = "Anúncio não encontrado no banco de dados.";
+        }
+        
+        Swal.fire({
+            title: 'Erro!',
+            text: errorMessage,
+            icon: 'error',
+            confirmButtonText: 'Entendi'
+        });
     }
 });
 
