@@ -16,7 +16,8 @@ import {
   doc,
   getDoc,
   setDoc,
-  addDoc
+  addDoc,
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
@@ -894,3 +895,8 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
         alert('Erro ao fazer logout. Tente novamente.');
     }
 });
+
+
+function showAlert(mensagem, tipo) {
+    alert(`[${tipo.toUpperCase()}] ${mensagem}`);
+}
