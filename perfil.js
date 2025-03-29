@@ -127,94 +127,87 @@ async function carregarInformacoesUsuario(user) {
 
 async function carregarMeusAnuncios() {
     try {
+        console.log("[DEBUG] Iniciando carregarMeusAnuncios");
+        
         const user = auth.currentUser;
         if (!user) {
+            console.log("[DEBUG] Usuário não logado");
             showAlert('Você precisa estar logado para ver seus anúncios', 'error');
             return;
         }
 
-        console.log('ID do usuário:', user.uid);
+        console.log("[DEBUG] Usuário logado:", user.uid);
 
-        // Busca anúncios
+        // 1. Verifica se os elementos DOM existem
+        const countTodosElement = document.getElementById("count-todos");
+        const countAtivosElement = document.getElementById("count-ativos");
+        const countInativosElement = document.getElementById("count-inativos");
+        const countDestaquesElement = document.getElementById("count-destaques");
+        
+        if (!countTodosElement || !countAtivosElement || !countInativosElement || !countDestaquesElement) {
+            console.error("[ERRO] Elementos de contagem não encontrados no DOM");
+            return;
+        }
+
+        // 2. Busca os anúncios
+        console.log("[DEBUG] Buscando anúncios no Firestore...");
         const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
             getDocs(query(collection(db, "imoveis"), where("userId", "==", user.uid))),
             getDocs(query(collection(db, "automoveis"), where("userId", "==", user.uid)))
         ]);
 
-        console.log('Total de imóveis:', imoveisSnapshot.size);
-        console.log('Total de automóveis:', automoveisSnapshot.size);
+        console.log(`[DEBUG] Encontrados ${imoveisSnapshot.size} imóveis e ${automoveisSnapshot.size} automóveis`);
 
-        // Elementos DOM
-        const containers = {
-            todos: document.getElementById("anuncios-container"),
-            ativos: document.getElementById("anuncios-ativos"),
-            inativos: document.getElementById("anuncios-inativos"),
-            destaques: document.getElementById("anuncios-destaques")
-        };
-
-        // Limpa containers
-        Object.values(containers).forEach(container => {
-            if (container) container.innerHTML = "";
-        });
-
-        // Contadores
-        const counters = {
+        // 3. Processamento dos documentos
+        let counts = {
             todos: 0,
             ativos: 0,
             inativos: 0,
             destaques: 0
         };
 
-        // Processa cada documento
-        const processarDocumento = (doc, tipo) => {
+        const processarAnuncio = (doc, tipo) => {
             const data = doc.data();
-            const id = doc.id;
+            counts.todos++;
             
-            console.log('Processando anúncio:', { id, data }); // Log detalhado
-
-            // Atualiza contadores
-            counters.todos++;
+            // Verificação EXTRA do status
+            const status = data.hasOwnProperty('status') ? data.status : 'ativo';
+            console.log(`[DEBUG] Anúncio ${doc.id} - Status: ${status}`, data);
             
-            // Verifica status (com fallback para 'ativo')
-            const status = data.status || 'ativo';
-            if (status === 'ativo') counters.ativos++;
-            if (status === 'inativo') counters.inativos++;
-            if (data.destaque) counters.destaques++;
-
-            // Cria o card
-            const cardHTML = criarCardAnuncio(data, tipo, id);
-            
-            // Adiciona aos containers apropriados
-            if (containers.todos) containers.todos.innerHTML += cardHTML;
-            if (status === 'ativo' && containers.ativos) containers.ativos.innerHTML += cardHTML;
-            if (status === 'inativo' && containers.inativos) containers.inativos.innerHTML += cardHTML;
-            if (data.destaque && containers.destaques) containers.destaques.innerHTML += cardHTML;
+            if (status === 'ativo') counts.ativos++;
+            if (status === 'inativo') counts.inativos++;
+            if (data.destaque) counts.destaques++;
         };
 
-        // Processa todos os documentos
-        imoveisSnapshot.forEach(doc => processarDocumento(doc, "imóvel"));
-        automoveisSnapshot.forEach(doc => processarDocumento(doc, "automóvel"));
+        imoveisSnapshot.forEach(doc => processarAnuncio(doc, "Imóvel"));
+        automoveisSnapshot.forEach(doc => processarAnuncio(doc, "Automóvel"));
 
-        console.log('Contagem final:', counters); // Log importante
+        console.log("[DEBUG] Contagens calculadas:", counts);
 
-        // Atualiza a UI
-        document.getElementById("count-todos") && (document.getElementById("count-todos").textContent = counters.todos);
-        document.getElementById("count-ativos") && (document.getElementById("count-ativos").textContent = counters.ativos);
-        document.getElementById("count-inativos") && (document.getElementById("count-inativos").textContent = counters.inativos);
-        document.getElementById("count-destaques") && (document.getElementById("count-destaques").textContent = counters.destaques);
+        // 4. Atualização EXTRA segura dos elementos
+        const updateCounter = (element, value) => {
+            if (element && !isNaN(value)) {
+                element.textContent = value;
+                console.log(`[DEBUG] Atualizado ${element.id} para ${value}`);
+            }
+        };
 
-        // Mostra mensagem se não houver anúncios
-        const noAnuncios = document.getElementById("no-anuncios");
-        if (noAnuncios) {
-            noAnuncios.classList.toggle("d-none", counters.todos > 0);
-        }
+        updateCounter(countTodosElement, counts.todos);
+        updateCounter(countAtivosElement, counts.ativos);
+        updateCounter(countInativosElement, counts.inativos);
+        updateCounter(countDestaquesElement, counts.destaques);
 
-        // Inicializa eventos
-        inicializarEventosAnuncios();
+        // 5. Verificação final
+        console.log("[DEBUG] Valores finais nos elementos:",
+            `Todos: ${countTodosElement.textContent}`,
+            `Ativos: ${countAtivosElement.textContent}`,
+            `Inativos: ${countInativosElement.textContent}`,
+            `Destaques: ${countDestaquesElement.textContent}`
+        );
 
     } catch (error) {
-        console.error("Erro detalhado:", error);
-        showAlert(`Erro ao carregar anúncios: ${error.message}`, "error");
+        console.error("[ERRO] Falha ao carregar anúncios:", error);
+        showAlert("Erro ao carregar anúncios: " + error.message, "error");
     }
 }
 
