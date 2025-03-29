@@ -340,63 +340,147 @@ setTimeout(() => {
     replaceCounter("count-destaques");
 }, 200);
 
-// Função para inicializar eventos dos anúncios
+// Função para inicializar eventos dos anúncios (ATUALIZADA)
 function inicializarEventosAnuncios() {
-    // Filtro por tipo
-    document.getElementById("filtro-tipo").addEventListener("change", function() {
-        const tipo = this.value;
-        const cards = document.querySelectorAll("#anuncios-container .anuncio-card");
-        
-        cards.forEach(card => {
-            const cardTipo = card.querySelector(".anuncio-badge").textContent.toLowerCase();
-            if (tipo === "todos" || cardTipo.includes(tipo)) {
-                card.style.display = "";
-            } else {
-                card.style.display = "none";
-            }
+    // 1. Filtro por tipo de anúncio (Imóvel/Automóvel/Todos)
+    const filtroTipo = document.getElementById("filtro-tipo");
+    if (filtroTipo) {
+        filtroTipo.addEventListener("change", function() {
+            const tipo = this.value.toLowerCase();
+            const containers = [
+                document.getElementById("anuncios-container"),
+                document.getElementById("anuncios-ativos"),
+                document.getElementById("anuncios-inativos"),
+                document.getElementById("anuncios-destaques")
+            ];
+            
+            containers.forEach(container => {
+                if (!container) return;
+                
+                const cards = container.querySelectorAll(".anuncio-card");
+                cards.forEach(card => {
+                    const cardTipo = card.querySelector(".anuncio-badge").textContent.toLowerCase();
+                    if (tipo === "todos" || cardTipo.includes(tipo)) {
+                        card.style.display = "";
+                    } else {
+                        card.style.display = "none";
+                    }
+                });
+            });
         });
-    });
-    
-    // Busca por texto
-    document.getElementById("busca-anuncios").addEventListener("input", function() {
-        const termo = this.value.toLowerCase();
-        const cards = document.querySelectorAll("#anuncios-container .anuncio-card");
-        
-        cards.forEach(card => {
-            const textoCard = card.textContent.toLowerCase();
-            card.style.display = textoCard.includes(termo) ? "" : "none";
+    }
+
+    // 2. Busca por texto em todos os containers
+    const buscaInput = document.getElementById("busca-anuncios");
+    if (buscaInput) {
+        buscaInput.addEventListener("input", function() {
+            const termo = this.value.toLowerCase().trim();
+            const containers = [
+                document.getElementById("anuncios-container"),
+                document.getElementById("anuncios-ativos"),
+                document.getElementById("anuncios-inativos"),
+                document.getElementById("anuncios-destaques")
+            ];
+            
+            containers.forEach(container => {
+                if (!container) return;
+                
+                const cards = container.querySelectorAll(".anuncio-card");
+                cards.forEach(card => {
+                    const textoCard = card.textContent.toLowerCase();
+                    card.style.display = textoCard.includes(termo) ? "" : "none";
+                });
+            });
         });
-    });
-    
-    // Botões de ação
-    document.addEventListener("click", function(e) {
-        // Editar
+    }
+
+    // 3. Eventos delegados para todos os botões
+    document.addEventListener("click", async function(e) {
+        const card = e.target.closest(".anuncio-card");
+        if (!card) return;
+        
+        const id = card.dataset.id;
+        const tipo = card.dataset.tipo;
+        const collectionName = tipo === "imovel" ? "imoveis" : "automoveis";
+        
+        // Botão Editar
         if (e.target.closest(".btn-editar")) {
-            const btn = e.target.closest(".btn-editar");
-            const id = btn.dataset.id;
-            const tipo = btn.dataset.tipo;
             window.location.href = `editar-anuncio.html?id=${id}&tipo=${tipo}`;
+            return;
         }
         
-        // Excluir
+        // Botão Excluir
         if (e.target.closest(".btn-excluir")) {
-            const btn = e.target.closest(".btn-excluir");
-            const id = btn.dataset.id;
-            const tipo = btn.dataset.tipo;
             confirmarExclusaoAnuncio(id, tipo);
+            return;
         }
         
-        // Alterar status (ativo/inativo)
-        if (e.target.closest(".btn-status")) {
-            const btn = e.target.closest(".btn-status");
-            const id = btn.dataset.id;
-            const tipo = btn.dataset.tipo;
-            const statusAtual = btn.dataset.status;
-            toggleStatusAnuncio(id, tipo, statusAtual);
+        // Toggle de Status (Ativo/Inativo)
+        if (e.target.closest(".btn-status-toggle")) {
+            const btn = e.target.closest(".btn-status-toggle");
+            const currentStatus = btn.dataset.status;
+            const novoStatus = currentStatus === "ativo" ? "inativo" : "ativo";
+            
+            try {
+                await updateDoc(doc(db, collectionName, id), {
+                    status: novoStatus
+                });
+                
+                // Atualização visual imediata
+                btn.dataset.status = novoStatus;
+                btn.classList.toggle("active", novoStatus === "ativo");
+                btn.title = novoStatus === "ativo" ? "Desativar anúncio" : "Ativar anúncio";
+                
+                showAlert(`Anúncio ${novoStatus === "ativo" ? "ativado" : "desativado"} com sucesso!`, "success");
+                
+                // Atualiza contadores após 500ms (tempo para animação)
+                setTimeout(carregarMeusAnuncios, 500);
+            } catch (error) {
+                console.error("Erro ao alterar status:", error);
+                showAlert("Erro ao alterar status do anúncio", "error");
+            }
+            return;
+        }
+        
+        // Toggle de Destaque
+        if (e.target.closest(".btn-destaque-toggle")) {
+            const btn = e.target.closest(".btn-destaque-toggle");
+            const currentDestaque = btn.dataset.destaque === "true";
+            const novoDestaque = !currentDestaque;
+            
+            try {
+                await updateDoc(doc(db, collectionName, id), {
+                    destaque: novoDestaque
+                });
+                
+                // Atualização visual imediata
+                btn.dataset.destaque = novoDestaque;
+                btn.classList.toggle("active", novoDestaque);
+                btn.title = novoDestaque ? "Remover destaque" : "Destacar anúncio";
+                
+                showAlert(`Anúncio ${novoDestaque ? "destacado" : "removido dos destaques"} com sucesso!`, "success");
+                
+                // Atualiza contadores após 500ms
+                setTimeout(carregarMeusAnuncios, 500);
+            } catch (error) {
+                console.error("Erro ao alterar destaque:", error);
+                showAlert("Erro ao alterar destaque do anúncio", "error");
+            }
+        }
+    });
+
+    // 4. Eventos para as tabs (Bootstrap)
+    const tabs = ["todos-tab", "ativos-tab", "inativos-tab", "destaques-tab"];
+    tabs.forEach(tabId => {
+        const tab = document.getElementById(tabId);
+        if (tab) {
+            tab.addEventListener("shown.bs.tab", () => {
+                // Força atualização ao mudar de tab
+                setTimeout(carregarMeusAnuncios, 100);
+            });
         }
     });
 }
-
 // Função para alternar status do anúncio
 async function toggleStatusAnuncio(id, tipo, statusAtual) {
     try {
