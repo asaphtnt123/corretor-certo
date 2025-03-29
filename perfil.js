@@ -1,5 +1,7 @@
-// Importar funções do Firebase corretamente (versão consolidada)
+// Firebase Core
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+
+// Authentication
 import { 
   getAuth, 
   onAuthStateChanged,
@@ -7,6 +9,8 @@ import {
   browserLocalPersistence,
   signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+// Firestore (agora corretamente formatado)
 import { 
   getFirestore,
   collection,
@@ -17,12 +21,13 @@ import {
   getDoc,
   setDoc,
   addDoc,
-    updateDoc,
+  updateDoc,
   deleteDoc,
   runTransaction
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
+// Storage
+import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 // Configuração do Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyA-7HOp-Ycvyf3b_03ev__8aJEwAbWSQZY",
