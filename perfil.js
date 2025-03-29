@@ -689,11 +689,7 @@ if (document.readyState === 'loading') {
     configurarEventosAnuncios();
 }
 
-// Inicializa os eventos quando o DOM estiver pronto
-document.addEventListener('DOMContentLoaded', function() {
-    configurarEventosAnuncios();
-    console.log('Eventos de anúncio configurados com sucesso');
-});
+
 
 
 // Função para gerar detalhes de imóvel
