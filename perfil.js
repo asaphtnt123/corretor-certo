@@ -127,39 +127,42 @@ async function carregarInformacoesUsuario(user) {
 
 async function carregarMeusAnuncios() {
     try {
-        console.log("[DEBUG] Iniciando carregarMeusAnuncios");
+        console.log("[1] Iniciando carregamento de anúncios...");
         
         const user = auth.currentUser;
         if (!user) {
-            console.log("[DEBUG] Usuário não logado");
             showAlert('Você precisa estar logado para ver seus anúncios', 'error');
             return;
         }
 
-        console.log("[DEBUG] Usuário logado:", user.uid);
+        // 1. VERIFICAÇÃO DOS ELEMENTOS DO CONTADOR
+        const countElements = {
+            todos: document.getElementById("count-todos"),
+            ativos: document.getElementById("count-ativos"),
+            inativos: document.getElementById("count-inativos"),
+            destaques: document.getElementById("count-destaques")
+        };
 
-        // 1. Verifica se os elementos DOM existem
-        const countTodosElement = document.getElementById("count-todos");
-        const countAtivosElement = document.getElementById("count-ativos");
-        const countInativosElement = document.getElementById("count-inativos");
-        const countDestaquesElement = document.getElementById("count-destaques");
-        
-        if (!countTodosElement || !countAtivosElement || !countInativosElement || !countDestaquesElement) {
-            console.error("[ERRO] Elementos de contagem não encontrados no DOM");
-            return;
+        // Verificação rigorosa dos elementos
+        for (const [key, element] of Object.entries(countElements)) {
+            if (!element) {
+                console.error(`[ERRO CRÍTICO] Elemento count-${key} não encontrado no DOM`);
+                return;
+            }
+            console.log(`[2] Elemento count-${key} encontrado:`, element);
         }
 
-        // 2. Busca os anúncios
-        console.log("[DEBUG] Buscando anúncios no Firestore...");
+        // 2. BUSCA DOS ANÚNCIOS
+        console.log("[3] Buscando anúncios no Firestore...");
         const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
             getDocs(query(collection(db, "imoveis"), where("userId", "==", user.uid))),
             getDocs(query(collection(db, "automoveis"), where("userId", "==", user.uid)))
         ]);
 
-        console.log(`[DEBUG] Encontrados ${imoveisSnapshot.size} imóveis e ${automoveisSnapshot.size} automóveis`);
+        console.log(`[4] Total de anúncios encontrados: ${imoveisSnapshot.size + automoveisSnapshot.size}`);
 
-        // 3. Processamento dos documentos
-        let counts = {
+        // 3. CONTAGEM E PROCESSAMENTO
+        const counters = {
             todos: 0,
             ativos: 0,
             inativos: 0,
@@ -168,48 +171,68 @@ async function carregarMeusAnuncios() {
 
         const processarAnuncio = (doc, tipo) => {
             const data = doc.data();
-            counts.todos++;
+            counters.todos++;
             
-            // Verificação EXTRA do status
-            const status = data.hasOwnProperty('status') ? data.status : 'ativo';
-            console.log(`[DEBUG] Anúncio ${doc.id} - Status: ${status}`, data);
-            
-            if (status === 'ativo') counts.ativos++;
-            if (status === 'inativo') counts.inativos++;
-            if (data.destaque) counts.destaques++;
+            console.log(`[5] Processando anúncio ${doc.id}`, {
+                status: data.status,
+                destaque: data.destaque,
+                tipo: tipo
+            });
+
+            // Contagem de status
+            if (data.status === 'ativo') counters.ativos++;
+            if (data.status === 'inativo') counters.inativos++;
+            if (data.destaque) counters.destaques++;
         };
 
+        // Processar todos os documentos
         imoveisSnapshot.forEach(doc => processarAnuncio(doc, "Imóvel"));
         automoveisSnapshot.forEach(doc => processarAnuncio(doc, "Automóvel"));
 
-        console.log("[DEBUG] Contagens calculadas:", counts);
+        console.log("[6] Contagens calculadas:", counters);
 
-        // 4. Atualização EXTRA segura dos elementos
+        // 4. ATUALIZAÇÃO DOS CONTADORES (MÉTODO À PROVA DE FALHAS)
         const updateCounter = (element, value) => {
             if (element && !isNaN(value)) {
                 element.textContent = value;
-                console.log(`[DEBUG] Atualizado ${element.id} para ${value}`);
+                // Força o navegador a reconhecer a mudança
+                element.style.display = 'none';
+                element.offsetHeight; // Trigger reflow
+                element.style.display = '';
+                console.log(`[7] Atualizado ${element.id} para ${value}`);
             }
         };
 
-        updateCounter(countTodosElement, counts.todos);
-        updateCounter(countAtivosElement, counts.ativos);
-        updateCounter(countInativosElement, counts.inativos);
-        updateCounter(countDestaquesElement, counts.destaques);
+        // Atualiza todos os contadores
+        updateCounter(countElements.todos, counters.todos);
+        updateCounter(countElements.ativos, counters.ativos);
+        updateCounter(countElements.inativos, counters.inativos);
+        updateCounter(countElements.destaques, counters.destaques);
 
-        // 5. Verificação final
-        console.log("[DEBUG] Valores finais nos elementos:",
-            `Todos: ${countTodosElement.textContent}`,
-            `Ativos: ${countAtivosElement.textContent}`,
-            `Inativos: ${countInativosElement.textContent}`,
-            `Destaques: ${countDestaquesElement.textContent}`
-        );
+        // 5. VERIFICAÇÃO FINAL
+        console.log("[8] Estado final dos contadores:", {
+            todos: countElements.todos.textContent,
+            ativos: countElements.ativos.textContent,
+            inativos: countElements.inativos.textContent,
+            destaques: countElements.destaques.textContent
+        });
 
     } catch (error) {
-        console.error("[ERRO] Falha ao carregar anúncios:", error);
+        console.error("[ERRO] Falha no carregamento:", error);
         showAlert("Erro ao carregar anúncios: " + error.message, "error");
     }
 }
+// Código de diagnóstico (remova após resolver o problema)
+setTimeout(() => {
+    console.log("[DIAGNÓSTICO] Verificação final dos elementos:", {
+        todos: document.getElementById("count-todos")?.textContent,
+        ativos: document.getElementById("count-ativos")?.textContent,
+        inativos: document.getElementById("count-inativos")?.textContent,
+        destaques: document.getElementById("count-destaques")?.textContent
+    });
+    
+    console.log("[DIAGNÓSTICO] Estrutura do DOM:", document.getElementById("count-todos"));
+}, 1000);
 
 // Função para inicializar eventos dos anúncios
 function inicializarEventosAnuncios() {
