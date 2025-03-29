@@ -16,7 +16,7 @@ import {
   doc,
   getDoc,
   setDoc,
-  addDoc
+  addDoc,
     updateDoc,
   deleteDoc,
   runTransaction
