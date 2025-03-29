@@ -135,7 +135,7 @@ async function carregarMeusAnuncios() {
             return;
         }
 
-        // 1. VERIFICAÇÃO DOS ELEMENTOS DO CONTADOR (MELHORADA)
+        // 1. VERIFICAÇÃO DOS ELEMENTOS
         const getElement = (id) => {
             const el = document.getElementById(id);
             if (!el) console.error(`Elemento ${id} não encontrado`);
@@ -147,10 +147,14 @@ async function carregarMeusAnuncios() {
             ativos: getElement("count-ativos"),
             inativos: getElement("count-inativos"),
             destaques: getElement("count-destaques"),
-            container: getElement("anuncios-container")
+            containerTodos: getElement("anuncios-container"),
+            containerAtivos: getElement("anuncios-ativos"),
+            containerInativos: getElement("anuncios-inativos"),
+            containerDestaques: getElement("anuncios-destaques"),
+            noAnuncios: getElement("no-anuncios")
         };
 
-        // 2. BUSCA DOS ANÚNCIOS (COM MAIS LOGS)
+        // 2. BUSCA DOS ANÚNCIOS
         console.log("[1] Buscando anúncios no Firestore...");
         const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
             getDocs(query(collection(db, "imoveis"), where("userId", "==", user.uid))),
@@ -159,7 +163,8 @@ async function carregarMeusAnuncios() {
 
         console.log(`[2] Total de documentos: ${imoveisSnapshot.size + automoveisSnapshot.size}`);
 
-        // 3. CONTAGEM (COM FALLBACK EXPLÍCITO)
+        // 3. PROCESSAMENTO DOS ANÚNCIOS
+        const todosAnuncios = [];
         const counters = {
             todos: 0,
             ativos: 0,
@@ -167,56 +172,139 @@ async function carregarMeusAnuncios() {
             destaques: 0
         };
 
+        // Função para processar cada anúncio
         const processarAnuncio = (doc, tipo) => {
             const data = doc.data();
-            counters.todos++;
+            const anuncio = {
+                ...data,
+                id: doc.id,
+                tipo: tipo
+            };
             
-            // Verificação explícita do status
+            // Verificação do status
             const status = (typeof data.status === 'string') ? data.status.toLowerCase() : 'ativo';
+            anuncio.status = status; // Garante que o status está padronizado
             
+            // Atualiza contadores
+            counters.todos++;
             if (status === 'ativo') counters.ativos++;
             if (status === 'inativo') counters.inativos++;
             if (data.destaque === true) counters.destaques++;
             
+            todosAnuncios.push(anuncio);
             console.log(`[3] Processado: ${doc.id}`, {status, destaque: data.destaque});
         };
 
+        // Processa todos os documentos
         imoveisSnapshot.forEach(doc => processarAnuncio(doc, "Imóvel"));
         automoveisSnapshot.forEach(doc => processarAnuncio(doc, "Automóvel"));
 
         console.log("[4] Contagens calculadas:", counters);
+        console.log("[5] Total de anúncios processados:", todosAnuncios.length);
 
-        // 4. ATUALIZAÇÃO À PROVA DE FALHAS
-        const updateDOM = () => {
-            console.log("[5] Atualizando DOM...");
-            
-            // Método 1: Atualização normal
+        // 4. ATUALIZAÇÃO DOS CONTADORES
+        const updateCounters = () => {
             if (elements.todos) elements.todos.textContent = counters.todos;
             if (elements.ativos) elements.ativos.textContent = counters.ativos;
             if (elements.inativos) elements.inativos.textContent = counters.inativos;
             if (elements.destaques) elements.destaques.textContent = counters.destaques;
             
-            // Método 2: Forçar redraw (para navegadores problemáticos)
+            // Força redraw para navegadores problemáticos
             requestAnimationFrame(() => {
                 if (elements.todos) {
                     elements.todos.style.display = 'none';
-                    elements.todos.offsetHeight; // Trigger reflow
+                    elements.todos.offsetHeight;
                     elements.todos.style.display = '';
                 }
             });
-            
-            console.log("[6] DOM atualizado");
         };
 
-        updateDOM();
+        updateCounters();
 
-        // 5. VERIFICAÇÃO FINAL (AGUARDA CICLO DE RENDERIZAÇÃO)
+        // 5. EXIBIÇÃO DOS ANÚNCIOS
+        const exibirAnuncios = (anuncios, container) => {
+            if (!container) return;
+            
+            container.innerHTML = ""; // Limpa o container
+            
+            if (anuncios.length === 0) {
+                if (container === elements.containerTodos && elements.noAnuncios) {
+                    elements.noAnuncios.classList.remove("d-none");
+                }
+                return;
+            }
+            
+            if (elements.noAnuncios) {
+                elements.noAnuncios.classList.add("d-none");
+            }
+            
+            anuncios.forEach(anuncio => {
+                const cardHTML = criarCardAnuncio(anuncio, anuncio.tipo, anuncio.id);
+                container.innerHTML += cardHTML;
+            });
+        };
+
+        // Exibe todos os anúncios inicialmente
+        exibirAnuncios(todosAnuncios, elements.containerTodos);
+        
+        // Prepara os anúncios filtrados
+        const anunciosAtivos = todosAnuncios.filter(a => a.status === 'ativo');
+        const anunciosInativos = todosAnuncios.filter(a => a.status === 'inativo');
+        const anunciosDestaques = todosAnuncios.filter(a => a.destaque === true);
+        
+        // Exibe os anúncios filtrados em seus containers
+        exibirAnuncios(anunciosAtivos, elements.containerAtivos);
+        exibirAnuncios(anunciosInativos, elements.containerInativos);
+        exibirAnuncios(anunciosDestaques, elements.containerDestaques);
+
+        // 6. CONFIGURAÇÃO DOS EVENTOS DE FILTRO
+        const configurarFiltros = () => {
+            const tabs = {
+                "todos-tab": "todos",
+                "ativos-tab": "ativos",
+                "inativos-tab": "inativos",
+                "destaques-tab": "destaques"
+            };
+            
+            // Mostra a tab ativa quando clicada
+            Object.entries(tabs).forEach(([tabId, tipo]) => {
+                const tab = document.getElementById(tabId);
+                if (tab) {
+                    tab.addEventListener("click", () => {
+                        const containerMap = {
+                            "todos": elements.containerTodos,
+                            "ativos": elements.containerAtivos,
+                            "inativos": elements.containerInativos,
+                            "destaques": elements.containerDestaques
+                        };
+                        
+                        const container = containerMap[tipo];
+                        if (container) {
+                            // Esconde todos os containers
+                            Object.values(containerMap).forEach(c => {
+                                if (c) c.style.display = 'none';
+                            });
+                            
+                            // Mostra o container selecionado
+                            container.style.display = '';
+                        }
+                    });
+                }
+            });
+        };
+
+        configurarFiltros();
+
+        // 7. VERIFICAÇÃO FINAL
         setTimeout(() => {
-            console.log("[7] Estado final:", {
+            console.log("[6] Estado final:", {
                 todos: elements.todos?.textContent,
                 ativos: elements.ativos?.textContent,
                 inativos: elements.inativos?.textContent,
-                destaques: elements.destaques?.textContent
+                destaques: elements.destaques?.textContent,
+                anunciosAtivos: anunciosAtivos.length,
+                anunciosInativos: anunciosInativos.length,
+                anunciosDestaques: anunciosDestaques.length
             });
         }, 100);
 
@@ -226,6 +314,10 @@ async function carregarMeusAnuncios() {
     }
 }
 
+// Inicializa quando a tab de anúncios é mostrada
+document.getElementById('anuncios-tab')?.addEventListener('shown.bs.tab', () => {
+    setTimeout(carregarMeusAnuncios, 50);
+});
 // SOLUÇÃO ADICIONAL PARA TABS DO BOOTSTRAP
 document.getElementById('anuncios-tab')?.addEventListener('shown.bs.tab', () => {
     console.log("Tab de anúncios ativada - recarregando contadores");
