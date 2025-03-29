@@ -192,8 +192,8 @@ async function carregarMeusAnuncios() {
         };
 
         // Processa todos os documentos
-        imoveisSnapshot.forEach(doc => processarDocumento(doc, "Imóvel"));
-        automoveisSnapshot.forEach(doc => processarDocumento(doc, "Automóvel"));
+        imoveisSnapshot.forEach(doc => processarDocumento(doc, "imóvel"));
+        automoveisSnapshot.forEach(doc => processarDocumento(doc, "automóvel"));
 
         console.log('Contagem final:', counters); // Log importante
 
