@@ -325,7 +325,6 @@ async function carregarMeusAnuncios() {
     }
 }
 
-
 // Inicializa quando a tab de anúncios é mostrada
 document.getElementById('anuncios-tab')?.addEventListener('shown.bs.tab', () => {
     setTimeout(carregarMeusAnuncios, 50);
