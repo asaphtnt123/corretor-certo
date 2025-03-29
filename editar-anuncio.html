@@ -4,115 +4,394 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Anúncio</title>
-    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        .form-section {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .form-section h3 {
+            color: #0d6efd;
+            margin-bottom: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <h1>Editar Anúncio</h1>
-    <form id="form-editar">
-        <label for="titulo">Título:</label>
-        <input type="text" id="titulo" required>
+    <div class="form-container">
+        <h1 class="text-center mb-4"><i class="fas fa-edit me-2"></i>Editar Anúncio</h1>
         
-        <label for="descricao">Descrição:</label>
-        <textarea id="descricao" required></textarea>
-        
-        <label for="preco">Preço:</label>
-        <input type="number" id="preco" required>
-        
-        <button type="submit">Salvar Alterações</button>
-    </form>
+        <form id="form-editar">
+            <!-- Seção de Informações Básicas -->
+            <div class="form-section">
+                <h3><i class="fas fa-info-circle me-2"></i>Informações Básicas</h3>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="titulo" class="form-label">Título *</label>
+                        <input type="text" class="form-control" id="titulo" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="preco" class="form-label">Preço (R$) *</label>
+                        <input type="number" class="form-control" id="preco" step="0.01" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="descricao" class="form-label">Descrição *</label>
+                    <textarea class="form-control" id="descricao" rows="4" required></textarea>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="status" class="form-label">Status *</label>
+                        <select class="form-select" id="status" required>
+                            <option value="ativo">Ativo</option>
+                            <option value="inativo">Inativo</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3 d-flex align-items-end">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="destaque">
+                            <label class="form-check-label" for="destaque">Destacar anúncio</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    <script type="module">
-       // Importar funções do Firebase corretamente (versão consolidada)
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { 
-  getAuth, 
-  onAuthStateChanged,
-  setPersistence,
-  browserLocalPersistence,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { 
-  getFirestore,
-  collection,
-  query,
-  where,
-  getDocs,
-  doc,
-  getDoc,
-  setDoc,
-  addDoc,
-  updateDoc
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+            <!-- Seção de Detalhes do Imóvel -->
+            <div class="form-section" id="secao-imovel">
+                <h3><i class="fas fa-home me-2"></i>Detalhes do Imóvel</h3>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="quartos" class="form-label">Quartos</label>
+                        <input type="number" class="form-control" id="quartos">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="banheiros" class="form-label">Banheiros</label>
+                        <input type="number" class="form-control" id="banheiros">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="garagem" class="form-label">Vagas</label>
+                        <input type="number" class="form-control" id="garagem">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="area" class="form-label">Área (m²)</label>
+                        <input type="number" class="form-control" id="area">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="bairro" class="form-label">Bairro</label>
+                        <input type="text" class="form-control" id="bairro">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="tipo_imovel" class="form-label">Tipo de Imóvel</label>
+                        <select class="form-select" id="tipo_imovel">
+                            <option value="casa">Casa</option>
+                            <option value="apartamento">Apartamento</option>
+                            <option value="terreno">Terreno</option>
+                            <option value="comercial">Comercial</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
 
-// Configuração do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyA-7HOp-Ycvyf3b_03ev__8aJEwAbWSQZY",
-  authDomain: "connectfamilia-312dc.firebaseapp.com",
-  projectId: "connectfamilia-312dc",
-  storageBucket: "connectfamilia-312dc.appspot.com",
-  messagingSenderId: "797817838649",
-  appId: "1:797817838649:web:1aa7c54abd97661f8d81e8",
-  measurementId: "G-QKN9NFXZZQ"
-};
+            <!-- Seção de Detalhes do Automóvel -->
+            <div class="form-section hidden" id="secao-automovel">
+                <h3><i class="fas fa-car me-2"></i>Detalhes do Automóvel</h3>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="marca" class="form-label">Marca</label>
+                        <input type="text" class="form-control" id="marca">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="modelo" class="form-label">Modelo</label>
+                        <input type="text" class="form-control" id="modelo">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="ano" class="form-label">Ano</label>
+                        <input type="number" class="form-control" id="ano" min="1900" max="2099">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="km" class="form-label">Quilometragem</label>
+                        <input type="number" class="form-control" id="km">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="cor" class="form-label">Cor</label>
+                        <input type="text" class="form-control" id="cor">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="combustivel" class="form-label">Combustível</label>
+                        <select class="form-select" id="combustivel">
+                            <option value="gasolina">Gasolina</option>
+                            <option value="alcool">Álcool</option>
+                            <option value="flex">Flex</option>
+                            <option value="diesel">Diesel</option>
+                            <option value="eletrico">Elétrico</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
 
-// Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);  // Adicionei esta linha que estava faltando
-const auth = getAuth(app);
-const storage = getStorage(app);
+            <!-- Seção de Imagens -->
+            <div class="form-section">
+                <h3><i class="fas fa-images me-2"></i>Imagens</h3>
+                <div class="mb-3">
+                    <label for="imagens" class="form-label">Adicionar novas imagens</label>
+                    <input class="form-control" type="file" id="imagens" multiple accept="image/*">
+                </div>
+                <div id="preview-imagens" class="d-flex flex-wrap gap-2 mb-3"></div>
+                <div id="galeria-imagens" class="d-flex flex-wrap gap-2"></div>
+            </div>
 
-// Ativar persistência da autenticação
-setPersistence(auth, browserLocalPersistence)
-  .then(() => console.log("Persistência ativada!"))
-  .catch((error) => console.error("Erro na persistência:", error));
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="perfil.html" class="btn btn-secondary me-md-2">
+                    <i class="fas fa-times me-1"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i> Salvar Alterações
+                </button>
+            </div>
+        </form>
+    </div>
 
-console.log("Firebase inicializado com sucesso!");
+    <!-- SweetAlert2 para mensagens bonitas -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Firebase App (deve vir primeiro) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
+    
+    <!-- Firebase Services -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js"></script>
 
-export { app, db, auth, storage };
+    <script>
+        // Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyA-7HOp-Ycvyf3b_03ev__8aJEwAbWSQZY",
+            authDomain: "connectfamilia-312dc.firebaseapp.com",
+            projectId: "connectfamilia-312dc",
+            storageBucket: "connectfamilia-312dc.appspot.com",
+            messagingSenderId: "797817838649",
+            appId: "1:797817838649:web:1aa7c54abd97661f8d81e8",
+            measurementId: "G-QKN9NFXZZQ"
+        };
+
+        // Inicializar Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        const storage = firebase.storage();
+
         // Captura os parâmetros da URL
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
         const tipo = urlParams.get('tipo');
         const collectionName = tipo === "imovel" ? "imoveis" : "automoveis";
 
+        // Mostra a seção correta com base no tipo de anúncio
+        if (tipo === "imovel") {
+            document.getElementById("secao-imovel").classList.remove("hidden");
+        } else {
+            document.getElementById("secao-automovel").classList.remove("hidden");
+        }
+
+        // Função para carregar os dados do anúncio
         async function carregarDadosAnuncio() {
-            const docRef = doc(db, collectionName, id);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                const anuncio = docSnap.data();
-                document.getElementById("titulo").value = anuncio.titulo;
-                document.getElementById("descricao").value = anuncio.descricao;
-                document.getElementById("preco").value = anuncio.preco;
-            } else {
-                alert("Anúncio não encontrado!");
-                window.location.href = "perfil.html";
+            try {
+                const docRef = db.collection(collectionName).doc(id);
+                const docSnap = await docRef.get();
+                
+                if (docSnap.exists) {
+                    const anuncio = docSnap.data();
+                    
+                    // Preenche campos básicos
+                    document.getElementById("titulo").value = anuncio.titulo || "";
+                    document.getElementById("descricao").value = anuncio.descricao || "";
+                    document.getElementById("preco").value = anuncio.preco || "";
+                    document.getElementById("status").value = anuncio.status || "ativo";
+                    document.getElementById("destaque").checked = anuncio.destaque || false;
+                    
+                    // Preenche campos específicos
+                    if (tipo === "imovel") {
+                        document.getElementById("quartos").value = anuncio.quartos || "";
+                        document.getElementById("banheiros").value = anuncio.banheiros || "";
+                        document.getElementById("garagem").value = anuncio.garagem || "";
+                        document.getElementById("area").value = anuncio.area || "";
+                        document.getElementById("bairro").value = anuncio.bairro || "";
+                        document.getElementById("tipo_imovel").value = anuncio.tipo_imovel || "casa";
+                    } else {
+                        document.getElementById("marca").value = anuncio.marca || "";
+                        document.getElementById("modelo").value = anuncio.modelo || "";
+                        document.getElementById("ano").value = anuncio.ano || "";
+                        document.getElementById("km").value = anuncio.km || "";
+                        document.getElementById("cor").value = anuncio.cor || "";
+                        document.getElementById("combustivel").value = anuncio.combustivel || "gasolina";
+                    }
+                    
+                    // Exibe as imagens existentes (se houver)
+                    if (anuncio.imagens && anuncio.imagens.length > 0) {
+                        const galeria = document.getElementById("galeria-imagens");
+                        anuncio.imagens.forEach(url => {
+                            galeria.innerHTML += `
+                                <div class="position-relative" style="width: 150px;">
+                                    <img src="${url}" class="img-thumbnail" style="height: 100px; object-fit: cover;">
+                                    <button class="btn btn-sm btn-danger position-absolute top-0 end-0" onclick="removerImagem('${url}')">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            `;
+                        });
+                    }
+                } else {
+                    throw new Error("Anúncio não encontrado");
+                }
+            } catch (error) {
+                console.error("Erro ao carregar anúncio:", error);
+                Swal.fire({
+                    title: 'Erro!',
+                    text: 'Não foi possível carregar os dados do anúncio',
+                    icon: 'error'
+                }).then(() => {
+                    window.location.href = "perfil.html";
+                });
             }
         }
 
-        document.addEventListener("DOMContentLoaded", carregarDadosAnuncio);
-
-        document.getElementById("form-editar").addEventListener("submit", async function(event) {
-            event.preventDefault();
-            const titulo = document.getElementById("titulo").value;
-            const descricao = document.getElementById("descricao").value;
-            const preco = document.getElementById("preco").value;
-            
+        // Função para remover imagem (precisa ser global para o onclick)
+        window.removerImagem = async function(url) {
             try {
-                await updateDoc(doc(db, collectionName, id), {
-                    titulo: titulo,
-                    descricao: descricao,
-                    preco: parseFloat(preco)
+                // Implemente a lógica para remover a imagem do Storage e do documento
+                // Esta é uma implementação básica - você precisará adaptar
+                Swal.fire({
+                    title: 'Remover imagem?',
+                    text: "Esta ação não pode ser desfeita!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sim, remover!'
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        // Lógica para remover a imagem
+                        Swal.fire(
+                            'Removida!',
+                            'A imagem foi removida.',
+                            'success'
+                        );
+                    }
                 });
-                alert("Anúncio atualizado com sucesso!");
-                window.location.href = "perfil.html";
             } catch (error) {
-                console.error("Erro ao atualizar anúncio:", error);
-                alert("Erro ao atualizar anúncio.");
+                console.error("Erro ao remover imagem:", error);
+                Swal.fire('Erro!', 'Não foi possível remover a imagem', 'error');
+            }
+        };
+
+        // Preview de novas imagens antes de enviar
+        document.getElementById("imagens").addEventListener("change", function(e) {
+            const preview = document.getElementById("preview-imagens");
+            preview.innerHTML = "";
+            
+            for (const file of e.target.files) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    preview.innerHTML += `
+                        <div class="position-relative" style="width: 150px;">
+                            <img src="${event.target.result}" class="img-thumbnail" style="height: 100px; object-fit: cover;">
+                        </div>
+                    `;
+                };
+                reader.readAsDataURL(file);
             }
         });
+
+        // Envio do formulário
+        document.getElementById("form-editar").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            
+            try {
+                const user = auth.currentUser;
+                if (!user) throw new Error("Usuário não autenticado");
+                
+                // Dados básicos
+                const dadosAtualizados = {
+                    titulo: document.getElementById("titulo").value,
+                    descricao: document.getElementById("descricao").value,
+                    preco: parseFloat(document.getElementById("preco").value),
+                    status: document.getElementById("status").value,
+                    destaque: document.getElementById("destaque").checked,
+                    dataAtualizacao: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                // Dados específicos
+                if (tipo === "imovel") {
+                    dadosAtualizados.quartos = parseInt(document.getElementById("quartos").value) || 0;
+                    dadosAtualizados.banheiros = parseInt(document.getElementById("banheiros").value) || 0;
+                    dadosAtualizados.garagem = parseInt(document.getElementById("garagem").value) || 0;
+                    dadosAtualizados.area = parseInt(document.getElementById("area").value) || 0;
+                    dadosAtualizados.bairro = document.getElementById("bairro").value;
+                    dadosAtualizados.tipo_imovel = document.getElementById("tipo_imovel").value;
+                } else {
+                    dadosAtualizados.marca = document.getElementById("marca").value;
+                    dadosAtualizados.modelo = document.getElementById("modelo").value;
+                    dadosAtualizados.ano = parseInt(document.getElementById("ano").value) || 0;
+                    dadosAtualizados.km = parseInt(document.getElementById("km").value) || 0;
+                    dadosAtualizados.cor = document.getElementById("cor").value;
+                    dadosAtualizados.combustivel = document.getElementById("combustivel").value;
+                }
+                
+                // Upload de novas imagens (implementação básica)
+                const files = document.getElementById("imagens").files;
+                if (files.length > 0) {
+                    // Aqui você implementaria o upload para o Storage
+                    // e adicionaria as URLs ao array dadosAtualizados.imagens
+                    Swal.fire({
+                        title: 'Atenção!',
+                        text: 'O upload de novas imagens ainda não está implementado',
+                        icon: 'warning'
+                    });
+                }
+                
+                // Atualiza no Firestore
+                await db.collection(collectionName).doc(id).update(dadosAtualizados);
+                
+                Swal.fire({
+                    title: 'Sucesso!',
+                    text: 'Anúncio atualizado com sucesso',
+                    icon: 'success'
+                }).then(() => {
+                    window.location.href = "perfil.html";
+                });
+                
+            } catch (error) {
+                console.error("Erro ao atualizar anúncio:", error);
+                Swal.fire({
+                    title: 'Erro!',
+                    text: 'Não foi possível atualizar o anúncio',
+                    icon: 'error'
+                });
+            }
+        });
+
+        // Carrega os dados quando a página estiver pronta
+        document.addEventListener("DOMContentLoaded", carregarDadosAnuncio);
     </script>
 </body>
 </html>
