@@ -441,7 +441,7 @@ document.addEventListener('click', async (e) => {
         confirmarExclusaoAnuncio(id, tipo);
     }
 });
-
+}
 
 // Função auxiliar para alternar status (transação segura)
 async function toggleStatusAnuncio(id, tipo) {
