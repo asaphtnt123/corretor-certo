@@ -10,7 +10,6 @@ import {
   getDoc,
   updateDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
 // Configuração do Firebase
