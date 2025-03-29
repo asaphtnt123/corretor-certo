@@ -441,7 +441,7 @@ document.addEventListener('click', async (e) => {
         confirmarExclusaoAnuncio(id, tipo);
     }
 });
-}
+
 
 // Função auxiliar para alternar status (transação segura)
 async function toggleStatusAnuncio(id, tipo) {
@@ -465,7 +465,28 @@ async function toggleStatusAnuncio(id, tipo) {
     }
 }
 
-
+// Uso com tratamento de erro completo
+btn.addEventListener("click", async () => {
+  try {
+    const novoStatus = await toggleStatusAnuncio(id, tipo);
+    
+    // Atualização otimista da UI
+    btn.dataset.status = novoStatus;
+    btn.textContent = novoStatus === "ativo" ? "Desativar" : "Ativar";
+    
+    showAlert(`Status atualizado para ${novoStatus}`, "success");
+    
+    // Atualiza contadores após 1s
+    setTimeout(carregarMeusAnuncios, 1000);
+    
+  } catch (error) {
+    console.error("Falha na transação:", error);
+    showAlert("Erro ao atualizar status. Recarregue a página.", "error");
+    
+    // Reverte a UI em caso de erro
+    btn.textContent = btn.dataset.status === "ativo" ? "Desativar" : "Ativar";
+  }
+});
 
 // Função para confirmar exclusão
 async function confirmarExclusaoAnuncio(id, tipo) {
