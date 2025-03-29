@@ -32,11 +32,35 @@ if (tipo === "imovel") {
 
 async function carregarDadosAnuncio() {
     try {
+        // Verifica se há usuário logado
+        const auth = getAuth();
+        const user = auth.currentUser;
+        
+        if (!user) {
+            alert("Você precisa estar logado para editar anúncios!");
+            window.location.href = "login.html";
+            return;
+        }
+
+        // Verifica se temos ID e tipo válidos
+        if (!id || !tipo) {
+            alert("Parâmetros inválidos na URL!");
+            window.location.href = "perfil.html";
+            return;
+        }
+
         const docRef = doc(db, collectionName, id);
         const docSnap = await getDoc(docRef);
         
         if (docSnap.exists()) {
             const anuncio = docSnap.data();
+            
+            // Verifica se o usuário é o dono do anúncio
+            if (anuncio.userId !== user.uid) {
+                alert("Você não tem permissão para editar este anúncio!");
+                window.location.href = "perfil.html";
+                return;
+            }
             
             // Preenche campos comuns
             document.getElementById("titulo").value = anuncio.titulo || "";
@@ -52,21 +76,39 @@ async function carregarDadosAnuncio() {
                 document.getElementById("garagem").value = anuncio.garagem || "";
                 document.getElementById("area").value = anuncio.area || "";
                 document.getElementById("bairro").value = anuncio.bairro || "";
+                document.getElementById("campos-imovel").classList.remove("d-none");
             } else {
                 document.getElementById("marca").value = anuncio.marca || "";
                 document.getElementById("modelo").value = anuncio.modelo || "";
                 document.getElementById("ano").value = anuncio.ano || "";
                 document.getElementById("km").value = anuncio.km || "";
                 document.getElementById("cor").value = anuncio.cor || "";
+                document.getElementById("campos-automovel").classList.remove("d-none");
             }
         } else {
             alert("Anúncio não encontrado!");
             window.location.href = "perfil.html";
         }
     } catch (error) {
-        console.error("Erro ao carregar anúncio:", error);
-        alert("Erro ao carregar dados do anúncio.");
-        window.location.href = "perfil.html";
+        console.error("Erro detalhado ao carregar anúncio:", error);
+        
+        // Mensagem de erro mais amigável
+        let errorMessage = "Erro ao carregar dados do anúncio.";
+        
+        if (error.code === 'permission-denied') {
+            errorMessage = "Você não tem permissão para acessar este anúncio.";
+        } else if (error.code === 'not-found') {
+            errorMessage = "Anúncio não encontrado no banco de dados.";
+        }
+        
+        Swal.fire({
+            title: 'Erro!',
+            text: errorMessage,
+            icon: 'error',
+            confirmButtonText: 'OK'
+        }).then(() => {
+            window.location.href = "perfil.html";
+        });
     }
 }
 
