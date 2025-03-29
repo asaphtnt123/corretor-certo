@@ -458,17 +458,34 @@ async function excluirAnuncio(id, tipo) {
 }
 
 function criarCardAnuncio(data, tipo, id) {
-      console.log('Criando card para:', { id, tipo, data }); // Log importante
-
     const dataFormatada = data.data?.toDate ? data.data.toDate().toLocaleDateString('pt-BR') : 'Data não disponível';
     const precoFormatado = data.preco?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) || 'Preço não informado';
-    
+    const status = data.status || 'ativo';
+    const isDestaque = data.destaque || false;
+
     return `
         <div class="col-md-6 col-lg-4 mb-4">
-            <div class="anuncio-card">
+            <div class="anuncio-card" data-id="${id}" data-tipo="${tipo.toLowerCase()}">
                 <div class="anuncio-header">
                     <img src="${data.imagens?.[0] || 'img/sem-imagem.jpg'}" alt="${data.titulo}" class="anuncio-imagem-principal">
                     <span class="anuncio-badge">${tipo}</span>
+                    
+                    <!-- Botões de controle no header -->
+                    <div class="anuncio-controls">
+                        <!-- Toggle Status -->
+                        <button class="btn-status-toggle ${status === 'ativo' ? 'active' : ''}" 
+                                data-status="${status}" 
+                                title="${status === 'ativo' ? 'Desativar anúncio' : 'Ativar anúncio'}">
+                            <span class="toggle-handle"></span>
+                        </button>
+                        
+                        <!-- Toggle Destaque -->
+                        <button class="btn-destaque-toggle ${isDestaque ? 'active' : ''}" 
+                                data-destaque="${isDestaque}" 
+                                title="${isDestaque ? 'Remover destaque' : 'Destacar anúncio'}">
+                            <i class="fas fa-star"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="anuncio-body">
                     <h3 class="anuncio-titulo">${data.titulo || 'Sem título'}</h3>
