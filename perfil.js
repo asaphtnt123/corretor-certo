@@ -481,23 +481,44 @@ function inicializarEventosAnuncios() {
         }
     });
 }
-// Função para alternar status do anúncio
-async function toggleStatusAnuncio(id, tipo, statusAtual) {
-    try {
-        const collectionName = tipo === "imovel" ? "imoveis" : "automoveis";
-        const novoStatus = statusAtual === "ativo" ? "inativo" : "ativo";
-        
-        await updateDoc(doc(db, collectionName, id), {
-            status: novoStatus
-        });
-        
-        showAlert(`Anúncio ${novoStatus === "ativo" ? "ativado" : "desativado"} com sucesso!`, "success");
-        carregarMeusAnuncios(); // Recarrega a lista
-    } catch (error) {
-        console.error("Erro ao alterar status:", error);
-        showAlert("Erro ao alterar status do anúncio", "error");
-    }
+async function toggleStatusAnuncio(id, tipo) {
+  const collectionName = tipo === "imovel" ? "imoveis" : "automoveis";
+  const docRef = doc(db, collectionName, id);
+
+  return runTransaction(db, async (transaction) => {
+    const docSnap = await transaction.get(docRef);
+    if (!docSnap.exists()) throw new Error("Documento não existe");
+
+    const current = docSnap.data().status || "ativo";
+    const novoStatus = current === "ativo" ? "inativo" : "ativo";
+
+    transaction.update(docRef, { status: novoStatus });
+    return novoStatus;
+  });
 }
+
+// Uso com tratamento de erro completo
+btn.addEventListener("click", async () => {
+  try {
+    const novoStatus = await toggleStatusAnuncio(id, tipo);
+    
+    // Atualização otimista da UI
+    btn.dataset.status = novoStatus;
+    btn.textContent = novoStatus === "ativo" ? "Desativar" : "Ativar";
+    
+    showAlert(`Status atualizado para ${novoStatus}`, "success");
+    
+    // Atualiza contadores após 1s
+    setTimeout(carregarMeusAnuncios, 1000);
+    
+  } catch (error) {
+    console.error("Falha na transação:", error);
+    showAlert("Erro ao atualizar status. Recarregue a página.", "error");
+    
+    // Reverte a UI em caso de erro
+    btn.textContent = btn.dataset.status === "ativo" ? "Desativar" : "Ativar";
+  }
+});
 
 // Função para confirmar exclusão
 async function confirmarExclusaoAnuncio(id, tipo) {
