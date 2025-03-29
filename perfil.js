@@ -125,7 +125,7 @@ async function carregarInformacoesUsuario(user) {
     }
 }
 
-// Função para carregar os anúncios do usuário
+// Função para carregar os anúncios do usuário - VERSÃO CORRIGIDA
 async function carregarMeusAnuncios() {
     try {
         const user = auth.currentUser;
@@ -133,24 +133,16 @@ async function carregarMeusAnuncios() {
             showAlert('Você precisa estar logado para ver seus anúncios', 'error');
             return;
         }
-        console.log('ID do usuário:', user.uid); // Log para depuração
+        console.log('ID do usuário:', user.uid);
 
-        // Referências das coleções
-        const imoveisRef = collection(db, "imoveis");
-        const automoveisRef = collection(db, "automoveis");
-        
         // Consultas para buscar os anúncios do usuário
-        const qImoveis = query(imoveisRef, where("userId", "==", user.uid));
-        const qAutomoveis = query(automoveisRef, where("userId", "==", user.uid));
-        
-        // Executa as consultas em paralelo
         const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
-            getDocs(qImoveis),
-            getDocs(qAutomoveis)
+            getDocs(query(collection(db, "imoveis"), where("userId", "==", user.uid))),
+            getDocs(query(collection(db, "automoveis"), where("userId", "==", user.uid)))
         ]);
 
-        console.log('Imóveis encontrados:', imoveisSnapshot.size); // Log
-        console.log('Automóveis encontrados:', automoveisSnapshot.size); // Log
+        console.log('Imóveis encontrados:', imoveisSnapshot.size);
+        console.log('Automóveis encontrados:', automoveisSnapshot.size);
       
         // Elementos DOM
         const anunciosContainer = document.getElementById("anuncios-container");
@@ -171,28 +163,31 @@ async function carregarMeusAnuncios() {
         let countInativos = 0;
         let countDestaques = 0;
 
-      // Processa cada documento
-const processDocs = (snapshot, tipo) => {
-    snapshot.forEach(doc => {
-        const data = doc.data();
-        console.log('Processando anúncio:', doc.id, data); // Log detalhado
-        
-        countTodos++;
-        
-        // Verifica status com fallback para 'ativo' se não existir
-        const status = data.status || 'ativo';
-        if (status === 'ativo') countAtivos++;
-        if (status === 'inativo') countInativos++;
-        if (data.destaque) countDestaques++;
+        // Função para processar cada anúncio
+        const processarAnuncio = (doc, tipo) => {
+            const data = doc.data();
+            const id = doc.id;
+            
+            console.log('Processando anúncio:', { id, tipo, data });
+            
+            // Atualiza contadores
+            countTodos++;
+            
+            // Verifica status com fallback para 'ativo' se não existir
+            const status = data.status || 'ativo';
+            if (status === 'ativo') countAtivos++;
+            if (status === 'inativo') countInativos++;
+            if (data.destaque) countDestaques++;
+            
             // Cria o card do anúncio
             const cardHTML = criarCardAnuncio(data, tipo, id);
             
             // Adiciona aos containers apropriados
             anunciosContainer.innerHTML += cardHTML;
             
-            if (data.status === 'ativo') {
+            if (status === 'ativo') {
                 containerAtivos.innerHTML += cardHTML;
-            } else if (data.status === 'inativo') {
+            } else if (status === 'inativo') {
                 containerInativos.innerHTML += cardHTML;
             }
             
@@ -214,19 +209,14 @@ const processDocs = (snapshot, tipo) => {
         document.getElementById("count-destaques").textContent = countDestaques;
 
         // Mostra mensagem se não houver anúncios
-        if (countTodos === 0) {
-            noAnuncios.classList.remove("d-none");
-        } else {
-            noAnuncios.classList.add("d-none");
-        }
+        noAnuncios.classList.toggle("d-none", countTodos > 0);
 
         // Inicializa eventos dos anúncios
         inicializarEventosAnuncios();
 
     } catch (error) {
-                console.error("Erro detalhado:", error); // Log mais detalhado
-
-        showAlert("Erro ao carregar seus anúncios. Tente novamente.", "error");
+        console.error("Erro ao carregar anúncios:", error);
+        showAlert(`Erro ao carregar seus anúncios: ${error.message}`, "error");
     }
 }
 
