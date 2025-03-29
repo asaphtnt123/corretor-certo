@@ -526,43 +526,11 @@ async function excluirAnuncio(id, tipo) {
         showAlert('Erro ao excluir anúncio. Tente novamente.', 'error');
     }
 }
-// Função para criar o card do anúncio (ATUALIZADA)
-function criarCardAnuncio(data, tipo, id) {
-    const status = data.status || 'ativo';
-    const destaque = data.destaque || false;
-    
-    return `
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="anuncio-card" data-id="${id}" data-tipo="${tipo.toLowerCase()}">
-                <div class="anuncio-header">
-                    <img src="${data.imagens?.[0] || 'img/sem-imagem.jpg'}" alt="${data.titulo}" class="anuncio-imagem-principal">
-                    <span class="anuncio-badge">${tipo}</span>
-                    
-                    <!-- Botões dinâmicos -->
-                    <div class="anuncio-controls">
-                        <!-- Botão Status -->
-                        <button class="btn-status-toggle ${status === 'ativo' ? 'active' : ''}" 
-                                data-status="${status}"
-                                onclick="handleStatusToggle(this)">
-                            <span class="toggle-handle"></span>
-                        </button>
-                        
-                        <!-- Botão Destaque -->
-                        <button class="btn-destaque-toggle ${destaque ? 'active' : ''}"
-                                data-destaque="${destaque}"
-                                onclick="handleDestaqueToggle(this)">
-                            <i class="fas fa-star"></i>
-                        </button>
-                    </div>
-                </div>
-                <!-- Restante do card... -->
-            </div>
-        </div>
-    `;
-}
 
-// Funções globais para manipulação dos botões
+
+// 1. DEFINA AS FUNÇÕES NO ESCORPO GLOBAL ANTES DE CRIAR OS CARDS
 window.handleStatusToggle = async function(btn) {
+    console.log('Botão de status clicado');
     const card = btn.closest('.anuncio-card');
     if (!card) return;
 
@@ -575,12 +543,9 @@ window.handleStatusToggle = async function(btn) {
         const collectionName = tipo === 'imovel' ? 'imoveis' : 'automoveis';
         await updateDoc(doc(db, collectionName, id), { status: novoStatus });
         
-        // Atualização visual imediata
         btn.dataset.status = novoStatus;
         btn.classList.toggle('active', novoStatus === 'ativo');
         showAlert(`Status alterado para ${novoStatus}`, 'success');
-        
-        // Atualiza a lista após 1s
         setTimeout(carregarMeusAnuncios, 1000);
     } catch (error) {
         console.error('Erro ao alterar status:', error);
@@ -589,6 +554,7 @@ window.handleStatusToggle = async function(btn) {
 };
 
 window.handleDestaqueToggle = async function(btn) {
+    console.log('Botão de destaque clicado');
     const card = btn.closest('.anuncio-card');
     if (!card) return;
 
@@ -601,12 +567,9 @@ window.handleDestaqueToggle = async function(btn) {
         const collectionName = tipo === 'imovel' ? 'imoveis' : 'automoveis';
         await updateDoc(doc(db, collectionName, id), { destaque: novoDestaque });
         
-        // Atualização visual imediata
         btn.dataset.destaque = novoDestaque;
         btn.classList.toggle('active', novoDestaque);
         showAlert(`Destaque ${novoDestaque ? 'ativado' : 'removido'}`, 'success');
-        
-        // Atualiza a lista após 1s
         setTimeout(carregarMeusAnuncios, 1000);
     } catch (error) {
         console.error('Erro ao alterar destaque:', error);
@@ -614,64 +577,147 @@ window.handleDestaqueToggle = async function(btn) {
     }
 };
 
-function gerarDetalhesImovel(data) {
+
+// Função para criar o card completo do anúncio
+function criarCardAnuncio(data, tipo, id) {
+    const status = data.status || 'ativo';
+    const destaque = data.destaque || false;
+    const dataFormatada = data.data?.toDate ? data.data.toDate().toLocaleDateString('pt-BR') : 'Data não disponível';
+    const precoFormatado = data.preco?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) || 'Preço não informado';
+
     return `
-        <div class="detalhe-item">
-            <span class="detalhe-icon"><i class="fas fa-home"></i></span>
-            <span>${data.tipoImovel || 'Tipo não especificado'}</span>
-        </div>
-        <div class="detalhe-item">
-            <span class="detalhe-icon"><i class="fas fa-map-marker-alt"></i></span>
-            <span>${data.bairro || 'Local não informado'}</span>
-        </div>
-        <div class="detalhe-item">
-            <span class="detalhe-icon"><i class="fas fa-bed"></i></span>
-            <span>${data.quartos || 0} quarto${data.quartos !== 1 ? 's' : ''}</span>
-        </div>
-        <div class="detalhe-item">
-            <span class="detalhe-icon"><i class="fas fa-bath"></i></span>
-            <span>${data.banheiros || 0} banheiro${data.banheiros !== 1 ? 's' : ''}</span>
-        </div>
-        <div class="detalhe-item">
-            <span class="detalhe-icon">
-                ${data.garagem && data.garagem > 0 ? '<i class="fas fa-car"></i>' : '<span class="emoji">🚫</span>'}
-            </span>
-            <span>${data.garagem && data.garagem > 0 ? `${data.garagem} vaga${data.garagem !== 1 ? 's' : ''}` : 'Sem vaga'}</span>
-        </div>
-        <div class="detalhe-item">
-            <span class="detalhe-icon"><i class="fas fa-ruler-combined"></i></span>
-            <span>${data.area || '?'} m²</span>
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="anuncio-card" data-id="${id}" data-tipo="${tipo.toLowerCase()}">
+                <div class="anuncio-header">
+                    <img src="${data.imagens?.[0] || 'img/sem-imagem.jpg'}" alt="${data.titulo}" class="anuncio-imagem-principal">
+                    <span class="anuncio-badge">${tipo}</span>
+                    
+                    <div class="anuncio-controls">
+                        <!-- Botão Status -->
+                        <button class="btn-status-toggle ${status === 'ativo' ? 'active' : ''}" 
+                                data-status="${status}"
+                                title="${status === 'ativo' ? 'Desativar anúncio' : 'Ativar anúncio'}">
+                            <span class="toggle-handle"></span>
+                        </button>
+                        
+                        <!-- Botão Destaque -->
+                        <button class="btn-destaque-toggle ${destaque ? 'active' : ''}"
+                                data-destaque="${destaque}"
+                                title="${destaque ? 'Remover destaque' : 'Destacar anúncio'}">
+                            <i class="fas fa-star"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="anuncio-body">
+                    <h3 class="anuncio-titulo">${data.titulo || 'Sem título'}</h3>
+                    <div class="anuncio-preco">${precoFormatado}</div>
+                    
+                    <div class="anuncio-detalhes">
+                        ${tipo === 'Imóvel' ? gerarDetalhesImovel(data) : gerarDetalhesAutomovel(data)}
+                    </div>
+                    
+                    <p class="anuncio-descricao">${data.descricao || 'Nenhuma descrição fornecida'}</p>
+                </div>
+                
+                <div class="anuncio-footer">
+                    <span class="anuncio-data">${dataFormatada}</span>
+                    <div class="anuncio-acoes">
+                        <button class="btn-editar" data-id="${id}" data-tipo="${tipo.toLowerCase()}">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button class="btn-excluir" data-id="${id}" data-tipo="${tipo.toLowerCase()}">
+                            <i class="fas fa-trash"></i> Excluir
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     `;
 }
 
+
+// Função para gerar detalhes de imóvel
+function gerarDetalhesImovel(data) {
+    return `
+        <div class="detalhes-grid">
+            <div><i class="fas fa-bed"></i> ${data.quartos || 0} Quartos</div>
+            <div><i class="fas fa-bath"></i> ${data.banheiros || 0} Banheiros</div>
+            <div><i class="fas fa-car"></i> ${data.garagem || 0} Vagas</div>
+            <div><i class="fas fa-ruler-combined"></i> ${data.area || 0}m²</div>
+            <div><i class="fas fa-map-marker-alt"></i> ${data.bairro || 'Localização não informada'}</div>
+        </div>
+    `;
+}
+
+// Configuração dos eventos (usando event delegation)
+function configurarEventosAnuncios() {
+    document.addEventListener('click', async (e) => {
+        const card = e.target.closest('.anuncio-card');
+        if (!card) return;
+        
+        const id = card.dataset.id;
+        const tipo = card.dataset.tipo;
+        const collectionName = tipo === 'imovel' ? 'imoveis' : 'automoveis';
+        
+        // Botão de Status
+        if (e.target.closest('.btn-status-toggle')) {
+            const btn = e.target.closest('.btn-status-toggle');
+            const currentStatus = btn.dataset.status;
+            const novoStatus = currentStatus === 'ativo' ? 'inativo' : 'ativo';
+            
+            try {
+                await updateDoc(doc(db, collectionName, id), { status: novoStatus });
+                btn.dataset.status = novoStatus;
+                btn.classList.toggle('active', novoStatus === 'ativo');
+                btn.title = novoStatus === 'ativo' ? 'Desativar anúncio' : 'Ativar anúncio';
+                showAlert(`Anúncio ${novoStatus === 'ativo' ? 'ativado' : 'desativado'}!`, 'success');
+                setTimeout(carregarMeusAnuncios, 1000);
+            } catch (error) {
+                console.error('Erro ao alterar status:', error);
+                showAlert('Erro ao alterar status', 'error');
+            }
+        }
+        
+        // Botão de Destaque
+        if (e.target.closest('.btn-destaque-toggle')) {
+            const btn = e.target.closest('.btn-destaque-toggle');
+            const currentDestaque = btn.dataset.destaque === 'true';
+            const novoDestaque = !currentDestaque;
+            
+            try {
+                await updateDoc(doc(db, collectionName, id), { destaque: novoDestaque });
+                btn.dataset.destaque = novoDestaque;
+                btn.classList.toggle('active', novoDestaque);
+                btn.title = novoDestaque ? 'Remover destaque' : 'Destacar anúncio';
+                showAlert(`Anúncio ${novoDestaque ? 'destacado' : 'removido dos destaques'}!`, 'success');
+                setTimeout(carregarMeusAnuncios, 1000);
+            } catch (error) {
+                console.error('Erro ao alterar destaque:', error);
+                showAlert('Erro ao alterar destaque', 'error');
+            }
+        }
+        
+        // Botão Editar
+        if (e.target.closest('.btn-editar')) {
+            window.location.href = `editar-anuncio.html?id=${id}&tipo=${tipo}`;
+        }
+        
+        // Botão Excluir
+        if (e.target.closest('.btn-excluir')) {
+            confirmarExclusaoAnuncio(id, tipo);
+        }
+    });
+}
+// Função para gerar detalhes de automóvel
 function gerarDetalhesAutomovel(data) {
     return `
-        <div class="detalhe-item">
-            <span class="detalhe-icon"><i class="fas fa-car"></i></span>
-            <span>${data.marca || 'Marca não informada'}</span>
-        </div>
-        <div class="detalhe-item">
-            <span class="detalhe-icon"><i class="fas fa-tag"></i></span>
-            <span>${data.modelo || 'Modelo não informado'}</span>
-        </div>
-        <div class="detalhe-item">
-            <span class="detalhe-icon"><i class="fas fa-calendar-alt"></i></span>
-            <span>${data.ano || 'Ano não informado'}</span>
-        </div>
-        <div class="detalhe-item">
-            <span class="detalhe-icon"><i class="fas fa-tachometer-alt"></i></span>
-            <span>${data.km ? `${data.km.toLocaleString('pt-BR')} km` : 'KM não informada'}</span>
-        </div>
-        <div class="detalhe-item">
-            <span class="detalhe-icon"><i class="fas fa-paint-brush"></i></span>
-            <span>${data.cor || 'Cor não informada'}</span>
-        </div>
-        <div class="detalhe-item">
-            <span class="detalhe-icon">
-                ${data.combustivel ? '<i class="fas fa-gas-pump"></i>' : '<span class="emoji">❓</span>'}
-            </span>
-            <span>${data.combustivel || 'Combustível não informado'}</span>
+        <div class="detalhes-grid">
+            <div><i class="fas fa-car"></i> ${data.marca || 'Marca não informada'}</div>
+            <div><i class="fas fa-tag"></i> ${data.modelo || 'Modelo não informado'}</div>
+            <div><i class="fas fa-calendar-alt"></i> ${data.ano || 'Ano não informado'}</div>
+            <div><i class="fas fa-tachometer-alt"></i> ${data.km ? data.km.toLocaleString() + ' km' : 'KM não informada'}</div>
+            <div><i class="fas fa-palette"></i> ${data.cor || 'Cor não informada'}</div>
         </div>
     `;
 }
