@@ -1,7 +1,5 @@
-// Firebase Core
+// Importar funções do Firebase corretamente (versão consolidada)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-
-// Authentication
 import { 
   getAuth, 
   onAuthStateChanged,
@@ -9,8 +7,6 @@ import {
   browserLocalPersistence,
   signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-// Firestore (agora corretamente formatado)
 import { 
   getFirestore,
   collection,
@@ -20,14 +16,10 @@ import {
   doc,
   getDoc,
   setDoc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  runTransaction
+  addDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-// Storage
 import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
 // Configuração do Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyA-7HOp-Ycvyf3b_03ev__8aJEwAbWSQZY",
@@ -373,75 +365,83 @@ async function inicializarEventosAnuncios() {
         });
     }
 
-   // Configuração dos eventos dos anúncios (versão simplificada)
-document.addEventListener('click', async (e) => {
-    // Botão de Status
-    if (e.target.closest('.btn-status-toggle')) {
-        const btn = e.target.closest('.btn-status-toggle');
-        const card = btn.closest('.anuncio-card');
-        if (!card) return;
-
+    // 3. EVENTOS DE CLIQUE - VERSÃO CORRIGIDA
+    document.addEventListener("click", async function(e) {
+        console.log('[DEBUG] Clique detectado no elemento:', e.target);
+        
+        // Verifica se o clique foi em algum dos botões que nos interessam
+        const btnStatus = e.target.closest(".btn-status-toggle");
+        const btnDestaque = e.target.closest(".btn-destaque-toggle");
+        const btnEditar = e.target.closest(".btn-editar");
+        const btnExcluir = e.target.closest(".btn-excluir");
+        
+        if (!btnStatus && !btnDestaque && !btnEditar && !btnExcluir) return;
+        
+        const card = e.target.closest(".anuncio-card");
+        if (!card) {
+            console.error('[ERRO] Não encontrou o card pai');
+            return;
+        }
+        
         const id = card.dataset.id;
         const tipo = card.dataset.tipo;
-        const currentStatus = btn.dataset.status;
-        const novoStatus = currentStatus === 'ativo' ? 'inativo' : 'ativo';
+        const collectionName = tipo === "imovel" ? "imoveis" : "automoveis";
+        console.log(`[DEBUG] ID: ${id}, Tipo: ${tipo}, Coleção: ${collectionName}`);
 
         try {
-            const collectionName = tipo === 'imovel' ? 'imoveis' : 'automoveis';
-            await updateDoc(doc(db, collectionName, id), { status: novoStatus });
+            // Toggle de Status
+            if (btnStatus) {
+                const currentStatus = btnStatus.dataset.status;
+                const novoStatus = currentStatus === "ativo" ? "inativo" : "ativo";
+                console.log(`[DEBUG] Alterando status para: ${novoStatus}`);
+                
+                await updateDoc(doc(db, collectionName, id), {
+                    status: novoStatus
+                });
+                
+                btnStatus.dataset.status = novoStatus;
+                btnStatus.classList.toggle("active", novoStatus === "ativo");
+                showAlert(`Status alterado para ${novoStatus}`, "success");
+            }
             
-            btn.dataset.status = novoStatus;
-            btn.classList.toggle('active', novoStatus === 'ativo');
-            showAlert(`Status alterado para ${novoStatus}`, 'success');
-            setTimeout(carregarMeusAnuncios, 1000);
-        } catch (error) {
-            console.error('Erro ao alterar status:', error);
-            showAlert('Erro ao alterar status', 'error');
-        }
-    }
-
-    // Botão de Destaque
-    if (e.target.closest('.btn-destaque-toggle')) {
-        const btn = e.target.closest('.btn-destaque-toggle');
-        const card = btn.closest('.anuncio-card');
-        if (!card) return;
-
-        const id = card.dataset.id;
-        const tipo = card.dataset.tipo;
-        const currentDestaque = btn.dataset.destaque === 'true';
-        const novoDestaque = !currentDestaque;
-
-        try {
-            const collectionName = tipo === 'imovel' ? 'imoveis' : 'automoveis';
-            await updateDoc(doc(db, collectionName, id), { destaque: novoDestaque });
+            // Toggle de Destaque
+            if (btnDestaque) {
+                const currentDestaque = btnDestaque.dataset.destaque === "true";
+                const novoDestaque = !currentDestaque;
+                console.log(`[DEBUG] Alterando destaque para: ${novoDestaque}`);
+                
+                await updateDoc(doc(db, collectionName, id), {
+                    destaque: novoDestaque
+                });
+                
+                btnDestaque.dataset.destaque = novoDestaque;
+                btnDestaque.classList.toggle("active", novoDestaque);
+                showAlert(`Destaque ${novoDestaque ? "ativado" : "desativado"}`, "success");
+            }
             
-            btn.dataset.destaque = novoDestaque;
-            btn.classList.toggle('active', novoDestaque);
-            showAlert(`Destaque ${novoDestaque ? 'ativado' : 'removido'}`, 'success');
+            // Botão Editar
+            if (btnEditar) {
+                window.location.href = `editar-anuncio.html?id=${id}&tipo=${tipo}`;
+                return;
+            }
+            
+            // Botão Excluir
+            if (btnExcluir) {
+                confirmarExclusaoAnuncio(id, tipo);
+                return;
+            }
+            
+            // Atualiza a lista após 1 segundo
             setTimeout(carregarMeusAnuncios, 1000);
+            
         } catch (error) {
-            console.error('Erro ao alterar destaque:', error);
-            showAlert('Erro ao alterar destaque', 'error');
+            console.error('[ERRO] Falha na operação:', error);
+            showAlert("Erro ao processar sua solicitação", "error");
         }
-    }
+    });
 
-    // Botão Editar
-    if (e.target.closest('.btn-editar')) {
-        const btn = e.target.closest('.btn-editar');
-        const id = btn.dataset.id;
-        const tipo = btn.dataset.tipo;
-        window.location.href = `editar-anuncio.html?id=${id}&tipo=${tipo}`;
-    }
-
-    // Botão Excluir
-    if (e.target.closest('.btn-excluir')) {
-        const btn = e.target.closest('.btn-excluir');
-        const id = btn.dataset.id;
-        const tipo = btn.dataset.tipo;
-        confirmarExclusaoAnuncio(id, tipo);
-    }
-});
-
+    console.log('[DEBUG] Eventos configurados com sucesso');
+}
 
 // Função auxiliar para alternar status (transação segura)
 async function toggleStatusAnuncio(id, tipo) {
@@ -581,15 +581,19 @@ window.handleDestaqueToggle = async function(btn) {
 };
 
 
+// Função para criar o card do anúncio
 function criarCardAnuncio(data, tipo, id) {
     const status = data.status || 'ativo';
     const destaque = data.destaque || false;
-    
+    const dataFormatada = data.data?.toDate ? data.data.toDate().toLocaleDateString('pt-BR') : 'Data não disponível';
+    const precoFormatado = data.preco?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) || 'Preço não informado';
+
     return `
         <div class="col-md-6 col-lg-4 mb-4">
             <div class="anuncio-card" data-id="${id}" data-tipo="${tipo.toLowerCase()}">
                 <div class="anuncio-header">
-                    <!-- ... outros elementos do header ... -->
+                    <img src="${data.imagens?.[0] || 'img/sem-imagem.jpg'}" alt="${data.titulo}" class="anuncio-imagem-principal">
+                    <span class="anuncio-badge">${tipo}</span>
                     
                     <div class="anuncio-controls">
                         <!-- Botão Status -->
@@ -606,11 +610,33 @@ function criarCardAnuncio(data, tipo, id) {
                     </div>
                 </div>
                 
-                <!-- ... resto do card ... -->
+                <div class="anuncio-body">
+                    <h3 class="anuncio-titulo">${data.titulo || 'Sem título'}</h3>
+                    <div class="anuncio-preco">${precoFormatado}</div>
+                    
+                    <div class="anuncio-detalhes">
+                        ${tipo === 'Imóvel' ? gerarDetalhesImovel(data) : gerarDetalhesAutomovel(data)}
+                    </div>
+                    
+                    <p class="anuncio-descricao">${data.descricao || 'Nenhuma descrição fornecida'}</p>
+                </div>
+                
+                <div class="anuncio-footer">
+                    <span class="anuncio-data">${dataFormatada}</span>
+                    <div class="anuncio-acoes">
+                        <button class="btn-editar" data-id="${id}" data-tipo="${tipo.toLowerCase()}">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button class="btn-excluir" data-id="${id}" data-tipo="${tipo.toLowerCase()}">
+                            <i class="fas fa-trash"></i> Excluir
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     `;
 }
+
 // Configuração dos eventos
 function configurarEventosAnuncios() {
     document.addEventListener('click', async (e) => {
@@ -689,7 +715,11 @@ if (document.readyState === 'loading') {
     configurarEventosAnuncios();
 }
 
-
+// Inicializa os eventos quando o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', function() {
+    configurarEventosAnuncios();
+    console.log('Eventos de anúncio configurados com sucesso');
+});
 
 
 // Função para gerar detalhes de imóvel
