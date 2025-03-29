@@ -343,6 +343,8 @@ setTimeout(() => {
 // Função para inicializar eventos dos anúncios (VERSÃO CORRIGIDA)
 async function inicializarEventosAnuncios() {
     console.log('[DEBUG] Iniciando inicializarEventosAnuncios()');
+      console.log('Eventos de anúncio inicializados');
+
     
     // 1. Configuração dos Eventos de Filtro (mantido igual)
     const filtroTipo = document.getElementById("filtro-tipo");
@@ -524,13 +526,11 @@ async function excluirAnuncio(id, tipo) {
         showAlert('Erro ao excluir anúncio. Tente novamente.', 'error');
     }
 }
-
+// Função para criar o card do anúncio (ATUALIZADA)
 function criarCardAnuncio(data, tipo, id) {
-    const dataFormatada = data.data?.toDate ? data.data.toDate().toLocaleDateString('pt-BR') : 'Data não disponível';
-    const precoFormatado = data.preco?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) || 'Preço não informado';
     const status = data.status || 'ativo';
-    const isDestaque = data.destaque || false;
-
+    const destaque = data.destaque || false;
+    
     return `
         <div class="col-md-6 col-lg-4 mb-4">
             <div class="anuncio-card" data-id="${id}" data-tipo="${tipo.toLowerCase()}">
@@ -538,48 +538,81 @@ function criarCardAnuncio(data, tipo, id) {
                     <img src="${data.imagens?.[0] || 'img/sem-imagem.jpg'}" alt="${data.titulo}" class="anuncio-imagem-principal">
                     <span class="anuncio-badge">${tipo}</span>
                     
-                    <!-- Botões de controle no header -->
+                    <!-- Botões dinâmicos -->
                     <div class="anuncio-controls">
-                        <!-- Toggle Status -->
+                        <!-- Botão Status -->
                         <button class="btn-status-toggle ${status === 'ativo' ? 'active' : ''}" 
-                                data-status="${status}" 
-                                title="${status === 'ativo' ? 'Desativar anúncio' : 'Ativar anúncio'}">
+                                data-status="${status}"
+                                onclick="handleStatusToggle(this)">
                             <span class="toggle-handle"></span>
                         </button>
                         
-                        <!-- Toggle Destaque -->
-                        <button class="btn-destaque-toggle ${isDestaque ? 'active' : ''}" 
-                                data-destaque="${isDestaque}" 
-                                title="${isDestaque ? 'Remover destaque' : 'Destacar anúncio'}">
+                        <!-- Botão Destaque -->
+                        <button class="btn-destaque-toggle ${destaque ? 'active' : ''}"
+                                data-destaque="${destaque}"
+                                onclick="handleDestaqueToggle(this)">
                             <i class="fas fa-star"></i>
                         </button>
                     </div>
                 </div>
-                <div class="anuncio-body">
-                    <h3 class="anuncio-titulo">${data.titulo || 'Sem título'}</h3>
-                    <div class="anuncio-preco">${precoFormatado}</div>
-                    
-                    <div class="anuncio-detalhes">
-                        ${tipo === 'Imóvel' ? gerarDetalhesImovel(data) : gerarDetalhesAutomovel(data)}
-                    </div>
-                    
-                    <p class="anuncio-descricao">${data.descricao || 'Nenhuma descrição fornecida'}</p>
-                </div>
-                <div class="anuncio-footer">
-                    <span class="anuncio-data">${dataFormatada}</span>
-                    <div class="anuncio-acoes">
-                        <button class="btn-editar" data-id="${id}" data-tipo="${tipo.toLowerCase()}">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-excluir" data-id="${id}" data-tipo="${tipo.toLowerCase()}">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
+                <!-- Restante do card... -->
             </div>
         </div>
     `;
 }
+
+// Funções globais para manipulação dos botões
+window.handleStatusToggle = async function(btn) {
+    const card = btn.closest('.anuncio-card');
+    if (!card) return;
+
+    const id = card.dataset.id;
+    const tipo = card.dataset.tipo;
+    const currentStatus = btn.dataset.status;
+    const novoStatus = currentStatus === 'ativo' ? 'inativo' : 'ativo';
+
+    try {
+        const collectionName = tipo === 'imovel' ? 'imoveis' : 'automoveis';
+        await updateDoc(doc(db, collectionName, id), { status: novoStatus });
+        
+        // Atualização visual imediata
+        btn.dataset.status = novoStatus;
+        btn.classList.toggle('active', novoStatus === 'ativo');
+        showAlert(`Status alterado para ${novoStatus}`, 'success');
+        
+        // Atualiza a lista após 1s
+        setTimeout(carregarMeusAnuncios, 1000);
+    } catch (error) {
+        console.error('Erro ao alterar status:', error);
+        showAlert('Erro ao alterar status', 'error');
+    }
+};
+
+window.handleDestaqueToggle = async function(btn) {
+    const card = btn.closest('.anuncio-card');
+    if (!card) return;
+
+    const id = card.dataset.id;
+    const tipo = card.dataset.tipo;
+    const currentDestaque = btn.dataset.destaque === 'true';
+    const novoDestaque = !currentDestaque;
+
+    try {
+        const collectionName = tipo === 'imovel' ? 'imoveis' : 'automoveis';
+        await updateDoc(doc(db, collectionName, id), { destaque: novoDestaque });
+        
+        // Atualização visual imediata
+        btn.dataset.destaque = novoDestaque;
+        btn.classList.toggle('active', novoDestaque);
+        showAlert(`Destaque ${novoDestaque ? 'ativado' : 'removido'}`, 'success');
+        
+        // Atualiza a lista após 1s
+        setTimeout(carregarMeusAnuncios, 1000);
+    } catch (error) {
+        console.error('Erro ao alterar destaque:', error);
+        showAlert('Erro ao alterar destaque', 'error');
+    }
+};
 
 function gerarDetalhesImovel(data) {
     return `
