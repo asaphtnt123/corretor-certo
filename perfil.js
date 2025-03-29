@@ -17,6 +17,9 @@ import {
   getDoc,
   setDoc,
   addDoc
+    updateDoc,
+  deleteDoc,
+  runTransaction
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
@@ -365,83 +368,75 @@ async function inicializarEventosAnuncios() {
         });
     }
 
-    // 3. EVENTOS DE CLIQUE - VERSÃO CORRIGIDA
-    document.addEventListener("click", async function(e) {
-        console.log('[DEBUG] Clique detectado no elemento:', e.target);
-        
-        // Verifica se o clique foi em algum dos botões que nos interessam
-        const btnStatus = e.target.closest(".btn-status-toggle");
-        const btnDestaque = e.target.closest(".btn-destaque-toggle");
-        const btnEditar = e.target.closest(".btn-editar");
-        const btnExcluir = e.target.closest(".btn-excluir");
-        
-        if (!btnStatus && !btnDestaque && !btnEditar && !btnExcluir) return;
-        
-        const card = e.target.closest(".anuncio-card");
-        if (!card) {
-            console.error('[ERRO] Não encontrou o card pai');
-            return;
-        }
-        
+   // Configuração dos eventos dos anúncios (versão simplificada)
+document.addEventListener('click', async (e) => {
+    // Botão de Status
+    if (e.target.closest('.btn-status-toggle')) {
+        const btn = e.target.closest('.btn-status-toggle');
+        const card = btn.closest('.anuncio-card');
+        if (!card) return;
+
         const id = card.dataset.id;
         const tipo = card.dataset.tipo;
-        const collectionName = tipo === "imovel" ? "imoveis" : "automoveis";
-        console.log(`[DEBUG] ID: ${id}, Tipo: ${tipo}, Coleção: ${collectionName}`);
+        const currentStatus = btn.dataset.status;
+        const novoStatus = currentStatus === 'ativo' ? 'inativo' : 'ativo';
 
         try {
-            // Toggle de Status
-            if (btnStatus) {
-                const currentStatus = btnStatus.dataset.status;
-                const novoStatus = currentStatus === "ativo" ? "inativo" : "ativo";
-                console.log(`[DEBUG] Alterando status para: ${novoStatus}`);
-                
-                await updateDoc(doc(db, collectionName, id), {
-                    status: novoStatus
-                });
-                
-                btnStatus.dataset.status = novoStatus;
-                btnStatus.classList.toggle("active", novoStatus === "ativo");
-                showAlert(`Status alterado para ${novoStatus}`, "success");
-            }
+            const collectionName = tipo === 'imovel' ? 'imoveis' : 'automoveis';
+            await updateDoc(doc(db, collectionName, id), { status: novoStatus });
             
-            // Toggle de Destaque
-            if (btnDestaque) {
-                const currentDestaque = btnDestaque.dataset.destaque === "true";
-                const novoDestaque = !currentDestaque;
-                console.log(`[DEBUG] Alterando destaque para: ${novoDestaque}`);
-                
-                await updateDoc(doc(db, collectionName, id), {
-                    destaque: novoDestaque
-                });
-                
-                btnDestaque.dataset.destaque = novoDestaque;
-                btnDestaque.classList.toggle("active", novoDestaque);
-                showAlert(`Destaque ${novoDestaque ? "ativado" : "desativado"}`, "success");
-            }
-            
-            // Botão Editar
-            if (btnEditar) {
-                window.location.href = `editar-anuncio.html?id=${id}&tipo=${tipo}`;
-                return;
-            }
-            
-            // Botão Excluir
-            if (btnExcluir) {
-                confirmarExclusaoAnuncio(id, tipo);
-                return;
-            }
-            
-            // Atualiza a lista após 1 segundo
+            btn.dataset.status = novoStatus;
+            btn.classList.toggle('active', novoStatus === 'ativo');
+            showAlert(`Status alterado para ${novoStatus}`, 'success');
             setTimeout(carregarMeusAnuncios, 1000);
-            
         } catch (error) {
-            console.error('[ERRO] Falha na operação:', error);
-            showAlert("Erro ao processar sua solicitação", "error");
+            console.error('Erro ao alterar status:', error);
+            showAlert('Erro ao alterar status', 'error');
         }
-    });
+    }
 
-    console.log('[DEBUG] Eventos configurados com sucesso');
-}
+    // Botão de Destaque
+    if (e.target.closest('.btn-destaque-toggle')) {
+        const btn = e.target.closest('.btn-destaque-toggle');
+        const card = btn.closest('.anuncio-card');
+        if (!card) return;
+
+        const id = card.dataset.id;
+        const tipo = card.dataset.tipo;
+        const currentDestaque = btn.dataset.destaque === 'true';
+        const novoDestaque = !currentDestaque;
+
+        try {
+            const collectionName = tipo === 'imovel' ? 'imoveis' : 'automoveis';
+            await updateDoc(doc(db, collectionName, id), { destaque: novoDestaque });
+            
+            btn.dataset.destaque = novoDestaque;
+            btn.classList.toggle('active', novoDestaque);
+            showAlert(`Destaque ${novoDestaque ? 'ativado' : 'removido'}`, 'success');
+            setTimeout(carregarMeusAnuncios, 1000);
+        } catch (error) {
+            console.error('Erro ao alterar destaque:', error);
+            showAlert('Erro ao alterar destaque', 'error');
+        }
+    }
+
+    // Botão Editar
+    if (e.target.closest('.btn-editar')) {
+        const btn = e.target.closest('.btn-editar');
+        const id = btn.dataset.id;
+        const tipo = btn.dataset.tipo;
+        window.location.href = `editar-anuncio.html?id=${id}&tipo=${tipo}`;
+    }
+
+    // Botão Excluir
+    if (e.target.closest('.btn-excluir')) {
+        const btn = e.target.closest('.btn-excluir');
+        const id = btn.dataset.id;
+        const tipo = btn.dataset.tipo;
+        confirmarExclusaoAnuncio(id, tipo);
+    }
+});
+
 
 // Função auxiliar para alternar status (transação segura)
 async function toggleStatusAnuncio(id, tipo) {
