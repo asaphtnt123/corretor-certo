@@ -125,7 +125,6 @@ async function carregarInformacoesUsuario(user) {
     }
 }
 
-// Função para carregar os anúncios do usuário - VERSÃO CORRIGIDA
 async function carregarMeusAnuncios() {
     try {
         const user = auth.currentUser;
@@ -133,90 +132,89 @@ async function carregarMeusAnuncios() {
             showAlert('Você precisa estar logado para ver seus anúncios', 'error');
             return;
         }
+
         console.log('ID do usuário:', user.uid);
 
-        // Consultas para buscar os anúncios do usuário
+        // Busca anúncios
         const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
             getDocs(query(collection(db, "imoveis"), where("userId", "==", user.uid))),
             getDocs(query(collection(db, "automoveis"), where("userId", "==", user.uid)))
         ]);
 
-        console.log('Imóveis encontrados:', imoveisSnapshot.size);
-        console.log('Automóveis encontrados:', automoveisSnapshot.size);
-      
-        // Elementos DOM
-        const anunciosContainer = document.getElementById("anuncios-container");
-        const containerAtivos = document.getElementById("anuncios-ativos");
-        const containerInativos = document.getElementById("anuncios-inativos");
-        const containerDestaques = document.getElementById("anuncios-destaques");
-        const noAnuncios = document.getElementById("no-anuncios");
+        console.log('Total de imóveis:', imoveisSnapshot.size);
+        console.log('Total de automóveis:', automoveisSnapshot.size);
 
-        // Limpa os containers
-        anunciosContainer.innerHTML = "";
-        containerAtivos.innerHTML = "";
-        containerInativos.innerHTML = "";
-        containerDestaques.innerHTML = "";
+        // Elementos DOM
+        const containers = {
+            todos: document.getElementById("anuncios-container"),
+            ativos: document.getElementById("anuncios-ativos"),
+            inativos: document.getElementById("anuncios-inativos"),
+            destaques: document.getElementById("anuncios-destaques")
+        };
+
+        // Limpa containers
+        Object.values(containers).forEach(container => {
+            if (container) container.innerHTML = "";
+        });
 
         // Contadores
-        let countTodos = 0;
-        let countAtivos = 0;
-        let countInativos = 0;
-        let countDestaques = 0;
+        const counters = {
+            todos: 0,
+            ativos: 0,
+            inativos: 0,
+            destaques: 0
+        };
 
-        // Função para processar cada anúncio
-        const processarAnuncio = (doc, tipo) => {
+        // Processa cada documento
+        const processarDocumento = (doc, tipo) => {
             const data = doc.data();
             const id = doc.id;
             
-            console.log('Processando anúncio:', { id, tipo, data });
-            
+            console.log('Processando anúncio:', { id, data }); // Log detalhado
+
             // Atualiza contadores
-            countTodos++;
+            counters.todos++;
             
-            // Verifica status com fallback para 'ativo' se não existir
+            // Verifica status (com fallback para 'ativo')
             const status = data.status || 'ativo';
-            if (status === 'ativo') countAtivos++;
-            if (status === 'inativo') countInativos++;
-            if (data.destaque) countDestaques++;
-            
-            // Cria o card do anúncio
+            if (status === 'ativo') counters.ativos++;
+            if (status === 'inativo') counters.inativos++;
+            if (data.destaque) counters.destaques++;
+
+            // Cria o card
             const cardHTML = criarCardAnuncio(data, tipo, id);
             
             // Adiciona aos containers apropriados
-            anunciosContainer.innerHTML += cardHTML;
-            
-            if (status === 'ativo') {
-                containerAtivos.innerHTML += cardHTML;
-            } else if (status === 'inativo') {
-                containerInativos.innerHTML += cardHTML;
-            }
-            
-            if (data.destaque) {
-                containerDestaques.innerHTML += cardHTML;
-            }
+            if (containers.todos) containers.todos.innerHTML += cardHTML;
+            if (status === 'ativo' && containers.ativos) containers.ativos.innerHTML += cardHTML;
+            if (status === 'inativo' && containers.inativos) containers.inativos.innerHTML += cardHTML;
+            if (data.destaque && containers.destaques) containers.destaques.innerHTML += cardHTML;
         };
 
-        // Processa imóveis
-        imoveisSnapshot.forEach(doc => processarAnuncio(doc, "Imóvel"));
-        
-        // Processa automóveis
-        automoveisSnapshot.forEach(doc => processarAnuncio(doc, "Automóvel"));
+        // Processa todos os documentos
+        imoveisSnapshot.forEach(doc => processarDocumento(doc, "Imóvel"));
+        automoveisSnapshot.forEach(doc => processarDocumento(doc, "Automóvel"));
 
-        // Atualiza os contadores na interface
-        document.getElementById("count-todos").textContent = countTodos;
-        document.getElementById("count-ativos").textContent = countAtivos;
-        document.getElementById("count-inativos").textContent = countInativos;
-        document.getElementById("count-destaques").textContent = countDestaques;
+        console.log('Contagem final:', counters); // Log importante
+
+        // Atualiza a UI
+        document.getElementById("count-todos") && (document.getElementById("count-todos").textContent = counters.todos);
+        document.getElementById("count-ativos") && (document.getElementById("count-ativos").textContent = counters.ativos);
+        document.getElementById("count-inativos") && (document.getElementById("count-inativos").textContent = counters.inativos);
+        document.getElementById("count-destaques") && (document.getElementById("count-destaques").textContent = counters.destaques);
 
         // Mostra mensagem se não houver anúncios
-        noAnuncios.classList.toggle("d-none", countTodos > 0);
+        const noAnuncios = document.getElementById("no-anuncios");
+        if (noAnuncios) {
+            noAnuncios.classList.toggle("d-none", counters.todos > 0);
+        }
 
-        // Inicializa eventos dos anúncios
+        // Inicializa eventos
         inicializarEventosAnuncios();
 
     } catch (error) {
-        console.error("Erro ao carregar anúncios:", error);
-        showAlert(`Erro ao carregar seus anúncios: ${error.message}`, "error");
+        console.error("Erro detalhado:", error);
+        showAlert(`Erro ao carregar anúncios: ${error.message}`, "error");
     }
 }
 
