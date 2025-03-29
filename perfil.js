@@ -77,11 +77,7 @@ const tipoInteresseInput = document.getElementById("tipo-interesse");
 const formImoveis = document.getElementById("form-imoveis");
 const formAutomoveis = document.getElementById("form-automoveis");
 
-// Adiciona os estilos ao head do documento
-document.head.insertAdjacentHTML('beforeend', anuncioStyles);
 
-// Inicializa os eventos quando o DOM estiver pronto
-document.addEventListener('DOMContentLoaded', configurarEventosAnuncios);
 
 
 async function carregarInformacoesUsuario(user) {
@@ -585,7 +581,7 @@ window.handleDestaqueToggle = async function(btn) {
 };
 
 
-// Função para criar o card do anúncio (VERSÃO CORRIGIDA)
+// Função para criar o card do anúncio
 function criarCardAnuncio(data, tipo, id) {
     const status = data.status || 'ativo';
     const destaque = data.destaque || false;
@@ -641,85 +637,82 @@ function criarCardAnuncio(data, tipo, id) {
     `;
 }
 
-// Configuração dos eventos usando event delegation (VERSÃO CORRIGIDA)
+// Configuração dos eventos
 function configurarEventosAnuncios() {
     document.addEventListener('click', async (e) => {
-        // Verifica clique no botão de status
-        const btnStatus = e.target.closest('.btn-status-toggle');
-        if (btnStatus) {
-            const card = btnStatus.closest('.anuncio-card');
+        // Botão de Status
+        if (e.target.closest('.btn-status-toggle')) {
+            const btn = e.target.closest('.btn-status-toggle');
+            const card = btn.closest('.anuncio-card');
             if (!card) return;
 
             const id = card.dataset.id;
             const tipo = card.dataset.tipo;
-            const currentStatus = btnStatus.dataset.status;
+            const currentStatus = btn.dataset.status;
             const novoStatus = currentStatus === 'ativo' ? 'inativo' : 'ativo';
 
             try {
                 const collectionName = tipo === 'imovel' ? 'imoveis' : 'automoveis';
                 await updateDoc(doc(db, collectionName, id), { status: novoStatus });
                 
-                // Atualização visual
-                btnStatus.dataset.status = novoStatus;
-                btnStatus.classList.toggle('active', novoStatus === 'ativo');
+                btn.dataset.status = novoStatus;
+                btn.classList.toggle('active', novoStatus === 'ativo');
                 showAlert(`Status alterado para ${novoStatus}`, 'success');
-                
-                // Atualiza a lista após 1s
                 setTimeout(carregarMeusAnuncios, 1000);
             } catch (error) {
                 console.error('Erro ao alterar status:', error);
                 showAlert('Erro ao alterar status', 'error');
             }
-            return;
         }
 
-        // Verifica clique no botão de destaque
-        const btnDestaque = e.target.closest('.btn-destaque-toggle');
-        if (btnDestaque) {
-            const card = btnDestaque.closest('.anuncio-card');
+        // Botão de Destaque
+        if (e.target.closest('.btn-destaque-toggle')) {
+            const btn = e.target.closest('.btn-destaque-toggle');
+            const card = btn.closest('.anuncio-card');
             if (!card) return;
 
             const id = card.dataset.id;
             const tipo = card.dataset.tipo;
-            const currentDestaque = btnDestaque.dataset.destaque === 'true';
+            const currentDestaque = btn.dataset.destaque === 'true';
             const novoDestaque = !currentDestaque;
 
             try {
                 const collectionName = tipo === 'imovel' ? 'imoveis' : 'automoveis';
                 await updateDoc(doc(db, collectionName, id), { destaque: novoDestaque });
                 
-                // Atualização visual
-                btnDestaque.dataset.destaque = novoDestaque;
-                btnDestaque.classList.toggle('active', novoDestaque);
+                btn.dataset.destaque = novoDestaque;
+                btn.classList.toggle('active', novoDestaque);
                 showAlert(`Destaque ${novoDestaque ? 'ativado' : 'removido'}`, 'success');
-                
-                // Atualiza a lista após 1s
                 setTimeout(carregarMeusAnuncios, 1000);
             } catch (error) {
                 console.error('Erro ao alterar destaque:', error);
                 showAlert('Erro ao alterar destaque', 'error');
             }
-            return;
         }
 
         // Botão Editar
-        const btnEditar = e.target.closest('.btn-editar');
-        if (btnEditar) {
-            const id = btnEditar.dataset.id;
-            const tipo = btnEditar.dataset.tipo;
+        if (e.target.closest('.btn-editar')) {
+            const btn = e.target.closest('.btn-editar');
+            const id = btn.dataset.id;
+            const tipo = btn.dataset.tipo;
             window.location.href = `editar-anuncio.html?id=${id}&tipo=${tipo}`;
-            return;
         }
 
         // Botão Excluir
-        const btnExcluir = e.target.closest('.btn-excluir');
-        if (btnExcluir) {
-            const id = btnExcluir.dataset.id;
-            const tipo = btnExcluir.dataset.tipo;
+        if (e.target.closest('.btn-excluir')) {
+            const btn = e.target.closest('.btn-excluir');
+            const id = btn.dataset.id;
+            const tipo = btn.dataset.tipo;
             confirmarExclusaoAnuncio(id, tipo);
-            return;
         }
     });
+}
+
+// Inicialização quando o DOM estiver pronto
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', configurarEventosAnuncios);
+} else {
+    configurarEventosAnuncios();
 }
 
 // Inicializa os eventos quando o DOM estiver pronto
