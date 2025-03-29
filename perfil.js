@@ -127,7 +127,7 @@ async function carregarInformacoesUsuario(user) {
 
 async function carregarMeusAnuncios() {
     try {
-        console.log("[1] Iniciando carregamento de anúncios...");
+        console.log("[INÍCIO] Carregando anúncios...");
         
         const user = auth.currentUser;
         if (!user) {
@@ -135,33 +135,31 @@ async function carregarMeusAnuncios() {
             return;
         }
 
-        // 1. VERIFICAÇÃO DOS ELEMENTOS DO CONTADOR
-        const countElements = {
-            todos: document.getElementById("count-todos"),
-            ativos: document.getElementById("count-ativos"),
-            inativos: document.getElementById("count-inativos"),
-            destaques: document.getElementById("count-destaques")
+        // 1. VERIFICAÇÃO DOS ELEMENTOS DO CONTADOR (MELHORADA)
+        const getElement = (id) => {
+            const el = document.getElementById(id);
+            if (!el) console.error(`Elemento ${id} não encontrado`);
+            return el;
         };
 
-        // Verificação rigorosa dos elementos
-        for (const [key, element] of Object.entries(countElements)) {
-            if (!element) {
-                console.error(`[ERRO CRÍTICO] Elemento count-${key} não encontrado no DOM`);
-                return;
-            }
-            console.log(`[2] Elemento count-${key} encontrado:`, element);
-        }
+        const elements = {
+            todos: getElement("count-todos"),
+            ativos: getElement("count-ativos"),
+            inativos: getElement("count-inativos"),
+            destaques: getElement("count-destaques"),
+            container: getElement("anuncios-container")
+        };
 
-        // 2. BUSCA DOS ANÚNCIOS
-        console.log("[3] Buscando anúncios no Firestore...");
+        // 2. BUSCA DOS ANÚNCIOS (COM MAIS LOGS)
+        console.log("[1] Buscando anúncios no Firestore...");
         const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
             getDocs(query(collection(db, "imoveis"), where("userId", "==", user.uid))),
             getDocs(query(collection(db, "automoveis"), where("userId", "==", user.uid)))
         ]);
 
-        console.log(`[4] Total de anúncios encontrados: ${imoveisSnapshot.size + automoveisSnapshot.size}`);
+        console.log(`[2] Total de documentos: ${imoveisSnapshot.size + automoveisSnapshot.size}`);
 
-        // 3. CONTAGEM E PROCESSAMENTO
+        // 3. CONTAGEM (COM FALLBACK EXPLÍCITO)
         const counters = {
             todos: 0,
             ativos: 0,
@@ -173,66 +171,82 @@ async function carregarMeusAnuncios() {
             const data = doc.data();
             counters.todos++;
             
-            console.log(`[5] Processando anúncio ${doc.id}`, {
-                status: data.status,
-                destaque: data.destaque,
-                tipo: tipo
-            });
-
-            // Contagem de status
-            if (data.status === 'ativo') counters.ativos++;
-            if (data.status === 'inativo') counters.inativos++;
-            if (data.destaque) counters.destaques++;
+            // Verificação explícita do status
+            const status = (typeof data.status === 'string') ? data.status.toLowerCase() : 'ativo';
+            
+            if (status === 'ativo') counters.ativos++;
+            if (status === 'inativo') counters.inativos++;
+            if (data.destaque === true) counters.destaques++;
+            
+            console.log(`[3] Processado: ${doc.id}`, {status, destaque: data.destaque});
         };
 
-        // Processar todos os documentos
         imoveisSnapshot.forEach(doc => processarAnuncio(doc, "Imóvel"));
         automoveisSnapshot.forEach(doc => processarAnuncio(doc, "Automóvel"));
 
-        console.log("[6] Contagens calculadas:", counters);
+        console.log("[4] Contagens calculadas:", counters);
 
-        // 4. ATUALIZAÇÃO DOS CONTADORES (MÉTODO À PROVA DE FALHAS)
-        const updateCounter = (element, value) => {
-            if (element && !isNaN(value)) {
-                element.textContent = value;
-                // Força o navegador a reconhecer a mudança
-                element.style.display = 'none';
-                element.offsetHeight; // Trigger reflow
-                element.style.display = '';
-                console.log(`[7] Atualizado ${element.id} para ${value}`);
-            }
+        // 4. ATUALIZAÇÃO À PROVA DE FALHAS
+        const updateDOM = () => {
+            console.log("[5] Atualizando DOM...");
+            
+            // Método 1: Atualização normal
+            if (elements.todos) elements.todos.textContent = counters.todos;
+            if (elements.ativos) elements.ativos.textContent = counters.ativos;
+            if (elements.inativos) elements.inativos.textContent = counters.inativos;
+            if (elements.destaques) elements.destaques.textContent = counters.destaques;
+            
+            // Método 2: Forçar redraw (para navegadores problemáticos)
+            requestAnimationFrame(() => {
+                if (elements.todos) {
+                    elements.todos.style.display = 'none';
+                    elements.todos.offsetHeight; // Trigger reflow
+                    elements.todos.style.display = '';
+                }
+            });
+            
+            console.log("[6] DOM atualizado");
         };
 
-        // Atualiza todos os contadores
-        updateCounter(countElements.todos, counters.todos);
-        updateCounter(countElements.ativos, counters.ativos);
-        updateCounter(countElements.inativos, counters.inativos);
-        updateCounter(countElements.destaques, counters.destaques);
+        updateDOM();
 
-        // 5. VERIFICAÇÃO FINAL
-        console.log("[8] Estado final dos contadores:", {
-            todos: countElements.todos.textContent,
-            ativos: countElements.ativos.textContent,
-            inativos: countElements.inativos.textContent,
-            destaques: countElements.destaques.textContent
-        });
+        // 5. VERIFICAÇÃO FINAL (AGUARDA CICLO DE RENDERIZAÇÃO)
+        setTimeout(() => {
+            console.log("[7] Estado final:", {
+                todos: elements.todos?.textContent,
+                ativos: elements.ativos?.textContent,
+                inativos: elements.inativos?.textContent,
+                destaques: elements.destaques?.textContent
+            });
+        }, 100);
 
     } catch (error) {
-        console.error("[ERRO] Falha no carregamento:", error);
-        showAlert("Erro ao carregar anúncios: " + error.message, "error");
+        console.error("[ERRO] Falha crítica:", error);
+        showAlert("Erro ao carregar anúncios", "error");
     }
 }
-// Código de diagnóstico (remova após resolver o problema)
+
+// SOLUÇÃO ADICIONAL PARA TABS DO BOOTSTRAP
+document.getElementById('anuncios-tab')?.addEventListener('shown.bs.tab', () => {
+    console.log("Tab de anúncios ativada - recarregando contadores");
+    setTimeout(carregarMeusAnuncios, 50);
+});
+
+// SOLUÇÃO NUCLEAR (remove e recria os elementos)
 setTimeout(() => {
-    console.log("[DIAGNÓSTICO] Verificação final dos elementos:", {
-        todos: document.getElementById("count-todos")?.textContent,
-        ativos: document.getElementById("count-ativos")?.textContent,
-        inativos: document.getElementById("count-inativos")?.textContent,
-        destaques: document.getElementById("count-destaques")?.textContent
-    });
+    const replaceCounter = (id) => {
+        const el = document.getElementById(id);
+        if (el) {
+            const newEl = el.cloneNode(true);
+            el.parentNode.replaceChild(newEl, el);
+        }
+    };
     
-    console.log("[DIAGNÓSTICO] Estrutura do DOM:", document.getElementById("count-todos"));
-}, 1000);
+    replaceCounter("count-todos");
+    replaceCounter("count-ativos");
+    replaceCounter("count-inativos");
+    replaceCounter("count-destaques");
+}, 200);
 
 // Função para inicializar eventos dos anúncios
 function inicializarEventosAnuncios() {
