@@ -4,124 +4,270 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Anúncio</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="editar-anuncio.css">
+    <style>
+        .form-step { display: none; }
+        .form-step.active { display: block; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        .hidden { display: none; }
+    </style>
+    <!-- Adicione o SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 </head>
 <body>
-    <div class="container mt-5">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h2 class="text-center"><i class="fas fa-edit me-2"></i>Editar Anúncio</h2>
+    <form id="multiStepForm">
+        <!-- Passo 1 - Informações Básicas -->
+        <div class="form-step active" id="step-1">
+            <h2>Informações Básicas</h2>
+            
+            <label for="titulo">Título:</label>
+            <input type="text" id="titulo" required>
+            
+            <label for="descricao">Descrição:</label>
+            <textarea id="descricao" required></textarea>
+            
+            <label for="preco">Preço (R$):</label>
+            <input type="number" id="preco" step="0.01" required>
+            
+            <div>
+                <label for="status">Status:</label>
+                <select id="status" required>
+                    <option value="ativo">Ativo</option>
+                    <option value="inativo">Inativo</option>
+                </select>
             </div>
-            <div class="card-body">
-                <form id="form-editar">
-                    <!-- Campos comuns a todos os anúncios -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="titulo" class="form-label">Título *</label>
-                            <input type="text" class="form-control" id="titulo" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="preco" class="form-label">Preço (R$) *</label>
-                            <input type="number" class="form-control" id="preco" step="0.01" required>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="descricao" class="form-label">Descrição *</label>
-                        <textarea class="form-control" id="descricao" rows="4" required></textarea>
-                    </div>
-
-                    <!-- Seção dinâmica para campos específicos -->
-                    <div id="campos-imovel" class="d-none">
-                        <h5 class="border-bottom pb-2 mb-3">Detalhes do Imóvel</h5>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="quartos" class="form-label">Quartos</label>
-                                <input type="number" class="form-control" id="quartos">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="banheiros" class="form-label">Banheiros</label>
-                                <input type="number" class="form-control" id="banheiros">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="garagem" class="form-label">Vagas na Garagem</label>
-                                <input type="number" class="form-control" id="garagem">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="area" class="form-label">Área (m²)</label>
-                                <input type="number" class="form-control" id="area">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="bairro" class="form-label">Bairro</label>
-                                <input type="text" class="form-control" id="bairro">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="campos-automovel" class="d-none">
-                        <h5 class="border-bottom pb-2 mb-3">Detalhes do Automóvel</h5>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="marca" class="form-label">Marca</label>
-                                <input type="text" class="form-control" id="marca">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="modelo" class="form-label">Modelo</label>
-                                <input type="text" class="form-control" id="modelo">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="ano" class="form-label">Ano</label>
-                                <input type="number" class="form-control" id="ano" min="1900" max="2099">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="km" class="form-label">Quilometragem</label>
-                                <input type="number" class="form-control" id="km">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="cor" class="form-label">Cor</label>
-                                <input type="text" class="form-control" id="cor">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Status e Destaque -->
-                    <div class="row mt-4">
-                        <div class="col-md-6 mb-3">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="status" checked>
-                                <label class="form-check-label" for="status">Anúncio Ativo</label>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="destaque">
-                                <label class="form-check-label" for="destaque">Destacar Anúncio</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                        <a href="perfil.html" class="btn btn-secondary me-md-2">
-                            <i class="fas fa-times me-1"></i> Cancelar
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-1"></i> Salvar Alterações
-                        </button>
-                    </div>
-                </form>
+            
+            <div>
+                <input type="checkbox" id="destaque">
+                <label for="destaque">Destacar anúncio</label>
             </div>
+            
+            <button type="button" class="next-step">Próximo</button>
         </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module" src="editar-anuncio.js"></script>
+        <!-- Passo 2 - Campos Específicos -->
+        <div class="form-step" id="step-2">
+            <h2>Detalhes Específicos</h2>
+            
+            <!-- Seção Imóvel (inicialmente oculta) -->
+            <div id="secao-imovel" class="hidden">
+                <label for="quartos">Quartos:</label>
+                <input type="number" id="quartos">
+                
+                <label for="banheiros">Banheiros:</label>
+                <input type="number" id="banheiros">
+                
+                <label for="garagem">Vagas na Garagem:</label>
+                <input type="number" id="garagem">
+                
+                <label for="area">Área (m²):</label>
+                <input type="number" id="area">
+                
+                <label for="bairro">Bairro:</label>
+                <input type="text" id="bairro">
+            </div>
+            
+            <!-- Seção Automóvel (inicialmente oculta) -->
+            <div id="secao-automovel" class="hidden">
+                <label for="marca">Marca:</label>
+                <input type="text" id="marca">
+                
+                <label for="modelo">Modelo:</label>
+                <input type="text" id="modelo">
+                
+                <label for="ano">Ano:</label>
+                <input type="number" id="ano" min="1900" max="2099">
+                
+                <label for="km">Quilometragem:</label>
+                <input type="number" id="km">
+                
+                <label for="cor">Cor:</label>
+                <input type="text" id="cor">
+            </div>
+            
+            <button type="button" class="prev-step">Voltar</button>
+            <button type="button" class="next-step">Próximo</button>
+        </div>
+
+        <!-- Passo 3 - Imagens -->
+        <div class="form-step" id="step-3">
+            <h2>Imagens do Anúncio</h2>
+            <input type="file" id="imagens" multiple>
+            
+            <div id="preview-imagens"></div>
+            
+            <button type="button" class="prev-step">Voltar</button>
+            <button type="submit">Salvar Alterações</button>
+        </div>
+    </form>
+
+    <script>
+        // Configuração básica do Firebase (substitua com sua configuração)
+        const firebaseConfig = {
+            apiKey: "SUA_API_KEY",
+            authDomain: "SEU_DOMINIO.firebaseapp.com",
+            projectId: "SEU_PROJETO_ID",
+            storageBucket: "SEU_BUCKET.appspot.com",
+            messagingSenderId: "SEU_SENDER_ID",
+            appId: "SEU_APP_ID"
+        };
+
+        // Inicialize o Firebase (certifique-se de ter os scripts importados)
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Captura os parâmetros da URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
+        const tipo = urlParams.get('tipo');
+        const collectionName = tipo === "imovel" ? "imoveis" : "automoveis";
+
+        // Variáveis para controle do formulário
+        let currentStep = 1;
+        const steps = document.querySelectorAll(".form-step");
+
+        // Função para carregar os dados do anúncio
+        async function carregarDadosAnuncio() {
+            try {
+                const docRef = db.collection(collectionName).doc(id);
+                const docSnap = await docRef.get();
+                
+                if (docSnap.exists) {
+                    const anuncio = docSnap.data();
+                    
+                    // Preenche os campos básicos
+                    document.getElementById("titulo").value = anuncio.titulo || "";
+                    document.getElementById("descricao").value = anuncio.descricao || "";
+                    document.getElementById("preco").value = anuncio.preco || "";
+                    document.getElementById("status").value = anuncio.status || "ativo";
+                    document.getElementById("destaque").checked = anuncio.destaque || false;
+                    
+                    // Preenche os campos específicos
+                    if (tipo === "imovel") {
+                        document.getElementById("secao-imovel").classList.remove("hidden");
+                        document.getElementById("quartos").value = anuncio.quartos || "";
+                        document.getElementById("banheiros").value = anuncio.banheiros || "";
+                        document.getElementById("garagem").value = anuncio.garagem || "";
+                        document.getElementById("area").value = anuncio.area || "";
+                        document.getElementById("bairro").value = anuncio.bairro || "";
+                    } else {
+                        document.getElementById("secao-automovel").classList.remove("hidden");
+                        document.getElementById("marca").value = anuncio.marca || "";
+                        document.getElementById("modelo").value = anuncio.modelo || "";
+                        document.getElementById("ano").value = anuncio.ano || "";
+                        document.getElementById("km").value = anuncio.km || "";
+                        document.getElementById("cor").value = anuncio.cor || "";
+                    }
+                    
+                    // Se houver imagens, exibe preview (implemente conforme necessidade)
+                    if (anuncio.imagens && anuncio.imagens.length > 0) {
+                        // Lógica para exibir preview das imagens existentes
+                    }
+                } else {
+                    Swal.fire("Erro", "Anúncio não encontrado", "error").then(() => {
+                        window.location.href = "perfil.html";
+                    });
+                }
+            } catch (error) {
+                console.error("Erro ao carregar anúncio:", error);
+                Swal.fire("Erro", "Ocorreu um erro ao carregar o anúncio", "error");
+            }
+        }
+
+        // Funções para controle do formulário multi-etapas
+        function showStep(step) {
+            steps.forEach((s, index) => {
+                s.classList.toggle("active", index + 1 === step);
+            });
+            currentStep = step;
+        }
+
+        function checkFormValidity() {
+            const currentStepForm = document.getElementById(`step-${currentStep}`);
+            const inputs = currentStepForm.querySelectorAll("[required]");
+            const nextButton = currentStepForm.querySelector(".next-step") || 
+                              currentStepForm.querySelector("button[type='submit']");
+            
+            if (nextButton) {
+                let isValid = true;
+                inputs.forEach(input => {
+                    if (!input.value.trim()) isValid = false;
+                });
+                nextButton.disabled = !isValid;
+            }
+        }
+
+        // Event Listeners
+        document.addEventListener("DOMContentLoaded", () => {
+            // Carrega os dados quando a página estiver pronta
+            carregarDadosAnuncio();
+            
+            // Configura a validação em tempo real
+            document.querySelectorAll("input, textarea, select").forEach(input => {
+                input.addEventListener("input", checkFormValidity);
+            });
+
+            // Configura os botões de navegação
+            document.querySelectorAll(".next-step").forEach(button => {
+                button.addEventListener("click", () => {
+                    if (currentStep < steps.length) showStep(currentStep + 1);
+                });
+            });
+
+            document.querySelectorAll(".prev-step").forEach(button => {
+                button.addEventListener("click", () => {
+                    if (currentStep > 1) showStep(currentStep - 1);
+                });
+            });
+        });
+
+        // Envio do formulário
+        document.getElementById("multiStepForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            try {
+                const dadosAtualizados = {
+                    titulo: document.getElementById("titulo").value,
+                    descricao: document.getElementById("descricao").value,
+                    preco: parseFloat(document.getElementById("preco").value),
+                    status: document.getElementById("status").value,
+                    destaque: document.getElementById("destaque").checked,
+                    dataAtualizacao: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                // Adiciona campos específicos
+                if (tipo === "imovel") {
+                    dadosAtualizados.quartos = parseInt(document.getElementById("quartos").value) || 0;
+                    dadosAtualizados.banheiros = parseInt(document.getElementById("banheiros").value) || 0;
+                    dadosAtualizados.garagem = parseInt(document.getElementById("garagem").value) || 0;
+                    dadosAtualizados.area = parseInt(document.getElementById("area").value) || 0;
+                    dadosAtualizados.bairro = document.getElementById("bairro").value;
+                } else {
+                    dadosAtualizados.marca = document.getElementById("marca").value;
+                    dadosAtualizados.modelo = document.getElementById("modelo").value;
+                    dadosAtualizados.ano = parseInt(document.getElementById("ano").value) || 0;
+                    dadosAtualizados.km = parseInt(document.getElementById("km").value) || 0;
+                    dadosAtualizados.cor = document.getElementById("cor").value;
+                }
+
+                // Atualiza no Firestore
+                await db.collection(collectionName).doc(id).update(dadosAtualizados);
+                
+                Swal.fire("Sucesso", "Anúncio atualizado com sucesso!", "success").then(() => {
+                    window.location.href = "perfil.html";
+                });
+                
+            } catch (error) {
+                console.error("Erro ao atualizar anúncio:", error);
+                Swal.fire("Erro", "Não foi possível atualizar o anúncio", "error");
+            }
+        });
+    </script>
+    
+    <!-- Importe os scripts do Firebase no final do body -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
 </body>
 </html>
