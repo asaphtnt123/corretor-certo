@@ -77,6 +77,13 @@ const tipoInteresseInput = document.getElementById("tipo-interesse");
 const formImoveis = document.getElementById("form-imoveis");
 const formAutomoveis = document.getElementById("form-automoveis");
 
+// Adiciona os estilos ao head do documento
+document.head.insertAdjacentHTML('beforeend', anuncioStyles);
+
+// Inicializa os eventos quando o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', configurarEventosAnuncios);
+
+
 async function carregarInformacoesUsuario(user) {
     try {
         const userDocRef = doc(db, "users", user.uid);
