@@ -505,14 +505,16 @@ async function handleStatusToggle(btn, id, collectionName) {
 
     try {
         await updateDoc(doc(db, collectionName, id), { status: novoStatus });
+        console.log(`[DEBUG] Documento atualizado com sucesso!`);
         btn.dataset.status = novoStatus;
         btn.classList.toggle("active", novoStatus === "ativo");
         showAlert(`Status alterado para ${novoStatus}`, "success");
     } catch (error) {
-        console.error("Erro ao alterar status:", error);
+        console.error("[ERRO] Falha ao atualizar documento:", error);
         showAlert("Erro ao alterar status", "error");
     }
 }
+
 
 async function handleDestaqueToggle(btn, id, collectionName) {
     const currentDestaque = btn.dataset.destaque === "true";
