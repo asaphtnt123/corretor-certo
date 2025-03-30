@@ -48,31 +48,43 @@ setPersistence(auth, browserLocalPersistence)
 
 // Elementos do DOM para o perfil
 const perfilForm = document.getElementById("perfil-form");
-const userCard = document.getElementById("user-card");
-const cardNome = document.getElementById("card-nome");
-const cardTelefone = document.getElementById("card-telefone");
-const cardEmail = document.getElementById("card-email");
-const cardCpfCnpj = document.getElementById("card-cpf-cnpj");
-const cardTipoUsuario = document.getElementById("card-tipo-usuario");
-const cardComum = document.getElementById("card-comum");
-const cardTipoInteresse = document.getElementById("card-tipo-interesse");
-const cardImoveis = document.getElementById("card-imoveis");
-const cardLocalizacaoImovel = document.getElementById("card-localizacao-imovel");
-const cardFaixaPrecoImovel = document.getElementById("card-faixa-preco-imovel");
-const cardAutomoveis = document.getElementById("card-automoveis");
-const cardMarcaAutomovel = document.getElementById("card-marca-automovel");
-const cardFaixaPrecoAutomovel = document.getElementById("card-faixa-preco-automovel");
-const cardComercial = document.getElementById("card-comercial");
-const cardCreci = document.getElementById("card-creci");
-const cardCnpj = document.getElementById("card-cnpj");
-const cardAreaAtuacao = document.getElementById("card-area-atuacao");
-const cardDescricaoEmpresa = document.getElementById("card-descricao-empresa");
+const profileView = document.getElementById("profile-view");
+const profileEdit = document.getElementById("profile-edit");
+const editProfileBtn = document.getElementById("edit-profile-btn");
+const cancelEditBtn = document.getElementById("cancel-edit-btn");
+
+// Elementos do card de visualização
+const profileName = document.getElementById("profile-name");
+const profileEmail = document.getElementById("profile-email");
+const profilePhone = document.getElementById("profile-phone");
+const profileDoc = document.getElementById("profile-doc");
+const profileType = document.getElementById("profile-type");
+const profileCommonInfo = document.getElementById("profile-common-info");
+const profileInterest = document.getElementById("profile-interest");
+const profileProfessionalInfo = document.getElementById("profile-professional-info");
+const profileArea = document.getElementById("profile-area");
+const profileCreciCnpj = document.getElementById("profile-creci-cnpj");
+
+// Elementos do formulário de edição
+const nomeInput = document.getElementById("nome");
+const telefoneInput = document.getElementById("telefone");
+const emailInput = document.getElementById("email");
+const cpfCnpjInput = document.getElementById("cpf-cnpj");
+const dataNascimentoInput = document.getElementById("data-nascimento");
+const tipoUsuarioInputs = document.querySelectorAll('input[name="tipo-usuario"]');
+const tipoInteresseSelect = document.getElementById("tipo-interesse");
+const localizacaoImovelInput = document.getElementById("localizacao-imovel");
+const faixaPrecoImovelInput = document.getElementById("faixa-preco-imovel");
+const marcaAutomovelInput = document.getElementById("marca-automovel");
+const faixaPrecoAutomovelInput = document.getElementById("faixa-preco-automovel");
+const creciInput = document.getElementById("creci");
+const cnpjInput = document.getElementById("cnpj");
+const areaAtuacaoInput = document.getElementById("area-atuacao");
+const descricaoEmpresaInput = document.getElementById("descricao-empresa");
 
 // Elementos para alternar entre formulários
-const tipoUsuarioInput = document.getElementById("tipo-usuario");
 const formComum = document.getElementById("form-comum");
 const formComercial = document.getElementById("form-comercial");
-const tipoInteresseInput = document.getElementById("tipo-interesse");
 const formImoveis = document.getElementById("form-imoveis");
 const formAutomoveis = document.getElementById("form-automoveis");
 
@@ -86,56 +98,56 @@ async function carregarInformacoesUsuario(user) {
             const userData = userDoc.data();
 
             // Exibe as informações básicas no card
-            cardNome.textContent = userData.nome || "Não informado";
-            cardTelefone.textContent = userData.telefone || "Não informado";
-            cardEmail.textContent = userData.email || "Não informado";
-            cardCpfCnpj.textContent = userData.cpfCnpj || "Não informado";
-            cardTipoUsuario.textContent = userData.tipoUsuario === "comum" ? "Usuário Comum" : "Usuário Comercial";
-
-            // Exibe informações específicas do tipo de usuário
+            profileName.textContent = userData.nome || "Não informado";
+            profileEmail.textContent = userData.email || "Não informado";
+            profilePhone.textContent = userData.telefone || "Não informado";
+            profileDoc.textContent = userData.cpfCnpj || "Não informado";
+            
+            // Define o tipo de usuário
             if (userData.tipoUsuario === "comum") {
-                cardComum.classList.remove("hidden");
-                cardTipoInteresse.textContent = userData.comum?.tipoInteresse || "Não informado";
-
+                profileType.textContent = "Usuário Comum";
+                profileCommonInfo.classList.remove("hidden");
+                profileInterest.textContent = userData.comum?.tipoInteresse || "Não informado";
+                
+                // Adiciona detalhes específicos do interesse
                 if (userData.comum?.tipoInteresse === "imoveis") {
-                    cardImoveis.classList.remove("hidden");
-                    cardLocalizacaoImovel.textContent = userData.comum.imoveis?.localizacao || "Não informado";
-                    cardFaixaPrecoImovel.textContent = userData.comum.imoveis?.faixaPreco || "Não informado";
+                    // Adicione detalhes de imóveis se necessário
                 } else if (userData.comum?.tipoInteresse === "automoveis") {
-                    cardAutomoveis.classList.remove("hidden");
-                    cardMarcaAutomovel.textContent = userData.comum.automoveis?.marca || "Não informado";
-                    cardFaixaPrecoAutomovel.textContent = userData.comum.automoveis?.faixaPreco || "Não informado";
+                    // Adicione detalhes de automóveis se necessário
                 }
             } else if (userData.tipoUsuario === "comercial") {
-                cardComercial.classList.remove("hidden");
-                cardCreci.textContent = userData.comercial?.creci || "Não informado";
-                cardCnpj.textContent = userData.comercial?.cnpj || "Não informado";
-                cardAreaAtuacao.textContent = userData.comercial?.areaAtuacao || "Não informado";
-                cardDescricaoEmpresa.textContent = userData.comercial?.descricaoEmpresa || "Não informado";
+                profileType.textContent = "Profissional";
+                profileProfessionalInfo.classList.remove("hidden");
+                profileArea.textContent = userData.comercial?.areaAtuacao || "Não informado";
+                profileCreciCnpj.textContent = 
+                    userData.comercial?.creci ? `CRECI ${userData.comercial.creci}` : 
+                    userData.comercial?.cnpj ? `CNPJ ${userData.comercial.cnpj}` : "Não informado";
             }
 
-            // Exibe o card
-            userCard.classList.remove("hidden");
-            
             // Preenche o formulário com os dados para edição
             fillEditForm(userData);
+            
+            // Exibe o card de visualização
+            profileView.classList.remove("hidden");
         } else {
             console.log("Nenhum documento de usuário encontrado");
+            // Mostra o formulário para cadastro inicial
+            profileEdit.classList.remove("hidden");
         }
     } catch (error) {
         console.error("Erro ao carregar informações do usuário:", error);
-        alert("Erro ao carregar informações do perfil. Tente novamente.");
+        showAlert("Erro ao carregar informações do perfil. Tente novamente.", "error");
     }
 }
 
 // Função para preencher o formulário de edição
 function fillEditForm(userData) {
     // Preenche campos básicos
-    document.getElementById("nome").value = userData.nome || "";
-    document.getElementById("telefone").value = userData.telefone || "";
-    document.getElementById("email").value = userData.email || "";
-    document.getElementById("cpf-cnpj").value = userData.cpfCnpj || "";
-    document.getElementById("data-nascimento").value = userData.dataNascimento || "";
+    nomeInput.value = userData.nome || "";
+    telefoneInput.value = userData.telefone || "";
+    emailInput.value = userData.email || "";
+    cpfCnpjInput.value = userData.cpfCnpj || "";
+    dataNascimentoInput.value = userData.dataNascimento || "";
     
     // Define o tipo de usuário
     if (userData.tipoUsuario) {
@@ -144,21 +156,21 @@ function fillEditForm(userData) {
         
         // Preenche campos específicos
         if (userData.tipoUsuario === "comum" && userData.comum) {
-            document.getElementById("tipo-interesse").value = userData.comum.tipoInteresse || "";
+            tipoInteresseSelect.value = userData.comum.tipoInteresse || "";
             toggleInterestFields(userData.comum.tipoInteresse);
             
             if (userData.comum.tipoInteresse === "imoveis" && userData.comum.imoveis) {
-                document.getElementById("localizacao-imovel").value = userData.comum.imoveis.localizacao || "";
-                document.getElementById("faixa-preco-imovel").value = userData.comum.imoveis.faixaPreco || "";
+                localizacaoImovelInput.value = userData.comum.imoveis.localizacao || "";
+                faixaPrecoImovelInput.value = userData.comum.imoveis.faixaPreco || "";
             } else if (userData.comum.tipoInteresse === "automoveis" && userData.comum.automoveis) {
-                document.getElementById("marca-automovel").value = userData.comum.automoveis.marca || "";
-                document.getElementById("faixa-preco-automovel").value = userData.comum.automoveis.faixaPreco || "";
+                marcaAutomovelInput.value = userData.comum.automoveis.marca || "";
+                faixaPrecoAutomovelInput.value = userData.comum.automoveis.faixaPreco || "";
             }
         } else if (userData.tipoUsuario === "comercial" && userData.comercial) {
-            document.getElementById("creci").value = userData.comercial.creci || "";
-            document.getElementById("cnpj").value = userData.comercial.cnpj || "";
-            document.getElementById("area-atuacao").value = userData.comercial.areaAtuacao || "";
-            document.getElementById("descricao-empresa").value = userData.comercial.descricaoEmpresa || "";
+            creciInput.value = userData.comercial.creci || "";
+            cnpjInput.value = userData.comercial.cnpj || "";
+            areaAtuacaoInput.value = userData.comercial.areaAtuacao || "";
+            descricaoEmpresaInput.value = userData.comercial.descricaoEmpresa || "";
         }
     }
 }
@@ -184,12 +196,23 @@ function toggleInterestFields(tipoInteresse) {
     }
 }
 
+// Funções para alternar entre visualização e edição
+function toggleEditMode(showEdit) {
+    if (showEdit) {
+        profileView.classList.add("hidden");
+        profileEdit.classList.remove("hidden");
+    } else {
+        profileView.classList.remove("hidden");
+        profileEdit.classList.add("hidden");
+    }
+}
+
 // Event listeners para os selects
-tipoUsuarioInput.addEventListener("change", (e) => {
+document.getElementById("tipo-usuario").addEventListener("change", (e) => {
     toggleUserTypeFields(e.target.value);
 });
 
-tipoInteresseInput.addEventListener("change", (e) => {
+document.getElementById("tipo-interesse").addEventListener("change", (e) => {
     toggleInterestFields(e.target.value);
 });
 
@@ -199,45 +222,45 @@ perfilForm.addEventListener("submit", async (e) => {
 
     const user = auth.currentUser;
     if (!user) {
-        alert("Você precisa estar logado para atualizar o perfil");
+        showAlert("Você precisa estar logado para atualizar o perfil", "error");
         return;
     }
 
     try {
         // Coleta os dados do formulário
         const userData = {
-            nome: document.getElementById("nome").value,
-            telefone: document.getElementById("telefone").value,
-            email: document.getElementById("email").value,
-            cpfCnpj: document.getElementById("cpf-cnpj").value,
-            dataNascimento: document.getElementById("data-nascimento").value,
-            tipoUsuario: tipoUsuarioInput.value,
+            nome: nomeInput.value,
+            telefone: telefoneInput.value,
+            email: emailInput.value,
+            cpfCnpj: cpfCnpjInput.value,
+            dataNascimento: dataNascimentoInput.value,
+            tipoUsuario: document.querySelector('input[name="tipo-usuario"]:checked').value,
             updatedAt: new Date()
         };
 
         // Adiciona dados específicos do tipo de usuário
         if (userData.tipoUsuario === "comum") {
             userData.comum = {
-                tipoInteresse: tipoInteresseInput.value
+                tipoInteresse: tipoInteresseSelect.value
             };
 
             if (userData.comum.tipoInteresse === "imoveis") {
                 userData.comum.imoveis = {
-                    localizacao: document.getElementById("localizacao-imovel").value,
-                    faixaPreco: document.getElementById("faixa-preco-imovel").value
+                    localizacao: localizacaoImovelInput.value,
+                    faixaPreco: faixaPrecoImovelInput.value
                 };
             } else if (userData.comum.tipoInteresse === "automoveis") {
                 userData.comum.automoveis = {
-                    marca: document.getElementById("marca-automovel").value,
-                    faixaPreco: document.getElementById("faixa-preco-automovel").value
+                    marca: marcaAutomovelInput.value,
+                    faixaPreco: faixaPrecoAutomovelInput.value
                 };
             }
         } else if (userData.tipoUsuario === "comercial") {
             userData.comercial = {
-                creci: document.getElementById("creci").value,
-                cnpj: document.getElementById("cnpj").value,
-                areaAtuacao: document.getElementById("area-atuacao").value,
-                descricaoEmpresa: document.getElementById("descricao-empresa").value
+                creci: creciInput.value,
+                cnpj: cnpjInput.value,
+                areaAtuacao: areaAtuacaoInput.value,
+                descricaoEmpresa: descricaoEmpresaInput.value
             };
         }
 
@@ -246,12 +269,18 @@ perfilForm.addEventListener("submit", async (e) => {
         
         // Recarrega as informações do usuário
         await carregarInformacoesUsuario(user);
-        alert("Perfil atualizado com sucesso!");
+        toggleEditMode(false);
+        
+        showAlert("Perfil atualizado com sucesso!", "success");
     } catch (error) {
         console.error("Erro ao atualizar perfil:", error);
-        alert("Erro ao atualizar perfil. Tente novamente.");
+        showAlert("Erro ao atualizar perfil. Tente novamente.", "error");
     }
 });
+
+// Event Listeners para edição do perfil
+editProfileBtn.addEventListener("click", () => toggleEditMode(true));
+cancelEditBtn.addEventListener("click", () => toggleEditMode(false));
 
 // ==============================================
 // ELEMENTOS E FUNÇÕES DA TAB DE ANÚNCIOS
@@ -549,6 +578,11 @@ onAuthStateChanged(auth, (user) => {
         document.getElementById('anuncios-tab')?.addEventListener('shown.bs.tab', () => {
             setTimeout(carregarMeusAnuncios, 50);
         });
+        
+        // Carrega anúncios se já estiver na tab
+        if (window.location.hash === '#anuncios') {
+            setTimeout(carregarMeusAnuncios, 100);
+        }
     } else {
         window.location.href = "login.html";
     }
@@ -565,11 +599,21 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
     }
 });
 
-// Verificar hash na URL para ativar a aba correta
-window.addEventListener('DOMContentLoaded', () => {
+// Inicializa os eventos quando o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', function() {
+    // Ativar a aba correta quando a página carrega com hash na URL
     const hash = window.location.hash;
-    if (hash === '#meus-anuncios') {
-        const tabAnuncios = document.querySelector('a[href="#meus-anuncios"]');
-        if (tabAnuncios) tabAnuncios.click();
+    if (hash === '#anuncios') {
+        const triggerTab = document.querySelector('#anuncios-tab');
+        if (triggerTab) {
+            const tab = new bootstrap.Tab(triggerTab);
+            tab.show();
+        }
+    } else if (hash === '#favoritos') {
+        const triggerTab = document.querySelector('#favoritos-tab');
+        if (triggerTab) {
+            const tab = new bootstrap.Tab(triggerTab);
+            tab.show();
+        }
     }
 });
