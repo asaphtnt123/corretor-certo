@@ -80,6 +80,14 @@ const formAutomoveis = document.getElementById("form-automoveis");
 
 
 
+document.getElementById("perfil-tab").addEventListener("shown.bs.tab", function () {
+    const user = auth.currentUser;
+    if (user) {
+        carregarInformacoesUsuario(user);
+    } else {
+        console.log("Usuário não autenticado.");
+    }
+});
 
 async function carregarInformacoesUsuario(user) {
     try {
