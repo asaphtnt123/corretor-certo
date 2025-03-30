@@ -1,4 +1,4 @@
-// Importações do Firebase
+ // Importar funções do Firebase corretamente (versão consolidada)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { 
   getAuth, 
@@ -16,10 +16,10 @@ import {
   doc,
   getDoc,
   setDoc,
-  updateDoc,
-  deleteDoc,
-  runTransaction
+  addDoc,
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -32,63 +32,55 @@ const firebaseConfig = {
   measurementId: "G-QKN9NFXZZQ"
 };
 
-// Inicialização do Firebase
+// Inicializar Firebase
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db = getFirestore(app);  // Adicionei esta linha que estava faltando
 const auth = getAuth(app);
+const storage = getStorage(app);
 
 // Ativar persistência da autenticação
 setPersistence(auth, browserLocalPersistence)
   .then(() => console.log("Persistência ativada!"))
   .catch((error) => console.error("Erro na persistência:", error));
 
-// ==============================================
-// ELEMENTOS E FUNÇÕES DA TAB DE PERFIL
-// ==============================================
+console.log("Firebase inicializado com sucesso!");
 
-// Elementos do DOM para o perfil
+export { app, db, auth, storage };
+
+
+// Elementos do formulário e do card
 const perfilForm = document.getElementById("perfil-form");
-const profileView = document.getElementById("profile-view");
-const profileEdit = document.getElementById("profile-edit");
-const editProfileBtn = document.getElementById("edit-profile-btn");
-const cancelEditBtn = document.getElementById("cancel-edit-btn");
+const userCard = document.getElementById("user-card");
+const cardNome = document.getElementById("card-nome");
+const cardTelefone = document.getElementById("card-telefone");
+const cardEmail = document.getElementById("card-email");
+const cardCpfCnpj = document.getElementById("card-cpf-cnpj");
+const cardTipoUsuario = document.getElementById("card-tipo-usuario");
+const cardComum = document.getElementById("card-comum");
+const cardTipoInteresse = document.getElementById("card-tipo-interesse");
+const cardImoveis = document.getElementById("card-imoveis");
+const cardLocalizacaoImovel = document.getElementById("card-localizacao-imovel");
+const cardFaixaPrecoImovel = document.getElementById("card-faixa-preco-imovel");
+const cardAutomoveis = document.getElementById("card-automoveis");
+const cardMarcaAutomovel = document.getElementById("card-marca-automovel");
+const cardFaixaPrecoAutomovel = document.getElementById("card-faixa-preco-automovel");
+const cardComercial = document.getElementById("card-comercial");
+const cardCreci = document.getElementById("card-creci");
+const cardCnpj = document.getElementById("card-cnpj");
+const cardAreaAtuacao = document.getElementById("card-area-atuacao");
+const cardDescricaoEmpresa = document.getElementById("card-descricao-empresa");
 
-// Elementos do card de visualização
-const profileName = document.getElementById("profile-name");
-const profileEmail = document.getElementById("profile-email");
-const profilePhone = document.getElementById("profile-phone");
-const profileDoc = document.getElementById("profile-doc");
-const profileType = document.getElementById("profile-type");
-const profileCommonInfo = document.getElementById("profile-common-info");
-const profileInterest = document.getElementById("profile-interest");
-const profileProfessionalInfo = document.getElementById("profile-professional-info");
-const profileArea = document.getElementById("profile-area");
-const profileCreciCnpj = document.getElementById("profile-creci-cnpj");
-
-// Elementos do formulário de edição
-const nomeInput = document.getElementById("nome");
-const telefoneInput = document.getElementById("telefone");
-const emailInput = document.getElementById("email");
-const cpfCnpjInput = document.getElementById("cpf-cnpj");
-const dataNascimentoInput = document.getElementById("data-nascimento");
-const tipoUsuarioInputs = document.querySelectorAll('input[name="tipo-usuario"]');
-const tipoInteresseSelect = document.getElementById("tipo-interesse");
-const localizacaoImovelInput = document.getElementById("localizacao-imovel");
-const faixaPrecoImovelInput = document.getElementById("faixa-preco-imovel");
-const marcaAutomovelInput = document.getElementById("marca-automovel");
-const faixaPrecoAutomovelInput = document.getElementById("faixa-preco-automovel");
-const creciInput = document.getElementById("creci");
-const cnpjInput = document.getElementById("cnpj");
-const areaAtuacaoInput = document.getElementById("area-atuacao");
-const descricaoEmpresaInput = document.getElementById("descricao-empresa");
-
-// Elementos para alternar entre formulários
+// Seleciona os elementos do DOM para alternar entre formulários
+const tipoUsuarioInput = document.getElementById("tipo-usuario");
 const formComum = document.getElementById("form-comum");
 const formComercial = document.getElementById("form-comercial");
+const tipoInteresseInput = document.getElementById("tipo-interesse");
 const formImoveis = document.getElementById("form-imoveis");
 const formAutomoveis = document.getElementById("form-automoveis");
 
-// Função principal para carregar informações do usuário
+
+
+
 async function carregarInformacoesUsuario(user) {
     try {
         const userDocRef = doc(db, "users", user.uid);
@@ -97,258 +89,147 @@ async function carregarInformacoesUsuario(user) {
         if (userDoc.exists()) {
             const userData = userDoc.data();
 
-            // Exibe as informações básicas no card
-            profileName.textContent = userData.nome || "Não informado";
-            profileEmail.textContent = userData.email || "Não informado";
-            profilePhone.textContent = userData.telefone || "Não informado";
-            profileDoc.textContent = userData.cpfCnpj || "Não informado";
-            
-            // Define o tipo de usuário
+            // Exibe as informações básicas
+            cardNome.textContent = userData.nome || "Não informado";
+            cardTelefone.textContent = userData.telefone || "Não informado";
+            cardEmail.textContent = userData.email || "Não informado";
+            cardCpfCnpj.textContent = userData.cpfCnpj || "Não informado";
+            cardTipoUsuario.textContent = userData.tipoUsuario === "comum" ? "Usuário Comum" : "Usuário Comercial";
+
+            // Exibe as informações específicas do tipo de usuário
             if (userData.tipoUsuario === "comum") {
-                profileType.textContent = "Usuário Comum";
-                profileCommonInfo.classList.remove("hidden");
-                profileInterest.textContent = userData.comum?.tipoInteresse || "Não informado";
-                
-                // Adiciona detalhes específicos do interesse
+                cardComum.classList.remove("hidden");
+                cardTipoInteresse.textContent = userData.comum?.tipoInteresse || "Não informado";
+
                 if (userData.comum?.tipoInteresse === "imoveis") {
-                    // Adicione detalhes de imóveis se necessário
+                    cardImoveis.classList.remove("hidden");
+                    cardLocalizacaoImovel.textContent = userData.comum.imoveis?.localizacao || "Não informado";
+                    cardFaixaPrecoImovel.textContent = userData.comum.imoveis?.faixaPreco || "Não informado";
                 } else if (userData.comum?.tipoInteresse === "automoveis") {
-                    // Adicione detalhes de automóveis se necessário
+                    cardAutomoveis.classList.remove("hidden");
+                    cardMarcaAutomovel.textContent = userData.comum.automoveis?.marca || "Não informado";
+                    cardFaixaPrecoAutomovel.textContent = userData.comum.automoveis?.faixaPreco || "Não informado";
                 }
             } else if (userData.tipoUsuario === "comercial") {
-                profileType.textContent = "Profissional";
-                profileProfessionalInfo.classList.remove("hidden");
-                profileArea.textContent = userData.comercial?.areaAtuacao || "Não informado";
-                profileCreciCnpj.textContent = 
-                    userData.comercial?.creci ? `CRECI ${userData.comercial.creci}` : 
-                    userData.comercial?.cnpj ? `CNPJ ${userData.comercial.cnpj}` : "Não informado";
+                cardComercial.classList.remove("hidden");
+                cardCreci.textContent = userData.comercial?.creci || "Não informado";
+                cardCnpj.textContent = userData.comercial?.cnpj || "Não informado";
+                cardAreaAtuacao.textContent = userData.comercial?.areaAtuacao || "Não informado";
+                cardDescricaoEmpresa.textContent = userData.comercial?.descricaoEmpresa || "Não informado";
             }
 
-            // Preenche o formulário com os dados para edição
-            fillEditForm(userData);
-            
-            // Exibe o card de visualização
-            profileView.classList.remove("hidden");
+            // Exibe o card
+            userCard.classList.remove("hidden");
         } else {
             console.log("Nenhum documento de usuário encontrado");
-            // Mostra o formulário para cadastro inicial
-            profileEdit.classList.remove("hidden");
         }
     } catch (error) {
         console.error("Erro ao carregar informações do usuário:", error);
-        showAlert("Erro ao carregar informações do perfil. Tente novamente.", "error");
+        alert("Erro ao carregar informações do perfil. Tente novamente.");
     }
 }
 
-// Função para preencher o formulário de edição
-function fillEditForm(userData) {
-    // Preenche campos básicos
-    nomeInput.value = userData.nome || "";
-    telefoneInput.value = userData.telefone || "";
-    emailInput.value = userData.email || "";
-    cpfCnpjInput.value = userData.cpfCnpj || "";
-    dataNascimentoInput.value = userData.dataNascimento || "";
-    
-    // Define o tipo de usuário
-    if (userData.tipoUsuario) {
-        document.querySelector(`input[name="tipo-usuario"][value="${userData.tipoUsuario}"]`).checked = true;
-        toggleUserTypeFields(userData.tipoUsuario);
-        
-        // Preenche campos específicos
-        if (userData.tipoUsuario === "comum" && userData.comum) {
-            tipoInteresseSelect.value = userData.comum.tipoInteresse || "";
-            toggleInterestFields(userData.comum.tipoInteresse);
-            
-            if (userData.comum.tipoInteresse === "imoveis" && userData.comum.imoveis) {
-                localizacaoImovelInput.value = userData.comum.imoveis.localizacao || "";
-                faixaPrecoImovelInput.value = userData.comum.imoveis.faixaPreco || "";
-            } else if (userData.comum.tipoInteresse === "automoveis" && userData.comum.automoveis) {
-                marcaAutomovelInput.value = userData.comum.automoveis.marca || "";
-                faixaPrecoAutomovelInput.value = userData.comum.automoveis.faixaPreco || "";
-            }
-        } else if (userData.tipoUsuario === "comercial" && userData.comercial) {
-            creciInput.value = userData.comercial.creci || "";
-            cnpjInput.value = userData.comercial.cnpj || "";
-            areaAtuacaoInput.value = userData.comercial.areaAtuacao || "";
-            descricaoEmpresaInput.value = userData.comercial.descricaoEmpresa || "";
-        }
-    }
-}
-
-// Funções para mostrar/ocultar campos específicos
-function toggleUserTypeFields(tipoSelecionado) {
-    if (tipoSelecionado === "comum") {
-        formComum.classList.remove("hidden");
-        formComercial.classList.add("hidden");
-    } else if (tipoSelecionado === "comercial") {
-        formComercial.classList.remove("hidden");
-        formComum.classList.add("hidden");
-    }
-}
-
-function toggleInterestFields(tipoInteresse) {
-    if (tipoInteresse === "imoveis") {
-        formImoveis.classList.remove("hidden");
-        formAutomoveis.classList.add("hidden");
-    } else if (tipoInteresse === "automoveis") {
-        formAutomoveis.classList.remove("hidden");
-        formImoveis.classList.add("hidden");
-    }
-}
-
-// Funções para alternar entre visualização e edição
-function toggleEditMode(showEdit) {
-    if (showEdit) {
-        profileView.classList.add("hidden");
-        profileEdit.classList.remove("hidden");
-    } else {
-        profileView.classList.remove("hidden");
-        profileEdit.classList.add("hidden");
-    }
-}
-
-// Event listeners para os selects
-document.getElementById("tipo-usuario").addEventListener("change", (e) => {
-    toggleUserTypeFields(e.target.value);
-});
-
-document.getElementById("tipo-interesse").addEventListener("change", (e) => {
-    toggleInterestFields(e.target.value);
-});
-
-// Evento de submit do formulário
-perfilForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const user = auth.currentUser;
-    if (!user) {
-        showAlert("Você precisa estar logado para atualizar o perfil", "error");
-        return;
-    }
-
-    try {
-        // Coleta os dados do formulário
-        const userData = {
-            nome: nomeInput.value,
-            telefone: telefoneInput.value,
-            email: emailInput.value,
-            cpfCnpj: cpfCnpjInput.value,
-            dataNascimento: dataNascimentoInput.value,
-            tipoUsuario: document.querySelector('input[name="tipo-usuario"]:checked').value,
-            updatedAt: new Date()
-        };
-
-        // Adiciona dados específicos do tipo de usuário
-        if (userData.tipoUsuario === "comum") {
-            userData.comum = {
-                tipoInteresse: tipoInteresseSelect.value
-            };
-
-            if (userData.comum.tipoInteresse === "imoveis") {
-                userData.comum.imoveis = {
-                    localizacao: localizacaoImovelInput.value,
-                    faixaPreco: faixaPrecoImovelInput.value
-                };
-            } else if (userData.comum.tipoInteresse === "automoveis") {
-                userData.comum.automoveis = {
-                    marca: marcaAutomovelInput.value,
-                    faixaPreco: faixaPrecoAutomovelInput.value
-                };
-            }
-        } else if (userData.tipoUsuario === "comercial") {
-            userData.comercial = {
-                creci: creciInput.value,
-                cnpj: cnpjInput.value,
-                areaAtuacao: areaAtuacaoInput.value,
-                descricaoEmpresa: descricaoEmpresaInput.value
-            };
-        }
-
-        // Atualiza no Firestore
-        await setDoc(doc(db, "users", user.uid), userData, { merge: true });
-        
-        // Recarrega as informações do usuário
-        await carregarInformacoesUsuario(user);
-        toggleEditMode(false);
-        
-        showAlert("Perfil atualizado com sucesso!", "success");
-    } catch (error) {
-        console.error("Erro ao atualizar perfil:", error);
-        showAlert("Erro ao atualizar perfil. Tente novamente.", "error");
-    }
-});
-
-// Event Listeners para edição do perfil
-editProfileBtn.addEventListener("click", () => toggleEditMode(true));
-cancelEditBtn.addEventListener("click", () => toggleEditMode(false));
-
-// ==============================================
-// ELEMENTOS E FUNÇÕES DA TAB DE ANÚNCIOS
-// ==============================================
-
-// Função para carregar os anúncios do usuário
 async function carregarMeusAnuncios() {
     try {
+        console.log("[INÍCIO] Carregando anúncios...");
+        
         const user = auth.currentUser;
         if (!user) {
             showAlert('Você precisa estar logado para ver seus anúncios', 'error');
             return;
         }
 
-        // Elementos do DOM
-        const elements = {
-            todos: document.getElementById("count-todos"),
-            ativos: document.getElementById("count-ativos"),
-            inativos: document.getElementById("count-inativos"),
-            destaques: document.getElementById("count-destaques"),
-            containerTodos: document.getElementById("anuncios-container"),
-            containerAtivos: document.getElementById("anuncios-ativos"),
-            containerInativos: document.getElementById("anuncios-inativos"),
-            containerDestaques: document.getElementById("anuncios-destaques"),
-            noAnuncios: document.getElementById("no-anuncios")
+        // 1. VERIFICAÇÃO DOS ELEMENTOS
+        const getElement = (id) => {
+            const el = document.getElementById(id);
+            if (!el) console.error(`Elemento ${id} não encontrado`);
+            return el;
         };
 
-        // Busca os anúncios no Firestore
+        const elements = {
+            todos: getElement("count-todos"),
+            ativos: getElement("count-ativos"),
+            inativos: getElement("count-inativos"),
+            destaques: getElement("count-destaques"),
+            containerTodos: getElement("anuncios-container"),
+            containerAtivos: getElement("anuncios-ativos"),
+            containerInativos: getElement("anuncios-inativos"),
+            containerDestaques: getElement("anuncios-destaques"),
+            noAnuncios: getElement("no-anuncios")
+        };
+
+        // 2. BUSCA DOS ANÚNCIOS
+        console.log("[1] Buscando anúncios no Firestore...");
         const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
             getDocs(query(collection(db, "imoveis"), where("userId", "==", user.uid))),
             getDocs(query(collection(db, "automoveis"), where("userId", "==", user.uid)))
         ]);
 
-        // Processa os anúncios
-        const todosAnuncios = [];
-        const counters = { todos: 0, ativos: 0, inativos: 0, destaques: 0 };
+        console.log(`[2] Total de documentos: ${imoveisSnapshot.size + automoveisSnapshot.size}`);
 
+        // 3. PROCESSAMENTO DOS ANÚNCIOS
+        const todosAnuncios = [];
+        const counters = {
+            todos: 0,
+            ativos: 0,
+            inativos: 0,
+            destaques: 0
+        };
+
+        // Função para processar cada anúncio
         const processarAnuncio = (doc, tipo) => {
             const data = doc.data();
             const anuncio = {
                 ...data,
                 id: doc.id,
-                tipo: tipo,
-                status: (typeof data.status === 'string') ? data.status.toLowerCase() : 'ativo'
+                tipo: tipo
             };
             
+            // Verificação do status
+            const status = (typeof data.status === 'string') ? data.status.toLowerCase() : 'ativo';
+            anuncio.status = status; // Garante que o status está padronizado
+            
+            // Atualiza contadores
             counters.todos++;
-            if (anuncio.status === 'ativo') counters.ativos++;
-            if (anuncio.status === 'inativo') counters.inativos++;
+            if (status === 'ativo') counters.ativos++;
+            if (status === 'inativo') counters.inativos++;
             if (data.destaque === true) counters.destaques++;
             
             todosAnuncios.push(anuncio);
+            console.log(`[3] Processado: ${doc.id}`, {status, destaque: data.destaque});
         };
 
+        // Processa todos os documentos
         imoveisSnapshot.forEach(doc => processarAnuncio(doc, "Imóvel"));
         automoveisSnapshot.forEach(doc => processarAnuncio(doc, "Automóvel"));
 
-        // Atualiza os contadores
-        if (elements.todos) elements.todos.textContent = counters.todos;
-        if (elements.ativos) elements.ativos.textContent = counters.ativos;
-        if (elements.inativos) elements.inativos.textContent = counters.inativos;
-        if (elements.destaques) elements.destaques.textContent = counters.destaques;
+        console.log("[4] Contagens calculadas:", counters);
+        console.log("[5] Total de anúncios processados:", todosAnuncios.length);
 
-        // Exibe os anúncios
+        // 4. ATUALIZAÇÃO DOS CONTADORES
+        const updateCounters = () => {
+            if (elements.todos) elements.todos.textContent = counters.todos;
+            if (elements.ativos) elements.ativos.textContent = counters.ativos;
+            if (elements.inativos) elements.inativos.textContent = counters.inativos;
+            if (elements.destaques) elements.destaques.textContent = counters.destaques;
+            
+            // Força redraw para navegadores problemáticos
+            requestAnimationFrame(() => {
+                if (elements.todos) {
+                    elements.todos.style.display = 'none';
+                    elements.todos.offsetHeight;
+                    elements.todos.style.display = '';
+                }
+            });
+        };
+
+        updateCounters();
+
+        // 5. EXIBIÇÃO DOS ANÚNCIOS
         const exibirAnuncios = (anuncios, container) => {
             if (!container) return;
             
-            container.innerHTML = "";
+            container.innerHTML = ""; // Limpa o container
             
             if (anuncios.length === 0) {
                 if (container === elements.containerTodos && elements.noAnuncios) {
@@ -357,73 +238,349 @@ async function carregarMeusAnuncios() {
                 return;
             }
             
-            if (elements.noAnuncios) elements.noAnuncios.classList.add("d-none");
+            if (elements.noAnuncios) {
+                elements.noAnuncios.classList.add("d-none");
+            }
             
             anuncios.forEach(anuncio => {
-                container.innerHTML += criarCardAnuncio(anuncio);
+                const cardHTML = criarCardAnuncio(anuncio, anuncio.tipo, anuncio.id);
+                container.innerHTML += cardHTML;
             });
         };
 
         // Exibe todos os anúncios inicialmente
         exibirAnuncios(todosAnuncios, elements.containerTodos);
         
-        // Prepara e exibe os anúncios filtrados
-        exibirAnuncios(todosAnuncios.filter(a => a.status === 'ativo'), elements.containerAtivos);
-        exibirAnuncios(todosAnuncios.filter(a => a.status === 'inativo'), elements.containerInativos);
-        exibirAnuncios(todosAnuncios.filter(a => a.destaque === true), elements.containerDestaques);
+        // Prepara os anúncios filtrados
+        const anunciosAtivos = todosAnuncios.filter(a => a.status === 'ativo');
+        const anunciosInativos = todosAnuncios.filter(a => a.status === 'inativo');
+        const anunciosDestaques = todosAnuncios.filter(a => a.destaque === true);
+        
+        // Exibe os anúncios filtrados em seus containers
+        exibirAnuncios(anunciosAtivos, elements.containerAtivos);
+        exibirAnuncios(anunciosInativos, elements.containerInativos);
+        exibirAnuncios(anunciosDestaques, elements.containerDestaques);
 
-        // Configura os eventos dos botões nos cards
-        configurarEventosAnuncios();
+        // 6. CONFIGURAÇÃO DOS EVENTOS DE FILTRO
+        const configurarFiltros = () => {
+            const tabs = {
+                "todos-tab": "todos",
+                "ativos-tab": "ativos",
+                "inativos-tab": "inativos",
+                "destaques-tab": "destaques"
+            };
+            
+            // Mostra a tab ativa quando clicada
+            Object.entries(tabs).forEach(([tabId, tipo]) => {
+                const tab = document.getElementById(tabId);
+                if (tab) {
+                    tab.addEventListener("click", () => {
+                        const containerMap = {
+                            "todos": elements.containerTodos,
+                            "ativos": elements.containerAtivos,
+                            "inativos": elements.containerInativos,
+                            "destaques": elements.containerDestaques
+                        };
+                        
+                        const container = containerMap[tipo];
+                        if (container) {
+                            // Esconde todos os containers
+                            Object.values(containerMap).forEach(c => {
+                                if (c) c.style.display = 'none';
+                            });
+                            
+                            // Mostra o container selecionado
+                            container.style.display = '';
+                        }
+                    });
+                }
+            });
+        };
+
+        configurarFiltros();
+
+        // 7. VERIFICAÇÃO FINAL
+        setTimeout(() => {
+            console.log("[6] Estado final:", {
+                todos: elements.todos?.textContent,
+                ativos: elements.ativos?.textContent,
+                inativos: elements.inativos?.textContent,
+                destaques: elements.destaques?.textContent,
+                anunciosAtivos: anunciosAtivos.length,
+                anunciosInativos: anunciosInativos.length,
+                anunciosDestaques: anunciosDestaques.length
+            });
+        }, 100);
 
     } catch (error) {
-        console.error("Erro ao carregar anúncios:", error);
+        console.error("[ERRO] Falha crítica:", error);
         showAlert("Erro ao carregar anúncios", "error");
     }
 }
 
-// Função para criar o HTML do card de anúncio
-function criarCardAnuncio(anuncio) {
-    const dataFormatada = anuncio.data?.toDate ? anuncio.data.toDate().toLocaleDateString('pt-BR') : 'Data não disponível';
-    const precoFormatado = anuncio.preco?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) || 'Preço não informado';
+// Inicializa quando a tab de anúncios é mostrada
+document.getElementById('anuncios-tab')?.addEventListener('shown.bs.tab', () => {
+    setTimeout(carregarMeusAnuncios, 50);
+});
+// SOLUÇÃO ADICIONAL PARA TABS DO BOOTSTRAP
+document.getElementById('anuncios-tab')?.addEventListener('shown.bs.tab', () => {
+    console.log("Tab de anúncios ativada - recarregando contadores");
+    setTimeout(carregarMeusAnuncios, 50);
+});
+
+// SOLUÇÃO NUCLEAR (remove e recria os elementos)
+setTimeout(() => {
+    const replaceCounter = (id) => {
+        const el = document.getElementById(id);
+        if (el) {
+            const newEl = el.cloneNode(true);
+            el.parentNode.replaceChild(newEl, el);
+        }
+    };
+    
+    replaceCounter("count-todos");
+    replaceCounter("count-ativos");
+    replaceCounter("count-inativos");
+    replaceCounter("count-destaques");
+}, 200);
+
+document.addEventListener("DOMContentLoaded", function () {
+    console.log('[DEBUG] Iniciando inicializarEventosAnuncios()');
+    console.log('Eventos de anúncio inicializados');
+
+    // Configuração dos eventos de filtro
+    const filtroTipo = document.getElementById("filtro-tipo");
+    if (filtroTipo) {
+        filtroTipo.addEventListener("change", function() {
+            // Código de filtragem aqui
+        });
+    }
+
+    // Configuração dos eventos de busca
+    const buscaInput = document.getElementById("busca-anuncios");
+    if (buscaInput) {
+        buscaInput.addEventListener("input", function() {
+            // Código de busca aqui
+        });
+    }
+
+    // Eventos de clique corrigidos
+    document.addEventListener("click", async function(e) {
+        console.log('[DEBUG] Clique detectado no elemento:', e.target);
+
+        const btnStatus = e.target.closest(".btn-status-toggle");
+        const btnDestaque = e.target.closest(".btn-destaque-toggle");
+        const btnEditar = e.target.closest(".btn-editar");
+        const btnExcluir = e.target.closest(".btn-excluir");
+
+        if (!btnStatus && !btnDestaque && !btnEditar && !btnExcluir) return;
+
+        const card = e.target.closest(".anuncio-card");
+        if (!card) {
+            console.error('[ERRO] Não encontrou o card pai');
+            return;
+        }
+
+        const id = card.dataset.id;
+        const tipo = card.dataset.tipo;
+        const collectionName = tipo === "imovel" ? "imoveis" : "automoveis";
+        console.log(`[DEBUG] ID: ${id}, Tipo: ${tipo}, Coleção: ${collectionName}`);
+
+        try {
+            if (btnStatus) {
+                await handleStatusToggle(btnStatus, id, collectionName);
+            }
+            if (btnDestaque) {
+                await handleDestaqueToggle(btnDestaque, id, collectionName);
+            }
+            if (btnEditar) {
+                window.location.href = `editar-anuncio.html?id=${id}&tipo=${tipo}`;
+                return;
+            }
+            if (btnExcluir) {
+                confirmarExclusaoAnuncio(id, tipo);
+                return;
+            }
+            setTimeout(carregarMeusAnuncios, 1000);
+        } catch (error) {
+            console.error('[ERRO] Falha na operação:', error);
+            showAlert("Erro ao processar sua solicitação", "error");
+        }
+    });
+
+    console.log('[DEBUG] Eventos configurados com sucesso');
+});
+
+// Função auxiliar para alternar status (transação segura)
+async function toggleStatusAnuncio(id, tipo) {
+    const collectionName = tipo === "imovel" ? "imoveis" : "automoveis";
+    const docRef = doc(db, collectionName, id);
+
+    try {
+        return await runTransaction(db, async (transaction) => {
+            const docSnap = await transaction.get(docRef);
+            if (!docSnap.exists()) throw new Error("Documento não existe");
+
+            const current = docSnap.data().status || "ativo";
+            const novoStatus = current === "ativo" ? "inativo" : "ativo";
+
+            transaction.update(docRef, { status: novoStatus });
+            return novoStatus;
+        });
+    } catch (error) {
+        console.error("[ERRO] Na transação de status:", error);
+        throw error;
+    }
+}
+
+// Uso com tratamento de erro completo
+btn.addEventListener("click", async () => {
+  try {
+    const novoStatus = await toggleStatusAnuncio(id, tipo);
+    
+    // Atualização otimista da UI
+    btn.dataset.status = novoStatus;
+    btn.textContent = novoStatus === "ativo" ? "Desativar" : "Ativar";
+    
+    showAlert(`Status atualizado para ${novoStatus}`, "success");
+    
+    // Atualiza contadores após 1s
+    setTimeout(carregarMeusAnuncios, 1000);
+    
+  } catch (error) {
+    console.error("Falha na transação:", error);
+    showAlert("Erro ao atualizar status. Recarregue a página.", "error");
+    
+    // Reverte a UI em caso de erro
+    btn.textContent = btn.dataset.status === "ativo" ? "Desativar" : "Ativar";
+  }
+});
+
+// Função para confirmar exclusão
+async function confirmarExclusaoAnuncio(id, tipo) {
+    Swal.fire({
+        title: "Tem certeza?",
+        text: "Você não poderá reverter isso!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Sim, excluir!",
+        cancelButtonText: "Cancelar"
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                const collectionName = tipo === "imovel" ? "imoveis" : "automoveis";
+                await deleteDoc(doc(db, collectionName, id));
+                
+                // Remove imagens do Storage (se aplicável)
+                // ... código para deletar imagens ...
+                
+                showAlert("Anúncio excluído com sucesso!", "success");
+                carregarMeusAnuncios(); // Recarrega a lista
+            } catch (error) {
+                console.error("Erro ao excluir anúncio:", error);
+                showAlert("Erro ao excluir anúncio", "error");
+            }
+        }
+    });
+}
+
+// Função para excluir anúncio
+async function excluirAnuncio(id, tipo) {
+    try {
+        await deleteDoc(doc(db, tipo === 'imovel' ? 'imoveis' : 'automoveis', id));
+        showAlert('Anúncio excluído com sucesso!', 'success');
+        carregarMeusAnuncios(); // Recarrega a lista
+    } catch (error) {
+        console.error("Erro ao excluir anúncio:", error);
+        showAlert('Erro ao excluir anúncio. Tente novamente.', 'error');
+    }
+}
+
+
+async function handleStatusToggle(btn, id, collectionName) {
+    const currentStatus = btn.dataset.status;
+    const novoStatus = currentStatus === "ativo" ? "inativo" : "ativo";
+    console.log(`[DEBUG] Alterando status para: ${novoStatus}`);
+
+    try {
+        await updateDoc(doc(db, collectionName, id), { status: novoStatus });
+        console.log(`[DEBUG] Documento atualizado com sucesso!`);
+        btn.dataset.status = novoStatus;
+        btn.classList.toggle("active", novoStatus === "ativo");
+        showAlert(`Status alterado para ${novoStatus}`, "success");
+    } catch (error) {
+        console.error("[ERRO] Falha ao atualizar documento:", error);
+        showAlert("Erro ao alterar status", "error");
+    }
+}
+
+
+async function handleDestaqueToggle(btn, id, collectionName) {
+    const currentDestaque = btn.dataset.destaque === "true";
+    const novoDestaque = !currentDestaque;
+    console.log(`[DEBUG] Alterando destaque para: ${novoDestaque}`);
+
+    try {
+        await updateDoc(doc(db, collectionName, id), { destaque: novoDestaque });
+        btn.dataset.destaque = novoDestaque;
+        btn.classList.toggle("active", novoDestaque);
+        showAlert(`Destaque ${novoDestaque ? "ativado" : "removido"}`, "success");
+    } catch (error) {
+        console.error("Erro ao alterar destaque:", error);
+        showAlert("Erro ao alterar destaque", "error");
+    }
+}
+
+
+// Função para criar o card do anúncio
+function criarCardAnuncio(data, tipo, id) {
+    const status = data.status || 'ativo';
+    const destaque = data.destaque || false;
+    const dataFormatada = data.data?.toDate ? data.data.toDate().toLocaleDateString('pt-BR') : 'Data não disponível';
+    const precoFormatado = data.preco?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) || 'Preço não informado';
 
     return `
         <div class="col-md-6 col-lg-4 mb-4">
-            <div class="anuncio-card" data-id="${anuncio.id}" data-tipo="${anuncio.tipo.toLowerCase()}">
+            <div class="anuncio-card" data-id="${id}" data-tipo="${tipo.toLowerCase()}">
                 <div class="anuncio-header">
-                    <img src="${anuncio.imagens?.[0] || 'img/sem-imagem.jpg'}" alt="${anuncio.titulo}" class="anuncio-imagem-principal">
-                    <span class="anuncio-badge">${anuncio.tipo}</span>
+                    <img src="${data.imagens?.[0] || 'img/sem-imagem.jpg'}" alt="${data.titulo}" class="anuncio-imagem-principal">
+                    <span class="anuncio-badge">${tipo}</span>
                     
                     <div class="anuncio-controls">
-                        <button class="btn-status-toggle ${anuncio.status === 'ativo' ? 'active' : ''}" 
-                                data-status="${anuncio.status}">
+                        <!-- Botão Status -->
+                        <button class="btn-status-toggle ${status === 'ativo' ? 'active' : ''}" 
+                                data-status="${status}">
                             <span class="toggle-handle"></span>
                         </button>
                         
-                        <button class="btn-destaque-toggle ${anuncio.destaque ? 'active' : ''}"
-                                data-destaque="${anuncio.destaque}">
+                        <!-- Botão Destaque -->
+                        <button class="btn-destaque-toggle ${destaque ? 'active' : ''}"
+                                data-destaque="${destaque}">
                             <i class="fas fa-star"></i>
                         </button>
                     </div>
                 </div>
                 
                 <div class="anuncio-body">
-                    <h3 class="anuncio-titulo">${anuncio.titulo || 'Sem título'}</h3>
+                    <h3 class="anuncio-titulo">${data.titulo || 'Sem título'}</h3>
                     <div class="anuncio-preco">${precoFormatado}</div>
                     
                     <div class="anuncio-detalhes">
-                        ${anuncio.tipo === 'Imóvel' ? gerarDetalhesImovel(anuncio) : gerarDetalhesAutomovel(anuncio)}
+                        ${tipo === 'Imóvel' ? gerarDetalhesImovel(data) : gerarDetalhesAutomovel(data)}
                     </div>
                     
-                    <p class="anuncio-descricao">${anuncio.descricao || 'Nenhuma descrição fornecida'}</p>
+                    <p class="anuncio-descricao">${data.descricao || 'Nenhuma descrição fornecida'}</p>
                 </div>
                 
                 <div class="anuncio-footer">
                     <span class="anuncio-data">${dataFormatada}</span>
                     <div class="anuncio-acoes">
-                        <button class="btn-editar" data-id="${anuncio.id}" data-tipo="${anuncio.tipo.toLowerCase()}">
+                        <button class="btn-editar" data-id="${id}" data-tipo="${tipo.toLowerCase()}">
                             <i class="fas fa-edit"></i> Editar
                         </button>
-                        <button class="btn-excluir" data-id="${anuncio.id}" data-tipo="${anuncio.tipo.toLowerCase()}">
+                        <button class="btn-excluir" data-id="${id}" data-tipo="${tipo.toLowerCase()}">
                             <i class="fas fa-trash"></i> Excluir
                         </button>
                     </div>
@@ -433,32 +590,7 @@ function criarCardAnuncio(anuncio) {
     `;
 }
 
-// Funções para gerar detalhes específicos
-function gerarDetalhesImovel(data) {
-    return `
-        <div class="detalhes-grid">
-            <div><i class="fas fa-bed"></i> ${data.quartos || 0} Quartos</div>
-            <div><i class="fas fa-bath"></i> ${data.banheiros || 0} Banheiros</div>
-            <div><i class="fas fa-car"></i> ${data.garagem || 0} Vagas</div>
-            <div><i class="fas fa-ruler-combined"></i> ${data.area || 0}m²</div>
-            <div><i class="fas fa-map-marker-alt"></i> ${data.bairro || 'Localização não informada'}</div>
-        </div>
-    `;
-}
-
-function gerarDetalhesAutomovel(data) {
-    return `
-        <div class="detalhes-grid">
-            <div><i class="fas fa-car"></i> ${data.marca || 'Marca não informada'}</div>
-            <div><i class="fas fa-tag"></i> ${data.modelo || 'Modelo não informado'}</div>
-            <div><i class="fas fa-calendar-alt"></i> ${data.ano || 'Ano não informado'}</div>
-            <div><i class="fas fa-tachometer-alt"></i> ${data.km ? data.km.toLocaleString() + ' km' : 'KM não informada'}</div>
-            <div><i class="fas fa-palette"></i> ${data.cor || 'Cor não informada'}</div>
-        </div>
-    `;
-}
-
-// Configura os eventos dos botões nos cards de anúncio
+// Configuração dos eventos
 function configurarEventosAnuncios() {
     document.addEventListener('click', async (e) => {
         // Botão de Status
@@ -514,106 +646,418 @@ function configurarEventosAnuncios() {
         // Botão Editar
         if (e.target.closest('.btn-editar')) {
             const btn = e.target.closest('.btn-editar');
-            window.location.href = `editar-anuncio.html?id=${btn.dataset.id}&tipo=${btn.dataset.tipo}`;
+            const id = btn.dataset.id;
+            const tipo = btn.dataset.tipo;
+            window.location.href = `editar-anuncio.html?id=${id}&tipo=${tipo}`;
         }
 
         // Botão Excluir
         if (e.target.closest('.btn-excluir')) {
             const btn = e.target.closest('.btn-excluir');
-            confirmarExclusaoAnuncio(btn.dataset.id, btn.dataset.tipo);
+            const id = btn.dataset.id;
+            const tipo = btn.dataset.tipo;
+            confirmarExclusaoAnuncio(id, tipo);
         }
     });
 }
 
-// Função para confirmar exclusão de anúncio
-async function confirmarExclusaoAnuncio(id, tipo) {
-    const resultado = await Swal.fire({
-        title: "Tem certeza?",
-        text: "Você não poderá reverter isso!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Sim, excluir!",
-        cancelButtonText: "Cancelar"
-    });
-
-    if (resultado.isConfirmed) {
-        try {
-            const collectionName = tipo === 'imovel' ? 'imoveis' : 'automoveis';
-            await deleteDoc(doc(db, collectionName, id));
-            showAlert('Anúncio excluído com sucesso!', 'success');
-            carregarMeusAnuncios();
-        } catch (error) {
-            console.error('Erro ao excluir anúncio:', error);
-            showAlert('Erro ao excluir anúncio', 'error');
-        }
-    }
+// Inicialização quando o DOM estiver pronto
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', configurarEventosAnuncios);
+} else {
+    configurarEventosAnuncios();
 }
 
-// Função para mostrar alertas
-function showAlert(mensagem, tipo) {
-    Swal.fire({
-        title: mensagem,
-        icon: tipo,
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true
-    });
+// Inicializa os eventos quando o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', function() {
+    configurarEventosAnuncios();
+    console.log('Eventos de anúncio configurados com sucesso');
+});
+
+
+// Função para gerar detalhes de imóvel
+function gerarDetalhesImovel(data) {
+    return `
+        <div class="detalhes-grid">
+            <div><i class="fas fa-bed"></i> ${data.quartos || 0} Quartos</div>
+            <div><i class="fas fa-bath"></i> ${data.banheiros || 0} Banheiros</div>
+            <div><i class="fas fa-car"></i> ${data.garagem || 0} Vagas</div>
+            <div><i class="fas fa-ruler-combined"></i> ${data.area || 0}m²</div>
+            <div><i class="fas fa-map-marker-alt"></i> ${data.bairro || 'Localização não informada'}</div>
+        </div>
+    `;
 }
 
-// ==============================================
-// INICIALIZAÇÃO GERAL
-// ==============================================
+
+// Função para gerar detalhes de automóvel
+function gerarDetalhesAutomovel(data) {
+    return `
+        <div class="detalhes-grid">
+            <div><i class="fas fa-car"></i> ${data.marca || 'Marca não informada'}</div>
+            <div><i class="fas fa-tag"></i> ${data.modelo || 'Modelo não informado'}</div>
+            <div><i class="fas fa-calendar-alt"></i> ${data.ano || 'Ano não informado'}</div>
+            <div><i class="fas fa-tachometer-alt"></i> ${data.km ? data.km.toLocaleString() + ' km' : 'KM não informada'}</div>
+            <div><i class="fas fa-palette"></i> ${data.cor || 'Cor não informada'}</div>
+        </div>
+    `;
+}
+// Função para carregar os favoritos do usuário
+async function carregarFavoritos(userId) {
+    const favoritosRef = collection(db, "favoritos");
+    const q = query(favoritosRef, where("userId", "==", userId));
+    const querySnapshot = await getDocs(q);
+
+    const favoritosContainer = document.getElementById("favoritos-container");
+    favoritosContainer.innerHTML = ""; // Limpa o conteúdo anterior
+
+    querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const favoritoHTML = `
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <img src="${data.imagens[0]}" class="card-img-top" alt="Imagem do Anúncio">
+                    <div class="card-body">
+                        <h5 class="card-title">${data.titulo}</h5>
+                        <p class="card-text">${data.descricao}</p>
+                        <p><strong>Preço:</strong> R$ ${data.preco}</p>
+                        <a href="#" class="btn btn-primary">Ver Detalhes</a>
+                    </div>
+                </div>
+            </div>
+        `;
+        favoritosContainer.innerHTML += favoritoHTML;
+    });
+}
 
 // Verifica o estado de autenticação
 onAuthStateChanged(auth, (user) => {
     if (user) {
         console.log("Usuário logado:", user.uid);
+
+        // Carrega as informações do usuário no card
         carregarInformacoesUsuario(user);
-        
-        // Configura o evento para carregar anúncios quando a tab for ativada
-        document.getElementById('anuncios-tab')?.addEventListener('shown.bs.tab', () => {
-            setTimeout(carregarMeusAnuncios, 50);
-        });
-        
-        // Carrega anúncios se já estiver na tab
-        if (window.location.hash === '#anuncios') {
-            setTimeout(carregarMeusAnuncios, 100);
-        }
+
+        // Carrega os anúncios e favoritos do usuário
+        carregarAnuncios(user.uid);
+        carregarFavoritos(user.uid);
     } else {
+        // Usuário não está logado, redireciona para a página de login
         window.location.href = "login.html";
     }
 });
 
-// Logout
-document.getElementById('logout-btn').addEventListener('click', async () => {
-    try {
-        await signOut(auth);
-        window.location.href = 'index.html';
-    } catch (error) {
-        console.error('Erro ao fazer logout:', error);
-        showAlert('Erro ao fazer logout. Tente novamente.', 'error');
+async function carregarAnuncios(userId) {
+
+    // Busca em ambas as coleções
+    const imoveisRef = collection(db, "imoveis");
+    const automoveisRef = collection(db, "automoveis");
+    
+    const qImoveis = query(imoveisRef, where("userId", "==", userId));
+    const qAutomoveis = query(automoveisRef, where("userId", "==", userId));
+
+    const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
+        getDocs(qImoveis),
+        getDocs(qAutomoveis)
+    ]);
+
+    const anunciosContainer = document.getElementById("anuncios-container");
+    const noAnuncios = document.getElementById("no-anuncios");
+    
+    anunciosContainer.innerHTML = "";
+    noAnuncios.classList.add("hidden");
+
+    // Verifica se há resultados
+    if (imoveisSnapshot.empty && automoveisSnapshot.empty) {
+        noAnuncios.classList.remove("hidden");
+        return;
+    }
+
+    // Processa imóveis
+    imoveisSnapshot.forEach((doc) => {
+        const data = doc.data();
+        anunciosContainer.innerHTML += criarCardAnuncio(data, "Imóvel", doc.id);
+    });
+
+    // Processa automóveis
+    automoveisSnapshot.forEach((doc) => {
+        const data = doc.data();
+        anunciosContainer.innerHTML += criarCardAnuncio(data, "Automóvel", doc.id);
+    });
+}
+// Alternar entre formulários de usuário comum e comercial
+tipoUsuarioInput.addEventListener("change", () => {
+    const tipoSelecionado = tipoUsuarioInput.value;
+
+    if (tipoSelecionado === "comum") {
+        formComum.classList.remove("hidden");
+        formComercial.classList.add("hidden");
+    } else if (tipoSelecionado === "comercial") {
+        formComercial.classList.remove("hidden");
+        formComum.classList.add("hidden");
+    } else {
+        formComum.classList.add("hidden");
+        formComercial.classList.add("hidden");
     }
 });
 
-// Inicializa os eventos quando o DOM estiver pronto
-document.addEventListener('DOMContentLoaded', function() {
-    // Ativar a aba correta quando a página carrega com hash na URL
+// Alternar entre formulários de imóveis e automóveis (para usuário comum)
+tipoInteresseInput.addEventListener("change", () => {
+    const tipoSelecionado = tipoInteresseInput.value;
+
+    if (tipoSelecionado === "imoveis") {
+        formImoveis.classList.remove("hidden");
+        formAutomoveis.classList.add("hidden");
+    } else if (tipoSelecionado === "automoveis") {
+        formAutomoveis.classList.remove("hidden");
+        formImoveis.classList.add("hidden");
+    } else {
+        formImoveis.classList.add("hidden");
+        formAutomoveis.classList.add("hidden");
+    }
+});
+
+// Salva os dados do perfil no Firestore
+perfilForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const user = auth.currentUser;
+    if (user) {
+        const userData = {
+            nome: document.getElementById("nome").value,
+            telefone: document.getElementById("telefone").value,
+            email: document.getElementById("email").value,
+            cpfCnpj: document.getElementById("cpf-cnpj").value,
+            dataNascimento: document.getElementById("data-nascimento").value,
+            tipoUsuario: tipoUsuarioInput.value,
+        };
+
+        // Adiciona dados específicos com base no tipo de usuário
+        if (tipoUsuarioInput.value === "comum") {
+            userData.comum = {
+                tipoInteresse: tipoInteresseInput.value,
+                imoveis: {
+                    localizacao: document.getElementById("localizacao-imovel").value,
+                    faixaPreco: document.getElementById("faixa-preco-imovel").value,
+                },
+                automoveis: {
+                    marca: document.getElementById("marca-automovel").value,
+                    faixaPreco: document.getElementById("faixa-preco-automovel").value,
+                }
+            };
+        } else if (tipoUsuarioInput.value === "comercial") {
+            userData.comercial = {
+                creci: document.getElementById("creci").value,
+                cnpj: document.getElementById("cnpj").value,
+                areaAtuacao: document.getElementById("area-atuacao").value,
+                descricaoEmpresa: document.getElementById("descricao-empresa").value,
+            };
+        }
+
+        try {
+            // Salva os dados no Firestore
+            await setDoc(doc(db, "users", user.uid), userData);
+            alert("Perfil salvo com sucesso!");
+
+            // Atualiza o card com as novas informações
+            await carregarInformacoesUsuario(user);
+
+            // Exibe o card
+            userCard.classList.remove("hidden");
+        } catch (error) {
+            console.error("Erro ao salvar perfil:", error);
+            alert("Erro ao salvar perfil. Tente novamente.");
+        }
+    }
+});
+
+
+// Verificar hash na URL para ativar a aba correta
+window.addEventListener('DOMContentLoaded', () => {
     const hash = window.location.hash;
-    if (hash === '#anuncios') {
-        const triggerTab = document.querySelector('#anuncios-tab');
-        if (triggerTab) {
-            const tab = new bootstrap.Tab(triggerTab);
-            tab.show();
+    if (hash === '#meus-anuncios') {
+        // Simula clique na aba "Meus Anúncios"
+        const tabAnuncios = document.querySelector('a[href="#meus-anuncios"]');
+        if (tabAnuncios) {
+            tabAnuncios.click();
         }
-    } else if (hash === '#favoritos') {
-        const triggerTab = document.querySelector('#favoritos-tab');
-        if (triggerTab) {
-            const tab = new bootstrap.Tab(triggerTab);
-            tab.show();
+    }
+});
+
+
+// Função de logout atualizada para Firebase v9+
+document.getElementById('logout-btn').addEventListener('click', async () => {
+    try {
+        await signOut(auth);
+        alert('Logout realizado com sucesso!');
+        window.location.href = 'index.html';
+    } catch (error) {
+        console.error('Erro ao fazer logout:', error);
+        alert('Erro ao fazer logout. Tente novamente.');
+    }
+});
+
+
+function showAlert(mensagem, tipo) {
+    alert(`[${tipo.toUpperCase()}] ${mensagem}`);
+}
+
+
+
+// Função para carregar e exibir os dados do perfil
+async function loadProfileData(user) {
+    try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            
+            // Preenche o card de visualização
+            document.getElementById("profile-name").textContent = userData.nome || "Não informado";
+            document.getElementById("profile-email").textContent = userData.email || "Não informado";
+            document.getElementById("profile-phone").textContent = userData.telefone || "Não informado";
+            document.getElementById("profile-doc").textContent = userData.cpfCnpj || "Não informado";
+            
+            // Define o tipo de usuário
+            if (userData.tipoUsuario === "comum") {
+                document.getElementById("profile-type").textContent = "Usuário Comum";
+                document.getElementById("profile-common-info").classList.remove("hidden");
+                document.getElementById("profile-interest").textContent = userData.comum?.tipoInteresse || "Não informado";
+                
+                // Adiciona detalhes específicos do interesse
+                if (userData.comum?.tipoInteresse === "imoveis") {
+                    // Adicione detalhes de imóveis se necessário
+                } else if (userData.comum?.tipoInteresse === "automoveis") {
+                    // Adicione detalhes de automóveis se necessário
+                }
+            } else if (userData.tipoUsuario === "comercial") {
+                document.getElementById("profile-type").textContent = "Profissional";
+                document.getElementById("profile-professional-info").classList.remove("hidden");
+                document.getElementById("profile-area").textContent = userData.comercial?.areaAtuacao || "Não informado";
+                document.getElementById("profile-creci-cnpj").textContent = 
+                    userData.comercial?.creci ? `CRECI ${userData.comercial.creci}` : 
+                    userData.comercial?.cnpj ? `CNPJ ${userData.comercial.cnpj}` : "Não informado";
+            }
+            
+            // Preenche o formulário de edição
+            fillEditForm(userData);
         }
+    } catch (error) {
+        console.error("Erro ao carregar perfil:", error);
+        showAlert("Erro ao carregar dados do perfil", "error");
+    }
+}
+
+
+// Função para preencher o formulário de edição
+function fillEditForm(userData) {
+    // Preenche campos básicos
+    document.getElementById("nome").value = userData.nome || "";
+    document.getElementById("telefone").value = userData.telefone || "";
+    document.getElementById("email").value = userData.email || "";
+    document.getElementById("cpf-cnpj").value = userData.cpfCnpj || "";
+    document.getElementById("data-nascimento").value = userData.dataNascimento || "";
+    
+    // Define o tipo de usuário
+    if (userData.tipoUsuario) {
+        document.querySelector(`input[name="tipo-usuario"][value="${userData.tipoUsuario}"]`).checked = true;
+        toggleUserTypeFields(userData.tipoUsuario);
+        
+        // Preenche campos específicos
+        if (userData.tipoUsuario === "comum" && userData.comum) {
+            document.getElementById("tipo-interesse").value = userData.comum.tipoInteresse || "";
+            toggleInterestFields(userData.comum.tipoInteresse);
+            
+            if (userData.comum.tipoInteresse === "imoveis" && userData.comum.imoveis) {
+                document.getElementById("localizacao-imovel").value = userData.comum.imoveis.localizacao || "";
+                document.getElementById("faixa-preco-imovel").value = userData.comum.imoveis.faixaPreco || "";
+            } else if (userData.comum.tipoInteresse === "automoveis" && userData.comum.automoveis) {
+                document.getElementById("marca-automovel").value = userData.comum.automoveis.marca || "";
+                document.getElementById("faixa-preco-automovel").value = userData.comum.automoveis.faixaPreco || "";
+            }
+        } else if (userData.tipoUsuario === "comercial" && userData.comercial) {
+            document.getElementById("creci").value = userData.comercial.creci || "";
+            document.getElementById("cnpj").value = userData.comercial.cnpj || "";
+            document.getElementById("area-atuacao").value = userData.comercial.areaAtuacao || "";
+            document.getElementById("descricao-empresa").value = userData.comercial.descricaoEmpresa || "";
+        }
+    }
+}
+
+// Funções para alternar entre visualização e edição
+function toggleEditMode(showEdit) {
+    if (showEdit) {
+        document.getElementById("profile-view").classList.add("hidden");
+        document.getElementById("profile-edit").classList.remove("hidden");
+    } else {
+        document.getElementById("profile-view").classList.remove("hidden");
+        document.getElementById("profile-edit").classList.add("hidden");
+    }
+}
+
+// Event Listeners
+document.getElementById("edit-profile-btn").addEventListener("click", () => toggleEditMode(true));
+document.getElementById("cancel-edit-btn").addEventListener("click", () => toggleEditMode(false));
+
+// Inicialização quando o usuário está logado
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        loadProfileData(user);
+    }
+});
+
+// Evento de submit do formulário
+document.getElementById("perfil-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    
+    const user = auth.currentUser;
+    if (!user) return;
+    
+    try {
+        // Coleta os dados do formulário
+        const userData = {
+            nome: document.getElementById("nome").value,
+            telefone: document.getElementById("telefone").value,
+            email: document.getElementById("email").value,
+            cpfCnpj: document.getElementById("cpf-cnpj").value,
+            dataNascimento: document.getElementById("data-nascimento").value,
+            tipoUsuario: document.querySelector('input[name="tipo-usuario"]:checked').value,
+            updatedAt: new Date()
+        };
+        
+        // Adiciona dados específicos do tipo de usuário
+        if (userData.tipoUsuario === "comum") {
+            userData.comum = {
+                tipoInteresse: document.getElementById("tipo-interesse").value
+            };
+            
+            if (userData.comum.tipoInteresse === "imoveis") {
+                userData.comum.imoveis = {
+                    localizacao: document.getElementById("localizacao-imovel").value,
+                    faixaPreco: document.getElementById("faixa-preco-imovel").value
+                };
+            } else if (userData.comum.tipoInteresse === "automoveis") {
+                userData.comum.automoveis = {
+                    marca: document.getElementById("marca-automovel").value,
+                    faixaPreco: document.getElementById("faixa-preco-automovel").value
+                };
+            }
+        } else if (userData.tipoUsuario === "comercial") {
+            userData.comercial = {
+                creci: document.getElementById("creci").value,
+                cnpj: document.getElementById("cnpj").value,
+                areaAtuacao: document.getElementById("area-atuacao").value,
+                descricaoEmpresa: document.getElementById("descricao-empresa").value
+            };
+        }
+        
+        // Atualiza no Firestore
+        await setDoc(doc(db, "users", user.uid), userData, { merge: true });
+        
+        // Recarrega os dados e volta para o modo de visualização
+        await loadProfileData(user);
+        toggleEditMode(false);
+        showAlert("Perfil atualizado com sucesso!", "success");
+    } catch (error) {
+        console.error("Erro ao atualizar perfil:", error);
+        showAlert("Erro ao atualizar perfil", "error");
     }
 });
