@@ -91,10 +91,17 @@ togglePasswordBtns.forEach(btn => {
     });
 });
 
-// Mostrar campos de profissional quando selecionado
 userTypeRadios.forEach(radio => {
     radio.addEventListener('change', (e) => {
-        professionalFields.classList.toggle('hidden', e.target.value !== 'comercial');
+        const isProfessional = e.target.value === 'comercial';
+        professionalFields.classList.toggle('hidden', !isProfessional);
+        
+        // Resetar campos profissionais quando escondidos
+        if (!isProfessional) {
+            professionalAreaSelect.value = '';
+            if (registerForm.creci) registerForm.creci.value = '';
+            if (registerForm.cnpj) registerForm.cnpj.value = '';
+        }
     });
 });
 
