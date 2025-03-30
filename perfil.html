@@ -212,6 +212,61 @@
 .anuncio-acoes button:hover {
     background: #f0f0f0;
 }
+
+
+
+        /* Estilos para o perfil */
+#profile-view .card-header {
+    padding: 1rem 1.5rem;
+}
+
+.profile-picture {
+    position: relative;
+    margin: 0 auto;
+    width: 150px;
+    height: 150px;
+}
+
+.profile-picture img {
+    object-fit: cover;
+}
+
+.profile-info h4 {
+    color: #2c3e50;
+    font-weight: 600;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.profile-info p {
+    margin-bottom: 0.8rem;
+    color: #34495e;
+}
+
+.profile-info strong {
+    color: #2c3e50;
+    min-width: 100px;
+    display: inline-block;
+}
+
+#profile-edit .card-header {
+    padding: 1rem 1.5rem;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .profile-info .col-md-6 {
+        margin-bottom: 1rem;
+    }
+    
+    #profile-view .card-body > .row > .col-md-4 {
+        margin-bottom: 1.5rem;
+    }
+}
         
     </style>
 </head>
