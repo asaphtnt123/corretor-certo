@@ -12,14 +12,14 @@ import {
   setDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Configuração do Firebase
 const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
-  authDomain: "SEU_DOMINIO.firebaseapp.com",
-  projectId: "SEU_PROJETO",
-  storageBucket: "SEU_PROJETO.appspot.com",
-  messagingSenderId: "SEU_SENDER_ID",
-  appId: "SEU_APP_ID"
+  apiKey: "AIzaSyA-7HOp-Ycvyf3b_03ev__8aJEwAbWSQZY",
+  authDomain: "connectfamilia-312dc.firebaseapp.com",
+  projectId: "connectfamilia-312dc",
+  storageBucket: "connectfamilia-312dc.appspot.com",
+  messagingSenderId: "797817838649",
+  appId: "1:797817838649:web:1aa7c54abd97661f8d81e8",
+  measurementId: "G-QKN9NFXZZQ"
 };
 
 // Inicializar Firebase
