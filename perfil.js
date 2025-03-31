@@ -912,55 +912,60 @@ function showAlert(mensagem, tipo) {
 
 
 
-// Função para carregar e exibir os dados do perfil
+// Função atualizada para carregar dados do perfil
 async function loadProfileData(user) {
     try {
         const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) {
-            const userData = userDoc.data();
-            
-            // Preenche o card de visualização
-            document.getElementById("profile-name").textContent = userData.name || "Não informado";
-            document.getElementById("profile-email").textContent = userData.email || "Não informado";
-            document.getElementById("profile-phone").textContent = userData.phone || "Não informado";
-            
-            // Define o tipo de usuário
-            if (userData.userType === "comum") {
-                document.getElementById("profile-type").textContent = "Usuário Comum";
-                document.getElementById("profile-common-info").classList.remove("hidden");
-                
-                // Mostrar interesses se existirem
-                if (userData.buyerProfile?.interests) {
-                    document.getElementById("profile-interest").textContent = 
-                        userData.buyerProfile.interests.join(", ") || "Não informado";
-                }
-            } else if (userData.userType === "comercial") {
-                document.getElementById("profile-type").textContent = "Profissional";
-                document.getElementById("profile-professional-info").classList.remove("hidden");
-                
-                // Mostrar CRECI ou CNPJ conforme disponível
-                if (userData.sellerProfile?.professional) {
-                    document.getElementById("profile-area").textContent = 
-                        userData.sellerProfile.professional.area || "Não informado";
-                    
-                    if (userData.sellerProfile.professional.creci) {
-                        document.getElementById("profile-creci-cnpj").textContent = 
-                            `CRECI ${userData.sellerProfile.professional.creci}`;
-                    } else if (userData.sellerProfile.professional.cnpj) {
-                        document.getElementById("profile-creci-cnpj").textContent = 
-                            `CNPJ ${userData.sellerProfile.professional.cnpj}`;
-                    } else {
-                        document.getElementById("profile-creci-cnpj").textContent = "Não informado";
-                    }
-                }
-            }
-            
-            // Preenche o formulário de edição (se existir)
-            if (document.getElementById("perfil-form")) {
-                fillEditForm(userData);
-            }
-        } else {
+        if (!userDoc.exists()) {
             console.log("Nenhum documento de usuário encontrado");
+            return;
+        }
+
+        const userData = userDoc.data();
+        
+        // Preencher visualização do perfil
+        safeTextContent("profile-name", userData.name, "Não informado");
+        safeTextContent("profile-email", userData.email, "Não informado");
+        safeTextContent("profile-phone", userData.phone, "Não informado");
+        
+        // Determinar tipo de usuário
+        if (!userData.userType) {
+            console.warn("Tipo de usuário não definido nos dados");
+            return;
+        }
+
+        // Configurar visualização baseada no tipo de usuário
+        if (userData.userType === "comum") {
+            safeTextContent("profile-type", "Usuário Comum");
+            toggleVisibility("profile-common-info", true);
+            toggleVisibility("profile-professional-info", false);
+            
+            if (userData.buyerProfile?.interests) {
+                safeTextContent("profile-interest", 
+                    userData.buyerProfile.interests.join(", "), "Não informado");
+            }
+        } else if (userData.userType === "comercial") {
+            safeTextContent("profile-type", "Profissional");
+            toggleVisibility("profile-common-info", false);
+            toggleVisibility("profile-professional-info", true);
+            
+            if (userData.sellerProfile?.professional) {
+                safeTextContent("profile-area", 
+                    userData.sellerProfile.professional.area, "Não informado");
+                
+                const creciCnpj = userData.sellerProfile.professional.creci ? 
+                    `CRECI ${userData.sellerProfile.professional.creci}` :
+                    userData.sellerProfile.professional.cnpj ? 
+                    `CNPJ ${userData.sellerProfile.professional.cnpj}` : 
+                    "Não informado";
+                
+                safeTextContent("profile-creci-cnpj", creciCnpj);
+            }
+        }
+        
+        // Preencher formulário de edição se existir
+        if (document.getElementById("perfil-form")) {
+            fillEditForm(userData);
         }
     } catch (error) {
         console.error("Erro ao carregar informações do usuário:", error);
@@ -968,62 +973,124 @@ async function loadProfileData(user) {
     }
 }
 
+// Funções auxiliares
+function safeTextContent(elementId, value, defaultValue = "") {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.textContent = value || defaultValue;
+    } else {
+        console.warn(`Elemento não encontrado: ${elementId}`);
+    }
+}
 
-// Função para preencher o formulário de edição com verificação de elementos
+
+function toggleVisibility(elementId, show) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        show ? element.classList.remove("hidden") : element.classList.add("hidden");
+    } else {
+        console.warn(`Elemento não encontrado: ${elementId}`);
+    }
+}
+
+// Função para preencher formulário de edição com verificações
 function fillEditForm(userData) {
-    // Função segura para preencher campos
-    const safeFill = (id, value) => {
-        const element = document.getElementById(id);
-        if (element) element.value = value || "";
-    };
+    // Verificar se o formulário existe
+    const form = document.getElementById("perfil-form");
+    if (!form) {
+        console.warn("Formulário de edição não encontrado");
+        return;
+    }
 
-    // Campos básicos
-    safeFill("nome", userData.name);
-    safeFill("telefone", userData.phone);
-    safeFill("email", userData.email);
+    // Preencher campos básicos
+    safeSetValue("nome", userData.name);
+    safeSetValue("telefone", userData.phone);
+    safeSetValue("email", userData.email);
 
-    // Tipo de usuário
-    const userTypeInput = document.querySelector(`input[name="tipo-usuario"][value="${userData.userType}"]`);
-    if (userTypeInput) userTypeInput.checked = true;
-
-    // Alternar campos específicos
-    toggleUserTypeFields(userData.userType);
+    // Configurar tipo de usuário
+    safeRadioSelect("tipo-usuario", userData.userType);
+    
+    // Chamar toggleUserTypeFields com verificação adicional
+    if (userData.userType) {
+        try {
+            toggleUserTypeFields(userData.userType);
+        } catch (error) {
+            console.error("Erro ao alternar campos de tipo de usuário:", error);
+        }
+    }
 
     // Preencher campos específicos
     if (userData.userType === "comum" && userData.buyerProfile) {
-        safeFill("tipo-interesse", userData.buyerProfile.interests?.[0]);
-        safeFill("localizacao-imovel", userData.buyerProfile.preferenceLocation);
-        safeFill("faixa-preco-imovel", userData.buyerProfile.budgetRange);
+        safeSetValue("tipo-interesse", userData.buyerProfile.interests?.[0]);
+        safeSetValue("localizacao-imovel", userData.buyerProfile.preferenceLocation);
+        safeSetValue("faixa-preco-imovel", userData.buyerProfile.budgetRange);
     } 
     else if (userData.userType === "comercial" && userData.sellerProfile) {
-        const sellerTypeInput = document.querySelector(`input[name="sellerType"][value="${userData.sellerProfile.sellerType}"]`);
-        if (sellerTypeInput) sellerTypeInput.checked = true;
-
+        safeRadioSelect("sellerType", userData.sellerProfile.sellerType);
+        
         if (userData.sellerProfile.sellerType === "professional") {
-            document.getElementById("professionalFields")?.classList.remove("hidden");
-            safeFill("professionalArea", userData.sellerProfile.professional?.area);
-            safeFill("creci", userData.sellerProfile.professional?.creci);
-            safeFill("cnpj", userData.sellerProfile.professional?.cnpj);
+            toggleVisibility("professionalFields", true);
+            safeSetValue("professionalArea", userData.sellerProfile.professional?.area);
+            safeSetValue("creci", userData.sellerProfile.professional?.creci);
+            safeSetValue("cnpj", userData.sellerProfile.professional?.cnpj);
         }
 
-        safeFill("aboutBusiness", userData.sellerProfile.aboutBusiness);
+        safeSetValue("aboutBusiness", userData.sellerProfile.aboutBusiness);
+    }
+}
+
+// Funções auxiliares adicionais
+function safeSetValue(elementId, value) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.value = value || "";
+    } else {
+        console.warn(`Elemento não encontrado: ${elementId}`);
+    }
+}
+
+function safeRadioSelect(name, value) {
+    const input = document.querySelector(`input[name="${name}"][value="${value}"]`);
+    if (input) {
+        input.checked = true;
+    } else {
+        console.warn(`Radio button não encontrado: name=${name}, value=${value}`);
     }
 }
 
 // Função para alternar entre campos de usuário comum e comercial
+// Função segura para alternar entre campos de usuário comum e comercial
 function toggleUserTypeFields(userType) {
+    // Elementos que precisamos acessar
+    const elements = {
+        commonInfo: document.getElementById("profile-common-info"),
+        professionalInfo: document.getElementById("profile-professional-info"),
+        formComum: document.getElementById("form-comum"),
+        formComercial: document.getElementById("form-comercial")
+    };
+
+    // Verificar se os elementos existem antes de manipular
+    for (const [key, element] of Object.entries(elements)) {
+        if (!element) {
+            console.warn(`Elemento não encontrado: ${key}`);
+            return; // Sai da função se algum elemento crítico não existir
+        }
+    }
+
+    // Lógica de alternância
     if (userType === "comum") {
-        document.getElementById("profile-common-info").classList.remove("hidden");
-        document.getElementById("profile-professional-info").classList.add("hidden");
-        document.getElementById("form-comum").classList.remove("hidden");
-        document.getElementById("form-comercial").classList.add("hidden");
+        elements.commonInfo.classList.remove("hidden");
+        elements.professionalInfo.classList.add("hidden");
+        elements.formComum.classList.remove("hidden");
+        elements.formComercial.classList.add("hidden");
     } else if (userType === "comercial") {
-        document.getElementById("profile-common-info").classList.add("hidden");
-        document.getElementById("profile-professional-info").classList.remove("hidden");
-        document.getElementById("form-comum").classList.add("hidden");
-        document.getElementById("form-comercial").classList.remove("hidden");
+        elements.commonInfo.classList.add("hidden");
+        elements.professionalInfo.classList.remove("hidden");
+        elements.formComum.classList.add("hidden");
+        elements.formComercial.classList.remove("hidden");
     }
 }
+
 
 // Funções para alternar entre visualização e edição
 function toggleEditMode(showEdit) {
