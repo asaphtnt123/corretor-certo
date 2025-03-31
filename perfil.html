@@ -669,13 +669,14 @@
   }
 
   // Função para carregar os dados do perfil
-  async function loadProfileData(user) {
+ // Atualizar a função loadProfileData para preencher o formulário de edição também
+async function loadProfileData(user) {
     try {
-      const userDocRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
-      
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
         
         // Preencher informações básicas
         document.getElementById("profile-name").textContent = userData.name || "Não informado";
@@ -888,6 +889,115 @@
     document.getElementById('profile-edit').classList.add('hidden');
     document.getElementById('profile-view').classList.remove('hidden');
   });
+
+
+        // Função para preencher o formulário de edição
+function fillEditForm(userData) {
+    document.getElementById('edit-name').value = userData.name || '';
+    document.getElementById('edit-phone').value = userData.phone || '';
+    document.getElementById('edit-email').value = userData.email || '';
+    document.getElementById('edit-doc').value = userData.cpfCnpj || '';
+    document.getElementById('edit-user-type').value = userData.userType || '';
+    
+    // Mostrar tipo de usuário como texto
+    const userTypeDisplay = userData.userType === 'comum' ? 'Usuário Comum' : 'Profissional';
+    document.getElementById('display-user-type').textContent = userTypeDisplay;
+    
+    // Mostrar seção específica do tipo de usuário
+    if (userData.userType === 'comum') {
+        document.getElementById('edit-common-section').classList.remove('hidden');
+        document.getElementById('edit-professional-section').classList.add('hidden');
+        
+        // Preencher interesses
+        if (userData.interests) {
+            const select = document.getElementById('edit-interests');
+            Array.from(select.options).forEach(option => {
+                option.selected = userData.interests.includes(option.value);
+            });
+        }
+    } 
+    else if (userData.userType === 'comercial') {
+        document.getElementById('edit-common-section').classList.add('hidden');
+        document.getElementById('edit-professional-section').classList.remove('hidden');
+        
+        // Preencher dados profissionais
+        if (userData.professional) {
+            document.getElementById('edit-area').value = userData.professional.area || '';
+            document.getElementById('edit-about').value = userData.professional.aboutBusiness || '';
+            document.getElementById('edit-cnpj').value = userData.professional.cnpj || '';
+            
+            // Mostrar campo CRECI se for corretor
+            if (userData.professional.area === 'imoveis' || userData.professional.area === 'ambas') {
+                document.getElementById('edit-creci-field').classList.remove('hidden');
+                document.getElementById('edit-creci').value = userData.professional.creci || '';
+            }
+        }
+    }
+}
+
+// Função para salvar as alterações do perfil
+async function saveProfileChanges(e) {
+    e.preventDefault();
+    
+    const user = auth.currentUser;
+    if (!user) {
+        showAlert('Você precisa estar logado para editar o perfil', 'error');
+        return;
+    }
+    
+    // Coletar dados básicos
+    const updatedData = {
+        name: document.getElementById('edit-name').value.trim(),
+        phone: document.getElementById('edit-phone').value.trim(),
+        email: document.getElementById('edit-email').value.trim(),
+        updatedAt: new Date()
+    };
+    
+    // Coletar dados específicos do tipo de usuário
+    const userType = document.getElementById('edit-user-type').value;
+    
+    if (userType === 'comum') {
+        // Obter interesses selecionados
+        const interestsSelect = document.getElementById('edit-interests');
+        const selectedInterests = Array.from(interestsSelect.selectedOptions)
+            .map(option => option.value);
+        
+        updatedData.interests = selectedInterests;
+    } 
+    else if (userType === 'comercial') {
+        updatedData.professional = {
+            aboutBusiness: document.getElementById('edit-about').value.trim(),
+            cnpj: document.getElementById('edit-cnpj').value.trim()
+        };
+        
+        // Adicionar CRECI se for corretor
+        const area = document.getElementById('edit-area').value;
+        if (area === 'imoveis' || area === 'ambas') {
+            updatedData.professional.creci = document.getElementById('edit-creci').value.trim();
+        }
+    }
+    
+    try {
+        // Atualizar no Firestore
+        const userDocRef = doc(db, 'users', user.uid);
+        await updateDoc(userDocRef, updatedData);
+        
+        showAlert('Perfil atualizado com sucesso!', 'success');
+        
+        // Recarregar os dados do perfil
+        loadProfileData(user);
+        
+        // Voltar para a visualização
+        document.getElementById('profile-edit').classList.add('hidden');
+        document.getElementById('profile-view').classList.remove('hidden');
+    } catch (error) {
+        console.error('Erro ao atualizar perfil:', error);
+        showAlert('Erro ao atualizar perfil. Tente novamente.', 'error');
+    }
+}
+
+// Adicionar evento de submit ao formulário
+document.getElementById('perfil-form')?.addEventListener('submit', saveProfileChanges);
 </script>
 </body>
 </html>
