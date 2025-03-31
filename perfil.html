@@ -227,6 +227,37 @@
     height: 150px;
 }
 
+        /* Loader */
+#profile-loader {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.loader-spinner {
+  width: 3rem;
+  height: 3rem;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .profile-picture img {
     object-fit: cover;
 }
@@ -271,6 +302,13 @@
     </style>
 </head>
 <body>
+
+    <div id="profile-loader" class="hidden">
+  <div class="loader-spinner"></div>
+  <p>Carregando seu perfil...</p>
+</div>
+
+    
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="text-center mb-0">Meu Perfil</h1>
@@ -509,5 +547,279 @@
             }
         });
     </script>
+
+    <script type="module">
+  // Importações do Firebase
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { 
+    getAuth, 
+    onAuthStateChanged,
+    signOut,
+    setPersistence,
+    browserLocalPersistence
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { 
+    getFirestore,
+    doc,
+    getDoc,
+    collection,
+    query,
+    where,
+    getDocs,
+    updateDoc
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // Configuração do Firebase (substitua com sua configuração)
+  const firebaseConfig = {
+    apiKey: "AIzaSyA-7HOp-Ycvyf3b_03ev__8aJEwAbWSQZY",
+    authDomain: "connectfamilia-312dc.firebaseapp.com",
+    projectId: "connectfamilia-312dc",
+    storageBucket: "connectfamilia-312dc.appspot.com",
+    messagingSenderId: "797817838649",
+    appId: "1:797817838649:web:1aa7c54abd97661f8d81e8",
+    measurementId: "G-QKN9NFXZZQ"
+  };
+
+  // Inicializar Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // Ativar persistência da autenticação
+  setPersistence(auth, browserLocalPersistence)
+    .then(() => console.log("Persistência ativada"))
+    .catch((error) => console.error("Erro na persistência:", error));
+
+  // Função para mostrar alertas
+  function showAlert(message, type = 'success') {
+    Swal.fire({
+      title: type === 'error' ? 'Erro!' : 'Sucesso!',
+      text: message,
+      icon: type,
+      confirmButtonText: 'OK'
+    });
+  }
+
+  // Função para carregar os dados do perfil
+  async function loadProfileData(user) {
+    try {
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        
+        // Preencher informações básicas
+        document.getElementById("profile-name").textContent = userData.name || "Não informado";
+        document.getElementById("profile-email").textContent = userData.email || "Não informado";
+        document.getElementById("profile-phone").textContent = userData.phone || "Não informado";
+        document.getElementById("profile-doc").textContent = userData.cpfCnpj || "Não informado";
+        
+        // Definir tipo de usuário
+        if (userData.userType === "comum") {
+          document.getElementById("profile-type").textContent = "Usuário Comum";
+          document.getElementById("profile-common-info").classList.remove("hidden");
+          document.getElementById("profile-interest").textContent = 
+            userData.interests?.join(", ") || "Não informado";
+        } else if (userData.userType === "comercial") {
+          document.getElementById("profile-type").textContent = "Profissional";
+          document.getElementById("profile-professional-info").classList.remove("hidden");
+          document.getElementById("profile-area").textContent = 
+            userData.professional?.area || "Não informado";
+          
+          // Mostrar CRECI ou CNPJ
+          if (userData.professional?.creci) {
+            document.getElementById("profile-creci-cnpj").textContent = 
+              `CRECI ${userData.professional.creci}`;
+          } else if (userData.professional?.cnpj) {
+            document.getElementById("profile-creci-cnpj").textContent = 
+              `CNPJ ${userData.professional.cnpj}`;
+          } else {
+            document.getElementById("profile-creci-cnpj").textContent = "Não informado";
+          }
+        }
+        
+        console.log("Perfil carregado com sucesso");
+      } else {
+        console.log("Nenhum documento de usuário encontrado");
+        showAlert("Seus dados de perfil não foram encontrados", "error");
+      }
+    } catch (error) {
+      console.error("Erro ao carregar perfil:", error);
+      showAlert("Erro ao carregar informações do perfil. Tente novamente.", "error");
+    }
+  }
+
+  // Função para carregar anúncios do usuário
+  async function loadUserAds(userId) {
+    try {
+      const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
+        getDocs(query(collection(db, "imoveis"), where("userId", "==", userId))),
+        getDocs(query(collection(db, "automoveis"), where("userId", "==", userId)))
+      ]);
+      
+      const anunciosContainer = document.getElementById("anuncios-container");
+      anunciosContainer.innerHTML = "";
+      
+      // Processar imóveis
+      imoveisSnapshot.forEach(doc => {
+        const data = doc.data();
+        anunciosContainer.innerHTML += createAdCard(data, "Imóvel", doc.id);
+      });
+      
+      // Processar automóveis
+      automoveisSnapshot.forEach(doc => {
+        const data = doc.data();
+        anunciosContainer.innerHTML += createAdCard(data, "Automóvel", doc.id);
+      });
+      
+      // Mostrar mensagem se não houver anúncios
+      if (imoveisSnapshot.empty && automoveisSnapshot.empty) {
+        document.getElementById("no-anuncios").classList.remove("hidden");
+      } else {
+        document.getElementById("no-anuncios").classList.add("hidden");
+      }
+    } catch (error) {
+      console.error("Erro ao carregar anúncios:", error);
+      showAlert("Erro ao carregar seus anúncios", "error");
+    }
+  }
+
+  // Função para criar card de anúncio
+  function createAdCard(data, type, id) {
+    const status = data.status || 'ativo';
+    const destaque = data.destaque || false;
+    const precoFormatado = data.preco?.toLocaleString('pt-BR', { 
+      style: 'currency', 
+      currency: 'BRL' 
+    }) || 'Preço não informado';
+    
+    return `
+      <div class="col-md-6 col-lg-4 mb-4">
+        <div class="anuncio-card" data-id="${id}" data-tipo="${type.toLowerCase()}">
+          <div class="anuncio-header">
+            <img src="${data.imagens?.[0] || 'img/sem-imagem.jpg'}" alt="${data.titulo}" class="anuncio-imagem-principal">
+            <span class="anuncio-badge">${type}</span>
+            
+            <div class="anuncio-controls">
+              <button class="btn-status-toggle ${status === 'ativo' ? 'active' : ''}" 
+                      data-status="${status}">
+                <span class="toggle-handle"></span>
+              </button>
+              
+              <button class="btn-destaque-toggle ${destaque ? 'active' : ''}"
+                      data-destaque="${destaque}">
+                <i class="fas fa-star"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="anuncio-body">
+            <h3 class="anuncio-titulo">${data.titulo || 'Sem título'}</h3>
+            <div class="anuncio-preco">${precoFormatado}</div>
+            
+            <div class="detalhes-grid">
+              ${type === 'Imóvel' ? getImovelDetails(data) : getAutomovelDetails(data)}
+            </div>
+            
+            <p class="anuncio-descricao">${data.descricao || 'Nenhuma descrição fornecida'}</p>
+          </div>
+          
+          <div class="anuncio-footer">
+            <span class="anuncio-data">${new Date(data.createdAt?.toDate()).toLocaleDateString('pt-BR')}</span>
+            <div class="anuncio-acoes">
+              <button class="btn-editar" data-id="${id}" data-tipo="${type.toLowerCase()}">
+                <i class="fas fa-edit"></i> Editar
+              </button>
+              <button class="btn-excluir" data-id="${id}" data-tipo="${type.toLowerCase()}">
+                <i class="fas fa-trash"></i> Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Funções auxiliares para detalhes
+  function getImovelDetails(data) {
+    return `
+      <div><i class="fas fa-bed"></i> ${data.quartos || 0} Quartos</div>
+      <div><i class="fas fa-bath"></i> ${data.banheiros || 0} Banheiros</div>
+      <div><i class="fas fa-car"></i> ${data.garagem || 0} Vagas</div>
+      <div><i class="fas fa-ruler-combined"></i> ${data.area || 0}m²</div>
+      <div><i class="fas fa-map-marker-alt"></i> ${data.bairro || 'Local não informado'}</div>
+    `;
+  }
+
+  function getAutomovelDetails(data) {
+    return `
+      <div><i class="fas fa-car"></i> ${data.marca || 'Marca não informada'}</div>
+      <div><i class="fas fa-tag"></i> ${data.modelo || 'Modelo não informado'}</div>
+      <div><i class="fas fa-calendar-alt"></i> ${data.ano || 'Ano não informado'}</div>
+      <div><i class="fas fa-tachometer-alt"></i> ${data.km ? data.km.toLocaleString() + ' km' : 'KM não informada'}</div>
+      <div><i class="fas fa-palette"></i> ${data.cor || 'Cor não informada'}</div>
+    `;
+  }
+
+  // Evento de logout
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    try {
+      await signOut(auth);
+      window.location.href = 'index.html';
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+      showAlert('Erro ao fazer logout. Tente novamente.', 'error');
+    }
+  });
+
+  // Gerenciamento de abas
+  document.querySelectorAll('.nav-tabs .nav-link').forEach(tab => {
+    tab.addEventListener('shown.bs.tab', (event) => {
+      const target = event.target.getAttribute('data-bs-target');
+      
+      if (target === '#anuncios' && auth.currentUser) {
+        loadUserAds(auth.currentUser.uid);
+      }
+      // Adicione outros casos para outras abas se necessário
+    });
+  });
+
+  // Verificar autenticação ao carregar a página
+  document.addEventListener('DOMContentLoaded', () => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("Usuário autenticado:", user.uid);
+        loadProfileData(user);
+        
+        // Verificar hash na URL para abrir aba específica
+        const hash = window.location.hash;
+        if (hash === '#anuncios') {
+          const tab = new bootstrap.Tab(document.querySelector('#anuncios-tab'));
+          tab.show();
+          loadUserAds(user.uid);
+        } else if (hash === '#favoritos') {
+          const tab = new bootstrap.Tab(document.querySelector('#favoritos-tab'));
+          tab.show();
+          // Aqui você pode chamar uma função para carregar favoritos
+        }
+      } else {
+        console.log("Usuário não autenticado - redirecionando...");
+        window.location.href = "login.html";
+      }
+    });
+  });
+
+  // Eventos para edição de perfil (exemplo básico)
+  document.getElementById('edit-profile-btn')?.addEventListener('click', () => {
+    document.getElementById('profile-view').classList.add('hidden');
+    document.getElementById('profile-edit').classList.remove('hidden');
+  });
+
+  document.getElementById('cancel-edit-btn')?.addEventListener('click', () => {
+    document.getElementById('profile-edit').classList.add('hidden');
+    document.getElementById('profile-view').classList.remove('hidden');
+  });
+</script>
 </body>
 </html>
