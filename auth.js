@@ -1,27 +1,25 @@
+// auth.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { 
-    getAuth, 
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    setPersistence,
-    browserLocalPersistence,
-    sendPasswordResetEmail
+  getAuth, 
+  createUserWithEmailAndPassword,
+  setPersistence,
+  browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
-    getFirestore,
-    doc,
-    setDoc
+  getFirestore,
+  doc,
+  setDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // Configuração do Firebase
 const firebaseConfig = {
-    apiKey: "AIzaSyA-7HOp-Ycvyf3b_03ev__8aJEwAbWSQZY",
-    authDomain: "connectfamilia-312dc.firebaseapp.com",
-    projectId: "connectfamilia-312dc",
-    storageBucket: "connectfamilia-312dc.appspot.com",
-    messagingSenderId: "797817838649",
-    appId: "1:797817838649:web:1aa7c54abd97661f8d81e8",
-    measurementId: "G-QKN9NFXZZQ"
+  apiKey: "SUA_API_KEY",
+  authDomain: "SEU_DOMINIO.firebaseapp.com",
+  projectId: "SEU_PROJETO",
+  storageBucket: "SEU_PROJETO.appspot.com",
+  messagingSenderId: "SEU_SENDER_ID",
+  appId: "SEU_APP_ID"
 };
 
 // Inicializar Firebase
@@ -31,212 +29,270 @@ const db = getFirestore(app);
 
 // Ativar persistência da autenticação
 setPersistence(auth, browserLocalPersistence)
-    .then(() => console.log("Persistência ativada"))
-    .catch((error) => console.error("Erro na persistência:", error));
+  .then(() => console.log("Persistência ativada"))
+  .catch((error) => console.error("Erro na persistência:", error));
 
-// Elementos DOM
-const togglePasswordBtns = document.querySelectorAll('.toggle-password');
-const userTypeRadios = document.querySelectorAll('input[name="userType"]');
+// DOM Elements
+const registerForm = document.getElementById('registerForm');
+const userRoleRadios = document.querySelectorAll('input[name="userRole"]');
+const buyerSection = document.getElementById('buyerSection');
+const sellerSection = document.getElementById('sellerSection');
+const sellerTypeRadios = document.querySelectorAll('input[name="sellerType"]');
 const professionalFields = document.getElementById('professionalFields');
 const professionalAreaSelect = document.getElementById('professionalArea');
 const creciField = document.getElementById('creciField');
+const interestCards = document.querySelectorAll('.interest-card');
+const buyerInterestsInput = document.getElementById('buyerInterests');
 
-// Elementos DOM
-const loginTab = document.getElementById('loginTab');
-const registerTab = document.getElementById('registerTab');
-const loginForm = document.getElementById('loginForm');
-const registerForm = document.getElementById('registerForm');
-const showLogin = document.getElementById('showLogin');
+// Event Listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Alternar entre comprador e vendedor
+    userRoleRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'buyer') {
+                buyerSection.classList.remove('hidden');
+                sellerSection.classList.add('hidden');
+            } else {
+                buyerSection.classList.add('hidden');
+                sellerSection.classList.remove('hidden');
+            }
+        });
+    });
 
-// Inicialização - Garantir que apenas o login esteja visível inicialmente
-registerForm.classList.add('hidden');
-loginTab.classList.add('active');
-registerTab.classList.remove('active');
+    // Alternar entre particular e profissional
+    sellerTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'professional') {
+                professionalFields.classList.remove('hidden');
+            } else {
+                professionalFields.classList.add('hidden');
+            }
+        });
+    });
 
-// Alternar entre login e cadastro
-loginTab.addEventListener('click', (e) => {
-    e.preventDefault();
-    loginTab.classList.add('active');
-    registerTab.classList.remove('active');
-    loginForm.classList.remove('hidden');
-    registerForm.classList.add('hidden');
-});
-
-registerTab.addEventListener('click', (e) => {
-    e.preventDefault();
-    registerTab.classList.add('active');
-    loginTab.classList.remove('active');
-    registerForm.classList.remove('hidden');
-    loginForm.classList.add('hidden');
-});
-
-showLogin.addEventListener('click', (e) => {
-    e.preventDefault();
-    loginTab.click(); // Simula o clique na aba de login
-});
-
-// Mostrar/ocultar senha
-togglePasswordBtns.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        const input = e.currentTarget.parentElement.querySelector('input');
-        const icon = e.currentTarget.querySelector('i');
-        
-        if (input.type === 'password') {
-            input.type = 'text';
-            icon.classList.replace('fa-eye', 'fa-eye-slash');
+    // Mostrar campo CRECI apenas para corretores de imóveis
+    professionalAreaSelect.addEventListener('change', function() {
+        if (this.value === 'imoveis' || this.value === 'ambas') {
+            creciField.classList.remove('hidden');
         } else {
-            input.type = 'password';
-            icon.classList.replace('fa-eye-slash', 'fa-eye');
+            creciField.classList.add('hidden');
         }
     });
-});
 
-userTypeRadios.forEach(radio => {
-    radio.addEventListener('change', (e) => {
-        const isProfessional = e.target.value === 'comercial';
-        professionalFields.classList.toggle('hidden', !isProfessional);
-        
-        // Resetar campos profissionais quando escondidos
-        if (!isProfessional) {
-            professionalAreaSelect.value = '';
-            if (registerForm.creci) registerForm.creci.value = '';
-            if (registerForm.cnpj) registerForm.cnpj.value = '';
-        }
+    // Selecionar interesses (para compradores)
+    interestCards.forEach(card => {
+        card.addEventListener('click', function() {
+            this.classList.toggle('selected');
+            updateSelectedInterests();
+        });
     });
-});
 
-// Mostrar CRECI apenas para corretores de imóveis
-professionalAreaSelect.addEventListener('change', (e) => {
-    creciField.classList.toggle('hidden', !e.target.value.includes('imoveis'));
-});
-
-// Formulário de Login
-loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const email = loginForm.loginEmail.value.trim();
-    const password = loginForm.loginPassword.value;
-    
-    try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
+    // Máscaras de input
+    const phoneInput = document.getElementById('registerPhone');
+    phoneInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 11) value = value.substring(0, 11);
         
-        // Redirecionar após login
-        window.location.href = 'perfil.html';
-    } catch (error) {
-        console.error('Erro no login:', error);
-        
-        let errorMessage = 'Erro ao fazer login. Tente novamente.';
-        switch (error.code) {
-            case 'auth/invalid-email':
-                errorMessage = 'E-mail inválido.';
-                break;
-            case 'auth/user-not-found':
-                errorMessage = 'Usuário não encontrado.';
-                break;
-            case 'auth/wrong-password':
-                errorMessage = 'Senha incorreta.';
-                break;
-            case 'auth/too-many-requests':
-                errorMessage = 'Muitas tentativas. Tente novamente mais tarde.';
-                break;
+        if (value.length > 2) {
+            value = `(${value.substring(0,2)}) ${value.substring(2)}`;
         }
-        
-        alert(errorMessage);
-    }
+        if (value.length > 10) {
+            value = `${value.substring(0,10)}-${value.substring(10)}`;
+        }
+        e.target.value = value;
+    });
+
+    // Validação do formulário
+    registerForm.addEventListener('submit', handleRegister);
 });
 
-registerForm.addEventListener('submit', async (e) => {
+function updateSelectedInterests() {
+    const selected = Array.from(document.querySelectorAll('.interest-card.selected'))
+                         .map(card => card.dataset.interest);
+    buyerInterestsInput.value = selected.join(',');
+}
+
+async function handleRegister(e) {
     e.preventDefault();
+    
+    // Validação básica
+    if (!validateForm()) return;
     
     // Obter valores do formulário
     const name = registerForm.registerName.value.trim();
     const email = registerForm.registerEmail.value.trim();
     const phone = registerForm.registerPhone.value.trim();
     const password = registerForm.registerPassword.value;
-    const confirmPassword = registerForm.registerConfirmPassword.value;
-    const userType = document.querySelector('input[name="userType"]:checked').value;
-    const professionalArea = professionalAreaSelect.value;
-    const creci = registerForm.creci ? registerForm.creci.value.trim() : '';
-    const cnpj = registerForm.cnpj ? registerForm.cnpj.value.trim() : '';
-    
-    // Validações básicas
-    if (password !== confirmPassword) {
-        alert('As senhas não coincidem!');
-        return;
-    }
-    
-    if (password.length < 6) {
-        alert('A senha deve ter pelo menos 6 caracteres!');
-        return;
-    }
-    
-    // Validação condicional para profissionais
-    if (userType === 'comercial') {
-        if (!professionalArea) {
-            alert('Por favor, selecione sua área profissional');
-            professionalAreaSelect.focus();
-            return;
-        }
-        
-        if (professionalArea.includes('imoveis') && !creci) {
-            alert('Por favor, informe seu CRECI');
-            document.getElementById('creci').focus();
-            return;
-        }
-    }
+    const userRole = document.querySelector('input[name="userRole"]:checked').value;
     
     try {
         // Criar usuário no Firebase Auth
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         
-        // Salvar dados adicionais no Firestore
+        // Preparar dados para Firestore
         const userData = {
             name,
             email,
             phone,
-            userType,
-            createdAt: new Date()
+            userRole,
+            createdAt: new Date(),
+            updatedAt: new Date()
         };
         
-        if (userType === 'comercial') {
-            userData.professional = {
-                area: professionalArea,
-                ...(professionalArea.includes('imoveis') && { creci }),
-                ...(cnpj && { cnpj }),
-                approved: false
+        // Adicionar dados específicos do comprador
+        if (userRole === 'buyer') {
+            userData.buyerProfile = {
+                interests: buyerInterestsInput.value.split(','),
+                preferenceLocation: registerForm.preferenceLocation.value.trim(),
+                budgetRange: registerForm.budgetRange.value
             };
+        } 
+        // Adicionar dados específicos do vendedor
+        else {
+            const sellerType = document.querySelector('input[name="sellerType"]:checked').value;
+            userData.sellerProfile = {
+                sellerType,
+                aboutBusiness: registerForm.aboutBusiness.value.trim()
+            };
+            
+            // Se for profissional
+            if (sellerType === 'professional') {
+                userData.sellerProfile.professional = {
+                    area: registerForm.professionalArea.value,
+                    ...(registerForm.professionalArea.value === 'imoveis' || 
+                        registerForm.professionalArea.value === 'ambas') && {
+                        creci: registerForm.creci.value.trim()
+                    },
+                    ...(registerForm.cnpj.value.trim() && {
+                        cnpj: registerForm.cnpj.value.trim()
+                    }),
+                    approved: false // Requer aprovação manual
+                };
+                
+                // Validação adicional para profissionais
+                if ((registerForm.professionalArea.value === 'imoveis' || 
+                     registerForm.professionalArea.value === 'ambas') && 
+                    !registerForm.creci.value.trim()) {
+                    showError('Por favor, informe seu CRECI', creciField);
+                    return;
+                }
+            }
         }
         
+        // Salvar no Firestore
         await setDoc(doc(db, 'users', user.uid), userData);
         
-        // Redirecionar após cadastro
-        alert(userType === 'comercial' 
-            ? 'Cadastro realizado! Aguarde aprovação.' 
-            : 'Cadastro realizado com sucesso!');
-        
-        window.location.href = userType === 'comercial' 
-            ? 'aguardando-aprovacao.html' 
-            : 'perfil.html';
+        // Feedback para o usuário
+        Swal.fire({
+            title: 'Cadastro realizado!',
+            text: userRole === 'buyer' 
+                ? 'Agora você pode buscar os melhores imóveis e automóveis!' 
+                : sellerType === 'professional' 
+                    ? 'Seu cadastro profissional será analisado e em breve você poderá anunciar!' 
+                    : 'Agora você pode anunciar seus imóveis e automóveis!',
+            icon: 'success',
+            confirmButtonText: 'Continuar'
+        }).then(() => {
+            window.location.href = userRole === 'buyer' 
+                ? 'buscar.html' 
+                : sellerType === 'professional' 
+                    ? 'aguardando-aprovacao.html' 
+                    : 'meus-anuncios.html';
+        });
         
     } catch (error) {
         console.error('Erro no cadastro:', error);
-        // Tratamento de erros permanece o mesmo
+        let errorMessage = 'Erro ao realizar cadastro. Tente novamente.';
+        
+        if (error.code === 'auth/email-already-in-use') {
+            errorMessage = 'Este e-mail já está cadastrado.';
+        } else if (error.code === 'auth/weak-password') {
+            errorMessage = 'A senha deve ter pelo menos 6 caracteres.';
+        }
+        
+        Swal.fire({
+            title: 'Erro',
+            text: errorMessage,
+            icon: 'error',
+            confirmButtonText: 'Entendi'
+        });
     }
-});
-// Recuperação de senha
-document.querySelector('.forgot-password').addEventListener('click', async (e) => {
-    e.preventDefault();
+}
+
+function validateForm() {
+    let isValid = true;
     
-    const email = prompt('Digite seu e-mail para redefinir a senha:');
-    if (!email) return;
+    // Validar campos obrigatórios
+    const requiredFields = [
+        'registerName', 'registerEmail', 'registerPhone', 
+        'registerPassword', 'registerConfirmPassword'
+    ];
     
-    try {
-        await sendPasswordResetEmail(auth, email);
-        alert('E-mail de redefinição enviado! Verifique sua caixa de entrada.');
-    } catch (error) {
-        console.error('Erro ao enviar e-mail:', error);
-        alert('Erro ao enviar e-mail. Verifique se o e-mail está correto.');
+    requiredFields.forEach(id => {
+        const field = document.getElementById(id);
+        if (!field.value.trim()) {
+            showError('Este campo é obrigatório', field);
+            isValid = false;
+        }
+    });
+    
+    // Validar e-mail
+    const email = document.getElementById('registerEmail');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
+        showError('Por favor, insira um e-mail válido', email);
+        isValid = false;
     }
-});
+    
+    // Validar senha
+    const password = document.getElementById('registerPassword');
+    if (password.value.length < 6) {
+        showError('A senha deve ter pelo menos 6 caracteres', password);
+        isValid = false;
+    }
+    
+    // Validar confirmação de senha
+    const confirmPassword = document.getElementById('registerConfirmPassword');
+    if (confirmPassword.value !== password.value) {
+        showError('As senhas não coincidem', confirmPassword);
+        isValid = false;
+    }
+    
+    // Validar termos
+    if (!document.getElementById('termsAgreement').checked) {
+        Swal.fire({
+            title: 'Atenção',
+            text: 'Você deve aceitar os Termos de Serviço e Política de Privacidade',
+            icon: 'warning',
+            confirmButtonText: 'Entendi'
+        });
+        isValid = false;
+    }
+    
+    // Validação específica para compradores
+    if (document.querySelector('input[name="userRole"]:checked').value === 'buyer') {
+        if (!buyerInterestsInput.value) {
+            Swal.fire({
+                title: 'Atenção',
+                text: 'Por favor, selecione pelo menos um interesse',
+                icon: 'warning',
+                confirmButtonText: 'Entendi'
+            });
+            isValid = false;
+        }
+    }
+    
+    return isValid;
+}
+
+function showError(message, field) {
+    field.classList.add('is-invalid');
+    const feedback = field.nextElementSibling;
+    if (feedback && feedback.classList.contains('invalid-feedback')) {
+        feedback.textContent = message;
+    }
+    
+    // Scroll para o campo com erro
+    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    field.focus();
+}
