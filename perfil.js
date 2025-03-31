@@ -928,52 +928,85 @@ async function loadProfileData(user) {
             if (userData.userType === "comum") {
                 document.getElementById("profile-type").textContent = "Usuário Comum";
                 document.getElementById("profile-common-info").classList.remove("hidden");
-                document.getElementById("profile-doc").textContent = "Não aplicável";
+                
+                // Mostrar interesses se existirem
+                if (userData.buyerProfile?.interests) {
+                    document.getElementById("profile-interest").textContent = 
+                        userData.buyerProfile.interests.join(", ") || "Não informado";
+                }
             } else if (userData.userType === "comercial") {
                 document.getElementById("profile-type").textContent = "Profissional";
                 document.getElementById("profile-professional-info").classList.remove("hidden");
                 
-                // Mostra CRECI ou CNPJ conforme disponível
-                if (userData.professional) {
-                    document.getElementById("profile-area").textContent = userData.professional.area || "Não informado";
+                // Mostrar CRECI ou CNPJ conforme disponível
+                if (userData.sellerProfile?.professional) {
+                    document.getElementById("profile-area").textContent = 
+                        userData.sellerProfile.professional.area || "Não informado";
                     
-                    if (userData.professional.creci) {
-                        document.getElementById("profile-creci-cnpj").textContent = `CRECI ${userData.professional.creci}`;
-                    } else if (userData.professional.cnpj) {
-                        document.getElementById("profile-creci-cnpj").textContent = `CNPJ ${userData.professional.cnpj}`;
+                    if (userData.sellerProfile.professional.creci) {
+                        document.getElementById("profile-creci-cnpj").textContent = 
+                            `CRECI ${userData.sellerProfile.professional.creci}`;
+                    } else if (userData.sellerProfile.professional.cnpj) {
+                        document.getElementById("profile-creci-cnpj").textContent = 
+                            `CNPJ ${userData.sellerProfile.professional.cnpj}`;
                     } else {
                         document.getElementById("profile-creci-cnpj").textContent = "Não informado";
                     }
                 }
             }
             
-            // Preenche o formulário de edição
-            fillEditForm(userData);
+            // Preenche o formulário de edição (se existir)
+            if (document.getElementById("perfil-form")) {
+                fillEditForm(userData);
+            }
+        } else {
+            console.log("Nenhum documento de usuário encontrado");
         }
     } catch (error) {
-        console.error("Erro ao carregar perfil:", error);
-        showAlert("Erro ao carregar dados do perfil", "error");
+        console.error("Erro ao carregar informações do usuário:", error);
+        showAlert("Erro ao carregar informações do perfil. Tente novamente.", "error");
     }
 }
 
-// Função para preencher o formulário de edição
+
+// Função para preencher o formulário de edição com verificação de elementos
 function fillEditForm(userData) {
-    // Preenche campos básicos
-    document.getElementById("nome").value = userData.name || "";
-    document.getElementById("telefone").value = userData.phone || "";
-    document.getElementById("email").value = userData.email || "";
-    
-    // Define o tipo de usuário
-    if (userData.userType) {
-        document.querySelector(`input[name="tipo-usuario"][value="${userData.userType}"]`).checked = true;
-        toggleUserTypeFields(userData.userType);
-        
-        // Preenche campos profissionais se for o caso
-        if (userData.userType === "comercial" && userData.professional) {
-            document.getElementById("area-atuacao").value = userData.professional.area || "";
-            document.getElementById("creci").value = userData.professional.creci || "";
-            document.getElementById("cnpj").value = userData.professional.cnpj || "";
+    // Função segura para preencher campos
+    const safeFill = (id, value) => {
+        const element = document.getElementById(id);
+        if (element) element.value = value || "";
+    };
+
+    // Campos básicos
+    safeFill("nome", userData.name);
+    safeFill("telefone", userData.phone);
+    safeFill("email", userData.email);
+
+    // Tipo de usuário
+    const userTypeInput = document.querySelector(`input[name="tipo-usuario"][value="${userData.userType}"]`);
+    if (userTypeInput) userTypeInput.checked = true;
+
+    // Alternar campos específicos
+    toggleUserTypeFields(userData.userType);
+
+    // Preencher campos específicos
+    if (userData.userType === "comum" && userData.buyerProfile) {
+        safeFill("tipo-interesse", userData.buyerProfile.interests?.[0]);
+        safeFill("localizacao-imovel", userData.buyerProfile.preferenceLocation);
+        safeFill("faixa-preco-imovel", userData.buyerProfile.budgetRange);
+    } 
+    else if (userData.userType === "comercial" && userData.sellerProfile) {
+        const sellerTypeInput = document.querySelector(`input[name="sellerType"][value="${userData.sellerProfile.sellerType}"]`);
+        if (sellerTypeInput) sellerTypeInput.checked = true;
+
+        if (userData.sellerProfile.sellerType === "professional") {
+            document.getElementById("professionalFields")?.classList.remove("hidden");
+            safeFill("professionalArea", userData.sellerProfile.professional?.area);
+            safeFill("creci", userData.sellerProfile.professional?.creci);
+            safeFill("cnpj", userData.sellerProfile.professional?.cnpj);
         }
+
+        safeFill("aboutBusiness", userData.sellerProfile.aboutBusiness);
     }
 }
 
