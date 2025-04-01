@@ -140,193 +140,94 @@ async function carregarInformacoesUsuario(user) {
 
 async function carregarMeusAnuncios() {
     try {
-        console.log("[INÍCIO] Carregando anúncios...");
-        
         const user = auth.currentUser;
         if (!user) {
             showAlert('Você precisa estar logado para ver seus anúncios', 'error');
+            window.location.href = 'login.html';
             return;
         }
 
-        // 1. VERIFICAÇÃO DOS ELEMENTOS
-        const getElement = (id) => {
-            const el = document.getElementById(id);
-            if (!el) console.error(`Elemento ${id} não encontrado`);
-            return el;
+        // 1. Elementos do DOM
+        const containers = {
+            todos: document.getElementById("anuncios-container"),
+            ativos: document.getElementById("anuncios-ativos"),
+            inativos: document.getElementById("anuncios-inativos"),
+            destaques: document.getElementById("anuncios-destaques"),
+            noAnuncios: document.getElementById("no-anuncios")
         };
 
-        const elements = {
-            todos: getElement("count-todos"),
-            ativos: getElement("count-ativos"),
-            inativos: getElement("count-inativos"),
-            destaques: getElement("count-destaques"),
-            containerTodos: getElement("anuncios-container"),
-            containerAtivos: getElement("anuncios-ativos"),
-            containerInativos: getElement("anuncios-inativos"),
-            containerDestaques: getElement("anuncios-destaques"),
-            noAnuncios: getElement("no-anuncios")
+        const counters = {
+            todos: document.getElementById("count-todos"),
+            ativos: document.getElementById("count-ativos"),
+            inativos: document.getElementById("count-inativos"),
+            destaques: document.getElementById("count-destaques")
         };
 
-        // 2. BUSCA DOS ANÚNCIOS
-        console.log("[1] Buscando anúncios no Firestore...");
+        // 2. Buscar APENAS os anúncios do usuário atual
         const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
-            getDocs(query(collection(db, "imoveis"), where("userId", "==", user.uid))),
-            getDocs(query(collection(db, "automoveis"), where("userId", "==", user.uid)))
+            getDocs(query(collection(db, "imoveis"), where("userId", "==", user.uid)),
+            getDocs(query(collection(db, "automoveis"), where("userId", "==", user.uid))
         ]);
 
-        console.log(`[2] Total de documentos: ${imoveisSnapshot.size + automoveisSnapshot.size}`);
-
-        // 3. PROCESSAMENTO DOS ANÚNCIOS
-        const todosAnuncios = [];
-        const counters = {
-            todos: 0,
-            ativos: 0,
-            inativos: 0,
-            destaques: 0
-        };
+        // 3. Processar resultados
+        const anuncios = [];
+        const contagens = { todos: 0, ativos: 0, inativos: 0, destaques: 0 };
 
         // Função para processar cada anúncio
         const processarAnuncio = (doc, tipo) => {
             const data = doc.data();
-            const anuncio = {
+            const status = data.status?.toLowerCase() || 'ativo';
+            const destaque = data.destaque === true;
+
+            anuncios.push({
                 ...data,
                 id: doc.id,
-                tipo: tipo
-            };
-            
-            // Verificação do status
-            const status = (typeof data.status === 'string') ? data.status.toLowerCase() : 'ativo';
-            anuncio.status = status; // Garante que o status está padronizado
-            
-            // Atualiza contadores
-            counters.todos++;
-            if (status === 'ativo') counters.ativos++;
-            if (status === 'inativo') counters.inativos++;
-            if (data.destaque === true) counters.destaques++;
-            
-            todosAnuncios.push(anuncio);
-            console.log(`[3] Processado: ${doc.id}`, {status, destaque: data.destaque});
+                tipo: tipo,
+                status: status,
+                destaque: destaque
+            });
+
+            // Atualizar contadores
+            contagens.todos++;
+            if (status === 'ativo') contagens.ativos++;
+            if (status === 'inativo') contagens.inativos++;
+            if (destaque) contagens.destaques++;
         };
 
-        // Processa todos os documentos
         imoveisSnapshot.forEach(doc => processarAnuncio(doc, "Imóvel"));
         automoveisSnapshot.forEach(doc => processarAnuncio(doc, "Automóvel"));
 
-        console.log("[4] Contagens calculadas:", counters);
-        console.log("[5] Total de anúncios processados:", todosAnuncios.length);
+        // 4. Atualizar a interface
+        if (contagens.todos === 0) {
+            containers.noAnuncios?.classList.remove("d-none");
+        } else {
+            containers.noAnuncios?.classList.add("d-none");
+        }
 
-        // 4. ATUALIZAÇÃO DOS CONTADORES
-        const updateCounters = () => {
-            if (elements.todos) elements.todos.textContent = counters.todos;
-            if (elements.ativos) elements.ativos.textContent = counters.ativos;
-            if (elements.inativos) elements.inativos.textContent = counters.inativos;
-            if (elements.destaques) elements.destaques.textContent = counters.destaques;
-            
-            // Força redraw para navegadores problemáticos
-            requestAnimationFrame(() => {
-                if (elements.todos) {
-                    elements.todos.style.display = 'none';
-                    elements.todos.offsetHeight;
-                    elements.todos.style.display = '';
-                }
-            });
-        };
+        // Atualizar contadores
+        if (counters.todos) counters.todos.textContent = contagens.todos;
+        if (counters.ativos) counters.ativos.textContent = contagens.ativos;
+        if (counters.inativos) counters.inativos.textContent = contagens.inativos;
+        if (counters.destaques) counters.destaques.textContent = contagens.destaques;
 
-        updateCounters();
-
-        // 5. EXIBIÇÃO DOS ANÚNCIOS
+        // Exibir anúncios filtrados
         const exibirAnuncios = (anuncios, container) => {
             if (!container) return;
-            
-            container.innerHTML = ""; // Limpa o container
-            
-            if (anuncios.length === 0) {
-                if (container === elements.containerTodos && elements.noAnuncios) {
-                    elements.noAnuncios.classList.remove("d-none");
-                }
-                return;
-            }
-            
-            if (elements.noAnuncios) {
-                elements.noAnuncios.classList.add("d-none");
-            }
-            
-            anuncios.forEach(anuncio => {
-                const cardHTML = criarCardAnuncio(anuncio, anuncio.tipo, anuncio.id);
-                container.innerHTML += cardHTML;
-            });
+            container.innerHTML = anuncios.map(anuncio => 
+                criarCardAnuncio(anuncio, anuncio.tipo, anuncio.id)
+            ).join('');
         };
 
-        // Exibe todos os anúncios inicialmente
-        exibirAnuncios(todosAnuncios, elements.containerTodos);
-        
-        // Prepara os anúncios filtrados
-        const anunciosAtivos = todosAnuncios.filter(a => a.status === 'ativo');
-        const anunciosInativos = todosAnuncios.filter(a => a.status === 'inativo');
-        const anunciosDestaques = todosAnuncios.filter(a => a.destaque === true);
-        
-        // Exibe os anúncios filtrados em seus containers
-        exibirAnuncios(anunciosAtivos, elements.containerAtivos);
-        exibirAnuncios(anunciosInativos, elements.containerInativos);
-        exibirAnuncios(anunciosDestaques, elements.containerDestaques);
-
-        // 6. CONFIGURAÇÃO DOS EVENTOS DE FILTRO
-        const configurarFiltros = () => {
-            const tabs = {
-                "todos-tab": "todos",
-                "ativos-tab": "ativos",
-                "inativos-tab": "inativos",
-                "destaques-tab": "destaques"
-            };
-            
-            // Mostra a tab ativa quando clicada
-            Object.entries(tabs).forEach(([tabId, tipo]) => {
-                const tab = document.getElementById(tabId);
-                if (tab) {
-                    tab.addEventListener("click", () => {
-                        const containerMap = {
-                            "todos": elements.containerTodos,
-                            "ativos": elements.containerAtivos,
-                            "inativos": elements.containerInativos,
-                            "destaques": elements.containerDestaques
-                        };
-                        
-                        const container = containerMap[tipo];
-                        if (container) {
-                            // Esconde todos os containers
-                            Object.values(containerMap).forEach(c => {
-                                if (c) c.style.display = 'none';
-                            });
-                            
-                            // Mostra o container selecionado
-                            container.style.display = '';
-                        }
-                    });
-                }
-            });
-        };
-
-        configurarFiltros();
-
-        // 7. VERIFICAÇÃO FINAL
-        setTimeout(() => {
-            console.log("[6] Estado final:", {
-                todos: elements.todos?.textContent,
-                ativos: elements.ativos?.textContent,
-                inativos: elements.inativos?.textContent,
-                destaques: elements.destaques?.textContent,
-                anunciosAtivos: anunciosAtivos.length,
-                anunciosInativos: anunciosInativos.length,
-                anunciosDestaques: anunciosDestaques.length
-            });
-        }, 100);
+        exibirAnuncios(anuncios, containers.todos);
+        exibirAnuncios(anuncios.filter(a => a.status === 'ativo'), containers.ativos);
+        exibirAnuncios(anuncios.filter(a => a.status === 'inativo'), containers.inativos);
+        exibirAnuncios(anuncios.filter(a => a.destaque), containers.destaques);
 
     } catch (error) {
-        console.error("[ERRO] Falha crítica:", error);
-        showAlert("Erro ao carregar anúncios", "error");
+        console.error("Erro ao carregar anúncios:", error);
+        showAlert("Erro ao carregar seus anúncios", "error");
     }
 }
-
 // Inicializa quando a tab de anúncios é mostrada
 document.getElementById('anuncios-tab')?.addEventListener('shown.bs.tab', () => {
     setTimeout(carregarMeusAnuncios, 50);
