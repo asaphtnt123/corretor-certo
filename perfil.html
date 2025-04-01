@@ -466,8 +466,8 @@
 </div>
 
             <!-- Tab Meus Anúncios -->
-            <!-- Tab Meus Anúncios -->
-<div class="tab-pane fade show active" id="anuncios" role="tabpanel" aria-labelledby="anuncios-tab">
+     <!-- Tab Meus Anúncios -->
+<div class="tab-pane fade" id="anuncios" role="tabpanel" aria-labelledby="anuncios-tab">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0">
             <i class="fas fa-bullhorn text-primary me-2"></i>Meus Anúncios
@@ -477,22 +477,44 @@
         </a>
     </div>
 
-    <!-- Filtros e Busca -->
+    <!-- Barra de Controles -->
     <div class="card mb-4 shadow-sm">
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label for="filtro-tipo" class="form-label">Filtrar por Tipo</label>
-                    <select id="filtro-tipo" class="form-select">
-                        <option value="todos">Todos os Anúncios</option>
-                        <option value="imovel">Imóveis</option>
-                        <option value="automovel">Automóveis</option>
-                    </select>
+        <div class="card-body p-3">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <!-- Filtros Rápidos -->
+                <div class="d-flex flex-wrap gap-2">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown">
+                            <i class="fas fa-filter me-2"></i>Tipo
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item active" href="#" data-filter="todos">Todos</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" data-filter="imovel">Imóveis</a></li>
+                            <li><a class="dropdown-item" href="#" data-filter="automovel">Automóveis</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-secondary active" data-filter-status="todos">
+                            Todos <span class="badge bg-secondary ms-2" id="count-todos">0</span>
+                        </button>
+                        <button type="button" class="btn btn-outline-success" data-filter-status="ativos">
+                            Ativos <span class="badge bg-success ms-2" id="count-ativos">0</span>
+                        </button>
+                        <button type="button" class="btn btn-outline-warning" data-filter-status="inativos">
+                            Inativos <span class="badge bg-warning ms-2" id="count-inativos">0</span>
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" data-filter-status="destaques">
+                            <i class="fas fa-star me-1"></i> <span class="badge bg-primary ms-1" id="count-destaques">0</span>
+                        </button>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <label for="busca-anuncios" class="form-label">Buscar</label>
+                
+                <!-- Busca -->
+                <div class="flex-grow-1" style="max-width: 300px;">
                     <div class="input-group">
-                        <input type="text" id="busca-anuncios" class="form-control" placeholder="Digite para buscar...">
+                        <input type="text" id="busca-anuncios" class="form-control" placeholder="Buscar meus anúncios...">
                         <button class="btn btn-outline-secondary" type="button">
                             <i class="fas fa-search"></i>
                         </button>
@@ -502,55 +524,19 @@
         </div>
     </div>
 
-    <!-- Status dos Anúncios -->
-    <div class="d-flex mb-4 overflow-auto pb-2">
-        <div class="nav nav-pills me-3" id="status-anuncios" role="tablist">
-            <button class="nav-link active" id="todos-tab" data-bs-toggle="pill" data-bs-target="#todos" type="button">
-                Todos <span class="badge bg-secondary ms-2" id="count-todos">0</span>
-            </button>
-            <button class="nav-link" id="ativos-tab" data-bs-toggle="pill" data-bs-target="#ativos" type="button">
-                Ativos <span class="badge bg-success ms-2" id="count-ativos">0</span>
-            </button>
-            <button class="nav-link" id="inativos-tab" data-bs-toggle="pill" data-bs-target="#inativos" type="button">
-                Inativos <span class="badge bg-warning ms-2" id="count-inativos">0</span>
-            </button>
-            <button class="nav-link" id="destaques-tab" data-bs-toggle="pill" data-bs-target="#destaques" type="button">
-                Destaques <span class="badge bg-primary ms-2" id="count-destaques">0</span>
-            </button>
-        </div>
+    <!-- Grade de Anúncios -->
+    <div class="row g-4" id="anuncios-container">
+        <!-- Os anúncios serão inseridos aqui via JavaScript -->
+        <!-- Cada card terá os botões de status e destaque como no seu exemplo original -->
     </div>
 
-    <!-- Conteúdo dos Anúncios -->
-    <div class="tab-content" id="anuncios-content">
-    <div class="tab-pane fade show active" id="todos" role="tabpanel" aria-labelledby="todos-tab">
-        <div class="row g-4" id="anuncios-container">
-            <!-- Anúncios serão inseridos aqui -->
-        </div>
-    </div>
-    <div class="tab-pane fade" id="ativos" role="tabpanel" aria-labelledby="ativos-tab">
-        <div class="row g-4" id="anuncios-ativos">
-            <!-- Anúncios ativos serão inseridos aqui -->
-        </div>
-    </div>
-    <div class="tab-pane fade" id="inativos" role="tabpanel" aria-labelledby="inativos-tab">
-        <div class="row g-4" id="anuncios-inativos">
-            <!-- Anúncios inativos serão inseridos aqui -->
-        </div>
-    </div>
-    <div class="tab-pane fade" id="destaques" role="tabpanel" aria-labelledby="destaques-tab">
-        <div class="row g-4" id="anuncios-destaques">
-            <!-- Anúncios em destaque serão inseridos aqui -->
-        </div>
-    </div>
-</div>
-
-    <!-- Mensagem quando não há anúncios -->
-    <div class="text-center py-5" id="no-anuncios">
+    <!-- Mensagem de Anúncios Vazios -->
+    <div id="no-anuncios" class="text-center py-5 d-none">
         <div class="card border-0 shadow-sm py-5">
             <div class="card-body">
                 <i class="fas fa-box-open fa-4x text-muted mb-4"></i>
                 <h4 class="text-muted mb-3">Nenhum anúncio encontrado</h4>
-                <p class="text-muted mb-4">Você ainda não criou nenhum anúncio ou não há resultados para os filtros aplicados</p>
+                <p class="text-muted mb-4">Você ainda não criou nenhum anúncio</p>
                 <a href="anunciar.html" class="btn btn-primary btn-lg">
                     <i class="fas fa-plus me-2"></i>Criar Primeiro Anúncio
                 </a>
@@ -558,17 +544,21 @@
         </div>
     </div>
 
-    <!-- Paginação -->
-    <nav aria-label="Navegação de anúncios" class="mt-4" id="paginacao-anuncios">
+    <!-- Paginação (Opcional) -->
+    <nav aria-label="Navegação de anúncios" class="mt-4 d-none" id="paginacao-anuncios">
         <ul class="pagination justify-content-center">
             <li class="page-item disabled">
-                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>
+                <a class="page-link" href="#" tabindex="-1">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
             </li>
             <li class="page-item active"><a class="page-link" href="#">1</a></li>
             <li class="page-item"><a class="page-link" href="#">2</a></li>
             <li class="page-item"><a class="page-link" href="#">3</a></li>
             <li class="page-item">
-                <a class="page-link" href="#">Próximo</a>
+                <a class="page-link" href="#">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
             </li>
         </ul>
     </nav>
