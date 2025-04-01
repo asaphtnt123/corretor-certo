@@ -769,59 +769,6 @@ tipoInteresseInput.addEventListener("change", () => {
     }
 });
 
-// Salva os dados do perfil no Firestore
-perfilForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const user = auth.currentUser;
-    if (user) {
-        const userData = {
-            nome: document.getElementById("nome").value,
-            telefone: document.getElementById("telefone").value,
-            email: document.getElementById("email").value,
-            cpfCnpj: document.getElementById("cpf-cnpj").value,
-            dataNascimento: document.getElementById("data-nascimento").value,
-            tipoUsuario: tipoUsuarioInput.value,
-        };
-
-        // Adiciona dados específicos com base no tipo de usuário
-        if (tipoUsuarioInput.value === "comum") {
-            userData.comum = {
-                tipoInteresse: tipoInteresseInput.value,
-                imoveis: {
-                    localizacao: document.getElementById("localizacao-imovel").value,
-                    faixaPreco: document.getElementById("faixa-preco-imovel").value,
-                },
-                automoveis: {
-                    marca: document.getElementById("marca-automovel").value,
-                    faixaPreco: document.getElementById("faixa-preco-automovel").value,
-                }
-            };
-        } else if (tipoUsuarioInput.value === "comercial") {
-            userData.comercial = {
-                creci: document.getElementById("creci").value,
-                cnpj: document.getElementById("cnpj").value,
-                areaAtuacao: document.getElementById("area-atuacao").value,
-                descricaoEmpresa: document.getElementById("descricao-empresa").value,
-            };
-        }
-
-        try {
-            // Salva os dados no Firestore
-            await setDoc(doc(db, "users", user.uid), userData);
-            alert("Perfil salvo com sucesso!");
-
-       
-
-            // Exibe o card
-            userCard.classList.remove("hidden");
-        } catch (error) {
-            console.error("Erro ao salvar perfil:", error);
-            alert("Erro ao salvar perfil. Tente novamente.");
-        }
-    }
-});
-
 
 // Verificar hash na URL para ativar a aba correta
 window.addEventListener('DOMContentLoaded', () => {
