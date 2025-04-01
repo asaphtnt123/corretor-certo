@@ -80,131 +80,8 @@ const formAutomoveis = document.getElementById("form-automoveis");
 
 
 
-document.getElementById("perfil-tab").addEventListener("shown.bs.tab", function () {
-    const user = auth.currentUser;
-    if (user) {
-        carregarInformacoesUsuario(user);
-    } else {
-        console.log("Usuário não autenticado.");
-    }
-});
 
-async function carregarInformacoesUsuario(user) {
-    try {
-        console.log('[DEBUG] Iniciando carregamento do perfil para:', user.uid);
-        
-        // 1. Verificar se os elementos DOM existem
-        const elementos = {
-            cardNome: document.getElementById("card-nome"),
-            cardTelefone: document.getElementById("card-telefone"),
-            cardEmail: document.getElementById("card-email"),
-            cardCpfCnpj: document.getElementById("card-cpf-cnpj"),
-            cardTipoUsuario: document.getElementById("card-tipo-usuario"),
-            cardComum: document.getElementById("card-comum"),
-            cardTipoInteresse: document.getElementById("card-tipo-interesse"),
-            cardImoveis: document.getElementById("card-imoveis"),
-            cardLocalizacaoImovel: document.getElementById("card-localizacao-imovel"),
-            cardFaixaPrecoImovel: document.getElementById("card-faixa-preco-imovel"),
-            cardAutomoveis: document.getElementById("card-automoveis"),
-            cardMarcaAutomovel: document.getElementById("card-marca-automovel"),
-            cardFaixaPrecoAutomovel: document.getElementById("card-faixa-preco-automovel"),
-            cardComercial: document.getElementById("card-comercial"),
-            cardCreci: document.getElementById("card-creci"),
-            cardCnpj: document.getElementById("card-cnpj"),
-            cardAreaAtuacao: document.getElementById("card-area-atuacao"),
-            cardDescricaoEmpresa: document.getElementById("card-descricao-empresa"),
-            userCard: document.getElementById("user-card")
-        };
 
-        // Verificar se todos os elementos existem
-        for (const [key, element] of Object.entries(elementos)) {
-            if (!element) {
-                throw new Error(`Elemento não encontrado: ${key}`);
-            }
-        }
-
-        // 2. Buscar dados no Firestore
-        const userDocRef = doc(db, "users", user.uid);
-        const userDoc = await getDoc(userDocRef);
-        
-        if (!userDoc.exists()) {
-            console.warn("Nenhum documento de usuário encontrado para:", user.uid);
-            elementos.userCard.classList.add("hidden");
-            showAlert("Perfil não encontrado. Complete seu cadastro.", "warning");
-            return;
-        }
-
-        const userData = userDoc.data();
-        console.log('[DEBUG] Dados do usuário:', userData);
-
-        // 3. Preencher informações básicas (com fallbacks)
-        elementos.cardNome.textContent = userData.nome || "Não informado";
-        elementos.cardTelefone.textContent = userData.telefone || "Não informado";
-        elementos.cardEmail.textContent = user.email || userData.email || "Não informado"; // Prioriza email do auth
-        elementos.cardCpfCnpj.textContent = userData.cpfCnpj || "Não informado";
-        
-        // 4. Determinar tipo de usuário
-        const tipoUsuario = userData.tipoUsuario || "comum";
-        elementos.cardTipoUsuario.textContent = tipoUsuario === "comum" ? "Usuário Comum" : "Usuário Comercial";
-
-        // 5. Preencher seções específicas
-        if (tipoUsuario === "comum") {
-            elementos.cardComum.classList.remove("hidden");
-            elementos.cardComercial.classList.add("hidden");
-            
-            const comumData = userData.comum || {};
-            elementos.cardTipoInteresse.textContent = comumData.tipoInteresse || "Não informado";
-
-            // Seção de imóveis
-            if (comumData.tipoInteresse === "imoveis") {
-                elementos.cardImoveis.classList.remove("hidden");
-                elementos.cardAutomoveis.classList.add("hidden");
-                
-                const imoveisData = comumData.imoveis || {};
-                elementos.cardLocalizacaoImovel.textContent = imoveisData.localizacao || "Não informado";
-                elementos.cardFaixaPrecoImovel.textContent = imoveisData.faixaPreco || "Não informado";
-            } 
-            // Seção de automóveis
-            else if (comumData.tipoInteresse === "automoveis") {
-                elementos.cardAutomoveis.classList.remove("hidden");
-                elementos.cardImoveis.classList.add("hidden");
-                
-                const automoveisData = comumData.automoveis || {};
-                elementos.cardMarcaAutomovel.textContent = automoveisData.marca || "Não informado";
-                elementos.cardFaixaPrecoAutomovel.textContent = automoveisData.faixaPreco || "Não informado";
-            }
-        } 
-        // Usuário comercial
-        else if (tipoUsuario === "comercial") {
-            elementos.cardComercial.classList.remove("hidden");
-            elementos.cardComum.classList.add("hidden");
-            
-            const comercialData = userData.comercial || {};
-            elementos.cardCreci.textContent = comercialData.creci || "Não informado";
-            elementos.cardCnpj.textContent = comercialData.cnpj || "Não informado";
-            elementos.cardAreaAtuacao.textContent = comercialData.areaAtuacao || "Não informado";
-            elementos.cardDescricaoEmpresa.textContent = comercialData.descricaoEmpresa || "Não informado";
-        }
-
-        // Exibir o card
-        elementos.userCard.classList.remove("hidden");
-        console.log('[DEBUG] Perfil carregado com sucesso');
-
-    } catch (error) {
-        console.error("Erro detalhado ao carregar informações:", {
-            error: error,
-            message: error.message,
-            stack: error.stack
-        });
-        
-        // Mostrar mensagem amigável sem detalhes técnicos
-        showAlert("Erro ao carregar informações do perfil. Tente novamente mais tarde.", "error");
-        
-        // Opcional: Esconder o card em caso de erro
-        const userCard = document.getElementById("user-card");
-        if (userCard) userCard.classList.add("hidden");
-    }
-}
 
 async function carregarMeusAnuncios() {
     try {
@@ -811,8 +688,7 @@ onAuthStateChanged(auth, (user) => {
     if (user) {
         console.log("Usuário logado:", user.uid);
 
-        // Carrega as informações do usuário no card
-        carregarInformacoesUsuario(user);
+      
 
         // Carrega os anúncios e favoritos do usuário
         carregarAnuncios(user.uid);
@@ -935,8 +811,7 @@ perfilForm.addEventListener("submit", async (e) => {
             await setDoc(doc(db, "users", user.uid), userData);
             alert("Perfil salvo com sucesso!");
 
-            // Atualiza o card com as novas informações
-            await carregarInformacoesUsuario(user);
+       
 
             // Exibe o card
             userCard.classList.remove("hidden");
