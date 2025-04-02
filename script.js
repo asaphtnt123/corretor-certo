@@ -627,5 +627,4 @@ window.buscarCarros = buscarCarros;
 window.buscarCasas = buscarCasas;
 window.carregarImoveisDestaque = carregarImoveisDestaque;
 window.preencherBairros = preencherBairros;
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
