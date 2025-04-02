@@ -44,8 +44,52 @@ const creciField = document.getElementById('creciField');
 const interestCards = document.querySelectorAll('.interest-card');
 const buyerInterestsInput = document.getElementById('buyerInterests');
 
+
+// Elementos DOM para controle das abas
+const loginTab = document.getElementById('login-tab');
+const registerTab = document.getElementById('register-tab');
+const loginForm = document.getElementById('loginForm');
+const registerForm = document.getElementById('registerForm');
+
+// Função para alternar entre abas
+function switchTab(tabName) {
+    if (tabName === 'login') {
+        loginTab.classList.add('active');
+        registerTab.classList.remove('active');
+        loginForm.classList.remove('hidden');
+        registerForm.classList.add('hidden');
+    } else if (tabName === 'register') {
+        registerTab.classList.add('active');
+        loginTab.classList.remove('active');
+        registerForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+    }
+}
+
+// Event Listeners para as abas
+if (loginTab && registerTab) {
+    loginTab.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchTab('login');
+    });
+    
+    registerTab.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchTab('register');
+    });
+}
+
+
+
 // Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
+
+   // Verificar se há hash na URL para definir a aba inicial
+    if (window.location.hash === '#login') {
+        switchTab('login');
+    } else {
+        switchTab('register'); // Padrão: mostrar cadastro
+    }
     // Alternar entre comprador e vendedor
     userRoleRadios.forEach(radio => {
         radio.addEventListener('change', function() {
