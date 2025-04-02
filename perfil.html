@@ -837,22 +837,34 @@ tab.addEventListener('shown.bs.tab', (event) => {
 });
   // Verificar autenticação ao carregar a página
   document.addEventListener('DOMContentLoaded', () => {
-    onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, (user) => {
   if (user) {
-    loadProfileData(user);
+    console.log("Usuário autenticado:", user.uid);
     
-    // Verifica qual aba está ativa
-    const activeTab = document.querySelector('.nav-link.active');
-    if (activeTab) {
-      const target = activeTab.getAttribute('data-bs-target');
+    try {
+      // Carrega os dados básicos do perfil
+      loadProfileData(user);
       
-      if (target === '#anuncios') {
-        loadUserAds(user.uid);
-      } else if (target === '#favoritos') {
-        loadFavorites(user.uid);
+      // Configura os listeners das abas
+      setupTabListeners();
+      
+      // Verifica se há hash na URL para abrir aba específica
+      const hash = window.location.hash;
+      if (hash === '#anuncios') {
+        const tab = new bootstrap.Tab(document.querySelector('#anuncios-tab'));
+        tab.show();
+      } else if (hash === '#favoritos') {
+        const tab = new bootstrap.Tab(document.querySelector('#favoritos-tab'));
+        tab.show();
       }
+      
+    } catch (error) {
+      console.error("Erro na inicialização:", error);
+      showAlert("Erro ao carregar página. Recarregue e tente novamente.", "error");
     }
+    
   } else {
+    console.log("Usuário não autenticado - redirecionando...");
     window.location.href = "login.html";
   }
 });
