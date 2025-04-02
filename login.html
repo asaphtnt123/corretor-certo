@@ -45,27 +45,46 @@
             margin-bottom: 1rem;
         }
         
-        .auth-tabs {
-            display: flex;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        .auth-tab {
-            flex: 1;
-            padding: 1rem;
-            text-align: center;
-            background: #f8f9fa;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        
-        .auth-tab.active {
-            background: white;
-            color: var(--secondary-color);
-            border-bottom: 3px solid var(--secondary-color);
-        }
+      /* Estilos para as abas */
+.auth-tabs {
+    display: flex;
+    background: #f8f9fa;
+}
+
+.auth-tab {
+    flex: 1;
+    padding: 1rem;
+    text-align: center;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-weight: 600;
+    color: #7f8c8d;
+    transition: all 0.3s;
+    border-bottom: 3px solid transparent;
+}
+
+.auth-tab.active {
+    color: var(--secondary-color);
+    border-bottom: 3px solid var(--secondary-color);
+    background: white;
+}
+
+.auth-content {
+    padding: 2rem;
+}
+
+.forgot-password {
+    color: var(--secondary-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: inline-block;
+    margin-top: 0.5rem;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
         
         .auth-form {
             padding: 2rem;
@@ -233,14 +252,54 @@
         <div class="auth-card">
             <div class="auth-header">
                 <img src="logo.png" alt="Logo Corretor Certo" class="auth-logo">
-                <h1>Cadastre-se no Corretor Certo</h1>
+                <h1>Bem-vindo ao Corretor Certo</h1>
                 <p>Encontre ou ofereça os melhores imóveis e automóveis</p>
             </div>
 
+            <!-- Navegação por abas -->
             <div class="auth-tabs">
-                <button id="loginTab" class="auth-tab">Já tem conta? Login</button>
+                <button id="loginTab" class="auth-tab">Login</button>
                 <button id="registerTab" class="auth-tab active">Cadastre-se</button>
             </div>
+
+            <!-- Conteúdo das abas -->
+            <div class="auth-content">
+                <!-- Formulário de Login -->
+                <form id="loginForm" class="auth-form hidden">
+                    <div class="form-group">
+                        <label for="loginEmail">E-mail*</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="loginEmail" required placeholder="Digite seu e-mail">
+                        </div>
+                        <div class="invalid-feedback">Por favor, insira um e-mail válido</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="loginPassword">Senha*</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="loginPassword" required placeholder="Digite sua senha">
+                            <button type="button" class="toggle-password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="invalid-feedback">Por favor, insira sua senha</div>
+                    </div>
+
+                    <div class="form-group">
+                        <a href="#" class="forgot-password">Esqueceu sua senha?</a>
+                    </div>
+
+                    <div class="form-footer">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-sign-in-alt"></i> Entrar
+                        </button>
+                        <p class="auth-link">
+                            Não tem uma conta? <a href="#" id="showRegister">Cadastre-se</a>
+                        </p>
+                    </div>
+                </form>
 
             <!-- Formulário de Cadastro -->
             <form id="registerForm" class="auth-form">
