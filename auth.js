@@ -3,6 +3,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 import { 
   getAuth, 
   createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,  // Adicione esta importação
   setPersistence,
   browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -46,19 +47,20 @@ const buyerInterestsInput = document.getElementById('buyerInterests');
 
 
 // Elementos DOM para controle das abas
-const loginTab = document.getElementById('login-tab');
-const registerTab = document.getElementById('register-tab');
+const loginTab = document.getElementById('loginTab');
+const registerTab = document.getElementById('registerTab');
 const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
+const showRegisterLink = document.getElementById('showRegister');
 
 // Função para alternar entre abas
-function switchTab(tabName) {
-    if (tabName === 'login') {
+function switchTab(tab) {
+    if (tab === 'login') {
         loginTab.classList.add('active');
         registerTab.classList.remove('active');
         loginForm.classList.remove('hidden');
         registerForm.classList.add('hidden');
-    } else if (tabName === 'register') {
+    } else if (tab === 'register') {
         registerTab.classList.add('active');
         loginTab.classList.remove('active');
         registerForm.classList.remove('hidden');
@@ -79,7 +81,50 @@ if (loginTab && registerTab) {
     });
 }
 
+// Link "Cadastre-se" no formulário de login
+if (showRegisterLink) {
+    showRegisterLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchTab('register');
+    });
+}
 
+// Função de Login
+async function handleLogin(e) {
+    e.preventDefault();
+    
+    const email = loginForm.loginEmail.value.trim();
+    const password = loginForm.loginPassword.value;
+    
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
+        // Redirecionar após login bem-sucedido
+        window.location.href = 'perfil.html';
+    } catch (error) {
+        console.error('Erro no login:', error);
+        let errorMessage = 'Erro ao fazer login. Tente novamente.';
+        
+        if (error.code === 'auth/invalid-credential') {
+            errorMessage = 'E-mail ou senha incorretos.';
+        } else if (error.code === 'auth/too-many-requests') {
+            errorMessage = 'Muitas tentativas. Tente novamente mais tarde.';
+        }
+        
+        Swal.fire({
+            title: 'Erro',
+            text: errorMessage,
+            icon: 'error',
+            confirmButtonText: 'Entendi'
+        });
+    }
+}
+
+// Adicione este listener para o formulário de login
+if (loginForm) {
+    loginForm.addEventListener('submit', handleLogin);
+}
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
