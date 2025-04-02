@@ -119,7 +119,6 @@ async function verificarFavorito(adId) {
     }
 }
 
-// Adiciona ou remove um anúncio dos favoritos
 async function toggleFavorito(adData) {
     const user = auth.currentUser;
     if (!user) {
@@ -135,33 +134,44 @@ async function toggleFavorito(adData) {
         
         let novosFavoritos;
         let isFavorito;
+        let message;
         
         if (favoritos.includes(adId)) {
             // Remove dos favoritos
             novosFavoritos = favoritos.filter(id => id !== adId);
             isFavorito = false;
-            showAlert("Anúncio removido dos favoritos", "success");
+            message = "Anúncio removido dos favoritos";
         } else {
             // Adiciona aos favoritos
             novosFavoritos = [...favoritos, adId];
             isFavorito = true;
-            showAlert("Anúncio adicionado aos favoritos", "success");
+            message = "Anúncio adicionado aos favoritos";
         }
         
         // Atualiza no Firestore
         await updateDoc(userDocRef, {
-            favoritos: novosFavoritos
+            favoritos: novosFavoritos,
+            lastUpdated: new Date()  // Adiciona timestamp de atualização
         });
         
         // Atualiza a UI
         const favoriteBtns = document.querySelectorAll(`.favorite-btn[data-ad-id="${adId}"]`);
         favoriteBtns.forEach(btn => {
             btn.classList.toggle('favorited', isFavorito);
+            btn.innerHTML = `<i class="fas fa-heart"></i>`;
         });
+        
+        showAlert(message, "success");
         
     } catch (error) {
         console.error("Erro ao atualizar favoritos:", error);
-        showAlert("Erro ao atualizar favoritos", "error");
+        showAlert("Ocorreu um erro ao atualizar seus favoritos", "error");
+        
+        // Log adicional para depuração
+        if (error instanceof FirebaseError) {
+            console.error("Código de erro Firebase:", error.code);
+            console.error("Mensagem detalhada:", error.message);
+        }
     }
 }
 
@@ -593,6 +603,22 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
+
+// Adicione esta função no início do seu arquivo JavaScript
+function showAlert(message, type = 'success') {
+    // Verifica se SweetAlert2 está disponível
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: type === 'error' ? 'Erro!' : 'Sucesso!',
+            text: message,
+            icon: type,
+            confirmButtonText: 'OK'
+        });
+    } else {
+        // Fallback para alert padrão se SweetAlert2 não estiver disponível
+        alert(`${type.toUpperCase()}: ${message}`);
+    }
+}
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
 window.openDetailsModal = openDetailsModal;
@@ -601,3 +627,5 @@ window.buscarCarros = buscarCarros;
 window.buscarCasas = buscarCasas;
 window.carregarImoveisDestaque = carregarImoveisDestaque;
 window.preencherBairros = preencherBairros;
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
