@@ -623,63 +623,76 @@ async function carregarFavoritos(userId) {
         // Mostrar loader
         document.getElementById('profile-loader').classList.remove('hidden');
         
-        // 1. Primeiro, obtemos a lista de IDs dos anúncios favoritos do usuário
+        // 1. Obter a lista de IDs dos favoritos do usuário
         const userDoc = await getDoc(doc(db, "users", userId));
         const favoritosIds = userDoc.data()?.favoritos || [];
         
-        // Se não houver favoritos, mostra mensagem e retorna
+        console.log("IDs dos favoritos encontrados:", favoritosIds); // DEBUG
+        
+        // Se não houver favoritos
         if (favoritosIds.length === 0) {
             document.getElementById('no-favoritos').classList.remove('d-none');
-            document.getElementById('profile-loader').classList.add('hidden');
+            document.getElementById('favoritos-container').innerHTML = '';
             return;
         }
         
-        // 2. Buscamos os anúncios correspondentes a esses IDs
+        // 2. Buscar os anúncios correspondentes
         const anunciosPromises = favoritosIds.map(async (adId) => {
-            // Primeiro tentamos encontrar no collection de imóveis
-            const imovelDoc = await getDoc(doc(db, "imoveis", adId));
-            if (imovelDoc.exists()) {
-                return { ...imovelDoc.data(), id: imovelDoc.id, tipo: 'imovel' };
+            console.log(`Buscando anúncio ${adId}`); // DEBUG
+            
+            // Primeiro tenta encontrar em imóveis
+            const imovelRef = doc(db, "imoveis", adId);
+            const imovelSnap = await getDoc(imovelRef);
+            
+            if (imovelSnap.exists()) {
+                console.log(`Encontrado imóvel ${adId}`); // DEBUG
+                return { ...imovelSnap.data(), id: imovelSnap.id, tipo: 'imovel' };
             }
             
             // Se não encontrou em imóveis, tenta automóveis
-            const automovelDoc = await getDoc(doc(db, "automoveis", adId));
-            if (automovelDoc.exists()) {
-                return { ...automovelDoc.data(), id: automovelDoc.id, tipo: 'automovel' };
+            const automovelRef = doc(db, "automoveis", adId);
+            const automovelSnap = await getDoc(automovelRef);
+            
+            if (automovelSnap.exists()) {
+                console.log(`Encontrado automóvel ${adId}`); // DEBUG
+                return { ...automovelSnap.data(), id: automovelSnap.id, tipo: 'automovel' };
             }
             
+            console.log(`Anúncio ${adId} não encontrado em nenhuma coleção`); // DEBUG
             return null;
         });
         
-        // Espera todas as promises resolverem e filtra os nulos
+        // Espera todas as buscas e filtra os nulos
         const anuncios = (await Promise.all(anunciosPromises)).filter(Boolean);
+        console.log("Anúncios encontrados:", anuncios); // DEBUG
         
-        // 3. Renderiza os anúncios favoritos
+        // 3. Renderizar os favoritos
         const favoritosContainer = document.getElementById('favoritos-container');
         favoritosContainer.innerHTML = '';
         
-        anuncios.forEach((anuncio) => {
-            const cardHTML = criarCardFavorito(anuncio, anuncio.tipo === 'imovel' ? false : true);
-            favoritosContainer.innerHTML += cardHTML;
-        });
-        
-        // Configura os eventos dos cards
-        setupFavoritosEvents();
-        
-        // Esconde a mensagem de "sem favoritos" se houver resultados
-        if (anuncios.length > 0) {
+        if (anuncios.length === 0) {
+            document.getElementById('no-favoritos').classList.remove('d-none');
+        } else {
             document.getElementById('no-favoritos').classList.add('d-none');
+            anuncios.forEach(anuncio => {
+                const isAutomovel = anuncio.tipo === 'automovel';
+                favoritosContainer.innerHTML += criarCardFavorito(anuncio, isAutomovel);
+            });
+            
+            // Configurar eventos dos botões
+            setupFavoritosEvents();
         }
-        
-        // Esconde o loader
-        document.getElementById('profile-loader').classList.add('hidden');
         
     } catch (error) {
         console.error("Erro ao carregar favoritos:", error);
-        document.getElementById('profile-loader').classList.add('hidden');
         showAlert("Erro ao carregar anúncios favoritos", "error");
+    } finally {
+        // Esconder loader
+        document.getElementById('profile-loader').classList.add('hidden');
     }
 }
+
+
 function criarCardFavorito(anuncio, isAutomovel) {
     const primeiraImagem = anuncio.imagens?.[0] || 'images/default.jpg';
     const precoFormatado = anuncio.preco?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) || 'Preço não informado';
@@ -843,6 +856,15 @@ function setupTabListeners(user) {
         }
     });
 }
+
+
+// Configurar o listener para a aba de favoritos
+document.getElementById('favoritos-tab').addEventListener('shown.bs.tab', async () => {
+    const user = auth.currentUser;
+    if (user) {
+        await carregarFavoritos(user.uid);
+    }
+});
 async function carregarAnuncios(userId) {
 
     // Busca em ambas as coleções
