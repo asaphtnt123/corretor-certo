@@ -50,7 +50,6 @@ const buyerInterestsInput = document.getElementById('buyerInterests');
 const loginTab = document.getElementById('loginTab');
 const registerTab = document.getElementById('registerTab');
 const loginForm = document.getElementById('loginForm');
-const registerForm = document.getElementById('registerForm');
 const showRegisterLink = document.getElementById('showRegister');
 
 // Função para alternar entre abas
