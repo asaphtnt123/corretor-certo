@@ -172,7 +172,7 @@ function openDetailsModal(adData, isAutomovel = false) {
     const isFavorito = verificarFavorito(adData.id);
     
     // Fechar modal se já estiver aberto
-    if(modal.style.display === 'block') {
+    if (modal.style.display === 'block') {
         closeDetailsModal();
         return;
     }
@@ -197,13 +197,38 @@ function openDetailsModal(adData, isAutomovel = false) {
                         <span class="detail-label">Marca</span>
                         <span class="detail-value">${adData.marca || 'Não informada'}</span>
                     </div>
-                    <!-- Restante do conteúdo do modal... -->
+                    <div class="detail-item">
+                        <span class="detail-label">Modelo</span>
+                        <span class="detail-value">${adData.modelo || 'Não informado'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Ano</span>
+                        <span class="detail-value">${adData.ano || 'Não informado'}</span>
+                    </div>
+                ` : `
+                    <div class="detail-item">
+                        <span class="detail-label">Bairro</span>
+                        <span class="detail-value">${adData.bairro || 'Não informado'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Tipo</span>
+                        <span class="detail-value">${adData.tipo || 'Não informado'}</span>
+                    </div>
+                `}
+                <div class="detail-item price">
+                    <span class="detail-label">Preço</span>
+                    <span class="detail-value">R$ ${adData.preco?.toLocaleString('pt-BR') || 'Não informado'}</span>
+                </div>
+            </div>
+            <div class="description-section">
+                <h3 class="details-title">Descrição</h3>
+                <p class="description-text">${adData.descricao || 'Nenhuma descrição fornecida.'}</p>
             </div>
             <button id="btnContato" class="btn-contato">Entrar em Contato</button>
         </div>
     `;
 
-    // Adicionar eventos
+    // Adicionar eventos após criar o conteúdo
     document.querySelector('.close-modal').addEventListener('click', closeDetailsModal);
     document.getElementById('btnContato').addEventListener('click', () => {
         if (adData.userId) {
@@ -217,7 +242,7 @@ function openDetailsModal(adData, isAutomovel = false) {
         toggleFavorito(adData);
     });
 
-    // Mostrar modal
+    // Mostrar modal com animação
     document.body.style.overflow = 'hidden';
     modal.style.display = 'block';
     modal.classList.add('show');
