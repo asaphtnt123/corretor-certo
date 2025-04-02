@@ -829,32 +829,35 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// Função para configurar os listeners das abas
-function setupTabListeners(user) {
-    const profileTabs = document.getElementById('profileTabs');
-    if (!profileTabs) return;
-    
-    profileTabs.addEventListener('shown.bs.tab', async (event) => {
-        const target = event.target.getAttribute('data-bs-target');
+// Configurar os listeners das abas
+function setupTabListeners() {
+  const tabs = document.querySelectorAll('.nav-tabs .nav-link');
+  
+  tabs.forEach(tab => {
+    tab.addEventListener('shown.bs.tab', async (event) => {
+      const target = event.target.getAttribute('data-bs-target');
+      const user = auth.currentUser;
+      
+      if (!user) return;
+      
+      try {
+        document.getElementById('profile-loader').classList.remove('hidden');
         
-        try {
-            document.getElementById('profile-loader').classList.remove('hidden');
-            
-            if (target === '#perfil') {
-                // Já carregado inicialmente, não precisa recarregar
-            } else if (target === '#anuncios') {
-                await carregarMeusAnuncios();
-            } else if (target === '#favoritos') {
-                await carregarFavoritos(user.uid);
-            }
-            
-        } catch (error) {
-            console.error(`Erro ao carregar aba ${target}:`, error);
-            showAlert(`Erro ao carregar ${target}. Tente novamente.`, "error");
-        } finally {
-            document.getElementById('profile-loader').classList.add('hidden');
+        if (target === '#anuncios') {
+          await loadUserAds(user.uid);
+        } else if (target === '#favoritos') {
+          await loadFavorites(user.uid);
         }
+        // A aba 'perfil' não precisa carregar dados adicionais
+        
+      } catch (error) {
+        console.error(`Erro ao carregar aba ${target}:`, error);
+        showAlert(`Erro ao carregar ${target}. Tente novamente.`, "error");
+      } finally {
+        document.getElementById('profile-loader').classList.add('hidden');
+      }
     });
+  });
 }
 
 
