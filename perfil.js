@@ -143,42 +143,53 @@ async function carregarMeusAnuncios() {
         if (elements.inativos) elements.inativos.textContent = counters.inativos;
         if (elements.destaques) elements.destaques.textContent = counters.destaques;
 
-        // Função para renderizar anúncios com filtros
         function renderizarAnuncios(filtroStatus = 'todos', filtroTipo = 'todos', termoBusca = '') {
-            const anunciosFiltrados = todosAnuncios.filter(anuncio => {
-                // Filtro por status
-                const statusMatch = 
-                    filtroStatus === 'todos' || 
-                    anuncio.status === filtroStatus ||
-                    (filtroStatus === 'destaques' && anuncio.destaque);
-                
-                // Filtro por tipo
-                const tipoMatch = 
-                    filtroTipo === 'todos' || 
-                    anuncio.tipo === filtroTipo;
-                
-                // Filtro por busca
-                const buscaMatch = 
-                    termoBusca === '' ||
-                    (anuncio.titulo && anuncio.titulo.toLowerCase().includes(termoBusca)) ||
-                    (anuncio.descricao && anuncio.descricao.toLowerCase().includes(termoBusca));
-                
-                return statusMatch && tipoMatch && buscaMatch;
-            });
+    const anunciosFiltrados = todosAnuncios.filter(anuncio => {
+        // Padroniza o status para minúsculas
+        const statusAnuncio = anuncio.status.toLowerCase();
+        
+        // Filtro por status
+        const statusMatch = 
+            filtroStatus === 'todos' || 
+            (filtroStatus === 'ativos' && statusAnuncio === 'ativo') ||
+            (filtroStatus === 'inativos' && statusAnuncio === 'inativo') ||
+            (filtroStatus === 'destaques' && anuncio.destaque);
+        
+        // Filtro por tipo
+        const tipoMatch = 
+            filtroTipo === 'todos' || 
+            anuncio.tipo === filtroTipo;
+        
+        // Filtro por busca
+        const buscaMatch = 
+            termoBusca === '' ||
+            (anuncio.titulo && anuncio.titulo.toLowerCase().includes(termoBusca)) ||
+            (anuncio.descricao && anuncio.descricao.toLowerCase().includes(termoBusca));
+        
+        return statusMatch && tipoMatch && buscaMatch;
+    });
 
-            // Renderiza os anúncios filtrados
-            if (elements.container) {
-                elements.container.innerHTML = anunciosFiltrados
-                    .map(anuncio => criarCardAnuncio(anuncio, anuncio.tipo, anuncio.id))
-                    .join('');
-            }
+    // Renderiza os anúncios filtrados
+    if (elements.container) {
+        elements.container.innerHTML = anunciosFiltrados
+            .map(anuncio => criarCardAnuncio(anuncio, anuncio.tipo, anuncio.id))
+            .join('');
+    }
 
-            // Mostra mensagem se não houver anúncios
-            if (elements.noAnuncios) {
-                elements.noAnuncios.classList.toggle("d-none", anunciosFiltrados.length > 0);
-            }
-        }
+    // Mostra mensagem se não houver anúncios
+    if (elements.noAnuncios) {
+        elements.noAnuncios.classList.toggle("d-none", anunciosFiltrados.length > 0);
+    }
+}
 
+
+     console.log("Todos anúncios carregados:", todosAnuncios.map(a => ({
+    id: a.id,
+    tipo: a.tipo,
+    status: a.status,
+    destaque: a.destaque,
+    titulo: a.titulo
+})));
         // Configuração dos filtros
         function configurarFiltros() {
             // Filtro por status (ativos/inativos/destaques)
