@@ -976,3 +976,124 @@ document.getElementById("perfil-form").addEventListener("submit", async (e) => {
         showAlert("Erro ao atualizar perfil", "error");
     }
 });
+
+
+
+ocument.addEventListener('DOMContentLoaded', function() {
+    // Adicionar event listeners para os filtros
+    setupFilterControls();
+});
+
+function setupFilterControls() {
+    // Filtro por tipo (imóvel/automóvel/todos)
+    document.querySelectorAll('[data-filter]').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const filterType = this.getAttribute('data-filter');
+            filterAdsByType(filterType);
+            
+            // Atualizar UI do dropdown
+            document.querySelectorAll('[data-filter]').forEach(el => {
+                el.classList.remove('active');
+            });
+            this.classList.add('active');
+        });
+    });
+    
+    // Filtro por status (ativos/inativos/destaques/todos)
+    document.querySelectorAll('[data-filter-status]').forEach(item => {
+        item.addEventListener('click', function() {
+            const filterStatus = this.getAttribute('data-filter-status');
+            filterAdsByStatus(filterStatus);
+            
+            // Atualizar UI dos botões
+            document.querySelectorAll('[data-filter-status]').forEach(el => {
+                el.classList.remove('active');
+            });
+            this.classList.add('active');
+        });
+    });
+    
+    // Filtro por busca
+    document.getElementById('busca-anuncios').addEventListener('input', function() {
+        filterAdsBySearch(this.value.toLowerCase());
+    });
+}
+
+// Funções de filtragem
+function filterAdsByType(type) {
+    const anuncios = document.querySelectorAll('.anuncio-card');
+    
+    anuncios.forEach(anuncio => {
+        const anuncioTipo = anuncio.getAttribute('data-tipo');
+        
+        if (type === 'todos' || anuncioTipo.includes(type)) {
+            anuncio.style.display = '';
+        } else {
+            anuncio.style.display = 'none';
+        }
+    });
+    
+    updateEmptyState();
+}
+
+function filterAdsByStatus(status) {
+    const anuncios = document.querySelectorAll('.anuncio-card');
+    
+    anuncios.forEach(anuncio => {
+        const btnStatus = anuncio.querySelector('.btn-status-toggle');
+        const btnDestaque = anuncio.querySelector('.btn-destaque-toggle');
+        const anuncioStatus = btnStatus.getAttribute('data-status');
+        const anuncioDestaque = btnDestaque.getAttribute('data-destaque') === 'true';
+        
+        let shouldShow = false;
+        
+        switch(status) {
+            case 'todos':
+                shouldShow = true;
+                break;
+            case 'ativos':
+                shouldShow = anuncioStatus === 'ativo';
+                break;
+            case 'inativos':
+                shouldShow = anuncioStatus === 'inativo';
+                break;
+            case 'destaques':
+                shouldShow = anuncioDestaque;
+                break;
+        }
+        
+        anuncio.style.display = shouldShow ? '' : 'none';
+    });
+    
+    updateEmptyState();
+}
+
+function filterAdsBySearch(searchTerm) {
+    const anuncios = document.querySelectorAll('.anuncio-card');
+    
+    anuncios.forEach(anuncio => {
+        const titulo = anuncio.querySelector('.anuncio-titulo').textContent.toLowerCase();
+        const descricao = anuncio.querySelector('.anuncio-descricao').textContent.toLowerCase();
+        
+        if (titulo.includes(searchTerm) || descricao.includes(searchTerm)) {
+            anuncio.style.display = '';
+        } else {
+            anuncio.style.display = 'none';
+        }
+    });
+    
+    updateEmptyState();
+}
+
+function updateEmptyState() {
+    const anunciosContainer = document.getElementById('anuncios-container');
+    const visibleAnuncios = anunciosContainer.querySelectorAll('.anuncio-card[style=""]');
+    const noAnunciosMsg = document.getElementById('no-anuncios');
+    
+    if (visibleAnuncios.length === 0) {
+        noAnunciosMsg.classList.remove('d-none');
+    } else {
+        noAnunciosMsg.classList.add('d-none');
+    }
+}
