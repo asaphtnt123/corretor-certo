@@ -825,7 +825,6 @@ async function loadProfileData(user) {
     }
   });
 
-  // Adicione isso no seu evento 'shown.bs.tab'
 tab.addEventListener('shown.bs.tab', (event) => {
   const target = event.target.getAttribute('data-bs-target');
   
@@ -837,7 +836,7 @@ tab.addEventListener('shown.bs.tab', (event) => {
 });
   // Verificar autenticação ao carregar a página
   document.addEventListener('DOMContentLoaded', () => {
-  onAuthStateChanged(auth, (user) => {
+ onAuthStateChanged(auth, (user) => {
   if (user) {
     console.log("Usuário autenticado:", user.uid);
     
@@ -853,9 +852,11 @@ tab.addEventListener('shown.bs.tab', (event) => {
       if (hash === '#anuncios') {
         const tab = new bootstrap.Tab(document.querySelector('#anuncios-tab'));
         tab.show();
+        loadUserAds(user.uid);
       } else if (hash === '#favoritos') {
         const tab = new bootstrap.Tab(document.querySelector('#favoritos-tab'));
         tab.show();
+        loadFavorites(user.uid);
       }
       
     } catch (error) {
@@ -881,7 +882,35 @@ tab.addEventListener('shown.bs.tab', (event) => {
     document.getElementById('profile-view').classList.remove('hidden');
   });
 
-
+// Configurar listeners para as abas
+function setupTabListeners() {
+  const tabs = document.querySelectorAll('.nav-tabs .nav-link');
+  
+  tabs.forEach(tab => {
+    tab.addEventListener('shown.bs.tab', async (event) => {
+      const target = event.target.getAttribute('data-bs-target');
+      const user = auth.currentUser;
+      
+      if (!user) return;
+      
+      try {
+        document.getElementById('profile-loader').classList.remove('hidden');
+        
+        if (target === '#anuncios') {
+          await loadUserAds(user.uid);
+        } else if (target === '#favoritos') {
+          await loadFavorites(user.uid);
+        }
+        
+      } catch (error) {
+        console.error(`Erro ao carregar aba ${target}:`, error);
+        showAlert(`Erro ao carregar ${target}. Tente novamente.`, "error");
+      } finally {
+        document.getElementById('profile-loader').classList.add('hidden');
+      }
+    });
+  });
+}
         // Função para preencher o formulário de edição
 function fillEditForm(userData) {
     document.getElementById('edit-name').value = userData.name || '';
