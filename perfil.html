@@ -979,6 +979,98 @@ async function saveProfileChanges(e) {
     }
 }
 
+
+        // Função para carregar os favoritos
+async function loadFavorites(userId) {
+  try {
+    // Mostrar loader
+    document.getElementById('profile-loader').classList.remove('hidden');
+    
+    // 1. Obter a lista de IDs dos favoritos
+    const userDoc = await getDoc(doc(db, "users", userId));
+    const favoriteIds = userDoc.data()?.favoritos || [];
+    
+    console.log("IDs dos favoritos:", favoriteIds); // Debug
+    
+    if (favoriteIds.length === 0) {
+      document.getElementById('no-favoritos').classList.remove('d-none');
+      return;
+    }
+    
+    // 2. Buscar os anúncios correspondentes
+    const favoritesPromises = favoriteIds.map(async (adId) => {
+      // Primeiro tenta em imóveis
+      const imovelRef = doc(db, "imoveis", adId);
+      const imovelSnap = await getDoc(imovelRef);
+      
+      if (imovelSnap.exists()) {
+        return { ...imovelSnap.data(), id: imovelSnap.id, tipo: 'imovel' };
+      }
+      
+      // Se não encontrou, tenta em automóveis
+      const autoRef = doc(db, "automoveis", adId);
+      const autoSnap = await getDoc(autoRef);
+      
+      if (autoSnap.exists()) {
+        return { ...autoSnap.data(), id: autoSnap.id, tipo: 'automovel' };
+      }
+      
+      return null;
+    });
+    
+    // Espera todas as buscas
+    const favorites = (await Promise.all(favoritesPromises)).filter(Boolean);
+    console.log("Anúncios favoritos encontrados:", favorites); // Debug
+    
+    // 3. Renderizar os favoritos
+    const container = document.getElementById('favoritos-container');
+    container.innerHTML = '';
+    
+    if (favorites.length === 0) {
+      document.getElementById('no-favoritos').classList.remove('d-none');
+    } else {
+      document.getElementById('no-favoritos').classList.add('d-none');
+      favorites.forEach(ad => {
+        container.innerHTML += createFavoriteCard(ad, ad.tipo === 'imovel');
+      });
+    }
+    
+  } catch (error) {
+    console.error("Erro ao carregar favoritos:", error);
+    showAlert("Erro ao carregar favoritos", "error");
+  } finally {
+    document.getElementById('profile-loader').classList.add('hidden');
+  }
+}
+
+// Função para criar o card de favorito
+function createFavoriteCard(ad, isProperty) {
+  const mainImage = ad.imagens?.[0] || 'img/sem-imagem.jpg';
+  const price = ad.preco?.toLocaleString('pt-BR', { 
+    style: 'currency', 
+    currency: 'BRL' 
+  }) || 'Preço não informado';
+  
+  return `
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="card h-100">
+        <img src="${mainImage}" class="card-img-top" alt="${ad.titulo}">
+        <div class="card-body">
+          <h5 class="card-title">${ad.titulo || 'Sem título'}</h5>
+          <p class="card-text">${price}</p>
+          ${isProperty ? `
+            <p><i class="fas fa-map-marker-alt"></i> ${ad.bairro || 'Local não informado'}</p>
+          ` : `
+            <p><i class="fas fa-car"></i> ${ad.marca || ''} ${ad.modelo || ''}</p>
+          `}
+          <button class="btn btn-danger btn-remove-favorite" data-id="${ad.id}">
+            <i class="fas fa-trash"></i> Remover
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
 // Adicionar evento de submit ao formulário
 document.getElementById('perfil-form')?.addEventListener('submit', saveProfileChanges);
 </script>
