@@ -142,3 +142,23 @@ body {
         display: none;
     }
 }
+/* Adicione ao seu arquivo anunciar.css */
+.is-invalid {
+    border-color: #dc3545 !important;
+}
+
+.invalid-feedback {
+    display: none;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: #dc3545;
+}
+
+.is-invalid ~ .invalid-feedback {
+    display: block;
+}
+
+.form-text.text-danger {
+    color: #dc3545 !important;
+}
