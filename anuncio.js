@@ -65,13 +65,23 @@ function showStep(stepIndex) {
     }
 }
 
-// Função para avançar para o próximo passo
+// Atualize a função nextStep para melhorar o feedback
 function nextStep() {
     if (currentStep < steps.length - 1) {
-        // Validar formulário antes de avançar
         if (validateStep(currentStep)) {
             currentStep++;
             showStep(currentStep);
+            
+            // Scroll para o topo do formulário
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        } else {
+            // Mostrar mensagem de erro específica
+            if (currentStep === 1) {
+                alert('Por favor, preencha todos os campos obrigatórios antes de avançar.');
+            }
         }
     }
 }
@@ -84,21 +94,37 @@ function prevStep() {
     }
 }
 
-// Função para validar o passo atual
+// Modifique a função validateStep para incluir a validação específica
 function validateStep(stepIndex) {
-    const currentStep = steps[stepIndex];
-    const inputs = currentStep.querySelectorAll('input[required], select[required], textarea[required]');
-    
     let isValid = true;
     
-    inputs.forEach(input => {
-        if (!input.value.trim()) {
-            input.classList.add('is-invalid');
+    if (stepIndex === 0) {
+        // Validação do passo 1 (Informações Básicas)
+        const inputs = document.querySelectorAll('#step-1 input[required], #step-1 textarea[required]');
+        
+        inputs.forEach(input => {
+            if (!input.value.trim()) {
+                input.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                input.classList.remove('is-invalid');
+            }
+        });
+        
+        // Validação adicional para descrição com mínimo de caracteres
+        const descricao = document.getElementById('descricao');
+        if (descricao.value.length < 20) { // Alterei para 20 para testes, pode voltar para 200 depois
+            descricao.classList.add('is-invalid');
+            document.querySelector('#step-1 .form-text').textContent = 'A descrição precisa ter pelo menos 20 caracteres';
             isValid = false;
         } else {
-            input.classList.remove('is-invalid');
+            descricao.classList.remove('is-invalid');
         }
-    });
+    } else if (stepIndex === 1) {
+        // Validação do passo 2 (Detalhes)
+        isValid = validateStep2();
+    }
+    // O passo 3 (Imagens) não precisa de validação antecipada
     
     return isValid;
 }
@@ -308,5 +334,61 @@ async function uploadImages(files, folder, userId) {
     return urls;
 }
 
+
+
+
+// Adicione esta função para validar o passo 2 (Detalhes)
+function validateStep2() {
+    let isValid = true;
+    
+    // Verifica se é imóvel ou automóvel
+    if (document.getElementById('btn-imovel').checked) {
+        // Validação para imóveis
+        if (!document.getElementById('tipo-imovel').value) {
+            document.getElementById('tipo-imovel').classList.add('is-invalid');
+            isValid = false;
+        } else {
+            document.getElementById('tipo-imovel').classList.remove('is-invalid');
+        }
+        
+        if (!document.getElementById('bairro').value.trim()) {
+            document.getElementById('bairro').classList.add('is-invalid');
+            isValid = false;
+        } else {
+            document.getElementById('bairro').classList.remove('is-invalid');
+        }
+        
+        if (!document.getElementById('area').value) {
+            document.getElementById('area').classList.add('is-invalid');
+            isValid = false;
+        } else {
+            document.getElementById('area').classList.remove('is-invalid');
+        }
+    } else {
+        // Validação para automóveis
+        if (!document.getElementById('marca').value) {
+            document.getElementById('marca').classList.add('is-invalid');
+            isValid = false;
+        } else {
+            document.getElementById('marca').classList.remove('is-invalid');
+        }
+        
+        if (!document.getElementById('modelo').value.trim()) {
+            document.getElementById('modelo').classList.add('is-invalid');
+            isValid = false;
+        } else {
+            document.getElementById('modelo').classList.remove('is-invalid');
+        }
+        
+        if (!document.getElementById('ano').value) {
+            document.getElementById('ano').classList.add('is-invalid');
+            isValid = false;
+        } else {
+            document.getElementById('ano').classList.remove('is-invalid');
+        }
+    }
+    
+    return isValid;
+}
 // Inicialização
 showStep(0);
