@@ -1,45 +1,25 @@
-/* Estilos gerais */
-body {
-    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-    background-color: #f8f9fa;
+:root {
+    --primary: #4a6baf;
+    --secondary: #6c757d;
+    --light: #f8f9fa;
+    --dark: #212529;
 }
 
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--dark);
+}
+
+/* Header */
 .header {
     background-color: white;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    padding: 15px 0;
 }
 
-.form-container {
-    background-color: white;
-    padding: 30px;
+/* Form Container */
+.card {
     border-radius: 10px;
-    margin-bottom: 30px;
-}
-
-/* Seletor de tipo */
-.type-selector {
-    margin-bottom: 30px;
-}
-
-.type-card {
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.type-card .card {
-    border: 2px solid transparent;
-    transition: all 0.3s;
-}
-
-.type-card:hover .card {
-    border-color: #3498db;
-    transform: translateY(-5px);
-}
-
-.btn-check:checked + .type-card .card {
-    border-color: #3498db;
-    background-color: #f8fbfe;
+    overflow: hidden;
 }
 
 /* Stepper */
@@ -47,13 +27,13 @@ body {
     display: flex;
     justify-content: space-between;
     position: relative;
-    margin-bottom: 30px;
+    margin-bottom: 2rem;
 }
 
 .stepper::before {
     content: '';
     position: absolute;
-    top: 15px;
+    top: 20px;
     left: 0;
     right: 0;
     height: 2px;
@@ -70,140 +50,95 @@ body {
 }
 
 .step-circle {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background-color: #dee2e6;
-    color: #6c757d;
+    color: var(--secondary);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    margin-bottom: 5px;
+    margin-bottom: 0.5rem;
 }
 
 .step.active .step-circle {
-    background-color: #3498db;
+    background-color: var(--primary);
     color: white;
 }
 
 .step-label {
     font-size: 0.9rem;
-    color: #6c757d;
-}
-
-.step.active .step-label {
-    color: #3498db;
+    color: var(--secondary);
     font-weight: 500;
 }
 
-/* Esconde todos os steps por padrão */
+.step.active .step-label {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* Form Steps */
 .form-step {
     display: none;
 }
 
-/* Mostra apenas o step ativo */
 .form-step.active {
     display: block;
-    animation: fadeIn 0.5s ease-out;
 }
 
-/* Animações */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.form-title {
-    color: #2c3e50;
-    font-weight: 600;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-}
-
-/* Image preview */
-.image-preview-container {
+/* Image Preview */
+.image-preview {
     border: 2px dashed #dee2e6;
     border-radius: 8px;
-    padding: 20px;
+    padding: 1rem;
     min-height: 200px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.empty-state {
+.image-preview .empty-state {
     text-align: center;
-    color: #6c757d;
+    color: var(--secondary);
 }
 
-/* Review section */
+/* Review Section */
 .review-section {
-    background-color: #f8f9fa;
+    background-color: var(--light);
+    padding: 1.5rem;
     border-radius: 8px;
-    padding: 20px;
 }
 
 .review-title {
-    color: #2c3e50;
     font-size: 1.2rem;
-    margin-bottom: 15px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #dee2e6;
+    color: var(--primary);
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--primary);
+    margin-bottom: 1rem;
 }
 
-/* Estilos para a revisão */
-.review-section p {
-    margin-bottom: 0.5rem;
+.review-images {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .review-images img {
-    max-height: 100px;
-    margin-right: 10px;
-    margin-bottom: 10px;
+    width: 100px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
 }
 
-#review-caracteristicas {
-    display: inline-block;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-/* Botões de navegação */
-.next-step, .prev-step {
-    min-width: 150px;
-}
-
-/* Campos específicos */
-#automovel-fields, #imovel-fields {
-    transition: all 0.3s ease;
-}
-
-/* Animações */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Responsividade */
+/* Responsive */
 @media (max-width: 768px) {
     .stepper {
         flex-wrap: wrap;
+        gap: 1rem;
     }
     
-    .step {
-        width: 50%;
-        margin-bottom: 15px;
-    }
-    
-    .form-container {
-        padding: 20px;
+    .stepper::before {
+        display: none;
     }
 }
-
-
-
-
