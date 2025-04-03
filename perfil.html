@@ -825,17 +825,19 @@ async function loadProfileData(user) {
     }
   });
 
-  // Gerenciamento de abas
-  document.querySelectorAll('.nav-tabs .nav-link').forEach(tab => {
+ // Adicione este evento ao listener de abas
+document.querySelectorAll('.nav-tabs .nav-link').forEach(tab => {
     tab.addEventListener('shown.bs.tab', (event) => {
-      const target = event.target.getAttribute('data-bs-target');
-      
-      if (target === '#anuncios' && auth.currentUser) {
-        loadUserAds(auth.currentUser.uid);
-      }
-      // Adicione outros casos para outras abas se necessário
+        const target = event.target.getAttribute('data-bs-target');
+        
+        if (target === '#anuncios' && auth.currentUser) {
+            loadUserAds(auth.currentUser.uid);
+        }
+        if (target === '#favoritos' && auth.currentUser) {
+            loadFavorites(auth.currentUser.uid);
+        }
     });
-  });
+});
 
   // Verificar autenticação ao carregar a página
   document.addEventListener('DOMContentLoaded', () => {
@@ -978,6 +980,178 @@ async function saveProfileChanges(e) {
         showAlert('Erro ao atualizar perfil. Tente novamente.', 'error');
     }
 }
+
+
+        // Função para carregar anúncios favoritos
+async function loadFavorites(userId) {
+    try {
+        // 1. Obter lista de IDs dos favoritos do usuário
+        const userDocRef = doc(db, "users", userId);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (!userDoc.exists() || !userDoc.data().favoritos || userDoc.data().favoritos.length === 0) {
+            document.getElementById("no-favorites").classList.remove("hidden");
+            document.getElementById("favorites-container").innerHTML = "";
+            return;
+        }
+        
+        const favoriteIds = userDoc.data().favoritos;
+        
+        // 2. Buscar imóveis e automóveis favoritados
+        const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
+            getDocs(query(collection(db, "imoveis"), where("__name__", "in", favoriteIds))),
+            getDocs(query(collection(db, "automoveis"), where("__name__", "in", favoriteIds)))
+        ]);
+        
+        // 3. Processar resultados
+        const favoritesContainer = document.getElementById("favorites-container");
+        favoritesContainer.innerHTML = "";
+        
+        // Processar imóveis favoritos
+        imoveisSnapshot.forEach(doc => {
+            const data = doc.data();
+            data.id = doc.id;
+            favoritesContainer.appendChild(createFavoriteCard(data, "Imóvel"));
+        });
+        
+        // Processar automóveis favoritos
+        automoveisSnapshot.forEach(doc => {
+            const data = doc.data();
+            data.id = doc.id;
+            favoritesContainer.appendChild(createFavoriteCard(data, "Automóvel"));
+        });
+        
+        // Mostrar mensagem se não houver favoritos encontrados
+        if (imoveisSnapshot.empty && automoveisSnapshot.empty) {
+            document.getElementById("no-favorites").classList.remove("hidden");
+        } else {
+            document.getElementById("no-favorites").classList.add("hidden");
+        }
+        
+    } catch (error) {
+        console.error("Erro ao carregar favoritos:", error);
+        showAlert("Erro ao carregar seus anúncios favoritos", "error");
+    }
+}
+
+// Função para criar card de favorito
+function createFavoriteCard(data, type) {
+    const card = document.createElement('div');
+    card.className = 'col-md-6 col-lg-4 mb-4';
+    
+    const precoFormatado = data.preco?.toLocaleString('pt-BR', { 
+        style: 'currency', 
+        currency: 'BRL' 
+    }) || 'Preço não informado';
+    
+    card.innerHTML = `
+        <div class="favorite-card" data-id="${data.id}">
+            <div class="favorite-header">
+                <img src="${data.imagens?.[0] || 'img/sem-imagem.jpg'}" 
+                     alt="${data.titulo}" 
+                     class="favorite-imagem-principal">
+                <span class="favorite-badge">${type}</span>
+                <button class="btn-remove-favorite" data-id="${data.id}">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="favorite-body">
+                <h3 class="favorite-titulo">${data.titulo || 'Sem título'}</h3>
+                <div class="favorite-preco">${precoFormatado}</div>
+                
+                <div class="detalhes-grid">
+                    ${type === 'Imóvel' ? getImovelDetails(data) : getAutomovelDetails(data)}
+                </div>
+            </div>
+            
+            <div class="favorite-footer">
+                <button class="btn-view-favorite" data-id="${data.id}">
+                    <i class="fas fa-eye"></i> Ver Anúncio
+                </button>
+            </div>
+        </div>
+    `;
+    
+    return card;
+}
+
+// Adicione eventos para os botões nos cards de favoritos
+document.addEventListener('click', function(e) {
+    // Remover dos favoritos
+    if (e.target.closest('.btn-remove-favorite')) {
+        const adId = e.target.closest('.btn-remove-favorite').getAttribute('data-id');
+        removeFromFavorites(adId);
+    }
+    
+    // Ver detalhes do anúncio
+    if (e.target.closest('.btn-view-favorite')) {
+        const adId = e.target.closest('.btn-view-favorite').getAttribute('data-id');
+        viewFavoriteAd(adId);
+    }
+});
+
+// Função para remover dos favoritos
+async function removeFromFavorites(adId) {
+    const user = auth.currentUser;
+    if (!user) return;
+    
+    try {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        const favoritos = userDoc.data()?.favoritos || [];
+        
+        // Filtrar para remover o ID
+        const novosFavoritos = favoritos.filter(id => id !== adId);
+        
+        // Atualizar no Firestore
+        await updateDoc(userDocRef, {
+            favoritos: novosFavoritos,
+            lastUpdated: new Date()
+        });
+        
+        // Remover o card da UI
+        document.querySelector(`.favorite-card[data-id="${adId}"]`)?.remove();
+        
+        // Mostrar mensagem se não houver mais favoritos
+        if (novosFavoritos.length === 0) {
+            document.getElementById("no-favorites").classList.remove("hidden");
+        }
+        
+        showAlert("Anúncio removido dos favoritos", "success");
+        
+    } catch (error) {
+        console.error("Erro ao remover favorito:", error);
+        showAlert("Erro ao remover dos favoritos", "error");
+    }
+}
+
+// Função para visualizar anúncio favorito
+async function viewFavoriteAd(adId) {
+    try {
+        // Primeiro tentar buscar como imóvel
+        const imovelDoc = await getDoc(doc(db, "imoveis", adId));
+        if (imovelDoc.exists()) {
+            window.location.href = `detalhes.html?tipo=imovel&id=${adId}`;
+            return;
+        }
+        
+        // Se não for imóvel, tentar como automóvel
+        const automovelDoc = await getDoc(doc(db, "automoveis", adId));
+        if (automovelDoc.exists()) {
+            window.location.href = `detalhes.html?tipo=automovel&id=${adId}`;
+            return;
+        }
+        
+        // Se não encontrado em nenhum
+        showAlert("Anúncio não encontrado", "error");
+        
+    } catch (error) {
+        console.error("Erro ao buscar anúncio:", error);
+        showAlert("Erro ao abrir anúncio", "error");
+    }
+}
+        
 
 // Adicionar evento de submit ao formulário
 document.getElementById('perfil-form')?.addEventListener('submit', saveProfileChanges);
