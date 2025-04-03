@@ -544,28 +544,22 @@
             </div>
         </div>
 
-        <!-- Tab Favoritos -->
         <div class="tab-pane fade" id="favoritos" role="tabpanel" aria-labelledby="favoritos-tab">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="mb-0">
-                    <i class="fas fa-heart text-danger me-2"></i>Meus Favoritos
-                </h2>
-            </div>
-
-            <div id="favoritos-container" class="row g-4">
-                <!-- Favoritos serão carregados aqui via JavaScript -->
-            </div>
-
-            <div id="no-favoritos" class="text-center py-5">
-                <div class="card border-0 shadow-sm py-5">
-                    <div class="card-body">
-                        <i class="fas fa-heart-broken fa-4x text-muted mb-4"></i>
-                        <h4 class="text-muted mb-3">Nenhum favorito adicionado</h4>
-                        <p class="text-muted">Você ainda não salvou nenhum anúncio como favorito</p>
-                    </div>
-                </div>
-            </div>
+    <div class="container my-4">
+        <h2 class="mb-4">Meus Favoritos</h2>
+        
+        <div id="no-favorites" class="text-center py-5 hidden">
+            <i class="far fa-heart fa-4x mb-3 text-muted"></i>
+            <h4 class="text-muted">Nenhum anúncio favoritado</h4>
+            <p class="text-muted">Você ainda não adicionou nenhum anúncio aos favoritos.</p>
+            <a href="index.html" class="btn btn-primary mt-3">Explorar Anúncios</a>
         </div>
+        
+        <div class="row" id="favorites-container">
+            <!-- Os cards de favoritos serão inseridos aqui -->
+        </div>
+    </div>
+</div>
     </div>
 </div>
     </div>
