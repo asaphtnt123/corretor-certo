@@ -3,111 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detalhes do Anúncio | Corretor Certo</title>
-    <link rel="stylesheet" href="detalhes.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Detalhes do Anúncio | ConnectFamília</title>
+    
+    <!-- Fontes e Ícones -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/detalhes.css">
+    
+    <!-- Meta tags para SEO -->
+    <meta name="description" content="Detalhes completos do anúncio na plataforma ConnectFamília">
+    <meta property="og:title" content="Detalhes do Anúncio | ConnectFamília">
+    <meta property="og:description" content="Visualize todos os detalhes deste anúncio na plataforma ConnectFamília">
 </head>
 <body>
-    <div class="container">
-        <!-- Cabeçalho -->
-        <header class="header">
-            <div class="logo">
-                <img src="logo.png" alt="Corretor Certo">
-            </div>
-            <nav class="nav-menu">
-                <!-- Seu menu de navegação aqui -->
-            </nav>
-        </header>
-
-        <!-- Conteúdo Principal -->
-        <main class="main-content">
-            <div class="property-details">
-                <!-- Carrossel de Imagens -->
-                <div class="image-carousel">
-                    <div id="mainCarousel" class="carrossel-principal">
-                        <!-- Imagens serão inseridas via JS -->
+    <!-- Navbar (mantenha igual ao restante do site) -->
+    
+    <main class="container-fluid px-0">
+        <div class="row g-0">
+            <!-- Galeria de Imagens -->
+            <div class="col-lg-8">
+                <div class="gallery-container">
+                    <!-- Carrossel Principal -->
+                    <div id="mainCarousel" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner" id="carousel-inner">
+                            <!-- Imagens serão inseridas via JS -->
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Anterior</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Próximo</span>
+                        </button>
                     </div>
-                    <div class="carousel-thumbnails">
+                    
+                    <!-- Miniaturas -->
+                    <div class="thumbnails-container" id="thumbnails-container">
                         <!-- Miniaturas serão inseridas via JS -->
                     </div>
                 </div>
-
-                <!-- Detalhes do Anúncio -->
-                <div class="property-info">
-                    <h1 id="detailTitle">Título do Imóvel</h1>
-                    <div class="price-tag" id="detailPrice">R$ 0,00</div>
-                    
-                    <div class="basic-info-grid">
-                        <div class="info-item">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span id="detailLocation">Localização</span>
-                        </div>
-                        <div class="info-item">
-                            <i class="fas fa-ruler-combined"></i>
-                            <span id="detailArea">Área</span>
-                        </div>
-                        <div class="info-item">
-                            <i class="fas fa-bed"></i>
-                            <span id="detailBedrooms">Quartos</span>
-                        </div>
-                        <div class="info-item">
-                            <i class="fas fa-bath"></i>
-                            <span id="detailBathrooms">Banheiros</span>
-                        </div>
-                    </div>
-
-                    <div class="description-section">
-                        <h2>Descrição</h2>
-                        <p id="detailDescription">Descrição detalhada aqui...</p>
-                    </div>
-
-                    <div class="features-section">
-                        <h2>Características</h2>
-                        <ul class="features-list" id="detailFeatures">
-                            <!-- Características serão inseridas via JS -->
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Contato -->
-                <div class="contact-card">
-                    <div class="agent-info">
-                        <img src="agent-placeholder.jpg" alt="Corretor" class="agent-photo">
-                        <div class="agent-details">
-                            <h3>Nome do Corretor</h3>
-                            <p class="agent-company">Imobiliária</p>
-                            <div class="agent-rating">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star-half-alt"></i>
-                                <span>(25 avaliações)</span>
+                
+                <!-- Detalhes Expandidos -->
+                <div class="details-expanded container mt-4">
+                    <div class="row">
+                        <div class="col-12">
+                            <h2 class="section-title">Descrição Detalhada</h2>
+                            <p class="description-text" id="detailDescription"></p>
+                            
+                            <div class="features-grid row g-3" id="featuresGrid">
+                                <!-- Características serão inseridas via JS -->
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="contact-actions">
-                        <button class="btn-contact whatsapp-btn">
-                            <i class="fab fa-whatsapp"></i> WhatsApp
-                        </button>
-                        <button class="btn-contact phone-btn">
-                            <i class="fas fa-phone"></i> Ligar
-                        </button>
-                        <button class="btn-contact email-btn">
-                            <i class="fas fa-envelope"></i> Email
-                        </button>
+                </div>
+            </div>
+            
+            <!-- Sidebar de Informações -->
+            <div class="col-lg-4">
+                <div class="info-sidebar sticky-top">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h1 class="property-title" id="detailTitle"></h1>
+                            <div class="price-badge" id="detailPrice"></div>
+                            
+                            <div class="basic-info-grid">
+                                <div class="info-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span id="detailLocation"></span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-ruler-combined"></i>
+                                    <span id="detailArea"></span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-bed"></i>
+                                    <span id="detailBedrooms"></span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-bath"></i>
+                                    <span id="detailBathrooms"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="action-buttons mt-4">
+                                <button class="btn btn-primary w-100 mb-3" id="btnWhatsApp">
+                                    <i class="fab fa-whatsapp me-2"></i> Contato via WhatsApp
+                                </button>
+                                <button class="btn btn-outline-primary w-100 mb-3" id="btnFavorite">
+                                    <i class="far fa-heart me-2"></i> Adicionar aos Favoritos
+                                </button>
+                                <button class="btn btn-link w-100 text-danger" id="btnReport">
+                                    <i class="fas fa-flag me-2"></i> Denunciar Anúncio
+                                </button>
+                            </div>
+                            
+                            <hr class="my-4">
+                            
+                            <div class="agent-card">
+                                <div class="d-flex align-items-center">
+                                    <img src="img/agent-placeholder.jpg" alt="Anunciante" class="agent-avatar me-3">
+                                    <div>
+                                        <h5 class="mb-1" id="agentName">Anunciante</h5>
+                                        <small class="text-muted" id="agentType">Particular</small>
+                                    </div>
+                                </div>
+                                <div class="agent-rating mt-2">
+                                    <div class="stars">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star-half-alt"></i>
+                                    </div>
+                                    <small class="text-muted">(25 avaliações)</small>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </main>
-
-        <!-- Rodapé -->
-        <footer class="footer">
-            <!-- Seu rodapé aqui -->
-        </footer>
-    </div>
-
-    <script src="detalhes.js"></script>
+        </div>
+    </main>
+    
+    <!-- Rodapé (mantenha igual ao restante do site) -->
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module" src="js/detalhes.js"></script>
 </body>
 </html>
