@@ -184,6 +184,19 @@ body {
         height: auto;
         max-height: none;
     }
+
+
+
+    .feature-value.long-value {
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    padding: 0.5rem;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+}
     
     .info-sidebar {
         height: auto;
