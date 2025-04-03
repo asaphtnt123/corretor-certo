@@ -825,50 +825,41 @@ async function loadProfileData(user) {
     }
   });
 
-tab.addEventListener('shown.bs.tab', (event) => {
-  const target = event.target.getAttribute('data-bs-target');
-  
-  if (target === '#anuncios' && auth.currentUser) {
-    loadUserAds(auth.currentUser.uid);
-  } else if (target === '#favoritos' && auth.currentUser) {
-    loadFavorites(auth.currentUser.uid);
-  }
-});
+  // Gerenciamento de abas
+  document.querySelectorAll('.nav-tabs .nav-link').forEach(tab => {
+    tab.addEventListener('shown.bs.tab', (event) => {
+      const target = event.target.getAttribute('data-bs-target');
+      
+      if (target === '#anuncios' && auth.currentUser) {
+        loadUserAds(auth.currentUser.uid);
+      }
+      // Adicione outros casos para outras abas se necessário
+    });
+  });
+
   // Verificar autenticação ao carregar a página
   document.addEventListener('DOMContentLoaded', () => {
- onAuthStateChanged(auth, (user) => {
-  if (user) {
-    console.log("Usuário autenticado:", user.uid);
-    
-    try {
-      // Carrega os dados básicos do perfil
-      loadProfileData(user);
-      
-      // Configura os listeners das abas
-      setupTabListeners();
-      
-      // Verifica se há hash na URL para abrir aba específica
-      const hash = window.location.hash;
-      if (hash === '#anuncios') {
-        const tab = new bootstrap.Tab(document.querySelector('#anuncios-tab'));
-        tab.show();
-        loadUserAds(user.uid);
-      } else if (hash === '#favoritos') {
-        const tab = new bootstrap.Tab(document.querySelector('#favoritos-tab'));
-        tab.show();
-        loadFavorites(user.uid);
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("Usuário autenticado:", user.uid);
+        loadProfileData(user);
+        
+        // Verificar hash na URL para abrir aba específica
+        const hash = window.location.hash;
+        if (hash === '#anuncios') {
+          const tab = new bootstrap.Tab(document.querySelector('#anuncios-tab'));
+          tab.show();
+          loadUserAds(user.uid);
+        } else if (hash === '#favoritos') {
+          const tab = new bootstrap.Tab(document.querySelector('#favoritos-tab'));
+          tab.show();
+          // Aqui você pode chamar uma função para carregar favoritos
+        }
+      } else {
+        console.log("Usuário não autenticado - redirecionando...");
+        window.location.href = "login.html";
       }
-      
-    } catch (error) {
-      console.error("Erro na inicialização:", error);
-      showAlert("Erro ao carregar página. Recarregue e tente novamente.", "error");
-    }
-    
-  } else {
-    console.log("Usuário não autenticado - redirecionando...");
-    window.location.href = "login.html";
-  }
-});
+    });
   });
 
   // Eventos para edição de perfil (exemplo básico)
@@ -882,35 +873,7 @@ tab.addEventListener('shown.bs.tab', (event) => {
     document.getElementById('profile-view').classList.remove('hidden');
   });
 
-// Configurar listeners para as abas
-function setupTabListeners() {
-  const tabs = document.querySelectorAll('.nav-tabs .nav-link');
-  
-  tabs.forEach(tab => {
-    tab.addEventListener('shown.bs.tab', async (event) => {
-      const target = event.target.getAttribute('data-bs-target');
-      const user = auth.currentUser;
-      
-      if (!user) return;
-      
-      try {
-        document.getElementById('profile-loader').classList.remove('hidden');
-        
-        if (target === '#anuncios') {
-          await loadUserAds(user.uid);
-        } else if (target === '#favoritos') {
-          await loadFavorites(user.uid);
-        }
-        
-      } catch (error) {
-        console.error(`Erro ao carregar aba ${target}:`, error);
-        showAlert(`Erro ao carregar ${target}. Tente novamente.`, "error");
-      } finally {
-        document.getElementById('profile-loader').classList.add('hidden');
-      }
-    });
-  });
-}
+
         // Função para preencher o formulário de edição
 function fillEditForm(userData) {
     document.getElementById('edit-name').value = userData.name || '';
@@ -1016,141 +979,6 @@ async function saveProfileChanges(e) {
     }
 }
 
-
-        // Função para carregar os favoritos
-async function loadFavorites(userId) {
-  try {
-    // Mostrar loader
-    document.getElementById('profile-loader').classList.remove('hidden');
-    
-    // 1. Obter a lista de IDs dos favoritos
-    const userDoc = await getDoc(doc(db, "users", userId));
-    const favoriteIds = userDoc.data()?.favoritos || [];
-    
-    console.log("IDs dos favoritos:", favoriteIds); // Debug
-    
-    if (favoriteIds.length === 0) {
-      document.getElementById('no-favoritos').classList.remove('d-none');
-      return;
-    }
-    
-    // 2. Buscar os anúncios correspondentes
-    const favoritesPromises = favoriteIds.map(async (adId) => {
-      // Primeiro tenta em imóveis
-      const imovelRef = doc(db, "imoveis", adId);
-      const imovelSnap = await getDoc(imovelRef);
-      
-      if (imovelSnap.exists()) {
-        return { ...imovelSnap.data(), id: imovelSnap.id, tipo: 'imovel' };
-      }
-      
-      // Se não encontrou, tenta em automóveis
-      const autoRef = doc(db, "automoveis", adId);
-      const autoSnap = await getDoc(autoRef);
-      
-      if (autoSnap.exists()) {
-        return { ...autoSnap.data(), id: autoSnap.id, tipo: 'automovel' };
-      }
-      
-      return null;
-    });
-    
-    // Espera todas as buscas
-    const favorites = (await Promise.all(favoritesPromises)).filter(Boolean);
-    console.log("Anúncios favoritos encontrados:", favorites); // Debug
-    
-    // 3. Renderizar os favoritos
-    const container = document.getElementById('favoritos-container');
-    container.innerHTML = '';
-    
-    if (favorites.length === 0) {
-      document.getElementById('no-favoritos').classList.remove('d-none');
-    } else {
-      document.getElementById('no-favoritos').classList.add('d-none');
-      favorites.forEach(ad => {
-        container.innerHTML += createFavoriteCard(ad, ad.tipo === 'imovel');
-      });
-    }
-    
-  } catch (error) {
-    console.error("Erro ao carregar favoritos:", error);
-    showAlert("Erro ao carregar favoritos", "error");
-  } finally {
-    document.getElementById('profile-loader').classList.add('hidden');
-  }
-}
-
-// Função para criar o card de favorito
-function createFavoriteCard(ad, isProperty) {
-  const mainImage = ad.imagens?.[0] || 'img/sem-imagem.jpg';
-  const price = ad.preco?.toLocaleString('pt-BR', { 
-    style: 'currency', 
-    currency: 'BRL' 
-  }) || 'Preço não informado';
-  
-  return `
-    <div class="col-md-6 col-lg-4 mb-4">
-      <div class="card h-100">
-        <img src="${mainImage}" class="card-img-top" alt="${ad.titulo}">
-        <div class="card-body">
-          <h5 class="card-title">${ad.titulo || 'Sem título'}</h5>
-          <p class="card-text">${price}</p>
-          ${isProperty ? `
-            <p><i class="fas fa-map-marker-alt"></i> ${ad.bairro || 'Local não informado'}</p>
-          ` : `
-            <p><i class="fas fa-car"></i> ${ad.marca || ''} ${ad.modelo || ''}</p>
-          `}
-          <button class="btn btn-danger btn-remove-favorite" data-id="${ad.id}">
-            <i class="fas fa-trash"></i> Remover
-          </button>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-
-        // Evento para remover favoritos (delegado)
-document.addEventListener('click', async (e) => {
-  if (e.target.classList.contains('btn-remove-favorite') || 
-     e.target.closest('.btn-remove-favorite')) {
-    const button = e.target.classList.contains('btn-remove-favorite') 
-      ? e.target 
-      : e.target.closest('.btn-remove-favorite');
-    
-    const adId = button.getAttribute('data-id');
-    const user = auth.currentUser;
-    
-    if (!user) return;
-    
-    try {
-      // Remove dos favoritos
-      const userDocRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
-      const favorites = userDoc.data()?.favoritos || [];
-      
-      const updatedFavorites = favorites.filter(id => id !== adId);
-      
-      await updateDoc(userDocRef, {
-        favoritos: updatedFavorites
-      });
-      
-      // Remove o card da UI
-      button.closest('.col-md-6').remove();
-      
-      // Mostra mensagem se não houver mais favoritos
-      if (updatedFavorites.length === 0) {
-        document.getElementById('no-favoritos').classList.remove('d-none');
-      }
-      
-      showAlert("Removido dos favoritos", "success");
-      
-    } catch (error) {
-      console.error("Erro ao remover favorito:", error);
-      showAlert("Erro ao remover dos favoritos", "error");
-    }
-  }
-});
 // Adicionar evento de submit ao formulário
 document.getElementById('perfil-form')?.addEventListener('submit', saveProfileChanges);
 </script>
