@@ -3,512 +3,446 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Criar Anúncio Profissional - Corretor Certo</title>
-    
+    <title>Criar Anúncio - ConnectFamília</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    
     <!-- CSS Personalizado -->
-    <link rel="stylesheet" href="anunciar.css">
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="img/favicon.png">
+    <link rel="stylesheet" href="css/anunciar.css">
 </head>
 
 <body>
     <!-- Header -->
     <header class="header">
-        <div class="container">
-            <nav class="navbar navbar-expand-lg navbar-light">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container">
                 <a class="navbar-brand" href="index.html">
-                    <img src="img/logo.png" alt="Corretor Certo" height="40">
+                    <img src="img/logo.png" alt="ConnectFamília" height="40">
                 </a>
-                <div class="ms-auto d-flex align-items-center">
-                    <a href="perfil.html" class="btn btn-outline-primary me-2">
+                <div class="ms-auto">
+                    <a href="perfil.html" class="btn btn-outline-primary">
                         <i class="fas fa-user me-1"></i> Meu Perfil
                     </a>
                 </div>
-            </nav>
-        </div>
+            </div>
+        </nav>
     </header>
 
     <!-- Main Content -->
     <main class="container my-5">
         <div class="row justify-content-center">
             <div class="col-lg-10">
-                <!-- Form Container -->
-                <div class="form-container shadow-lg rounded-3">
-                    <!-- Breadcrumb -->
-                    <nav aria-label="breadcrumb" class="mb-4">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Criar Anúncio</li>
-                        </ol>
-                    </nav>
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <!-- Breadcrumb -->
+                        <nav aria-label="breadcrumb" class="mb-4">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Criar Anúncio</li>
+                            </ol>
+                        </nav>
 
-                    <!-- Type Selector -->
-                    <div class="type-selector mb-5">
-                        <h2 class="text-center mb-4">Criar Novo Anúncio</h2>
-                        
-                        <div class="d-flex justify-content-center mb-4">
-                            <div class="btn-group" role="group">
-                                <input type="radio" class="btn-check" name="tipo-anuncio" id="btn-venda" autocomplete="off" checked>
-                                <label class="btn btn-outline-primary" for="btn-venda">
-                                    <i class="fas fa-tag me-2"></i>Venda
-                                </label>
-
-                                <input type="radio" class="btn-check" name="tipo-anuncio" id="btn-aluguel" autocomplete="off">
-                                <label class="btn btn-outline-primary" for="btn-aluguel">
-                                    <i class="fas fa-key me-2"></i>Aluguel
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="row g-3 justify-content-center">
-                            <div class="col-md-5">
+                        <!-- Type Selector -->
+                        <div class="text-center mb-5">
+                            <h2 class="mb-4">O que você está anunciando?</h2>
+                            <div class="d-flex justify-content-center gap-3">
                                 <input type="radio" class="btn-check" name="tipo-produto" id="btn-imovel" autocomplete="off" checked>
-                                <label for="btn-imovel" class="type-card">
-                                    <div class="card h-100">
-                                        <div class="card-body text-center">
-                                            <i class="fas fa-home fa-3x mb-3 text-primary"></i>
-                                            <h4>Imóvel</h4>
-                                            <p class="text-muted">Casas, apartamentos, terrenos, etc.</p>
-                                        </div>
-                                    </div>
+                                <label class="btn btn-outline-primary btn-lg" for="btn-imovel">
+                                    <i class="fas fa-home me-2"></i>Imóvel
                                 </label>
-                            </div>
-                            <div class="col-md-5">
+
                                 <input type="radio" class="btn-check" name="tipo-produto" id="btn-automovel" autocomplete="off">
-                                <label for="btn-automovel" class="type-card">
-                                    <div class="card h-100">
-                                        <div class="card-body text-center">
-                                            <i class="fas fa-car fa-3x mb-3 text-primary"></i>
-                                            <h4>Automóvel</h4>
-                                            <p class="text-muted">Carros, motos, caminhões, etc.</p>
-                                        </div>
-                                    </div>
+                                <label class="btn btn-outline-primary btn-lg" for="btn-automovel">
+                                    <i class="fas fa-car me-2"></i>Automóvel
                                 </label>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Common Fields -->
-                    <form id="anuncio-form" class="needs-validation" novalidate>
-                        <div class="stepper mb-5">
-                            <div class="step active">
-                                <div class="step-circle">1</div>
-                                <div class="step-label">Informações Básicas</div>
-                            </div>
-                            <div class="step">
-                                <div class="step-circle">2</div>
-                                <div class="step-label">Detalhes</div>
-                            </div>
-                            <div class="step">
-                                <div class="step-circle">3</div>
-                                <div class="step-label">Imagens</div>
-                            </div>
-                            <div class="step">
-                                <div class="step-circle">4</div>
-                                <div class="step-label">Revisão</div>
-                            </div>
-                        </div>
-
-                        <!-- Step 1: Basic Info -->
-                        <div class="form-step active" id="step-1">
-
-                            <h3 class="form-title mb-4"><i class="fas fa-info-circle me-2"></i>Informações Básicas</h3>
-                            
-                            <div class="mb-4">
-                                <label for="titulo" class="form-label">Título do Anúncio*</label>
-                                <input type="text" class="form-control form-control-lg" id="titulo" name="titulo" required 
-                                       placeholder="Ex: Apartamento 3 quartos no Centro com Varanda Gourmet">
-                                <div class="invalid-feedback">Por favor, insira um título para o anúncio.</div>
-                            </div>
-                            
-                            <div class="mb-4">
-                                <label for="descricao" class="form-label">Descrição Detalhada*</label>
-                                <textarea class="form-control" id="descricao" name="descricao" rows="5" required 
-                                          placeholder="Descreva com detalhes o que está anunciando. Inclua informações como localização exata, características especiais, condições de pagamento, etc."></textarea>
-                                <div class="invalid-feedback">Por favor, forneça uma descrição detalhada.</div>
-                                <div class="form-text">Mínimo de 200 caracteres</div>
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-md-6 mb-4">
-                                    <label for="preco" class="form-label">Valor*</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">R$</span>
-                                        <input type="number" class="form-control form-control-lg" id="preco" name="preco" min="0" step="0.01" required>
-                                    </div>
-                                    <div class="invalid-feedback">Por favor, insira um valor válido.</div>
+                        <!-- Form -->
+                        <form id="anuncio-form" class="needs-validation" novalidate>
+                            <!-- Stepper -->
+                            <div class="stepper mb-5">
+                                <div class="step active">
+                                    <div class="step-circle">1</div>
+                                    <div class="step-label">Informações Básicas</div>
                                 </div>
-                                <div class="col-md-6 mb-4">
-                                    <label class="form-label">Tipo de Negociação*</label>
-                                    <div class="form-control bg-light">
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="negociacao" id="negociacao-venda" value="venda" checked>
-                                            <label class="form-check-label" for="negociacao-venda">Venda</label>
-                                        </div>
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="negociacao" id="negociacao-aluguel" value="aluguel">
-                                            <label class="form-check-label" for="negociacao-aluguel">Aluguel</label>
-                                        </div>
-                                    </div>
+                                <div class="step">
+                                    <div class="step-circle">2</div>
+                                    <div class="step-label">Detalhes</div>
+                                </div>
+                                <div class="step">
+                                    <div class="step-circle">3</div>
+                                    <div class="step-label">Imagens</div>
+                                </div>
+                                <div class="step">
+                                    <div class="step-circle">4</div>
+                                    <div class="step-label">Revisão</div>
                                 </div>
                             </div>
-                            
-                            <div class="d-flex justify-content-between mt-5">
-                                <button type="button" class="btn btn-outline-secondary" disabled>
-                                    <i class="fas fa-arrow-left me-2"></i>Anterior
-                                </button>
-                                <button type="button" class="btn btn-primary next-step">
-                                    Próximo <i class="fas fa-arrow-right ms-2"></i>
-                                </button>
-                            </div>
-                        </div>
 
-                        <!-- Step 2: Details -->
-                        <div class="form-step" id="step-2">
-
-                            <h3 class="form-title mb-4"><i class="fas fa-clipboard-list me-2"></i>Detalhes do Anúncio</h3>
-                            
-                            <!-- Imóvel Fields -->
-                            <div id="imovel-fields">
-                                <div class="row">
-                                    <div class="col-md-6 mb-4">
-                                        <label for="tipo-imovel" class="form-label">Tipo de Imóvel*</label>
-                                        <select class="form-select" id="tipo-imovel" name="tipo-imovel" required>
-                                            <option value="" selected disabled>Selecione...</option>
-                                            <option value="casa">Casa</option>
-                                            <option value="apartamento">Apartamento</option>
-                                            <option value="flat">Flat</option>
-                                            <option value="cobertura">Cobertura</option>
-                                            <option value="terreno">Terreno</option>
-                                            <option value="comercial">Imóvel Comercial</option>
-                                            <option value="rural">Imóvel Rural</option>
-                                            <option value="outro">Outro</option>
-                                        </select>
-                                        <div class="invalid-feedback">Por favor, selecione o tipo de imóvel.</div>
-                                    </div>
-                                    <div class="col-md-6 mb-4">
-                                        <label for="bairro" class="form-label">Bairro*</label>
-                                        <input type="text" class="form-control" id="bairro" name="bairro" required 
-                                               placeholder="Ex: Centro, Jardins, etc.">
-                                        <div class="invalid-feedback">Por favor, informe o bairro.</div>
-                                    </div>
-                                </div>
+                            <!-- Step 1: Basic Info -->
+                            <div class="form-step active" id="step-1">
+                                <h3 class="mb-4"><i class="fas fa-info-circle text-primary me-2"></i>Informações Básicas</h3>
                                 
-                                <div class="row">
-                                    <div class="col-md-4 mb-4">
-                                        <label for="quartos" class="form-label">Quartos</label>
-                                        <select class="form-select" id="quartos" name="quartos">
-                                            <option value="0">0</option>
-                                            <option value="1">1</option>
-                                            <option value="2">2</option>
-                                            <option value="3">3</option>
-                                            <option value="4">4+</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4 mb-4">
-                                        <label for="banheiros" class="form-label">Banheiros</label>
-                                        <select class="form-select" id="banheiros" name="banheiros">
-                                            <option value="0">0</option>
-                                            <option value="1" selected>1</option>
-                                            <option value="2">2</option>
-                                            <option value="3">3</option>
-                                            <option value="4">4+</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4 mb-4">
-                                        <label for="garagem" class="form-label">Vagas</label>
-                                        <select class="form-select" id="garagem" name="garagem">
-                                            <option value="0">0</option>
-                                            <option value="1" selected>1</option>
-                                            <option value="2">2</option>
-                                            <option value="3">3</option>
-                                            <option value="4">4+</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                
-                                <div class="row">
-                                    <div class="col-md-4 mb-4">
-                                        <label for="area" class="form-label">Área (m²)*</label>
-                                        <input type="number" class="form-control" id="area" name="area" min="0" step="0.01" required>
-                                        <div class="invalid-feedback">Por favor, informe a área.</div>
-                                    </div>
-                                    <div class="col-md-8 mb-4">
-                                        <label class="form-label">Características</label>
-                                        <div class="d-flex flex-wrap gap-2">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="mobiliado" name="mobiliado">
-                                                <label class="form-check-label" for="mobiliado">Mobiliado</label>
-                                            </div>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="aceita-animais" name="aceita-animais">
-                                                <label class="form-check-label" for="aceita-animais">Aceita animais</label>
-                                            </div>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="condominio" name="condominio">
-                                                <label class="form-check-label" for="condominio">Condomínio</label>
-                                            </div>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="piscina" name="piscina">
-                                                <label class="form-check-label" for="piscina">Piscina</label>
-                                            </div>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="elevador" name="elevador">
-                                                <label class="form-check-label" for="elevador">Elevador</label>
-                                            </div>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="portaria" name="portaria">
-                                                <label class="form-check-label" for="portaria">Portaria 24h</label>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div class="mb-4">
+                                    <label for="titulo" class="form-label">Título do Anúncio*</label>
+                                    <input type="text" class="form-control form-control-lg" id="titulo" name="titulo" required 
+                                           placeholder="Ex: Apartamento 3 quartos no Centro">
+                                    <div class="invalid-feedback">Por favor, insira um título para o anúncio.</div>
                                 </div>
                                 
                                 <div class="mb-4">
-                                    <label for="endereco" class="form-label">Endereço Completo</label>
-                                    <input type="text" class="form-control" id="endereco" name="endereco" 
-                                           placeholder="Rua, número, complemento, cidade, estado">
-                                </div>
-                            </div>
-
-                            <!-- Automóvel Fields -->
-                            <div id="automovel-fields" style="display: none;">
-                                <div class="row">
-                                    <div class="col-md-6 mb-4">
-                                        <label for="marca" class="form-label">Marca*</label>
-                                        <select class="form-select" id="marca" name="marca" required>
-                                            <option value="" selected disabled>Selecione...</option>
-                                            <option value="chevrolet">Chevrolet</option>
-                                            <option value="volkswagen">Volkswagen</option>
-                                            <option value="fiat">Fiat</option>
-                                            <option value="hyundai">Hyundai</option>
-                                            <option value="toyota">Toyota</option>
-                                            <option value="honda">Honda</option>
-                                            <option value="ford">Ford</option>
-                                            <option value="renault">Renault</option>
-                                            <option value="outra">Outra</option>
-                                        </select>
-                                        <div class="invalid-feedback">Por favor, selecione a marca.</div>
-                                    </div>
-                                    <div class="col-md-6 mb-4">
-                                        <label for="modelo" class="form-label">Modelo*</label>
-                                        <input type="text" class="form-control" id="modelo" name="modelo" required 
-                                               placeholder="Ex: Onix, Corolla, Civic">
-                                        <div class="invalid-feedback">Por favor, informe o modelo.</div>
-                                    </div>
+                                    <label for="descricao" class="form-label">Descrição Detalhada*</label>
+                                    <textarea class="form-control" id="descricao" name="descricao" rows="5" required 
+                                              placeholder="Descreva com detalhes o que está anunciando"></textarea>
+                                    <div class="invalid-feedback">Por favor, forneça uma descrição detalhada.</div>
                                 </div>
                                 
                                 <div class="row">
-                                    <div class="col-md-4 mb-4">
-                                        <label for="ano" class="form-label">Ano*</label>
-                                        <select class="form-select" id="ano" name="ano" required>
-                                            <option value="" selected disabled>Selecione...</option>
-                                            <script>
-                                                const currentYear = new Date().getFullYear();
-                                                for(let year = currentYear; year >= 1950; year--) {
-                                                    document.write(`<option value="${year}">${year}</option>`);
-                                                }
-                                            </script>
-                                        </select>
-                                        <div class="invalid-feedback">Por favor, selecione o ano.</div>
-                                    </div>
-                                    <div class="col-md-4 mb-4">
-                                        <label for="km" class="form-label">Quilometragem</label>
+                                    <div class="col-md-6 mb-4">
+                                        <label for="preco" class="form-label">Valor*</label>
                                         <div class="input-group">
-                                            <input type="number" class="form-control" id="km" name="km" min="0">
-                                            <span class="input-group-text">km</span>
+                                            <span class="input-group-text">R$</span>
+                                            <input type="number" class="form-control" id="preco" name="preco" min="0" step="0.01" required>
+                                        </div>
+                                        <div class="invalid-feedback">Por favor, insira um valor válido.</div>
+                                    </div>
+                                    <div class="col-md-6 mb-4">
+                                        <label class="form-label">Tipo de Negociação*</label>
+                                        <div class="btn-group w-100" role="group">
+                                            <input type="radio" class="btn-check" name="negociacao" id="venda" value="venda" checked>
+                                            <label class="btn btn-outline-primary" for="venda">Venda</label>
+                                            
+                                            <input type="radio" class="btn-check" name="negociacao" id="aluguel" value="aluguel">
+                                            <label class="btn btn-outline-primary" for="aluguel">Aluguel</label>
                                         </div>
                                     </div>
-                                    <div class="col-md-4 mb-4">
-                                        <label for="cor" class="form-label">Cor</label>
-                                        <input type="text" class="form-control" id="cor" name="cor">
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mt-4">
+                                    <button type="button" class="btn btn-outline-secondary" disabled>
+                                        <i class="fas fa-arrow-left me-2"></i>Anterior
+                                    </button>
+                                    <button type="button" class="btn btn-primary next-step">
+                                        Próximo <i class="fas fa-arrow-right ms-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Step 2: Details -->
+                            <div class="form-step" id="step-2">
+                                <h3 class="mb-4"><i class="fas fa-clipboard-list text-primary me-2"></i>Detalhes do Anúncio</h3>
+                                
+                                <!-- Imóvel Fields -->
+                                <div id="imovel-fields">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-4">
+                                            <label for="tipo-imovel" class="form-label">Tipo de Imóvel*</label>
+                                            <select class="form-select" id="tipo-imovel" name="tipo-imovel" required>
+                                                <option value="" selected disabled>Selecione...</option>
+                                                <option value="casa">Casa</option>
+                                                <option value="apartamento">Apartamento</option>
+                                                <option value="terreno">Terreno</option>
+                                                <option value="comercial">Comercial</option>
+                                                <option value="rural">Rural</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-4">
+                                            <label for="bairro" class="form-label">Bairro*</label>
+                                            <input type="text" class="form-control" id="bairro" name="bairro" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-3 mb-4">
+                                            <label for="quartos" class="form-label">Quartos</label>
+                                            <input type="number" class="form-control" id="quartos" name="quartos" min="0">
+                                        </div>
+                                        <div class="col-md-3 mb-4">
+                                            <label for="banheiros" class="form-label">Banheiros</label>
+                                            <input type="number" class="form-control" id="banheiros" name="banheiros" min="0">
+                                        </div>
+                                        <div class="col-md-3 mb-4">
+                                            <label for="garagem" class="form-label">Vagas</label>
+                                            <input type="number" class="form-control" id="garagem" name="garagem" min="0">
+                                        </div>
+                                        <div class="col-md-3 mb-4">
+                                            <label for="area" class="form-label">Área (m²)*</label>
+                                            <input type="number" class="form-control" id="area" name="area" min="0" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label class="form-label">Características</label>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="mobiliado" name="mobiliado">
+                                                    <label class="form-check-label" for="mobiliado">Mobiliado</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="aceita-animais" name="aceita-animais">
+                                                    <label class="form-check-label" for="aceita-animais">Aceita animais</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="condominio" name="condominio">
+                                                    <label class="form-check-label" for="condominio">Condomínio</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="piscina" name="piscina">
+                                                    <label class="form-check-label" for="piscina">Piscina</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="elevador" name="elevador">
+                                                    <label class="form-check-label" for="elevador">Elevador</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="portaria" name="portaria">
+                                                    <label class="form-check-label" for="portaria">Portaria 24h</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label for="endereco" class="form-label">Endereço Completo</label>
+                                        <input type="text" class="form-control" id="endereco" name="endereco">
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label for="proximo-a" class="form-label">Próximo a</label>
+                                        <input type="text" class="form-control" id="proximo-a" name="proximo-a" 
+                                               placeholder="Ex: Shopping, metrô, escola">
                                     </div>
                                 </div>
 
-                                <div class="row">
-                                    <div class="col-md-6 mb-4">
-                                        <label for="combustivel" class="form-label">Combustível</label>
-                                        <select class="form-select" id="combustivel" name="combustivel">
-                                            <option value="" selected>Selecione...</option>
-                                            <option value="gasolina">Gasolina</option>
-                                            <option value="etanol">Etanol</option>
-                                            <option value="flex">Flex</option>
-                                            <option value="diesel">Diesel</option>
-                                            <option value="eletrico">Elétrico</option>
-                                            <option value="hibrido">Híbrido</option>
-                                        </select>
+                                <!-- Automóvel Fields -->
+                                <div id="automovel-fields" style="display: none;">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-4">
+                                            <label for="marca" class="form-label">Marca*</label>
+                                            <select class="form-select" id="marca" name="marca" required>
+                                                <option value="" selected disabled>Selecione...</option>
+                                                <option value="chevrolet">Chevrolet</option>
+                                                <option value="volkswagen">Volkswagen</option>
+                                                <option value="fiat">Fiat</option>
+                                                <option value="toyota">Toyota</option>
+                                                <option value="honda">Honda</option>
+                                                <option value="outra">Outra</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-4">
+                                            <label for="modelo" class="form-label">Modelo*</label>
+                                            <input type="text" class="form-control" id="modelo" name="modelo" required>
+                                        </div>
                                     </div>
-                                    <div class="col-md-6 mb-4">
-                                        <label for="cambio" class="form-label">Câmbio</label>
-                                        <select class="form-select" id="cambio" name="cambio">
-                                            <option value="" selected>Selecione...</option>
-                                            <option value="manual">Manual</option>
-                                            <option value="automatico">Automático</option>
-                                            <option value="semi-automatico">Semi-automático</option>
-                                        </select>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-4 mb-4">
+                                            <label for="ano" class="form-label">Ano*</label>
+                                            <select class="form-select" id="ano" name="ano" required>
+                                                <option value="" selected disabled>Selecione...</option>
+                                                <script>
+                                                    const currentYear = new Date().getFullYear();
+                                                    for(let year = currentYear; year >= 1950; year--) {
+                                                        document.write(`<option value="${year}">${year}</option>`);
+                                                    }
+                                                </script>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4 mb-4">
+                                            <label for="km" class="form-label">Quilometragem</label>
+                                            <input type="number" class="form-control" id="km" name="km" min="0">
+                                        </div>
+                                        <div class="col-md-4 mb-4">
+                                            <label for="cor" class="form-label">Cor</label>
+                                            <input type="text" class="form-control" id="cor" name="cor">
+                                        </div>
                                     </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-4">
+                                            <label for="combustivel" class="form-label">Combustível</label>
+                                            <select class="form-select" id="combustivel" name="combustivel">
+                                                <option value="" selected disabled>Selecione...</option>
+                                                <option value="gasolina">Gasolina</option>
+                                                <option value="etanol">Etanol</option>
+                                                <option value="flex">Flex</option>
+                                                <option value="diesel">Diesel</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-4">
+                                            <label for="cambio" class="form-label">Câmbio</label>
+                                            <select class="form-select" id="cambio" name="cambio">
+                                                <option value="" selected disabled>Selecione...</option>
+                                                <option value="manual">Manual</option>
+                                                <option value="automatico">Automático</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label class="form-label">Opcionais</label>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="ar-condicionado" name="ar-condicionado">
+                                                    <label class="form-check-label" for="ar-condicionado">Ar condicionado</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="direcao-hidraulica" name="direcao-hidraulica">
+                                                    <label class="form-check-label" for="direcao-hidraulica">Direção hidráulica</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="vidro-eletrico" name="vidro-eletrico">
+                                                    <label class="form-check-label" for="vidro-eletrico">Vidros elétricos</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="trava-eletrica" name="trava-eletrica">
+                                                    <label class="form-check-label" for="trava-eletrica">Travas elétricas</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="airbag" name="airbag">
+                                                    <label class="form-check-label" for="airbag">Airbag</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="abs" name="abs">
+                                                    <label class="form-check-label" for="abs">ABS</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mt-4">
+                                    <button type="button" class="btn btn-outline-secondary prev-step">
+                                        <i class="fas fa-arrow-left me-2"></i>Anterior
+                                    </button>
+                                    <button type="button" class="btn btn-primary next-step">
+                                        Próximo <i class="fas fa-arrow-right ms-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Step 3: Images -->
+                            <div class="form-step" id="step-3">
+                                <h3 class="mb-4"><i class="fas fa-images text-primary me-2"></i>Imagens do Anúncio</h3>
+                                
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>Adicione fotos de qualidade para atrair mais clientes.
                                 </div>
                                 
                                 <div class="mb-4">
-                                    <label class="form-label">Características</label>
-                                    <div class="d-flex flex-wrap gap-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="direcao-hidraulica" name="direcao-hidraulica">
-                                            <label class="form-check-label" for="direcao-hidraulica">Direção hidráulica</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="ar-condicionado" name="ar-condicionado">
-                                            <label class="form-check-label" for="ar-condicionado">Ar condicionado</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="vidro-eletrico" name="vidro-eletrico">
-                                            <label class="form-check-label" for="vidro-eletrico">Vidros elétricos</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="trava-eletrica" name="trava-eletrica">
-                                            <label class="form-check-label" for="trava-eletrica">Travas elétricas</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="airbag" name="airbag">
-                                            <label class="form-check-label" for="airbag">Airbag</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="abs" name="abs">
-                                            <label class="form-check-label" for="abs">ABS</label>
-                                        </div>
-                                    </div>
+                                    <label for="imagens" class="form-label">Selecione as imagens*</label>
+                                    <input type="file" class="form-control" id="imagens" name="imagens" multiple accept="image/*" required>
+                                    <div class="invalid-feedback">Por favor, selecione pelo menos uma imagem.</div>
                                 </div>
-                            </div>
-                            
-                            <div class="d-flex justify-content-between mt-5">
-                                <button type="button" class="btn btn-outline-secondary prev-step">
-                                    <i class="fas fa-arrow-left me-2"></i>Anterior
-                                </button>
-                                <button type="button" class="btn btn-primary next-step">
-                                    Próximo <i class="fas fa-arrow-right ms-2"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Step 3: Images -->
-                        <div class="form-step" id="step-3">
-                            <h3 class="form-title mb-4"><i class="fas fa-images me-2"></i>Imagens do Anúncio</h3>
-                            
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle me-2"></i>Adicione fotos de qualidade para atrair mais clientes. A primeira imagem será a principal.
-                            </div>
-                            
-                            <div class="mb-4">
-                                <label for="imagens" class="form-label">Selecione as imagens*</label>
-                                <input type="file" class="form-control" id="imagens" name="imagens" multiple accept="image/*" required>
-                                <div class="invalid-feedback">Por favor, selecione pelo menos uma imagem.</div>
-                                <div class="form-text">Formatos aceitos: JPG, PNG. Tamanho máximo: 5MB por imagem.</div>
-                            </div>
-                            
-                            <div class="mb-4">
-                                <label class="form-label">Pré-visualização das Imagens</label>
-                                <div class="image-preview-container" id="image-preview">
-                                    <div class="empty-state">
-                                        <i class="fas fa-images fa-3x mb-3 text-muted"></i>
-                                        <p class="text-muted">Nenhuma imagem selecionada</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="d-flex justify-content-between mt-5">
-                                <button type="button" class="btn btn-outline-secondary prev-step">
-                                    <i class="fas fa-arrow-left me-2"></i>Anterior
-                                </button>
-                                <button type="button" class="btn btn-primary next-step">
-                                    Próximo <i class="fas fa-arrow-right ms-2"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Step 4: Review -->
-                        <div class="form-step" id="step-4">
-                            <h3 class="form-title mb-4"><i class="fas fa-check-circle me-2"></i>Revisão do Anúncio</h3>
-                            
-                            <div class="alert alert-warning">
-                                <i class="fas fa-exclamation-triangle me-2"></i>Revise cuidadosamente todas as informações antes de publicar.
-                            </div>
-                            
-                            <div class="review-section mb-5">
-                                <h4 class="review-title">Informações Básicas</h4>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <p><strong>Título:</strong> <span id="review-titulo"></span></p>
-                                        <p><strong>Tipo:</strong> <span id="review-tipo"></span></p>
-                                        <p><strong>Negociação:</strong> <span id="review-negociacao"></span></p>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <p><strong>Valor:</strong> R$ <span id="review-preco"></span></p>
-                                        <p><strong>Descrição:</strong> <span id="review-descricao"></span></p>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">Pré-visualização</label>
+                                    <div class="image-preview" id="image-preview">
+                                        <div class="empty-state">
+                                            <i class="fas fa-images fa-3x mb-3 text-muted"></i>
+                                            <p class="text-muted">Nenhuma imagem selecionada</p>
+                                        </div>
                                     </div>
                                 </div>
                                 
-                                <div id="review-imovel-details">
-                                    <h4 class="review-title mt-4">Detalhes do Imóvel</h4>
+                                <div class="d-flex justify-content-between mt-4">
+                                    <button type="button" class="btn btn-outline-secondary prev-step">
+                                        <i class="fas fa-arrow-left me-2"></i>Anterior
+                                    </button>
+                                    <button type="button" class="btn btn-primary next-step">
+                                        Próximo <i class="fas fa-arrow-right ms-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Step 4: Review -->
+                            <div class="form-step" id="step-4">
+                                <h3 class="mb-4"><i class="fas fa-check-circle text-primary me-2"></i>Revisão do Anúncio</h3>
+                                
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Revise cuidadosamente todas as informações antes de publicar.
+                                </div>
+                                
+                                <div class="review-section mb-4">
+                                    <h4 class="review-title">Informações Básicas</h4>
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <p><strong>Bairro:</strong> <span id="review-bairro"></span></p>
-                                            <p><strong>Quartos:</strong> <span id="review-quartos"></span></p>
-                                            <p><strong>Área:</strong> <span id="review-area"></span> m²</p>
+                                            <p><strong>Título:</strong> <span id="review-titulo"></span></p>
+                                            <p><strong>Valor:</strong> R$ <span id="review-preco"></span></p>
                                         </div>
                                         <div class="col-md-6">
-                                            <p><strong>Banheiros:</strong> <span id="review-banheiros"></span></p>
-                                            <p><strong>Vagas:</strong> <span id="review-garagem"></span></p>
-                                            <p><strong>Características:</strong> <span id="review-caracteristicas"></span></p>
+                                            <p><strong>Tipo:</strong> <span id="review-tipo"></span></p>
+                                            <p><strong>Negociação:</strong> <span id="review-negociacao"></span></p>
                                         </div>
                                     </div>
-                                </div>
-                                
-                                <div id="review-automovel-details" class="d-none">
-                                    <h4 class="review-title mt-4">Detalhes do Automóvel</h4>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <p><strong>Marca/Modelo:</strong> <span id="review-marca-modelo"></span></p>
-                                            <p><strong>Ano:</strong> <span id="review-ano"></span></p>
-                                            <p><strong>Cor:</strong> <span id="review-cor"></span></p>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <p><strong>KM:</strong> <span id="review-km"></span></p>
-                                            <p><strong>Combustível:</strong> <span id="review-combustivel"></span></p>
-                                            <p><strong>Câmbio:</strong> <span id="review-cambio"></span></p>
+                                    <p><strong>Descrição:</strong> <span id="review-descricao"></span></p>
+                                    
+                                    <div id="review-imovel-details">
+                                        <h4 class="review-title mt-4">Detalhes do Imóvel</h4>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <p><strong>Bairro:</strong> <span id="review-bairro"></span></p>
+                                                <p><strong>Quartos:</strong> <span id="review-quartos"></span></p>
+                                                <p><strong>Área:</strong> <span id="review-area"></span> m²</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p><strong>Banheiros:</strong> <span id="review-banheiros"></span></p>
+                                                <p><strong>Vagas:</strong> <span id="review-garagem"></span></p>
+                                                <p><strong>Características:</strong> <span id="review-caracteristicas"></span></p>
+                                            </div>
                                         </div>
                                     </div>
+                                    
+                                    <div id="review-automovel-details" style="display: none;">
+                                        <h4 class="review-title mt-4">Detalhes do Automóvel</h4>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <p><strong>Marca/Modelo:</strong> <span id="review-marca-modelo"></span></p>
+                                                <p><strong>Ano:</strong> <span id="review-ano"></span></p>
+                                                <p><strong>Cor:</strong> <span id="review-cor"></span></p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p><strong>KM:</strong> <span id="review-km"></span></p>
+                                                <p><strong>Combustível:</strong> <span id="review-combustivel"></span></p>
+                                                <p><strong>Câmbio:</strong> <span id="review-cambio"></span></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <h4 class="review-title mt-4">Imagens</h4>
+                                    <div class="review-images" id="review-images"></div>
                                 </div>
                                 
-                                <h4 class="review-title mt-4">Imagens</h4>
-                                <div class="review-images" id="review-images"></div>
+                                <div class="form-check mb-4">
+                                    <input class="form-check-input" type="checkbox" id="termos" required>
+                                    <label class="form-check-label" for="termos">
+                                        Concordo com os <a href="#" data-bs-toggle="modal" data-bs-target="#termosModal">Termos de Uso</a>
+                                    </label>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mt-4">
+                                    <button type="button" class="btn btn-outline-secondary prev-step">
+                                        <i class="fas fa-arrow-left me-2"></i>Anterior
+                                    </button>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-paper-plane me-2"></i>Publicar Anúncio
+                                    </button>
+                                </div>
                             </div>
-                            
-                            <div class="form-check mb-4">
-                                <input class="form-check-input" type="checkbox" id="termos" required>
-                                <label class="form-check-label" for="termos">
-                                    Concordo com os <a href="#" data-bs-toggle="modal" data-bs-target="#termosModal">Termos de Uso</a> e 
-                                    <a href="#" data-bs-toggle="modal" data-bs-target="#politicaModal">Política de Privacidade</a>*
-                                </label>
-                                <div class="invalid-feedback">Você deve concordar com os termos antes de publicar.</div>
-                            </div>
-                            
-                            <div class="d-flex justify-content-between mt-4">
-                                <button type="button" class="btn btn-outline-secondary prev-step">
-                                    <i class="fas fa-arrow-left me-2"></i>Anterior
-                                </button>
-                                <button type="submit" class="btn btn-success">
-                                    <i class="fas fa-paper-plane me-2"></i>Publicar Anúncio
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -523,27 +457,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Conteúdo dos termos -->
-                    <p>Texto dos termos de uso aqui...</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Política Modal -->
-    <div class="modal fade" id="politicaModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Política de Privacidade</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Conteúdo da política -->
-                    <p>Texto da política de privacidade aqui...</p>
+                    <p>Conteúdo dos termos de uso aqui...</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
@@ -554,97 +468,44 @@
 
     <!-- Footer -->
     <footer class="footer mt-5 py-4 bg-light">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <h5>Corretor Certo</h5>
-                    <p>A plataforma profissional para compra, venda e aluguel de imóveis e veículos.</p>
-                </div>
-                <div class="col-md-3">
-                    <h5>Links</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="index.html">Home</a></li>
-                        <li><a href="anunciar.html">Anunciar</a></li>
-                        <li><a href="contato.html">Contato</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-3">
-                    <h5>Contato</h5>
-                    <ul class="list-unstyled">
-                        <li><i class="fas fa-phone me-2"></i> (11) 1234-5678</li>
-                        <li><i class="fas fa-envelope me-2"></i> contato@corretorcerto.com</li>
-                    </ul>
-                </div>
-            </div>
-            <hr>
-            <div class="text-center">
-                <p class="mb-0">&copy; 2023 Corretor Certo. Todos os direitos reservados.</p>
-            </div>
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2023 ConnectFamília. Todos os direitos reservados.</p>
         </div>
     </footer>
 
-    <!-- Bootstrap JS Bundle with Popper -->
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Seu JavaScript -->
+    <!-- JavaScript -->
     <script src="anuncio.js" type="module"></script>
     
-    <!-- Script para alternância entre imóvel e automóvel -->
+    <!-- Script para alternar entre imóvel e automóvel -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Elementos do DOM
             const btnImovel = document.getElementById('btn-imovel');
             const btnAutomovel = document.getElementById('btn-automovel');
             const imovelFields = document.getElementById('imovel-fields');
             const automovelFields = document.getElementById('automovel-fields');
             
-            // Função para alternar entre formulários
             function toggleFormularios(isImovel) {
                 if (isImovel) {
                     imovelFields.style.display = 'block';
                     automovelFields.style.display = 'none';
-                    
-                    // Atualiza a classe active nos botões
-                    btnImovel.parentElement.classList.add('active');
-                    btnAutomovel.parentElement.classList.remove('active');
-                    
-                    // Configura campos obrigatórios
-                    document.getElementById('tipo-imovel').required = true;
-                    document.getElementById('bairro').required = true;
-                    document.getElementById('marca').required = false;
-                    document.getElementById('modelo').required = false;
-                    document.getElementById('ano').required = false;
                 } else {
                     imovelFields.style.display = 'none';
                     automovelFields.style.display = 'block';
-                    
-                    // Atualiza a classe active nos botões
-                    btnAutomovel.parentElement.classList.add('active');
-                    btnImovel.parentElement.classList.remove('active');
-                    
-                    // Configura campos obrigatórios
-                    document.getElementById('tipo-imovel').required = false;
-                    document.getElementById('bairro').required = false;
-                    document.getElementById('marca').required = true;
-                    document.getElementById('modelo').required = true;
-                    document.getElementById('ano').required = true;
                 }
             }
             
-            // Event listeners para os botões
             btnImovel.addEventListener('change', function() {
-                if (this.checked) {
-                    toggleFormularios(true);
-                }
+                if (this.checked) toggleFormularios(true);
             });
             
             btnAutomovel.addEventListener('change', function() {
-                if (this.checked) {
-                    toggleFormularios(false);
-                }
+                if (this.checked) toggleFormularios(false);
             });
             
-            // Inicia com imóvel ativo
+            // Iniciar com imóvel selecionado
             toggleFormularios(true);
         });
     </script>
