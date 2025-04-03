@@ -66,42 +66,64 @@ function showStep(stepIndex) {
 }
 
 function nextStep() {
-    console.log('Tentando avançar para o próximo passo... Passo atual:', currentStep);
-    
-    if (currentStep >= steps.length - 1) {
-        console.log('Já está no último passo');
+    // Validação do passo atual
+    if (!validateStep(currentStep)) {
+        console.error('Validação falhou no passo', currentStep);
         return;
     }
-
-    // Validação específica para cada passo
-    let isValid = true;
-    const currentStepElement = steps[currentStep];
     
-    if (currentStep === 0) {
-        // Validação do passo 1
-        const titulo = document.getElementById('titulo');
-        const descricao = document.getElementById('descricao');
-        const preco = document.getElementById('preco');
-        
-        if (!titulo.value.trim()) {
-            titulo.classList.add('is-invalid');
-            isValid = false;
+    // Esconde o passo atual
+    steps[currentStep].classList.remove('active');
+    
+    // Avança para o próximo passo
+    currentStep++;
+    
+    // Mostra o novo passo
+    steps[currentStep].classList.add('active');
+    
+    // Atualiza o stepper visual
+    updateStepper();
+    
+    // Scroll para o topo
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+
+// Event listeners garantidos
+document.addEventListener('DOMContentLoaded', function() {
+    // Delegation para os botões
+    document.body.addEventListener('click', function(e) {
+        // Verifica se o clique foi em um botão próximo
+        if (e.target.closest('.next-step')) {
+            e.preventDefault();
+            console.log('Próximo clicado via delegation');
+            nextStep();
         }
         
-        if (!descricao.value.trim() || descricao.value.length < 20) {
-            descricao.classList.add('is-invalid');
-            isValid = false;
+        // Verifica se o clique foi em um botão anterior
+        if (e.target.closest('.prev-step')) {
+            e.preventDefault();
+            console.log('Anterior clicado via delegation');
+            prevStep();
         }
-        
-        if (!preco.value || isNaN(preco.value)) {
-            preco.classList.add('is-invalid');
-            isValid = false;
+    });
+    
+    // Inicialização
+    showStep(0);
+});
+function updateStepper() {
+    document.querySelectorAll('.step').forEach((step, index) => {
+        if (index < currentStep) {
+            step.classList.add('completed');
+            step.classList.add('active');
+        } else if (index === currentStep) {
+            step.classList.add('active');
+            step.classList.remove('completed');
+        } else {
+            step.classList.remove('active', 'completed');
         }
-        
-    } else if (currentStep === 1) {
-        // Validação do passo 2
-        isValid = validateStep2();
-    }
+    });
+}
     
     if (isValid) {
         console.log('Validação OK, avançando para o passo', currentStep + 1);
@@ -457,10 +479,19 @@ document.querySelectorAll('.prev-step').forEach(button => {
 
 // Debug: Verifique se os cliques estão sendo registrados
 document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('next-step') {
-        console.log('Botão próximo clicado');
+    // Verifica clique no "Próximo"
+    if (e.target.classList.contains('next-step')) {
+        console.log('Botão próximo clicado - evento capturado');
+        nextStep(); // Chama a função para avançar
     }
+    
+    // Verifica clique no "Anterior"
     if (e.target.classList.contains('prev-step')) {
-        console.log('Botão anterior clicado');
+        console.log('Botão anterior clicado - evento capturado');
+        prevStep(); // Chama a função para voltar
     }
+    
+    // Debug adicional - mostra informações do elemento clicado
+    console.log('Elemento clicado:', e.target);
+    console.log('Classes do elemento:', e.target.classList);
 });
