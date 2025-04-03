@@ -80,6 +80,63 @@ const formAutomoveis = document.getElementById("form-automoveis");
 
 
 
+document.getElementById("perfil-tab").addEventListener("shown.bs.tab", function() {
+    const user = auth.currentUser;
+    if (user) {
+        loadProfileData(user);
+    } else {
+        console.log("Usuário não autenticado.");
+        window.location.href = "login.html";
+    }
+});
+
+async function carregarInformacoesUsuario(user) {
+    try {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+
+            // Exibe as informações básicas
+            cardNome.textContent = userData.nome || "Não informado";
+            cardTelefone.textContent = userData.telefone || "Não informado";
+            cardEmail.textContent = userData.email || "Não informado";
+            cardCpfCnpj.textContent = userData.cpfCnpj || "Não informado";
+            cardTipoUsuario.textContent = userData.tipoUsuario === "comum" ? "Usuário Comum" : "Usuário Comercial";
+
+            // Exibe as informações específicas do tipo de usuário
+            if (userData.tipoUsuario === "comum") {
+                cardComum.classList.remove("hidden");
+                cardTipoInteresse.textContent = userData.comum?.tipoInteresse || "Não informado";
+
+                if (userData.comum?.tipoInteresse === "imoveis") {
+                    cardImoveis.classList.remove("hidden");
+                    cardLocalizacaoImovel.textContent = userData.comum.imoveis?.localizacao || "Não informado";
+                    cardFaixaPrecoImovel.textContent = userData.comum.imoveis?.faixaPreco || "Não informado";
+                } else if (userData.comum?.tipoInteresse === "automoveis") {
+                    cardAutomoveis.classList.remove("hidden");
+                    cardMarcaAutomovel.textContent = userData.comum.automoveis?.marca || "Não informado";
+                    cardFaixaPrecoAutomovel.textContent = userData.comum.automoveis?.faixaPreco || "Não informado";
+                }
+            } else if (userData.tipoUsuario === "comercial") {
+                cardComercial.classList.remove("hidden");
+                cardCreci.textContent = userData.comercial?.creci || "Não informado";
+                cardCnpj.textContent = userData.comercial?.cnpj || "Não informado";
+                cardAreaAtuacao.textContent = userData.comercial?.areaAtuacao || "Não informado";
+                cardDescricaoEmpresa.textContent = userData.comercial?.descricaoEmpresa || "Não informado";
+            }
+
+            // Exibe o card
+            userCard.classList.remove("hidden");
+        } else {
+            console.log("Nenhum documento de usuário encontrado");
+        }
+    } catch (error) {
+        console.error("Erro ao carregar informações do usuário:", error);
+        alert("Erro ao carregar informações do perfil. Tente novamente.");
+    }
+}
 
 async function carregarMeusAnuncios() {
     try {
@@ -91,154 +148,193 @@ async function carregarMeusAnuncios() {
             return;
         }
 
-        // Elementos
-        const elements = {
-            todos: document.getElementById("count-todos"),
-            ativos: document.getElementById("count-ativos"),
-            inativos: document.getElementById("count-inativos"),
-            destaques: document.getElementById("count-destaques"),
-            container: document.getElementById("anuncios-container"),
-            noAnuncios: document.getElementById("no-anuncios"),
-            buscaInput: document.getElementById("busca-anuncios"),
-            filterButtons: document.querySelectorAll('[data-filter-status]'),
-            typeButtons: document.querySelectorAll('[data-filter]')
+        // 1. VERIFICAÇÃO DOS ELEMENTOS
+        const getElement = (id) => {
+            const el = document.getElementById(id);
+            if (!el) console.error(`Elemento ${id} não encontrado`);
+            return el;
         };
 
-        // Busca dos anúncios
+        const elements = {
+            todos: getElement("count-todos"),
+            ativos: getElement("count-ativos"),
+            inativos: getElement("count-inativos"),
+            destaques: getElement("count-destaques"),
+            containerTodos: getElement("anuncios-container"),
+            containerAtivos: getElement("anuncios-ativos"),
+            containerInativos: getElement("anuncios-inativos"),
+            containerDestaques: getElement("anuncios-destaques"),
+            noAnuncios: getElement("no-anuncios")
+        };
+
+        // 2. BUSCA DOS ANÚNCIOS
         console.log("[1] Buscando anúncios no Firestore...");
         const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
             getDocs(query(collection(db, "imoveis"), where("userId", "==", user.uid))),
             getDocs(query(collection(db, "automoveis"), where("userId", "==", user.uid)))
         ]);
 
-        // Processamento dos anúncios
-        let todosAnuncios = [];
-        const counters = { todos: 0, ativos: 0, inativos: 0, destaques: 0 };
+        console.log(`[2] Total de documentos: ${imoveisSnapshot.size + automoveisSnapshot.size}`);
 
+        // 3. PROCESSAMENTO DOS ANÚNCIOS
+        const todosAnuncios = [];
+        const counters = {
+            todos: 0,
+            ativos: 0,
+            inativos: 0,
+            destaques: 0
+        };
+
+        // Função para processar cada anúncio
         const processarAnuncio = (doc, tipo) => {
             const data = doc.data();
             const anuncio = {
                 ...data,
                 id: doc.id,
-                tipo: tipo.toLowerCase(),
-                status: (data.status || 'ativo').toLowerCase(),
-                destaque: data.destaque === true
+                tipo: tipo
             };
+            
+            // Verificação do status
+            const status = (typeof data.status === 'string') ? data.status.toLowerCase() : 'ativo';
+            anuncio.status = status; // Garante que o status está padronizado
             
             // Atualiza contadores
             counters.todos++;
-            if (anuncio.status === 'ativo') counters.ativos++;
-            if (anuncio.status === 'inativo') counters.inativos++;
-            if (anuncio.destaque) counters.destaques++;
+            if (status === 'ativo') counters.ativos++;
+            if (status === 'inativo') counters.inativos++;
+            if (data.destaque === true) counters.destaques++;
             
             todosAnuncios.push(anuncio);
+            console.log(`[3] Processado: ${doc.id}`, {status, destaque: data.destaque});
         };
 
-        imoveisSnapshot.forEach(doc => processarAnuncio(doc, "imovel"));
-        automoveisSnapshot.forEach(doc => processarAnuncio(doc, "automovel"));
+        // Processa todos os documentos
+        imoveisSnapshot.forEach(doc => processarAnuncio(doc, "Imóvel"));
+        automoveisSnapshot.forEach(doc => processarAnuncio(doc, "Automóvel"));
 
-        // Atualiza contadores na UI
-        if (elements.todos) elements.todos.textContent = counters.todos;
-        if (elements.ativos) elements.ativos.textContent = counters.ativos;
-        if (elements.inativos) elements.inativos.textContent = counters.inativos;
-        if (elements.destaques) elements.destaques.textContent = counters.destaques;
+        console.log("[4] Contagens calculadas:", counters);
+        console.log("[5] Total de anúncios processados:", todosAnuncios.length);
 
-        function renderizarAnuncios(filtroStatus = 'todos', filtroTipo = 'todos', termoBusca = '') {
-    const anunciosFiltrados = todosAnuncios.filter(anuncio => {
-        // Padroniza o status para minúsculas
-        const statusAnuncio = anuncio.status.toLowerCase();
-        
-        // Filtro por status
-        const statusMatch = 
-            filtroStatus === 'todos' || 
-            (filtroStatus === 'ativos' && statusAnuncio === 'ativo') ||
-            (filtroStatus === 'inativos' && statusAnuncio === 'inativo') ||
-            (filtroStatus === 'destaques' && anuncio.destaque);
-        
-        // Filtro por tipo
-        const tipoMatch = 
-            filtroTipo === 'todos' || 
-            anuncio.tipo === filtroTipo;
-        
-        // Filtro por busca
-        const buscaMatch = 
-            termoBusca === '' ||
-            (anuncio.titulo && anuncio.titulo.toLowerCase().includes(termoBusca)) ||
-            (anuncio.descricao && anuncio.descricao.toLowerCase().includes(termoBusca));
-        
-        return statusMatch && tipoMatch && buscaMatch;
-    });
-
-    // Renderiza os anúncios filtrados
-    if (elements.container) {
-        elements.container.innerHTML = anunciosFiltrados
-            .map(anuncio => criarCardAnuncio(anuncio, anuncio.tipo, anuncio.id))
-            .join('');
-    }
-
-    // Mostra mensagem se não houver anúncios
-    if (elements.noAnuncios) {
-        elements.noAnuncios.classList.toggle("d-none", anunciosFiltrados.length > 0);
-    }
-}
-
-
-     console.log("Todos anúncios carregados:", todosAnuncios.map(a => ({
-    id: a.id,
-    tipo: a.tipo,
-    status: a.status,
-    destaque: a.destaque,
-    titulo: a.titulo
-})));
-        // Configuração dos filtros
-        function configurarFiltros() {
-            // Filtro por status (ativos/inativos/destaques)
-            elements.filterButtons?.forEach(button => {
-                button.addEventListener('click', function() {
-                    const status = this.getAttribute('data-filter-status');
-                    renderizarAnuncios(status, 'todos', elements.buscaInput?.value.toLowerCase() || '');
-                    
-                    // Atualiza UI dos botões
-                    elements.filterButtons?.forEach(btn => 
-                        btn.classList.toggle('active', btn === this)
-                    );
-                });
+        // 4. ATUALIZAÇÃO DOS CONTADORES
+        const updateCounters = () => {
+            if (elements.todos) elements.todos.textContent = counters.todos;
+            if (elements.ativos) elements.ativos.textContent = counters.ativos;
+            if (elements.inativos) elements.inativos.textContent = counters.inativos;
+            if (elements.destaques) elements.destaques.textContent = counters.destaques;
+            
+            // Força redraw para navegadores problemáticos
+            requestAnimationFrame(() => {
+                if (elements.todos) {
+                    elements.todos.style.display = 'none';
+                    elements.todos.offsetHeight;
+                    elements.todos.style.display = '';
+                }
             });
+        };
 
-            // Filtro por tipo (imóvel/automóvel)
-            elements.typeButtons?.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const tipo = this.getAttribute('data-filter');
-                    renderizarAnuncios('todos', tipo, elements.buscaInput?.value.toLowerCase() || '');
-                    
-                    // Atualiza UI dos botões
-                    elements.typeButtons?.forEach(btn => 
-                        btn.classList.toggle('active', btn === this)
-                    );
-                });
+        updateCounters();
+
+        // 5. EXIBIÇÃO DOS ANÚNCIOS
+        const exibirAnuncios = (anuncios, container) => {
+            if (!container) return;
+            
+            container.innerHTML = ""; // Limpa o container
+            
+            if (anuncios.length === 0) {
+                if (container === elements.containerTodos && elements.noAnuncios) {
+                    elements.noAnuncios.classList.remove("d-none");
+                }
+                return;
+            }
+            
+            if (elements.noAnuncios) {
+                elements.noAnuncios.classList.add("d-none");
+            }
+            
+            anuncios.forEach(anuncio => {
+                const cardHTML = criarCardAnuncio(anuncio, anuncio.tipo, anuncio.id);
+                container.innerHTML += cardHTML;
             });
+        };
 
-            // Filtro por busca
-            elements.buscaInput?.addEventListener('input', function() {
-                renderizarAnuncios('todos', 'todos', this.value.toLowerCase());
+        // Exibe todos os anúncios inicialmente
+        exibirAnuncios(todosAnuncios, elements.containerTodos);
+        
+        // Prepara os anúncios filtrados
+        const anunciosAtivos = todosAnuncios.filter(a => a.status === 'ativo');
+        const anunciosInativos = todosAnuncios.filter(a => a.status === 'inativo');
+        const anunciosDestaques = todosAnuncios.filter(a => a.destaque === true);
+        
+        // Exibe os anúncios filtrados em seus containers
+        exibirAnuncios(anunciosAtivos, elements.containerAtivos);
+        exibirAnuncios(anunciosInativos, elements.containerInativos);
+        exibirAnuncios(anunciosDestaques, elements.containerDestaques);
+
+        // 6. CONFIGURAÇÃO DOS EVENTOS DE FILTRO
+        const configurarFiltros = () => {
+            const tabs = {
+                "todos-tab": "todos",
+                "ativos-tab": "ativos",
+                "inativos-tab": "inativos",
+                "destaques-tab": "destaques"
+            };
+            
+            // Mostra a tab ativa quando clicada
+            Object.entries(tabs).forEach(([tabId, tipo]) => {
+                const tab = document.getElementById(tabId);
+                if (tab) {
+                    tab.addEventListener("click", () => {
+                        const containerMap = {
+                            "todos": elements.containerTodos,
+                            "ativos": elements.containerAtivos,
+                            "inativos": elements.containerInativos,
+                            "destaques": elements.containerDestaques
+                        };
+                        
+                        const container = containerMap[tipo];
+                        if (container) {
+                            // Esconde todos os containers
+                            Object.values(containerMap).forEach(c => {
+                                if (c) c.style.display = 'none';
+                            });
+                            
+                            // Mostra o container selecionado
+                            container.style.display = '';
+                        }
+                    });
+                }
             });
-        }
+        };
 
-        // Renderiza todos os anúncios inicialmente
-        renderizarAnuncios();
         configurarFiltros();
 
-        console.log("[FIM] Anúncios carregados com sucesso");
+        // 7. VERIFICAÇÃO FINAL
+        setTimeout(() => {
+            console.log("[6] Estado final:", {
+                todos: elements.todos?.textContent,
+                ativos: elements.ativos?.textContent,
+                inativos: elements.inativos?.textContent,
+                destaques: elements.destaques?.textContent,
+                anunciosAtivos: anunciosAtivos.length,
+                anunciosInativos: anunciosInativos.length,
+                anunciosDestaques: anunciosDestaques.length
+            });
+        }, 100);
 
     } catch (error) {
-        console.error("[ERRO] Falha ao carregar anúncios:", error);
+        console.error("[ERRO] Falha crítica:", error);
         showAlert("Erro ao carregar anúncios", "error");
     }
 }
 
-// Inicialização
-document.getElementById('anuncios-tab')?.addEventListener('shown.bs.tab', carregarMeusAnuncios);
+// Inicializa quando a tab de anúncios é mostrada
+document.getElementById('anuncios-tab')?.addEventListener('shown.bs.tab', () => {
+    setTimeout(carregarMeusAnuncios, 50);
+});
+
+
+
+
 // SOLUÇÃO ADICIONAL PARA TABS DO BOOTSTRAP
 document.getElementById('anuncios-tab')?.addEventListener('shown.bs.tab', () => {
     console.log("Tab de anúncios ativada - recarregando contadores");
@@ -618,256 +714,51 @@ function gerarDetalhesAutomovel(data) {
         </div>
     `;
 }
+// Função para carregar os favoritos do usuário
 async function carregarFavoritos(userId) {
-    try {
-        // Mostrar loader
-        document.getElementById('profile-loader').classList.remove('hidden');
-        
-        // 1. Obter a lista de IDs dos favoritos do usuário
-        const userDoc = await getDoc(doc(db, "users", userId));
-        const favoritosIds = userDoc.data()?.favoritos || [];
-        
-        console.log("IDs dos favoritos encontrados:", favoritosIds); // DEBUG
-        
-        // Se não houver favoritos
-        if (favoritosIds.length === 0) {
-            document.getElementById('no-favoritos').classList.remove('d-none');
-            document.getElementById('favoritos-container').innerHTML = '';
-            return;
-        }
-        
-        // 2. Buscar os anúncios correspondentes
-        const anunciosPromises = favoritosIds.map(async (adId) => {
-            console.log(`Buscando anúncio ${adId}`); // DEBUG
-            
-            // Primeiro tenta encontrar em imóveis
-            const imovelRef = doc(db, "imoveis", adId);
-            const imovelSnap = await getDoc(imovelRef);
-            
-            if (imovelSnap.exists()) {
-                console.log(`Encontrado imóvel ${adId}`); // DEBUG
-                return { ...imovelSnap.data(), id: imovelSnap.id, tipo: 'imovel' };
-            }
-            
-            // Se não encontrou em imóveis, tenta automóveis
-            const automovelRef = doc(db, "automoveis", adId);
-            const automovelSnap = await getDoc(automovelRef);
-            
-            if (automovelSnap.exists()) {
-                console.log(`Encontrado automóvel ${adId}`); // DEBUG
-                return { ...automovelSnap.data(), id: automovelSnap.id, tipo: 'automovel' };
-            }
-            
-            console.log(`Anúncio ${adId} não encontrado em nenhuma coleção`); // DEBUG
-            return null;
-        });
-        
-        // Espera todas as buscas e filtra os nulos
-        const anuncios = (await Promise.all(anunciosPromises)).filter(Boolean);
-        console.log("Anúncios encontrados:", anuncios); // DEBUG
-        
-        // 3. Renderizar os favoritos
-        const favoritosContainer = document.getElementById('favoritos-container');
-        favoritosContainer.innerHTML = '';
-        
-        if (anuncios.length === 0) {
-            document.getElementById('no-favoritos').classList.remove('d-none');
-        } else {
-            document.getElementById('no-favoritos').classList.add('d-none');
-            anuncios.forEach(anuncio => {
-                const isAutomovel = anuncio.tipo === 'automovel';
-                favoritosContainer.innerHTML += criarCardFavorito(anuncio, isAutomovel);
-            });
-            
-            // Configurar eventos dos botões
-            setupFavoritosEvents();
-        }
-        
-    } catch (error) {
-        console.error("Erro ao carregar favoritos:", error);
-        showAlert("Erro ao carregar anúncios favoritos", "error");
-    } finally {
-        // Esconder loader
-        document.getElementById('profile-loader').classList.add('hidden');
-    }
-}
+    const favoritosRef = collection(db, "favoritos");
+    const q = query(favoritosRef, where("userId", "==", userId));
+    const querySnapshot = await getDocs(q);
 
+    const favoritosContainer = document.getElementById("favoritos-container");
+    favoritosContainer.innerHTML = ""; // Limpa o conteúdo anterior
 
-function criarCardFavorito(anuncio, isAutomovel) {
-    const primeiraImagem = anuncio.imagens?.[0] || 'images/default.jpg';
-    const precoFormatado = anuncio.preco?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) || 'Preço não informado';
-    
-    return `
-        <div class="col-md-6 col-lg-4 mb-4" data-ad-id="${anuncio.id}">
-            <div class="anuncio-card">
-                <div class="anuncio-header">
-                    <img src="${primeiraImagem}" alt="${anuncio.titulo}" class="anuncio-imagem-principal">
-                    <span class="anuncio-badge">${isAutomovel ? 'Automóvel' : 'Imóvel'}</span>
-                    <button class="btn-remover-favorito" data-ad-id="${anuncio.id}">
-                        <i class="fas fa-trash"></i> Remover
-                    </button>
-                </div>
-                <div class="anuncio-body">
-                    <h3 class="anuncio-titulo">${anuncio.titulo || 'Sem título'}</h3>
-                    <div class="anuncio-preco">${precoFormatado}</div>
-                    <div class="detalhes-grid">
-                        ${isAutomovel ? getAutomovelDetails(anuncio) : getImovelDetails(anuncio)}
+    querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const favoritoHTML = `
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <img src="${data.imagens[0]}" class="card-img-top" alt="Imagem do Anúncio">
+                    <div class="card-body">
+                        <h5 class="card-title">${data.titulo}</h5>
+                        <p class="card-text">${data.descricao}</p>
+                        <p><strong>Preço:</strong> R$ ${data.preco}</p>
+                        <a href="#" class="btn btn-primary">Ver Detalhes</a>
                     </div>
-                    <p class="anuncio-descricao">${anuncio.descricao || 'Nenhuma descrição fornecida'}</p>
-                </div>
-                <div class="anuncio-footer">
-                    <button class="btn-ver-detalhes" data-ad-id="${anuncio.id}" data-tipo="${isAutomovel ? 'automovel' : 'imovel'}">
-                        <i class="fas fa-eye"></i> Ver Detalhes
-                    </button>
                 </div>
             </div>
-        </div>
-    `;
+        `;
+        favoritosContainer.innerHTML += favoritoHTML;
+    });
 }
 
-function setupFavoritosEvents() {
-    // Botão de remover dos favoritos
-    document.querySelectorAll('.btn-remover-favorito').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            const adId = btn.getAttribute('data-ad-id');
-            
-            try {
-                const user = auth.currentUser;
-                if (!user) return;
-                
-                const userDocRef = doc(db, "users", user.uid);
-                const userDoc = await getDoc(userDocRef);
-                const favoritos = userDoc.data()?.favoritos || [];
-                
-                // Remove o ID do array de favoritos
-                const novosFavoritos = favoritos.filter(id => id !== adId);
-                
-                // Atualiza no Firestore
-                await updateDoc(userDocRef, {
-                    favoritos: novosFavoritos
-                });
-                
-                // Remove o card da UI
-                document.querySelector(`[data-ad-id="${adId}"]`).remove();
-                
-                // Mostra mensagem se não houver mais favoritos
-                if (novosFavoritos.length === 0) {
-                    document.getElementById('no-favoritos').classList.remove('d-none');
-                }
-                
-                showAlert("Anúncio removido dos favoritos", "success");
-                
-            } catch (error) {
-                console.error("Erro ao remover favorito:", error);
-                showAlert("Erro ao remover dos favoritos", "error");
-            }
-        });
-    });
-    
-    // Botão de ver detalhes
-    document.querySelectorAll('.btn-ver-detalhes').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const adId = btn.getAttribute('data-ad-id');
-            const tipo = btn.getAttribute('data-tipo');
-            
-            try {
-                const docRef = doc(db, `${tipo}s`, adId);
-                const docSnap = await getDoc(docRef);
-                
-                if (docSnap.exists()) {
-                    openDetailsModal(docSnap.data(), tipo === 'automovel');
-                } else {
-                    showAlert("Anúncio não encontrado", "error");
-                }
-            } catch (error) {
-                console.error("Erro ao carregar detalhes:", error);
-                showAlert("Erro ao carregar detalhes do anúncio", "error");
-            }
-        });
-    });
-}
 // Verifica o estado de autenticação
-onAuthStateChanged(auth, async (user) => {
+onAuthStateChanged(auth, (user) => {
     if (user) {
         console.log("Usuário logado:", user.uid);
-        
-        try {
-            // Mostra o loader enquanto carrega os dados
-            document.getElementById('profile-loader').classList.remove('hidden');
-            
-            // Carrega os dados do perfil primeiro
-            await loadProfileData(user);
-            
-            // Configura os listeners das abas
-            setupTabListeners(user);
-            
-            // Verifica qual aba está ativa e carrega os dados correspondentes
-            const activeTab = document.querySelector('.nav-tabs .nav-link.active');
-            if (activeTab) {
-                const target = activeTab.getAttribute('data-bs-target');
-                
-                if (target === '#anuncios') {
-                    await carregarMeusAnuncios();
-                } else if (target === '#favoritos') {
-                    await carregarFavoritos(user.uid);
-                }
-            }
-            
-        } catch (error) {
-            console.error("Erro ao carregar dados do usuário:", error);
-            showAlert("Erro ao carregar seus dados. Por favor, recarregue a página.", "error");
-        } finally {
-            // Esconde o loader independente de sucesso ou erro
-            document.getElementById('profile-loader').classList.add('hidden');
-        }
-        
+
+        // Carrega as informações do usuário no card
+        carregarInformacoesUsuario(user);
+
+        // Carrega os anúncios e favoritos do usuário
+        carregarAnuncios(user.uid);
+        carregarFavoritos(user.uid);
     } else {
         // Usuário não está logado, redireciona para a página de login
         window.location.href = "login.html";
     }
 });
 
-// Configurar os listeners das abas
-function setupTabListeners() {
-  const tabs = document.querySelectorAll('.nav-tabs .nav-link');
-  
-  tabs.forEach(tab => {
-    tab.addEventListener('shown.bs.tab', async (event) => {
-      const target = event.target.getAttribute('data-bs-target');
-      const user = auth.currentUser;
-      
-      if (!user) return;
-      
-      try {
-        document.getElementById('profile-loader').classList.remove('hidden');
-        
-        if (target === '#anuncios') {
-          await loadUserAds(user.uid);
-        } else if (target === '#favoritos') {
-          await loadFavorites(user.uid);
-        }
-        // A aba 'perfil' não precisa carregar dados adicionais
-        
-      } catch (error) {
-        console.error(`Erro ao carregar aba ${target}:`, error);
-        showAlert(`Erro ao carregar ${target}. Tente novamente.`, "error");
-      } finally {
-        document.getElementById('profile-loader').classList.add('hidden');
-      }
-    });
-  });
-}
-
-
-// Configurar o listener para a aba de favoritos
-document.getElementById('favoritos-tab').addEventListener('shown.bs.tab', async () => {
-    const user = auth.currentUser;
-    if (user) {
-        await carregarFavoritos(user.uid);
-    }
-});
 async function carregarAnuncios(userId) {
 
     // Busca em ambas as coleções
@@ -938,6 +829,60 @@ tipoInteresseInput.addEventListener("change", () => {
     }
 });
 
+// Salva os dados do perfil no Firestore
+perfilForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const user = auth.currentUser;
+    if (user) {
+        const userData = {
+            nome: document.getElementById("nome").value,
+            telefone: document.getElementById("telefone").value,
+            email: document.getElementById("email").value,
+            cpfCnpj: document.getElementById("cpf-cnpj").value,
+            dataNascimento: document.getElementById("data-nascimento").value,
+            tipoUsuario: tipoUsuarioInput.value,
+        };
+
+        // Adiciona dados específicos com base no tipo de usuário
+        if (tipoUsuarioInput.value === "comum") {
+            userData.comum = {
+                tipoInteresse: tipoInteresseInput.value,
+                imoveis: {
+                    localizacao: document.getElementById("localizacao-imovel").value,
+                    faixaPreco: document.getElementById("faixa-preco-imovel").value,
+                },
+                automoveis: {
+                    marca: document.getElementById("marca-automovel").value,
+                    faixaPreco: document.getElementById("faixa-preco-automovel").value,
+                }
+            };
+        } else if (tipoUsuarioInput.value === "comercial") {
+            userData.comercial = {
+                creci: document.getElementById("creci").value,
+                cnpj: document.getElementById("cnpj").value,
+                areaAtuacao: document.getElementById("area-atuacao").value,
+                descricaoEmpresa: document.getElementById("descricao-empresa").value,
+            };
+        }
+
+        try {
+            // Salva os dados no Firestore
+            await setDoc(doc(db, "users", user.uid), userData);
+            alert("Perfil salvo com sucesso!");
+
+            // Atualiza o card com as novas informações
+            await carregarInformacoesUsuario(user);
+
+            // Exibe o card
+            userCard.classList.remove("hidden");
+        } catch (error) {
+            console.error("Erro ao salvar perfil:", error);
+            alert("Erro ao salvar perfil. Tente novamente.");
+        }
+    }
+});
+
 
 // Verificar hash na URL para ativar a aba correta
 window.addEventListener('DOMContentLoaded', () => {
@@ -965,106 +910,191 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
 });
 
 
-// Função auxiliar melhorada para mostrar alertas
-function showAlert(message, type) {
-    try {
-        // Usando SweetAlert2 se disponível, ou fallback para alert nativo
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                title: type === 'error' ? 'Erro' : 'Aviso',
-                text: message,
-                icon: type,
-                confirmButtonText: 'OK'
-            });
-        } else {
-            alert(`[${type.toUpperCase()}] ${message}`);
-        }
-    } catch (e) {
-        console.error('Erro ao exibir alerta:', e);
-        alert(message);
-    }
+function showAlert(mensagem, tipo) {
+    alert(`[${tipo.toUpperCase()}] ${mensagem}`);
 }
 
 
 
-// Função para carregar e exibir os dados do perfil
+// Função atualizada para carregar dados do perfil
 async function loadProfileData(user) {
     try {
         const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) {
-            const userData = userDoc.data();
+        if (!userDoc.exists()) {
+            console.log("Nenhum documento de usuário encontrado");
+            return;
+        }
+
+        const userData = userDoc.data();
+        
+        // Preencher visualização do perfil
+        safeTextContent("profile-name", userData.name, "Não informado");
+        safeTextContent("profile-email", userData.email, "Não informado");
+        safeTextContent("profile-phone", userData.phone, "Não informado");
+        
+        // Determinar tipo de usuário
+        if (!userData.userType) {
+            console.warn("Tipo de usuário não definido nos dados");
+            return;
+        }
+
+        // Configurar visualização baseada no tipo de usuário
+        if (userData.userType === "comum") {
+            safeTextContent("profile-type", "Usuário Comum");
+            toggleVisibility("profile-common-info", true);
+            toggleVisibility("profile-professional-info", false);
             
-            // Preenche o card de visualização
-            document.getElementById("profile-name").textContent = userData.nome || "Não informado";
-            document.getElementById("profile-email").textContent = userData.email || "Não informado";
-            document.getElementById("profile-phone").textContent = userData.telefone || "Não informado";
-            document.getElementById("profile-doc").textContent = userData.cpfCnpj || "Não informado";
-            
-            // Define o tipo de usuário
-            if (userData.tipoUsuario === "comum") {
-                document.getElementById("profile-type").textContent = "Usuário Comum";
-                document.getElementById("profile-common-info").classList.remove("hidden");
-                document.getElementById("profile-interest").textContent = userData.comum?.tipoInteresse || "Não informado";
-                
-                // Adiciona detalhes específicos do interesse
-                if (userData.comum?.tipoInteresse === "imoveis") {
-                    // Adicione detalhes de imóveis se necessário
-                } else if (userData.comum?.tipoInteresse === "automoveis") {
-                    // Adicione detalhes de automóveis se necessário
-                }
-            } else if (userData.tipoUsuario === "comercial") {
-                document.getElementById("profile-type").textContent = "Profissional";
-                document.getElementById("profile-professional-info").classList.remove("hidden");
-                document.getElementById("profile-area").textContent = userData.comercial?.areaAtuacao || "Não informado";
-                document.getElementById("profile-creci-cnpj").textContent = 
-                    userData.comercial?.creci ? `CRECI ${userData.comercial.creci}` : 
-                    userData.comercial?.cnpj ? `CNPJ ${userData.comercial.cnpj}` : "Não informado";
+            if (userData.buyerProfile?.interests) {
+                safeTextContent("profile-interest", 
+                    userData.buyerProfile.interests.join(", "), "Não informado");
             }
+        } else if (userData.userType === "comercial") {
+            safeTextContent("profile-type", "Profissional");
+            toggleVisibility("profile-common-info", false);
+            toggleVisibility("profile-professional-info", true);
             
-            // Preenche o formulário de edição
+            if (userData.sellerProfile?.professional) {
+                safeTextContent("profile-area", 
+                    userData.sellerProfile.professional.area, "Não informado");
+                
+                const creciCnpj = userData.sellerProfile.professional.creci ? 
+                    `CRECI ${userData.sellerProfile.professional.creci}` :
+                    userData.sellerProfile.professional.cnpj ? 
+                    `CNPJ ${userData.sellerProfile.professional.cnpj}` : 
+                    "Não informado";
+                
+                safeTextContent("profile-creci-cnpj", creciCnpj);
+            }
+        }
+        
+        // Preencher formulário de edição se existir
+        if (document.getElementById("perfil-form")) {
             fillEditForm(userData);
         }
     } catch (error) {
-        console.error("Erro ao carregar perfil:", error);
-        showAlert("Erro ao carregar dados do perfil", "error");
+        console.error("Erro ao carregar informações do usuário:", error);
+        showAlert("Erro ao carregar informações do perfil. Tente novamente.", "error");
+    }
+}
+
+// Funções auxiliares
+function safeTextContent(elementId, value, defaultValue = "") {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.textContent = value || defaultValue;
+    } else {
+        console.warn(`Elemento não encontrado: ${elementId}`);
     }
 }
 
 
-// Função para preencher o formulário de edição
+function toggleVisibility(elementId, show) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        show ? element.classList.remove("hidden") : element.classList.add("hidden");
+    } else {
+        console.warn(`Elemento não encontrado: ${elementId}`);
+    }
+}
+
+// Função para preencher formulário de edição com verificações
 function fillEditForm(userData) {
-    // Preenche campos básicos
-    document.getElementById("nome").value = userData.nome || "";
-    document.getElementById("telefone").value = userData.telefone || "";
-    document.getElementById("email").value = userData.email || "";
-    document.getElementById("cpf-cnpj").value = userData.cpfCnpj || "";
-    document.getElementById("data-nascimento").value = userData.dataNascimento || "";
+    // Verificar se o formulário existe
+    const form = document.getElementById("perfil-form");
+    if (!form) {
+        console.warn("Formulário de edição não encontrado");
+        return;
+    }
+
+    // Preencher campos básicos
+    safeSetValue("nome", userData.name);
+    safeSetValue("telefone", userData.phone);
+    safeSetValue("email", userData.email);
+
+    // Configurar tipo de usuário
+    safeRadioSelect("tipo-usuario", userData.userType);
     
-    // Define o tipo de usuário
-    if (userData.tipoUsuario) {
-        document.querySelector(`input[name="tipo-usuario"][value="${userData.tipoUsuario}"]`).checked = true;
-        toggleUserTypeFields(userData.tipoUsuario);
-        
-        // Preenche campos específicos
-        if (userData.tipoUsuario === "comum" && userData.comum) {
-            document.getElementById("tipo-interesse").value = userData.comum.tipoInteresse || "";
-            toggleInterestFields(userData.comum.tipoInteresse);
-            
-            if (userData.comum.tipoInteresse === "imoveis" && userData.comum.imoveis) {
-                document.getElementById("localizacao-imovel").value = userData.comum.imoveis.localizacao || "";
-                document.getElementById("faixa-preco-imovel").value = userData.comum.imoveis.faixaPreco || "";
-            } else if (userData.comum.tipoInteresse === "automoveis" && userData.comum.automoveis) {
-                document.getElementById("marca-automovel").value = userData.comum.automoveis.marca || "";
-                document.getElementById("faixa-preco-automovel").value = userData.comum.automoveis.faixaPreco || "";
-            }
-        } else if (userData.tipoUsuario === "comercial" && userData.comercial) {
-            document.getElementById("creci").value = userData.comercial.creci || "";
-            document.getElementById("cnpj").value = userData.comercial.cnpj || "";
-            document.getElementById("area-atuacao").value = userData.comercial.areaAtuacao || "";
-            document.getElementById("descricao-empresa").value = userData.comercial.descricaoEmpresa || "";
+    // Chamar toggleUserTypeFields com verificação adicional
+    if (userData.userType) {
+        try {
+            toggleUserTypeFields(userData.userType);
+        } catch (error) {
+            console.error("Erro ao alternar campos de tipo de usuário:", error);
         }
     }
+
+    // Preencher campos específicos
+    if (userData.userType === "comum" && userData.buyerProfile) {
+        safeSetValue("tipo-interesse", userData.buyerProfile.interests?.[0]);
+        safeSetValue("localizacao-imovel", userData.buyerProfile.preferenceLocation);
+        safeSetValue("faixa-preco-imovel", userData.buyerProfile.budgetRange);
+    } 
+    else if (userData.userType === "comercial" && userData.sellerProfile) {
+        safeRadioSelect("sellerType", userData.sellerProfile.sellerType);
+        
+        if (userData.sellerProfile.sellerType === "professional") {
+            toggleVisibility("professionalFields", true);
+            safeSetValue("professionalArea", userData.sellerProfile.professional?.area);
+            safeSetValue("creci", userData.sellerProfile.professional?.creci);
+            safeSetValue("cnpj", userData.sellerProfile.professional?.cnpj);
+        }
+
+        safeSetValue("aboutBusiness", userData.sellerProfile.aboutBusiness);
+    }
 }
+
+// Funções auxiliares adicionais
+function safeSetValue(elementId, value) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.value = value || "";
+    } else {
+        console.warn(`Elemento não encontrado: ${elementId}`);
+    }
+}
+
+function safeRadioSelect(name, value) {
+    const input = document.querySelector(`input[name="${name}"][value="${value}"]`);
+    if (input) {
+        input.checked = true;
+    } else {
+        console.warn(`Radio button não encontrado: name=${name}, value=${value}`);
+    }
+}
+
+// Função para alternar entre campos de usuário comum e comercial
+// Função segura para alternar entre campos de usuário comum e comercial
+function toggleUserTypeFields(userType) {
+    // Elementos que precisamos acessar
+    const elements = {
+        commonInfo: document.getElementById("profile-common-info"),
+        professionalInfo: document.getElementById("profile-professional-info"),
+        formComum: document.getElementById("form-comum"),
+        formComercial: document.getElementById("form-comercial")
+    };
+
+    // Verificar se os elementos existem antes de manipular
+    for (const [key, element] of Object.entries(elements)) {
+        if (!element) {
+            console.warn(`Elemento não encontrado: ${key}`);
+            return; // Sai da função se algum elemento crítico não existir
+        }
+    }
+
+    // Lógica de alternância
+    if (userType === "comum") {
+        elements.commonInfo.classList.remove("hidden");
+        elements.professionalInfo.classList.add("hidden");
+        elements.formComum.classList.remove("hidden");
+        elements.formComercial.classList.add("hidden");
+    } else if (userType === "comercial") {
+        elements.commonInfo.classList.add("hidden");
+        elements.professionalInfo.classList.remove("hidden");
+        elements.formComum.classList.add("hidden");
+        elements.formComercial.classList.remove("hidden");
+    }
+}
+
 
 // Funções para alternar entre visualização e edição
 function toggleEditMode(showEdit) {
@@ -1081,6 +1111,12 @@ function toggleEditMode(showEdit) {
 document.getElementById("edit-profile-btn").addEventListener("click", () => toggleEditMode(true));
 document.getElementById("cancel-edit-btn").addEventListener("click", () => toggleEditMode(false));
 
+// Inicialização quando o usuário está logado
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        loadProfileData(user);
+    }
+});
 
 // Evento de submit do formulário
 document.getElementById("perfil-form").addEventListener("submit", async (e) => {
@@ -1139,164 +1175,3 @@ document.getElementById("perfil-form").addEventListener("submit", async (e) => {
         showAlert("Erro ao atualizar perfil", "error");
     }
 });
-
-
-
-ocument.addEventListener('DOMContentLoaded', function() {
-    // Adicionar event listeners para os filtros
-    setupFilterControls();
-});
-
-function setupFilterControls() {
-    // Filtro por tipo (imóvel/automóvel/todos)
-    document.querySelectorAll('[data-filter]').forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            const filterType = this.getAttribute('data-filter');
-            filterAdsByType(filterType);
-            
-            // Atualizar UI do dropdown
-            document.querySelectorAll('[data-filter]').forEach(el => {
-                el.classList.remove('active');
-            });
-            this.classList.add('active');
-        });
-    });
-    
-    // Filtro por status (ativos/inativos/destaques/todos)
-    document.querySelectorAll('[data-filter-status]').forEach(item => {
-        item.addEventListener('click', function() {
-            const filterStatus = this.getAttribute('data-filter-status');
-            filterAdsByStatus(filterStatus);
-            
-            // Atualizar UI dos botões
-            document.querySelectorAll('[data-filter-status]').forEach(el => {
-                el.classList.remove('active');
-            });
-            this.classList.add('active');
-        });
-    });
-    
-    // Filtro por busca
-    document.getElementById('busca-anuncios').addEventListener('input', function() {
-        filterAdsBySearch(this.value.toLowerCase());
-    });
-}
-
-// Funções de filtragem
-function filterAdsByType(type) {
-    const anuncios = document.querySelectorAll('.anuncio-card');
-    
-    anuncios.forEach(anuncio => {
-        const anuncioTipo = anuncio.getAttribute('data-tipo');
-        
-        if (type === 'todos' || anuncioTipo.includes(type)) {
-            anuncio.style.display = '';
-        } else {
-            anuncio.style.display = 'none';
-        }
-    });
-    
-    updateEmptyState();
-}
-
-function filterAdsByStatus(status) {
-    const anuncios = document.querySelectorAll('.anuncio-card');
-    
-    anuncios.forEach(anuncio => {
-        const btnStatus = anuncio.querySelector('.btn-status-toggle');
-        const btnDestaque = anuncio.querySelector('.btn-destaque-toggle');
-        const anuncioStatus = btnStatus.getAttribute('data-status');
-        const anuncioDestaque = btnDestaque.getAttribute('data-destaque') === 'true';
-        
-        let shouldShow = false;
-        
-        switch(status) {
-            case 'todos':
-                shouldShow = true;
-                break;
-            case 'ativos':
-                shouldShow = anuncioStatus === 'ativo';
-                break;
-            case 'inativos':
-                shouldShow = anuncioStatus === 'inativo';
-                break;
-            case 'destaques':
-                shouldShow = anuncioDestaque;
-                break;
-        }
-        
-        anuncio.style.display = shouldShow ? '' : 'none';
-    });
-    
-    updateEmptyState();
-}
-
-function filterAdsBySearch(searchTerm) {
-    const anuncios = document.querySelectorAll('.anuncio-card');
-    
-    anuncios.forEach(anuncio => {
-        const titulo = anuncio.querySelector('.anuncio-titulo').textContent.toLowerCase();
-        const descricao = anuncio.querySelector('.anuncio-descricao').textContent.toLowerCase();
-        
-        if (titulo.includes(searchTerm) || descricao.includes(searchTerm)) {
-            anuncio.style.display = '';
-        } else {
-            anuncio.style.display = 'none';
-        }
-    });
-    
-    updateEmptyState();
-}
-
-function updateEmptyState() {
-    const anunciosContainer = document.getElementById('anuncios-container');
-    const visibleAnuncios = anunciosContainer.querySelectorAll('.anuncio-card[style=""]');
-    const noAnunciosMsg = document.getElementById('no-anuncios');
-    
-    if (visibleAnuncios.length === 0) {
-        noAnunciosMsg.classList.remove('d-none');
-    } else {
-        noAnunciosMsg.classList.add('d-none');
-    }
-}
-async function updateCounters(userId) {
-    try {
-        const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
-            getDocs(query(collection(db, "imoveis"), where("userId", "==", userId))),
-            getDocs(query(collection(db, "automoveis"), where("userId", "==", userId)))
-        ]);
-        
-        let total = 0;
-        let ativos = 0;
-        let inativos = 0;
-        let destaques = 0;
-        
-        // Contar imóveis
-        imoveisSnapshot.forEach(doc => {
-            total++;
-            const data = doc.data();
-            if (data.status === 'ativo') ativos++;
-            if (data.status === 'inativo') inativos++;
-            if (data.destaque) destaques++;
-        });
-        
-        // Contar automóveis
-        automoveisSnapshot.forEach(doc => {
-            total++;
-            const data = doc.data();
-            if (data.status === 'ativo') ativos++;
-            if (data.status === 'inativo') inativos++;
-            if (data.destaque) destaques++;
-        });
-        
-        // Atualizar UI
-        document.getElementById('count-todos').textContent = total;
-        document.getElementById('count-ativos').textContent = ativos;
-        document.getElementById('count-inativos').textContent = inativos;
-        document.getElementById('count-destaques').textContent = destaques;
-        
-    } catch (error) {
-        console.error("Erro ao atualizar contadores:", error);
-    }
-}
