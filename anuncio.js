@@ -65,24 +65,70 @@ function showStep(stepIndex) {
     }
 }
 
-// Atualize a função nextStep para melhorar o feedback
 function nextStep() {
-    if (currentStep < steps.length - 1) {
-        if (validateStep(currentStep)) {
-            currentStep++;
-            showStep(currentStep);
-            
-            // Scroll para o topo do formulário
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        } else {
-            // Mostrar mensagem de erro específica
-            if (currentStep === 1) {
-                alert('Por favor, preencha todos os campos obrigatórios antes de avançar.');
-            }
+    console.log('Tentando avançar para o próximo passo... Passo atual:', currentStep);
+    
+    if (currentStep >= steps.length - 1) {
+        console.log('Já está no último passo');
+        return;
+    }
+
+    // Validação específica para cada passo
+    let isValid = true;
+    const currentStepElement = steps[currentStep];
+    
+    if (currentStep === 0) {
+        // Validação do passo 1
+        const titulo = document.getElementById('titulo');
+        const descricao = document.getElementById('descricao');
+        const preco = document.getElementById('preco');
+        
+        if (!titulo.value.trim()) {
+            titulo.classList.add('is-invalid');
+            isValid = false;
         }
+        
+        if (!descricao.value.trim() || descricao.value.length < 20) {
+            descricao.classList.add('is-invalid');
+            isValid = false;
+        }
+        
+        if (!preco.value || isNaN(preco.value)) {
+            preco.classList.add('is-invalid');
+            isValid = false;
+        }
+        
+    } else if (currentStep === 1) {
+        // Validação do passo 2
+        isValid = validateStep2();
+    }
+    
+    if (isValid) {
+        console.log('Validação OK, avançando para o passo', currentStep + 1);
+        
+        // Remove todas as classes 'active' primeiro
+        steps.forEach(step => step.classList.remove('active'));
+        
+        // Avança para o próximo passo
+        currentStep++;
+        steps[currentStep].classList.add('active');
+        
+        // Atualiza o stepper visual
+        document.querySelectorAll('.step').forEach((step, index) => {
+            if (index <= currentStep) {
+                step.classList.add('active');
+            } else {
+                step.classList.remove('active');
+            }
+        });
+        
+        // Scroll para o topo
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+    } else {
+        console.log('Validação falhou, mostrando erros');
+        // Mostra mensagem de erro
+        alert('Por favor, preencha todos os campos obrigatórios corretamente antes de avançar.');
     }
 }
 
