@@ -112,25 +112,65 @@ async function loadAdDetails(adId, adType) {
     }
 }
 
-// Preencher informações básicas
+// Preencher informações básicas e detalhadas
 function fillBasicInfo(ad, type) {
+    // Informações básicas (comuns a ambos)
     elements.title.textContent = ad.titulo || "Sem título";
     elements.price.textContent = ad.preco ? `R$ ${ad.preco.toLocaleString('pt-BR')}` : "Preço não informado";
-    elements.description.textContent = ad.descricao || "Nenhuma descrição fornecida.";
+    
+    // Descrição detalhada - vamos incluir todas as informações aqui
+    let fullDescription = ad.descricao || "Nenhuma descrição fornecida.";
+    fullDescription += "\n\n";
 
     if (type === 'imovel') {
+        // Informações específicas de imóvel
         elements.location.textContent = ad.bairro || "Local não informado";
         elements.area.textContent = ad.area ? `${ad.area} m²` : "Área não informada";
         elements.bedrooms.textContent = ad.quartos || "0";
         elements.bathrooms.textContent = ad.banheiros || "0";
+
+        // Adiciona todas as informações à descrição
+        fullDescription += `Tipo: ${ad.tipo || 'Não informado'}\n`;
+        fullDescription += `Área: ${ad.area || 'Não informada'} m²\n`;
+        fullDescription += `Quartos: ${ad.quartos || 'Não informado'}\n`;
+        fullDescription += `Banheiros: ${ad.banheiros || 'Não informado'}\n`;
+        fullDescription += `Vagas na garagem: ${ad.vagas || 'Não informado'}\n`;
+        fullDescription += `Mobiliado: ${ad.mobiliado ? 'Sim' : 'Não'}\n`;
+        fullDescription += `Condomínio: ${ad.condominio ? `R$ ${ad.condominio.toLocaleString('pt-BR')}` : 'Não informado'}\n`;
+        fullDescription += `IPTU: ${ad.iptu ? `R$ ${ad.iptu.toLocaleString('pt-BR')}` : 'Não informado'}\n`;
+        fullDescription += `Andar: ${ad.andar || 'Não informado'}\n`;
+        fullDescription += `Data de construção: ${ad.anoConstrucao || 'Não informado'}\n`;
+        fullDescription += `Próximo a: ${ad.proximoA || 'Não informado'}\n`;
+        fullDescription += `Características: ${ad.caracteristicas?.join(', ') || 'Não informado'}\n`;
+
     } else {
+        // Informações específicas de automóvel
         elements.location.textContent = `${ad.marca || ''} ${ad.modelo || ''}`.trim() || "Veículo";
         elements.area.textContent = ad.ano || "Ano não informado";
         elements.bedrooms.textContent = ad.km ? `${ad.km.toLocaleString('pt-BR')} km` : "KM não informada";
         elements.bathrooms.textContent = ad.cor || "Cor não informada";
-    }
-}
 
+        // Adiciona todas as informações à descrição
+        fullDescription += `Marca: ${ad.marca || 'Não informada'}\n`;
+        fullDescription += `Modelo: ${ad.modelo || 'Não informado'}\n`;
+        fullDescription += `Ano: ${ad.ano || 'Não informado'}\n`;
+        fullDescription += `Quilometragem: ${ad.km ? `${ad.km.toLocaleString('pt-BR')} km` : 'Não informada'}\n`;
+        fullDescription += `Cor: ${ad.cor || 'Não informada'}\n`;
+        fullDescription += `Câmbio: ${ad.cambio || 'Não informado'}\n`;
+        fullDescription += `Combustível: ${ad.combustivel || 'Não informado'}\n`;
+        fullDescription += `Portas: ${ad.portas || 'Não informado'}\n`;
+        fullDescription += `Final da placa: ${ad.finalPlaca || 'Não informado'}\n`;
+        fullDescription += `Acessórios: ${ad.acessorios?.join(', ') || 'Não informado'}\n`;
+        fullDescription += `Opcionais: ${ad.opcionais?.join(', ') || 'Não informado'}\n`;
+        fullDescription += `Histórico: ${ad.historico || 'Não informado'}\n`;
+    }
+
+    // Adiciona informações comuns a ambos
+    fullDescription += `\nData de publicação: ${new Date(ad.data?.toDate()).toLocaleDateString('pt-BR') || 'Não informada'}\n`;
+    
+    // Atualiza a descrição na página
+    elements.description.textContent = fullDescription;
+}
 // Configurar galeria de imagens
 function setupImageGallery(images) {
     // Limpar galeria existente
@@ -174,33 +214,49 @@ function setupImageGallery(images) {
     }
 }
 
-// Preencher características
+// Preencher características em cards organizados
 function fillFeatures(ad, type) {
     elements.featuresGrid.innerHTML = '';
 
     const features = type === 'imovel' ? [
         { icon: 'fa-home', title: 'Tipo', value: ad.tipo || 'Não informado' },
+        { icon: 'fa-ruler-combined', title: 'Área', value: ad.area ? `${ad.area} m²` : 'Não informada' },
+        { icon: 'fa-bed', title: 'Quartos', value: ad.quartos || 'Não informado' },
+        { icon: 'fa-bath', title: 'Banheiros', value: ad.banheiros || 'Não informado' },
+        { icon: 'fa-car', title: 'Vagas', value: ad.vagas || 'Não informado' },
         { icon: 'fa-couch', title: 'Mobiliado', value: ad.mobiliado ? 'Sim' : 'Não' },
-        { icon: 'fa-car', title: 'Vagas', value: ad.vagas || '0' },
         { icon: 'fa-building', title: 'Condomínio', value: ad.condominio ? `R$ ${ad.condominio.toLocaleString('pt-BR')}` : 'Não informado' },
         { icon: 'fa-file-invoice-dollar', title: 'IPTU', value: ad.iptu ? `R$ ${ad.iptu.toLocaleString('pt-BR')}` : 'Não informado' },
-        { icon: 'fa-layer-group', title: 'Andar', value: ad.andar || 'Não informado' }
+        { icon: 'fa-layer-group', title: 'Andar', value: ad.andar || 'Não informado' },
+        { icon: 'fa-calendar', title: 'Ano Construção', value: ad.anoConstrucao || 'Não informado' },
+        { icon: 'fa-map-marker-alt', title: 'Próximo a', value: ad.proximoA || 'Não informado' },
+        { icon: 'fa-list', title: 'Características', value: ad.caracteristicas?.join(', ') || 'Não informado' }
     ] : [
         { icon: 'fa-car', title: 'Marca', value: ad.marca || 'Não informada' },
         { icon: 'fa-tag', title: 'Modelo', value: ad.modelo || 'Não informado' },
         { icon: 'fa-calendar-alt', title: 'Ano', value: ad.ano || 'Não informado' },
         { icon: 'fa-tachometer-alt', title: 'Quilometragem', value: ad.km ? `${ad.km.toLocaleString('pt-BR')} km` : 'Não informada' },
         { icon: 'fa-palette', title: 'Cor', value: ad.cor || 'Não informada' },
-        { icon: 'fa-cogs', title: 'Câmbio', value: ad.cambio || 'Não informado' }
+        { icon: 'fa-cogs', title: 'Câmbio', value: ad.cambio || 'Não informado' },
+        { icon: 'fa-gas-pump', title: 'Combustível', value: ad.combustivel || 'Não informado' },
+        { icon: 'fa-car-side', title: 'Portas', value: ad.portas || 'Não informado' },
+        { icon: 'fa-plate', title: 'Final Placa', value: ad.finalPlaca || 'Não informado' },
+        { icon: 'fa-tools', title: 'Acessórios', value: ad.acessorios?.join(', ') || 'Não informado' },
+        { icon: 'fa-list-check', title: 'Opcionais', value: ad.opcionais?.join(', ') || 'Não informado' },
+        { icon: 'fa-history', title: 'Histórico', value: ad.historico || 'Não informado' }
     ];
 
     features.forEach(feature => {
         const featureCard = document.createElement('div');
         featureCard.className = 'feature-card';
+        
+        // Se o valor for muito longo, exibe como bloco
+        const isLongValue = feature.value && feature.value.length > 30;
+        
         featureCard.innerHTML = `
             <div class="feature-icon"><i class="fas ${feature.icon}"></i></div>
             <div class="feature-title">${feature.title}</div>
-            <div class="feature-value">${feature.value}</div>
+            <div class="feature-value ${isLongValue ? 'long-value' : ''}">${feature.value}</div>
         `;
         elements.featuresGrid.appendChild(featureCard);
     });
