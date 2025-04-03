@@ -392,3 +392,29 @@ function validateStep2() {
 }
 // Inicialização
 showStep(0);
+
+
+// Adicione no final do seu arquivo anunciar.js, antes do "Inicialização"
+document.querySelectorAll('.next-step').forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.preventDefault();
+        nextStep();
+    });
+});
+
+document.querySelectorAll('.prev-step').forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.preventDefault();
+        prevStep();
+    });
+});
+
+// Debug: Verifique se os cliques estão sendo registrados
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('next-step') {
+        console.log('Botão próximo clicado');
+    }
+    if (e.target.classList.contains('prev-step')) {
+        console.log('Botão anterior clicado');
+    }
+});
