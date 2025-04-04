@@ -50,37 +50,75 @@ let currentAd = null;
 let currentAdType = null;
 let isFavorite = false;
 
-// Função principal
-document.addEventListener("DOMContentLoaded", async () => {
-    // Obter parâmetros da URL
+// No script.js da página detalhes.html
+document.addEventListener('DOMContentLoaded', async function() {
     const urlParams = new URLSearchParams(window.location.search);
     const adId = urlParams.get('id');
-    currentAdType = urlParams.get('tipo'); // 'imovel' ou 'automovel'
-
-    if (!adId || !currentAdType) {
-        showError("Anúncio não encontrado");
+    const adType = urlParams.get('tipo'); // 'imovel' ou 'carro'
+    
+    if (!adId || !adType) {
+        document.getElementById('conteudo-detalhes').innerHTML = `
+            <div class="error-message">
+                <h3>Anúncio não encontrado</h3>
+                <p>O link pode estar incorreto ou o anúncio foi removido.</p>
+                <a href="index.html" class="btn-voltar">Voltar à página inicial</a>
+            </div>
+        `;
         return;
     }
-
+    
     try {
-        // Verificar autenticação
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                checkIfFavorite(user.uid, adId);
-            }
-        });
-
-        // Carregar detalhes do anúncio
-        await loadAdDetails(adId, currentAdType);
+        // Mostrar loading
+        document.getElementById('conteudo-detalhes').innerHTML = `
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Carregando anúncio...</p>
+            </div>
+        `;
         
-        // Configurar eventos
-        setupEventListeners();
+        // Buscar os dados do anúncio no Firestore
+        const docRef = doc(db, adType === 'carro' ? 'automoveis' : 'imoveis', adId);
+        const docSnap = await getDoc(docRef);
+        
+        if (!docSnap.exists()) {
+            throw new Error('Anúncio não encontrado');
+        }
+        
+        const adData = { id: docSnap.id, ...docSnap.data() };
+        renderizarDetalhes(adData, adType === 'carro');
         
     } catch (error) {
-        console.error("Erro ao carregar anúncio:", error);
-        showError("Erro ao carregar detalhes do anúncio");
+        console.error('Erro ao carregar detalhes:', error);
+        document.getElementById('conteudo-detalhes').innerHTML = `
+            <div class="error-message">
+                <h3>Erro ao carregar anúncio</h3>
+                <p>${error.message}</p>
+                <a href="index.html" class="btn-voltar">Voltar à página inicial</a>
+            </div>
+        `;
     }
 });
+
+function renderizarDetalhes(adData, isAutomovel) {
+    const container = document.getElementById('conteudo-detalhes');
+    
+    // Montar o HTML dos detalhes conforme seu código existente
+    container.innerHTML = `
+        <div class="detalhes-container">
+            <!-- Seu código existente de renderização -->
+            ${isAutomovel ? renderDetalhesCarro(adData) : renderDetalhesImovel(adData)}
+        </div>
+    `;
+    
+    // Configurar o carrossel de imagens
+    inicializarCarrossel(adData.imagens || []);
+    
+    // Configurar botão de favorito
+    const favoriteBtn = document.getElementById('favorite-btn');
+    if (favoriteBtn) {
+        favoriteBtn.addEventListener('click', () => toggleFavorito(adData));
+    }
+}
 
 // Função para carregar detalhes do anúncio
 async function loadAdDetails(adId, adType) {
