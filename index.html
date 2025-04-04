@@ -61,56 +61,190 @@
 	    </div>
         </section>
 
-    <section class="search" role="search">
+    <!-- Seção de Busca Atualizada -->
+<section class="search" role="search">
     <div class="container">
-        <h2> 🔍 Busque pelo que você deseja</h2>
+        <h2>🔍 Busque pelo que você deseja</h2>
         <form id="form-pesquisa" method="get">
             <div class="search-fields">
-                <label for="tipo">Tipo</label>
-                <div class="tipo-pesquisa">
-    <div class="tipo-option" data-tipo="imovel">
-        <img src="casa.png" alt="Ícone de Casa">
-        <span>Imóvel</span>
-    </div>
-    <div class="tipo-option" data-tipo="carro">
-        <img src="carro.png" alt="Ícone de Carro">
-        <span>Automóvel</span>
-    </div>
-</div>
-<input type="hidden" id="tipo" name="tipo" value="imovel" required>
-                <input type="hidden" id="tipo" name="tipo" value="imovel" required>
-
-                <!-- Campos específicos para imóveis -->
-                <div id="campo-imovel">
-                    <label for="bairro">Bairro:</label>
-                    <input type="text" id="bairro" name="bairro" placeholder="Digite um bairro" list="bairros">
-                    <datalist id="bairros">
-                        <!-- A lista de bairros será preenchida dinamicamente via JavaScript -->
-                    </datalist>
+                <!-- Seletor de Tipo -->
+                <div class="form-group">
+                    <label for="tipo">Tipo</label>
+                    <div class="tipo-pesquisa">
+                        <div class="tipo-option active" data-tipo="imovel">
+                            <img src="casa.png" alt="Ícone de Casa">
+                            <span>Imóvel</span>
+                        </div>
+                        <div class="tipo-option" data-tipo="carro">
+                            <img src="carro.png" alt="Ícone de Carro">
+                            <span>Automóvel</span>
+                        </div>
+                    </div>
+                    <input type="hidden" id="tipo" name="tipo" value="imovel" required>
                 </div>
 
-                <!-- Campos específicos para automóveis -->
-                <div id="campo-carro" style="display: none;">
-                    <label for="marca">Marca:</label>
-                    <input type="text" id="marca" name="marca" placeholder="Digite a marca">
+                <!-- Campos para Imóveis -->
+                <div id="campos-imovel">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="bairro">Bairro:</label>
+                            <input type="text" id="bairro" name="bairro" placeholder="Digite um bairro" list="bairros">
+                            <datalist id="bairros">
+                                <!-- Lista preenchida via JavaScript -->
+                            </datalist>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="tipo-imovel">Tipo de Imóvel:</label>
+                            <select id="tipo-imovel" name="tipo-imovel">
+                                <option value="">Qualquer</option>
+                                <option value="casa">Casa</option>
+                                <option value="apartamento">Apartamento</option>
+                                <option value="terreno">Terreno</option>
+                            </select>
+                        </div>
+                    </div>
 
-                    <label for="modelo">Modelo:</label>
-                    <input type="text" id="modelo" name="modelo" placeholder="Digite o modelo">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="negociacao">Negociação:</label>
+                            <div class="radio-group">
+                                <label>
+                                    <input type="radio" name="negociacao" value="aluguel" checked> Aluguel
+                                </label>
+                                <label>
+                                    <input type="radio" name="negociacao" value="venda"> Venda
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="quartos">Quartos:</label>
+                            <select id="quartos" name="quartos">
+                                <option value="">Qualquer</option>
+                                <option value="1">1+</option>
+                                <option value="2">2+</option>
+                                <option value="3">3+</option>
+                                <option value="4">4+</option>
+                            </select>
+                        </div>
+                    </div>
 
-                    <label for="ano">Ano:</label>
-                    <input type="number" id="ano" name="ano" placeholder="Digite o ano">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="banheiros">Banheiros:</label>
+                            <select id="banheiros" name="banheiros">
+                                <option value="">Qualquer</option>
+                                <option value="1">1+</option>
+                                <option value="2">2+</option>
+                                <option value="3">3+</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="garagem">Vagas:</label>
+                            <select id="garagem" name="garagem">
+                                <option value="">Qualquer</option>
+                                <option value="1">1+</option>
+                                <option value="2">2+</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="area-min">Área mínima (m²):</label>
+                        <input type="number" id="area-min" name="area-min" placeholder="Ex: 50">
+                    </div>
+
+                    <div class="form-group checkboxes">
+                        <label>
+                            <input type="checkbox" id="aceita-animais" name="aceita-animais"> Aceita animais
+                        </label>
+                        <label>
+                            <input type="checkbox" id="mobiliado" name="mobiliado"> Mobiliado
+                        </label>
+                    </div>
                 </div>
 
-                <label for="preco-min">Preço Mínimo</label>
-                <input type="number" id="preco-min" name="preco-min" placeholder="Preço mínimo">
+                <!-- Campos para Automóveis -->
+                <div id="campos-carro" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="marca">Marca:</label>
+                            <input type="text" id="marca" name="marca" placeholder="Digite a marca">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="modelo">Modelo:</label>
+                            <input type="text" id="modelo" name="modelo" placeholder="Digite o modelo">
+                        </div>
+                    </div>
 
-                <label for="preco-max">Preço Máximo</label>
-                <input type="number" id="preco-max" name="preco-max" placeholder="Preço máximo (opcional)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ano">Ano:</label>
+                            <input type="number" id="ano" name="ano" placeholder="Digite o ano">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="combustivel">Combustível:</label>
+                            <select id="combustivel" name="combustivel">
+                                <option value="">Qualquer</option>
+                                <option value="gasolina">Gasolina</option>
+                                <option value="alcool">Álcool</option>
+                                <option value="flex">Flex</option>
+                                <option value="eletrico">Elétrico</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
 
-                <button type="submit">Filtrar</button>
+                <!-- Campos comuns -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="preco-min">Preço Mínimo (R$):</label>
+                        <input type="number" id="preco-min" name="preco-min" placeholder="Ex: 1000">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="preco-max">Preço Máximo (R$):</label>
+                        <input type="number" id="preco-max" name="preco-max" placeholder="Ex: 5000">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-buscar">Buscar</button>
             </div>
         </form>
-        <div id="resultados"></div> <!-- Div para exibir os resultados -->
+        
+        <!-- Seção de Resultados -->
+        <div id="resultados" class="resultados-container">
+            <div class="resultados-header">
+                <h3>Resultados da Busca</h3>
+                <div class="ordenacao">
+                    <label for="ordenar-por">Ordenar por:</label>
+                    <select id="ordenar-por">
+                        <option value="relevancia">Relevância</option>
+                        <option value="preco-asc">Preço (menor primeiro)</option>
+                        <option value="preco-desc">Preço (maior primeiro)</option>
+                        <option value="recentes">Mais recentes</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="lista-resultados" class="lista-resultados">
+                <!-- Resultados serão inseridos aqui via JavaScript -->
+            </div>
+            
+            <div class="sem-resultados" style="display: none;">
+                <p>Nenhum resultado encontrado com os filtros selecionados.</p>
+                <button class="btn-limpar-filtros">Limpar filtros</button>
+            </div>
+            
+            <div class="carregando" style="display: none;">
+                <div class="spinner"></div>
+                <p>Carregando resultados...</p>
+            </div>
+        </div>
     </div>
 </section>
 
