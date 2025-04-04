@@ -303,38 +303,141 @@ async function buscarCarros(precoMin, precoMax, marca, modelo, ano) {
     }
 }
 
-async function buscarCasas(precoMin, precoMax, bairro) {
+async function buscarImoveis(filtros = {}) {
     try {
-        bairro = bairro.toLowerCase();
-        const casasRef = collection(db, "imoveis");
-        let q = query(casasRef, where("bairro", "==", bairro));
-
-        if (precoMin) q = query(q, where("preco", ">=", precoMin));
-        if (precoMax) q = query(q, where("preco", "<=", precoMax));
-
+        const imoveisRef = collection(db, "imoveis");
+        let q = query(imoveisRef);
+        
+        // Filtros básicos (mantendo os existentes)
+        if (filtros.bairro) {
+            q = query(q, where("bairro", "==", filtros.bairro.toLowerCase()));
+        }
+        if (filtros.precoMin) {
+            q = query(q, where("preco", ">=", filtros.precoMin));
+        }
+        if (filtros.precoMax) {
+            q = query(q, where("preco", "<=", filtros.precoMax));
+        }
+        
+        // Novos filtros para imóveis
+        if (filtros.tipo) {
+            q = query(q, where("tipo", "==", filtros.tipo));
+        }
+        if (filtros.negociacao) {
+            q = query(q, where("negociacao", "==", filtros.negociacao));
+        }
+        if (filtros.quartos) {
+            q = query(q, where("quartos", ">=", filtros.quartos));
+        }
+        if (filtros.banheiros) {
+            q = query(q, where("banheiros", ">=", filtros.banheiros));
+        }
+        if (filtros.garagem) {
+            q = query(q, where("garagem", ">=", filtros.garagem));
+        }
+        if (filtros.areaMin) {
+            q = query(q, where("area", ">=", filtros.areaMin));
+        }
+        if (filtros.aceitaAnimais !== undefined) {
+            q = query(q, where("aceitaAnimais", "==", filtros.aceitaAnimais));
+        }
+        if (filtros.mobiliado !== undefined) {
+            q = query(q, where("mobiliado", "==", filtros.mobiliado));
+        }
+        
         const querySnapshot = await getDocs(q);
         const resultadosContainer = document.getElementById("resultados");
+        
+        // Limpa os resultados anteriores
         resultadosContainer.innerHTML = querySnapshot.empty 
-            ? "<p>Nenhum imóvel encontrado.</p>" 
+            ? "<p>Nenhum imóvel encontrado com os filtros selecionados.</p>" 
             : "<h3>Resultados da Busca:</h3>";
-
+        
+        // Processa cada documento encontrado
         querySnapshot.forEach((doc) => {
             const data = doc.data();
             data.id = doc.id;
-            resultadosContainer.appendChild(criarCardComEvento(data, false));
+            resultadosContainer.appendChild(criarCardImovel(data));
         });
-
+        
     } catch (error) {
         console.error("Erro ao buscar imóveis:", error);
         document.getElementById("resultados").innerHTML = `
-            <div class="error-message">
-                <p>Erro ao buscar imóveis.</p>
-                <p>${error.message}</p>
+            <div class="alert alert-danger">
+                <p>Erro ao buscar imóveis. Por favor, tente novamente.</p>
+                ${error.message ? `<small>${error.message}</small>` : ''}
             </div>
         `;
     }
 }
 
+// Função para criar o card do imóvel (atualizada com os novos campos)
+function criarCardImovel(imovel) {
+    const card = document.createElement("div");
+    card.className = "card mb-3";
+    
+    // Carrossel de imagens
+    let carousel = '';
+    if (imovel.imagens && imovel.imagens.length > 0) {
+        carousel = `
+            <div id="carousel-${imovel.id}" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    ${imovel.imagens.map((img, index) => `
+                        <div class="carousel-item ${index === 0 ? 'active' : ''}">
+                            <img src="${img}" class="d-block w-100" alt="Imagem do imóvel" style="height: 200px; object-fit: cover;">
+                        </div>
+                    `).join('')}
+                </div>
+                ${imovel.imagens.length > 1 ? `
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carousel-${imovel.id}" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Anterior</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carousel-${imovel.id}" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Próximo</span>
+                    </button>
+                ` : ''}
+            </div>
+        `;
+    }
+    
+    // Características do imóvel
+    const caracteristicas = [];
+    if (imovel.mobiliado) caracteristicas.push('Mobiliado');
+    if (imovel.aceitaAnimais) caracteristicas.push('Aceita animais');
+    
+    card.innerHTML = `
+        ${carousel}
+        <div class="card-body">
+            <h5 class="card-title">${imovel.titulo}</h5>
+            <p class="card-text text-muted">${imovel.bairro} • ${imovel.tipo}</p>
+            <p class="card-text">${imovel.descricao.substring(0, 100)}...</p>
+            
+            <div class="d-flex justify-content-between mb-2">
+                <span class="badge bg-primary">${imovel.negociacao === 'venda' ? 'Venda' : 'Aluguel'}</span>
+                <span class="text-success fw-bold">R$ ${imovel.preco.toLocaleString('pt-BR')}</span>
+            </div>
+            
+            <div class="d-flex justify-content-between mb-3">
+                <small><i class="fas fa-bed"></i> ${imovel.quartos} quarto(s)</small>
+                <small><i class="fas fa-bath"></i> ${imovel.banheiros} banheiro(s)</small>
+                <small><i class="fas fa-car"></i> ${imovel.garagem} vaga(s)</small>
+                <small><i class="fas fa-ruler-combined"></i> ${imovel.area}m²</small>
+            </div>
+            
+            ${caracteristicas.length > 0 ? `
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    ${caracteristicas.map(c => `<span class="badge bg-secondary">${c}</span>`).join('')}
+                </div>
+            ` : ''}
+            
+            <a href="detalhes.html?id=${imovel.id}" class="btn btn-primary w-100">Ver detalhes</a>
+        </div>
+    `;
+    
+    return card;
+}
 // ============== FUNÇÕES DE CARREGAMENTO ==============
 async function carregarImoveisDestaque() {
     try {
