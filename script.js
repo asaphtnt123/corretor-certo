@@ -56,7 +56,7 @@ function criarCardComEvento(dados, isAutomovel = false) {
     
     const imagens = dados.imagens || ["images/default.jpg"];
     const carrosselId = `carrossel-${dados.id}`;
-    const isFavorito = verificarFavorito(dados.id); // Verifica se já é favorito
+    const isFavorito = verificarFavorito(dados.id);
     
     card.innerHTML = `
         <div class="carrossel" id="${carrosselId}">
@@ -83,27 +83,37 @@ function criarCardComEvento(dados, isAutomovel = false) {
                 <p><strong>Tipo:</strong> ${dados.tipo || 'Não informado'}</p>
             `}
             <p><strong>Preço:</strong> R$ ${dados.preco?.toLocaleString('pt-BR') || 'Não informado'}</p>
-            <a href="#" class="btn-view-more">Ver Mais</a>
+            <a href="detalhes.html?id=${dados.id}&tipo=${isAutomovel ? 'carro' : 'imovel'}" class="btn-view-more">Ver Mais</a>
         </div>
     `;
     
-    // Adicione os eventos
-    card.querySelector('.carrossel-seta-esquerda').addEventListener('click', () => mudarImagem(carrosselId, -1));
-    card.querySelector('.carrossel-seta-direita').addEventListener('click', () => mudarImagem(carrosselId, 1));
-    card.querySelector('.btn-view-more').addEventListener('click', (e) => {
-        e.preventDefault();
-        openDetailsModal(dados, isAutomovel);
+    // Eventos do carrossel
+    card.querySelector('.carrossel-seta-esquerda').addEventListener('click', (e) => {
+        e.stopPropagation();
+        mudarImagem(carrosselId, -1);
     });
     
-    // Adicione o evento do botão de favoritos
+    card.querySelector('.carrossel-seta-direita').addEventListener('click', (e) => {
+        e.stopPropagation();
+        mudarImagem(carrosselId, 1);
+    });
+    
+    // Evento do botão de favoritos
     card.querySelector('.favorite-btn').addEventListener('click', (e) => {
         e.stopPropagation();
+        e.preventDefault();
         toggleFavorito(dados);
+    });
+    
+    // Evento de clique no card (exceto nos botões)
+    card.addEventListener('click', (e) => {
+        if (!e.target.closest('button') && !e.target.closest('a')) {
+            window.location.href = `detalhes.html?id=${dados.id}&tipo=${isAutomovel ? 'carro' : 'imovel'}`;
+        }
     });
     
     return card;
 }
-
 // Verifica se um anúncio já está nos favoritos do usuário
 async function verificarFavorito(adId) {
     const user = auth.currentUser;
