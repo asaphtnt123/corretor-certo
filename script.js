@@ -360,6 +360,7 @@ async function buscarImoveis(filtros = {}) {
         `;
     }
 }
+// Adicione esta função em algum lugar do seu arquivo JS (de preferência perto de outras funções utilitárias)
 function validarFiltrosImoveis(filtros) {
     // Pelo menos um filtro deve ser preenchido
     const algumFiltroPreenchido = Object.values(filtros).some(
