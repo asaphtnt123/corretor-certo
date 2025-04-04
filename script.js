@@ -668,7 +668,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         if (tipo === "imovel") {
             const bairro = document.getElementById("bairro").value;
-            buscarCasas(precoMin, precoMax, bairro);
+            buscarImoveis(precoMin, precoMax, bairro);
         } else if (tipo === "carro") {
             const marca = document.getElementById("marca").value;
             const modelo = document.getElementById("modelo").value;
@@ -727,7 +727,7 @@ window.mudarImagem = mudarImagem;
 window.openDetailsModal = openDetailsModal;
 window.closeDetailsModal = closeDetailsModal;
 window.buscarCarros = buscarCarros;
-window.buscarCasas = buscarCasas;
+window.buscarImoveis = buscarImoveis;
 window.carregarImoveisDestaque = carregarImoveisDestaque;
 window.preencherBairros = preencherBairros;
 
