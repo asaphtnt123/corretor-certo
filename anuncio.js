@@ -3,10 +3,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 import { 
     getFirestore, 
     collection, 
-    addDoc,
-    doc,
-    getDoc,
-    updateDoc
+    addDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { 
     getStorage, 
@@ -14,7 +11,7 @@ import {
     uploadBytes, 
     getDownloadURL 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -36,8 +33,6 @@ const auth = getAuth(app);
 // Elementos do DOM
 const form = document.getElementById('anuncio-form');
 const steps = document.querySelectorAll('.form-step');
-const nextButtons = document.querySelectorAll('.next-step');
-const prevButtons = document.querySelectorAll('.prev-step');
 const imageInput = document.getElementById('imagens');
 const imagePreview = document.getElementById('image-preview');
 const reviewImages = document.getElementById('review-images');
@@ -59,12 +54,13 @@ function showStep(stepIndex) {
         step.classList.toggle('active', index <= stepIndex);
     });
     
-    // Atualizar botões
+    // Atualizar revisão se for o último passo
     if (stepIndex === 3) {
         updateReview();
     }
 }
 
+// Função para avançar para o próximo passo
 function nextStep() {
     // Validação do passo atual
     if (!validateStep(currentStep)) {
@@ -72,45 +68,23 @@ function nextStep() {
         return;
     }
     
-    // Esconde o passo atual
-    steps[currentStep].classList.remove('active');
-    
     // Avança para o próximo passo
     currentStep++;
-    
-    // Mostra o novo passo
-    steps[currentStep].classList.add('active');
-    
-    // Atualiza o stepper visual
-    updateStepper();
+    showStep(currentStep);
     
     // Scroll para o topo
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// Função para voltar ao passo anterior
+function prevStep() {
+    if (currentStep > 0) {
+        currentStep--;
+        showStep(currentStep);
+    }
+}
 
-// Event listeners garantidos
-document.addEventListener('DOMContentLoaded', function() {
-    // Delegation para os botões
-    document.body.addEventListener('click', function(e) {
-        // Verifica se o clique foi em um botão próximo
-        if (e.target.closest('.next-step')) {
-            e.preventDefault();
-            console.log('Próximo clicado via delegation');
-            nextStep();
-        }
-        
-        // Verifica se o clique foi em um botão anterior
-        if (e.target.closest('.prev-step')) {
-            e.preventDefault();
-            console.log('Anterior clicado via delegation');
-            prevStep();
-        }
-    });
-    
-    // Inicialização
-    showStep(0);
-});
+// Função para atualizar o stepper visual
 function updateStepper() {
     document.querySelectorAll('.step').forEach((step, index) => {
         if (index < currentStep) {
@@ -124,45 +98,8 @@ function updateStepper() {
         }
     });
 }
-    
-    if (isValid) {
-        console.log('Validação OK, avançando para o passo', currentStep + 1);
-        
-        // Remove todas as classes 'active' primeiro
-        steps.forEach(step => step.classList.remove('active'));
-        
-        // Avança para o próximo passo
-        currentStep++;
-        steps[currentStep].classList.add('active');
-        
-        // Atualiza o stepper visual
-        document.querySelectorAll('.step').forEach((step, index) => {
-            if (index <= currentStep) {
-                step.classList.add('active');
-            } else {
-                step.classList.remove('active');
-            }
-        });
-        
-        // Scroll para o topo
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        
-    } else {
-        console.log('Validação falhou, mostrando erros');
-        // Mostra mensagem de erro
-        alert('Por favor, preencha todos os campos obrigatórios corretamente antes de avançar.');
-    }
-}
 
-// Função para voltar ao passo anterior
-function prevStep() {
-    if (currentStep > 0) {
-        currentStep--;
-        showStep(currentStep);
-    }
-}
-
-// Modifique a função validateStep para incluir a validação específica
+// Função para validar o passo atual
 function validateStep(stepIndex) {
     let isValid = true;
     
@@ -179,9 +116,9 @@ function validateStep(stepIndex) {
             }
         });
         
-        // Validação adicional para descrição com mínimo de caracteres
+        // Validação adicional para descrição
         const descricao = document.getElementById('descricao');
-        if (descricao.value.length < 20) { // Alterei para 20 para testes, pode voltar para 200 depois
+        if (descricao.value.length < 20) {
             descricao.classList.add('is-invalid');
             document.querySelector('#step-1 .form-text').textContent = 'A descrição precisa ter pelo menos 20 caracteres';
             isValid = false;
@@ -192,7 +129,59 @@ function validateStep(stepIndex) {
         // Validação do passo 2 (Detalhes)
         isValid = validateStep2();
     }
-    // O passo 3 (Imagens) não precisa de validação antecipada
+    
+    return isValid;
+}
+
+// Função para validar o passo 2 (Detalhes)
+function validateStep2() {
+    let isValid = true;
+    
+    if (btnImovel.checked) {
+        // Validação para imóveis
+        if (!document.getElementById('tipo-imovel').value) {
+            document.getElementById('tipo-imovel').classList.add('is-invalid');
+            isValid = false;
+        } else {
+            document.getElementById('tipo-imovel').classList.remove('is-invalid');
+        }
+        
+        if (!document.getElementById('bairro').value.trim()) {
+            document.getElementById('bairro').classList.add('is-invalid');
+            isValid = false;
+        } else {
+            document.getElementById('bairro').classList.remove('is-invalid');
+        }
+        
+        if (!document.getElementById('area').value) {
+            document.getElementById('area').classList.add('is-invalid');
+            isValid = false;
+        } else {
+            document.getElementById('area').classList.remove('is-invalid');
+        }
+    } else {
+        // Validação para automóveis
+        if (!document.getElementById('marca').value) {
+            document.getElementById('marca').classList.add('is-invalid');
+            isValid = false;
+        } else {
+            document.getElementById('marca').classList.remove('is-invalid');
+        }
+        
+        if (!document.getElementById('modelo').value.trim()) {
+            document.getElementById('modelo').classList.add('is-invalid');
+            isValid = false;
+        } else {
+            document.getElementById('modelo').classList.remove('is-invalid');
+        }
+        
+        if (!document.getElementById('ano').value) {
+            document.getElementById('ano').classList.add('is-invalid');
+            isValid = false;
+        } else {
+            document.getElementById('ano').classList.remove('is-invalid');
+        }
+    }
     
     return isValid;
 }
@@ -292,100 +281,111 @@ function previewImages() {
 }
 
 // Event Listeners
-nextButtons.forEach(button => {
-    button.addEventListener('click', nextStep);
-});
-
-prevButtons.forEach(button => {
-    button.addEventListener('click', prevStep);
-});
-
-imageInput.addEventListener('change', previewImages);
-
-// Alternar entre imóvel e automóvel
-btnImovel.addEventListener('change', function() {
-    if (this.checked) {
-        document.getElementById('imovel-fields').style.display = 'block';
-        document.getElementById('automovel-fields').style.display = 'none';
-    }
-});
-
-btnAutomovel.addEventListener('change', function() {
-    if (this.checked) {
-        document.getElementById('imovel-fields').style.display = 'none';
-        document.getElementById('automovel-fields').style.display = 'block';
-    }
-});
-
-// Form Submission
-form.addEventListener('submit', async function(e) {
-    e.preventDefault();
+document.addEventListener('DOMContentLoaded', function() {
+    // Delegation para os botões
+    document.body.addEventListener('click', function(e) {
+        if (e.target.classList.contains('next-step')) {
+            e.preventDefault();
+            nextStep();
+        }
+        
+        if (e.target.classList.contains('prev-step')) {
+            e.preventDefault();
+            prevStep();
+        }
+    });
     
-    const user = auth.currentUser;
-    if (!user) {
-        alert('Você precisa estar logado para criar um anúncio');
-        return;
-    }
-    
-    try {
-        // Verificar se há imagens
-        if (selectedFiles.length === 0) {
-            alert('Por favor, adicione pelo menos uma imagem');
+    // Alternar entre imóvel e automóvel
+    btnImovel.addEventListener('change', function() {
+        if (this.checked) {
+            document.getElementById('imovel-fields').style.display = 'block';
+            document.getElementById('automovel-fields').style.display = 'none';
+        }
+    });
+
+    btnAutomovel.addEventListener('change', function() {
+        if (this.checked) {
+            document.getElementById('imovel-fields').style.display = 'none';
+            document.getElementById('automovel-fields').style.display = 'block';
+        }
+    });
+
+    // Preview de imagens
+    imageInput.addEventListener('change', previewImages);
+
+    // Form Submission
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const user = auth.currentUser;
+        if (!user) {
+            alert('Você precisa estar logado para criar um anúncio');
             return;
         }
         
-        // Obter dados do formulário
-        const formData = {
-            titulo: document.getElementById('titulo').value,
-            descricao: document.getElementById('descricao').value,
-            preco: parseFloat(document.getElementById('preco').value),
-            negociacao: document.querySelector('input[name="negociacao"]:checked').value,
-            userId: user.uid,
-            data: new Date(),
-            status: 'ativo'
-        };
-        
-        // Adicionar campos específicos
-        if (btnImovel.checked) {
-            formData.tipo = document.getElementById('tipo-imovel').value;
-            formData.bairro = document.getElementById('bairro').value;
-            formData.quartos = parseInt(document.getElementById('quartos').value) || 0;
-            formData.banheiros = parseInt(document.getElementById('banheiros').value) || 0;
-            formData.garagem = parseInt(document.getElementById('garagem').value) || 0;
-            formData.area = parseFloat(document.getElementById('area').value);
-            formData.mobiliado = document.getElementById('mobiliado').checked;
-            formData.aceitaAnimais = document.getElementById('aceita-animais').checked;
-            formData.endereco = document.getElementById('endereco').value;
-            formData.proximoA = document.getElementById('proximo-a').value;
+        try {
+            // Verificar se há imagens
+            if (selectedFiles.length === 0) {
+                alert('Por favor, adicione pelo menos uma imagem');
+                return;
+            }
             
-            // Upload de imagens e salvar no Firestore
-            const imageUrls = await uploadImages(selectedFiles, 'imoveis', user.uid);
-            formData.imagens = imageUrls;
+            // Obter dados do formulário
+            const formData = {
+                titulo: document.getElementById('titulo').value,
+                descricao: document.getElementById('descricao').value,
+                preco: parseFloat(document.getElementById('preco').value),
+                negociacao: document.querySelector('input[name="negociacao"]:checked').value,
+                userId: user.uid,
+                data: new Date(),
+                status: 'ativo'
+            };
             
-            await addDoc(collection(db, 'imoveis'), formData);
-        } else {
-            formData.marca = document.getElementById('marca').value;
-            formData.modelo = document.getElementById('modelo').value;
-            formData.ano = parseInt(document.getElementById('ano').value);
-            formData.km = parseInt(document.getElementById('km').value) || 0;
-            formData.cor = document.getElementById('cor').value;
-            formData.combustivel = document.getElementById('combustivel').value;
-            formData.cambio = document.getElementById('cambio').value;
+            // Adicionar campos específicos
+            if (btnImovel.checked) {
+                formData.tipo = document.getElementById('tipo-imovel').value;
+                formData.bairro = document.getElementById('bairro').value;
+                formData.quartos = parseInt(document.getElementById('quartos').value) || 0;
+                formData.banheiros = parseInt(document.getElementById('banheiros').value) || 0;
+                formData.garagem = parseInt(document.getElementById('garagem').value) || 0;
+                formData.area = parseFloat(document.getElementById('area').value);
+                formData.mobiliado = document.getElementById('mobiliado').checked;
+                formData.aceitaAnimais = document.getElementById('aceita-animais').checked;
+                formData.endereco = document.getElementById('endereco').value;
+                formData.proximoA = document.getElementById('proximo-a').value;
+                
+                // Upload de imagens e salvar no Firestore
+                const imageUrls = await uploadImages(selectedFiles, 'imoveis', user.uid);
+                formData.imagens = imageUrls;
+                
+                await addDoc(collection(db, 'imoveis'), formData);
+            } else {
+                formData.marca = document.getElementById('marca').value;
+                formData.modelo = document.getElementById('modelo').value;
+                formData.ano = parseInt(document.getElementById('ano').value);
+                formData.km = parseInt(document.getElementById('km').value) || 0;
+                formData.cor = document.getElementById('cor').value;
+                formData.combustivel = document.getElementById('combustivel').value;
+                formData.cambio = document.getElementById('cambio').value;
+                
+                // Upload de imagens e salvar no Firestore
+                const imageUrls = await uploadImages(selectedFiles, 'automoveis', user.uid);
+                formData.imagens = imageUrls;
+                
+                await addDoc(collection(db, 'automoveis'), formData);
+            }
             
-            // Upload de imagens e salvar no Firestore
-            const imageUrls = await uploadImages(selectedFiles, 'automoveis', user.uid);
-            formData.imagens = imageUrls;
+            alert('Anúncio criado com sucesso!');
+            window.location.href = 'perfil.html';
             
-            await addDoc(collection(db, 'automoveis'), formData);
+        } catch (error) {
+            console.error('Erro ao criar anúncio:', error);
+            alert('Erro ao criar anúncio. Por favor, tente novamente.');
         }
-        
-        alert('Anúncio criado com sucesso!');
-        window.location.href = 'perfil.html';
-        
-    } catch (error) {
-        console.error('Erro ao criar anúncio:', error);
-        alert('Erro ao criar anúncio. Por favor, tente novamente.');
-    }
+    });
+
+    // Inicialização
+    showStep(0);
 });
 
 // Função para fazer upload das imagens
@@ -401,97 +401,3 @@ async function uploadImages(files, folder, userId) {
     
     return urls;
 }
-
-
-
-
-// Adicione esta função para validar o passo 2 (Detalhes)
-function validateStep2() {
-    let isValid = true;
-    
-    // Verifica se é imóvel ou automóvel
-    if (document.getElementById('btn-imovel').checked) {
-        // Validação para imóveis
-        if (!document.getElementById('tipo-imovel').value) {
-            document.getElementById('tipo-imovel').classList.add('is-invalid');
-            isValid = false;
-        } else {
-            document.getElementById('tipo-imovel').classList.remove('is-invalid');
-        }
-        
-        if (!document.getElementById('bairro').value.trim()) {
-            document.getElementById('bairro').classList.add('is-invalid');
-            isValid = false;
-        } else {
-            document.getElementById('bairro').classList.remove('is-invalid');
-        }
-        
-        if (!document.getElementById('area').value) {
-            document.getElementById('area').classList.add('is-invalid');
-            isValid = false;
-        } else {
-            document.getElementById('area').classList.remove('is-invalid');
-        }
-    } else {
-        // Validação para automóveis
-        if (!document.getElementById('marca').value) {
-            document.getElementById('marca').classList.add('is-invalid');
-            isValid = false;
-        } else {
-            document.getElementById('marca').classList.remove('is-invalid');
-        }
-        
-        if (!document.getElementById('modelo').value.trim()) {
-            document.getElementById('modelo').classList.add('is-invalid');
-            isValid = false;
-        } else {
-            document.getElementById('modelo').classList.remove('is-invalid');
-        }
-        
-        if (!document.getElementById('ano').value) {
-            document.getElementById('ano').classList.add('is-invalid');
-            isValid = false;
-        } else {
-            document.getElementById('ano').classList.remove('is-invalid');
-        }
-    }
-    
-    return isValid;
-}
-// Inicialização
-showStep(0);
-
-
-// Adicione no final do seu arquivo anunciar.js, antes do "Inicialização"
-document.querySelectorAll('.next-step').forEach(button => {
-    button.addEventListener('click', function(e) {
-        e.preventDefault();
-        nextStep();
-    });
-});
-
-document.querySelectorAll('.prev-step').forEach(button => {
-    button.addEventListener('click', function(e) {
-        e.preventDefault();
-        prevStep();
-    });
-});
-
-// Debug: Verifique se os cliques estão sendo registrados
-document.addEventListener('click', function(e) {
-    // Verifica clique no "Próximo"
-    if (e.target.classList.contains('next-step')) {
-        console.log('Botão próximo clicado - evento capturado');
-        nextStep(); // Chama a função para avançar
-    }
-    
-    // Verifica clique no "Anterior"
-    if (e.target.classList.contains('prev-step')) {
-        console.log('Botão anterior clicado - evento capturado');
-        prevStep(); // Chama a função para voltar
-    }
-    
-    // Debug adicional - mostra informações do elemento clicado
-    console.log('Elemento clicado:', e.target);
-    console.log('Classes do elemento:', e.target.classList);
-});
