@@ -622,13 +622,30 @@ function preencherBairros() {
 }
 
 function toggleFields(tipo) {
-    document.getElementById("resultados").innerHTML = "";
-    document.getElementById("campos-imovel").style.display = tipo === "imovel" ? "block" : "none";
-    document.getElementById("campos-carro").style.display = tipo === "carro" ? "block" : "none";
-    
-    // Resetar os campos quando trocar o tipo
-    if (tipo === "imovel") {
-        document.getElementById("form-pesquisa").reset();
+    // 1. Verificar e limpar resultados
+    const resultados = document.getElementById("resultados");
+    if (resultados) resultados.innerHTML = "";
+
+    // 2. Alternar visibilidade dos campos de imóvel
+    const camposImovel = document.getElementById("campos-imovel");
+    if (camposImovel) {
+        camposImovel.style.display = tipo === "imovel" ? "block" : "none";
+    } else {
+        console.error("Elemento 'campos-imovel' não encontrado");
+    }
+
+    // 3. Alternar visibilidade dos campos de automóvel
+    const camposCarro = document.getElementById("campos-carro");
+    if (camposCarro) {
+        camposCarro.style.display = tipo === "carro" ? "block" : "none";
+    } else {
+        console.error("Elemento 'campos-carro' não encontrado");
+    }
+
+    // 4. Resetar formulário se necessário
+    const formPesquisa = document.getElementById("form-pesquisa");
+    if (formPesquisa && tipo === "imovel") {
+        formPesquisa.reset();
     }
 }
 
@@ -770,21 +787,40 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
     // Configuração dos botões de tipo
+   // Configuração dos botões de tipo - versão segura
     const tipoOptions = document.querySelectorAll(".tipo-option");
     const tipoInput = document.getElementById("tipo");
-    if (tipoOptions.length > 0) {
+    
+    if (tipoOptions.length > 0 && tipoInput) {
         tipoOptions.forEach((option) => {
             option.addEventListener("click", function() {
-                tipoOptions.forEach((opt) => opt.classList.remove("active"));
-                this.classList.add("active");
-                tipoInput.value = this.getAttribute("data-tipo");
-                toggleFields(tipoInput.value);
+                // Verificar se é um elemento válido
+                if (!this.getAttribute) return;
+                
+                tipoOptions.forEach((opt) => {
+                    if (opt.classList) opt.classList.remove("active");
+                });
+                
+                if (this.classList) this.classList.add("active");
+                
+                const novoTipo = this.getAttribute("data-tipo");
+                if (novoTipo) {
+                    tipoInput.value = novoTipo;
+                    toggleFields(novoTipo);
+                }
             });
         });
-        tipoOptions[0].classList.add("active");
-        toggleFields("imovel");
+        
+        // Inicializar com o primeiro botão ativo (se existir)
+        if (tipoOptions[0] && tipoOptions[0].classList) {
+            tipoOptions[0].classList.add("active");
+            const tipoInicial = tipoOptions[0].getAttribute("data-tipo");
+            if (tipoInicial) {
+                tipoInput.value = tipoInicial;
+                toggleFields(tipoInicial);
+            }
+        }
     }
-
     // Configuração do botão de anunciar
     document.getElementById("btn-anunciar")?.addEventListener("click", () => {
         window.location.href = "anunciar.html";
@@ -822,4 +858,8 @@ window.buscarCarros = buscarCarros;
 window.buscarImoveis = buscarImoveis;
 window.carregarImoveisDestaque = carregarImoveisDestaque;
 window.preencherBairros = preencherBairros;
-
+console.log("Elementos no DOM:");
+console.log("campos-imovel:", document.getElementById("campos-imovel"));
+console.log("campos-carro:", document.getElementById("campos-carro"));
+console.log("resultados:", document.getElementById("resultados"));
+console.log("form-pesquisa:", document.getElementById("form-pesquisa"));
