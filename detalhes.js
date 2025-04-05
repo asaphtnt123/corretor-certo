@@ -71,13 +71,14 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     const urlParams = new URLSearchParams(window.location.search);
     const anuncioId = urlParams.get('id');
+    console.log("ID do anúncio:", anuncioId);
+
 
     const adType = urlParams.get('tipo'); // 'imovel' ou 'carro'
     
-    if (!adId || !adType) {
-        showError("Anúncio não especificado");
-        return;
-    }
+    if (!anuncioId) {
+  throw new Error("Anúncio não especificado");
+}
     
     try {
         // Mostrar loading
