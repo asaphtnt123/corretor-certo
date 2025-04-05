@@ -882,6 +882,150 @@ function showAlert(message, type = 'success') {
         alert(`${type.toUpperCase()}: ${message}`);
     }
 }
+
+
+
+// Função para carregar os anúncios do usuário
+async function carregarMeusAnuncios() {
+    const user = auth.currentUser;
+    if (!user) {
+        // Redirecionar para login se não estiver autenticado
+        window.location.href = "login.html";
+        return;
+    }
+
+    try {
+        // Carregar imóveis do usuário
+        const imoveisRef = collection(db, "imoveis");
+        const qImoveis = query(imoveisRef, where("userId", "==", user.uid));
+        const imoveisSnapshot = await getDocs(qImoveis);
+        
+        const gridImoveis = document.getElementById("grid-imoveis");
+        gridImoveis.innerHTML = '';
+        
+        imoveisSnapshot.forEach(doc => {
+            const data = doc.data();
+            data.id = doc.id;
+            gridImoveis.appendChild(criarCardAnuncio(data, false));
+        });
+        
+        if (imoveisSnapshot.empty) {
+            gridImoveis.innerHTML = '<div class="no-results">Nenhum imóvel cadastrado</div>';
+        }
+
+        // Carregar automóveis do usuário
+        const automoveisRef = collection(db, "automoveis");
+        const qAutomoveis = query(automoveisRef, where("userId", "==", user.uid));
+        const automoveisSnapshot = await getDocs(qAutomoveis);
+        
+        const gridAutomoveis = document.getElementById("grid-automoveis");
+        gridAutomoveis.innerHTML = '';
+        
+        automoveisSnapshot.forEach(doc => {
+            const data = doc.data();
+            data.id = doc.id;
+            gridAutomoveis.appendChild(criarCardAnuncio(data, true));
+        });
+        
+        if (automoveisSnapshot.empty) {
+            gridAutomoveis.innerHTML = '<div class="no-results">Nenhum automóvel cadastrado</div>';
+        }
+        
+        // Iniciar animação de brilho aleatório
+        iniciarAnimacaoBrilho();
+        
+    } catch (error) {
+        console.error("Erro ao carregar anúncios:", error);
+        showAlert("Erro ao carregar seus anúncios", "error");
+    }
+}
+
+// Função para criar card de anúncio
+function criarCardAnuncio(anuncio, isAutomovel) {
+    const card = document.createElement('div');
+    card.className = 'anuncio-card';
+    
+    const imagemPrincipal = anuncio.imagens && anuncio.imagens.length > 0 ? 
+        anuncio.imagens[0] : (isAutomovel ? 'carro.png' : 'casa.png');
+    
+    card.innerHTML = `
+        <img src="${imagemPrincipal}" alt="${anuncio.titulo}" class="anuncio-img">
+        <div class="anuncio-info">
+            <h4 class="anuncio-titulo">${anuncio.titulo || 'Sem título'}</h4>
+            <p class="anuncio-preco">R$ ${anuncio.preco?.toLocaleString('pt-BR') || '--'}</p>
+        </div>
+    `;
+    
+    // Evento de clique para abrir detalhes
+    card.addEventListener('click', () => {
+        window.location.href = `detalhes.html?id=${anuncio.id}&tipo=${isAutomovel ? 'carro' : 'imovel'}`;
+    });
+    
+    return card;
+}
+
+// Função para animação de brilho aleatório
+function iniciarAnimacaoBrilho() {
+    const cards = document.querySelectorAll('.anuncio-card');
+    
+    // Primeiro ativa todos os cards com atraso aleatório
+    cards.forEach(card => {
+        const delay = Math.random() * 3000;
+        setTimeout(() => {
+            card.classList.add('active');
+        }, delay);
+    });
+    
+    // Depois mantém a animação em loop com brilhos aleatórios
+    setInterval(() => {
+        const randomIndex = Math.floor(Math.random() * cards.length);
+        const randomCard = cards[randomIndex];
+        
+        // Adiciona classe de destaque
+        randomCard.classList.add('highlight');
+        
+        // Remove após a animação
+        setTimeout(() => {
+            randomCard.classList.remove('highlight');
+        }, 2000);
+        
+    }, 1000);
+}
+
+// Configurar tabs
+function setupAnunciosTabs() {
+    const tabs = document.querySelectorAll('.tab-btn');
+    const grids = document.querySelectorAll('.metal-grid');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Remover active de todas as tabs e grids
+            tabs.forEach(t => t.classList.remove('active'));
+            grids.forEach(g => g.classList.remove('active'));
+            
+            // Adicionar active na tab clicada
+            tab.classList.add('active');
+            
+            // Mostrar grid correspondente
+            const tabId = tab.getAttribute('data-tab');
+            document.getElementById(`grid-${tabId}`).classList.add('active');
+        });
+    });
+}
+
+// Chamar as funções quando o DOM estiver pronto
+document.addEventListener("DOMContentLoaded", function() {
+    if (document.querySelector('.meus-anuncios')) {
+        setupAnunciosTabs();
+        
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                carregarMeusAnuncios();
+            }
+        });
+    }
+});
+
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
 window.openDetailsModal = openDetailsModal;
