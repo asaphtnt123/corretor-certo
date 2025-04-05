@@ -897,7 +897,12 @@ main {
     display: block;    /* Garante que a imagem seja um bloco (sem espaçamento indesejado) */
     border-radius: 8px; /* Borda arredondada nas imagens */
 }
-
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
 /* Estilo do card */
 .card {
     display: flex;
