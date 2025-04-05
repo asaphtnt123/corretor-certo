@@ -1776,15 +1776,15 @@ body {
 /* ============ HEADER STYLES ============ */
 .header {
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    padding: 15px 0;
+    padding: 12px 0;
     position: fixed;
     width: 100%;
     top: 0;
     z-index: 1000;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .container {
@@ -1797,57 +1797,37 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    position: relative;
 }
 
-/* Estilo do Logo */
+/* Estilo do Logo - Tamanhos fixos */
 .logo {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #fff;
-    text-decoration: none;
     display: flex;
     align-items: center;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    padding: 5px 0;
-    font-family: 'Montserrat', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 2px;
+    text-decoration: none;
 }
 
-.logo::before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, #f1c40f, #e74c3c);
-    transform: scaleX(0);
-    transform-origin: right;
-    transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
-}
-
-.logo:hover::before {
-    transform: scaleX(1);
-    transform-origin: left;
+#logoContainer {
+    height: 40px; /* Altura fixa para o container do logo */
+    display: flex;
+    align-items: center;
 }
 
 .logo-placeholder {
-    display: inline-block;
-    min-width: 180px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    color: #fff;
+    font-size: 1.5rem; /* Tamanho adequado para desktop */
+    text-transform: uppercase;
+    letter-spacing: 1px;
     background: linear-gradient(90deg, #f1c40f, #ffffff);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    animation: placeholderShine 3s infinite;
+    transition: transform 0.3s ease;
 }
 
-@keyframes placeholderShine {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+.logo:hover .logo-placeholder {
+    transform: scale(1.05);
 }
 
 /* Botão de Login */
@@ -1861,92 +1841,57 @@ body {
     align-items: center;
     color: white;
     text-decoration: none;
-    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-    position: relative;
+    transition: all 0.3s ease;
     padding: 8px 16px;
     border-radius: 50px;
-    overflow: hidden;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.user-icon::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, rgba(52, 152, 219, 0.3) 0%, rgba(231, 76, 60, 0.3) 100%);
-    z-index: -1;
-    transition: all 0.4s ease;
-    opacity: 0;
-}
-
-.user-icon:hover::before {
-    opacity: 1;
+.user-icon:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
 }
 
 .user-icon p {
     margin: 0;
-    font-weight: 600;
-    font-size: 1rem;
-    position: relative;
-}
-
-.user-icon:hover p {
-    transform: translateX(5px);
-}
-
-.user-icon::after {
-    content: '→';
-    position: absolute;
-    right: 15px;
-    opacity: 0;
-    transition: all 0.3s ease;
-}
-
-.user-icon:hover::after {
-    opacity: 1;
-    right: 10px;
-}
-
-/* Efeito de brilho sutil */
-.header::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    font-weight: 500;
+    font-size: 0.9rem;
 }
 
 /* Responsividade */
-@media (max-width: 768px) {
-    .logo {
-        font-size: 1.5rem;
-    }
-    
+@media (max-width: 992px) {
     .logo-placeholder {
-        min-width: 140px;
-    }
-    
-    .user-icon p {
-        font-size: 0.9rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .logo {
         font-size: 1.3rem;
-        letter-spacing: 1px;
     }
     
     .user-icon {
         padding: 6px 12px;
     }
+}
+
+@media (max-width: 768px) {
+    .header {
+        padding: 10px 0;
+    }
+    
+    .logo-placeholder {
+        font-size: 1.1rem;
+        letter-spacing: 0.5px;
+    }
     
     .user-icon p {
         font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo-placeholder {
+        font-size: 1rem;
+    }
+    
+    .user-icon {
+        padding: 5px 10px;
     }
 }
 /* Estilo para a página de anúncio */
