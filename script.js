@@ -888,11 +888,26 @@ function showAlert(message, type = 'success') {
 // Variáveis globais para paginação
 let currentImoveisPage = 1;
 let currentAutomoveisPage = 1;
-const itemsPerPage = 12; // Ajuste conforme necessário
+const itemsPerPage = 12;
 
-// Função para carregar todos os anúncios com paginação
+// Função principal para carregar anúncios
 async function carregarTodosAnunciosPaginados() {
     try {
+        // Mostrar estado de carregamento
+        document.getElementById('grid-imoveis').innerHTML = `
+            <div class="grid-placeholder">
+                <div class="spinner"></div>
+                <p>Carregando imóveis disponíveis...</p>
+            </div>
+        `;
+        
+        document.getElementById('grid-automoveis').innerHTML = `
+            <div class="grid-placeholder">
+                <div class="spinner"></div>
+                <p>Carregando automóveis disponíveis...</p>
+            </div>
+        `;
+
         // Carregar imóveis
         const imoveisRef = collection(db, "imoveis");
         const imoveisSnapshot = await getDocs(imoveisRef);
@@ -920,11 +935,13 @@ async function carregarTodosAnunciosPaginados() {
         exibirAnunciosPaginados(allAutomoveis, 'automoveis', currentAutomoveisPage);
         
         // Iniciar efeitos visuais
-        iniciarEfeitosVisuais();
+        iniciarEfeitosMetalicos();
         
     } catch (error) {
         console.error("Erro ao carregar anúncios:", error);
-        showAlert("Erro ao carregar os anúncios", "error");   // Mostrar estado de erro nas grids
+        showAlert("Erro ao carregar os anúncios", "error");
+        
+        // Mostrar estado de erro nas grids
         document.querySelectorAll('.metal-grid').forEach(grid => {
             grid.innerHTML = `
                 <div class="error-message">
@@ -942,90 +959,128 @@ async function carregarTodosAnunciosPaginados() {
     }
 }
 
-// Função para iniciar efeitos visuais
-function iniciarEfeitosVisuais() {
-    // Efeito de brilho aleatório
-    const cards = document.querySelectorAll('.anuncio-card');
-    
-    // Aplicar brilho inicial
-    cards.forEach(card => {
-        const delay = Math.random() * 3000;
-        setTimeout(() => {
-            card.classList.add('glow');
-            setTimeout(() => card.classList.remove('glow'), 2000);
-        }, delay);
-    });
-    
-    // Continuar com brilho aleatório
-    setInterval(() => {
-        const randomIndex = Math.floor(Math.random() * cards.length);
-        const randomCard = cards[randomIndex];
-        
-        randomCard.classList.add('glow');
-        setTimeout(() => {
-            randomCard.classList.remove('glow');
-        }, 2000);
-    }, 1000);
-}
-
+// Função para exibir anúncios paginados
 function exibirAnunciosPaginados(anuncios, tipo, pagina) {
     const grid = document.getElementById(`grid-${tipo}`);
     
+    // Verificar se a grid existe
     if (!grid) {
         console.error(`Elemento grid-${tipo} não encontrado`);
         return;
     }
 
-    // Mostrar estado de carregamento
-    grid.innerHTML = `
-        <div class="grid-placeholder">
-            <div class="spinner"></div>
-            <p>Carregando anúncios...</p>
+    // Limpar a grid
+    grid.innerHTML = '';
+    
+    if (!anuncios || anuncios.length === 0) {
+        grid.innerHTML = `
+            <div class="no-results">
+                <i class="fas fa-info-circle"></i>
+                <p>Nenhum ${tipo === 'imoveis' ? 'imóvel' : 'automóvel'} disponível</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const totalPages = Math.ceil(anuncios.length / itemsPerPage);
+    const startIndex = (pagina - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, anuncios.length);
+    
+    // Criar fragmento para melhor performance
+    const fragment = document.createDocumentFragment();
+    
+    for (let i = startIndex; i < endIndex; i++) {
+        const anuncio = anuncios[i];
+        try {
+            const card = criarCardAnuncio(anuncio, tipo === 'automoveis');
+            if (card) fragment.appendChild(card);
+        } catch (error) {
+            console.error("Erro ao criar card:", error);
+        }
+    }
+    
+    grid.appendChild(fragment);
+    
+    // Atualizar controles de paginação
+    updatePaginationControls(pagina, totalPages, tipo);
+}
+
+// Função para criar cards de anúncio com efeito metalizado
+function criarCardAnuncio(anuncio, isAutomovel) {
+    const card = document.createElement('div');
+    card.className = 'anuncio-card metal-card';
+    
+    // Imagem principal ou padrão
+    const imagemPadrao = isAutomovel ? 'images/car-default.jpg' : 'images/house-default.jpg';
+    const imagemPrincipal = anuncio.imagens && anuncio.imagens.length > 0 ? 
+        anuncio.imagens[0] : imagemPadrao;
+    
+    // Formatar preço
+    const precoFormatado = anuncio.preco ? 
+        `R$ ${anuncio.preco.toLocaleString('pt-BR')}` : 'Preço sob consulta';
+    
+    // Criar conteúdo do card
+    card.innerHTML = `
+        <div class="metal-effect"></div>
+        <div class="card-image-container">
+            <img src="${imagemPrincipal}" alt="${anuncio.titulo || 'Anúncio'}" class="card-image" loading="lazy">
+            <div class="card-badge">${isAutomovel ? 'Carro' : 'Imóvel'}</div>
+        </div>
+        <div class="card-content">
+            <h3 class="card-title">${anuncio.titulo || 'Sem título'}</h3>
+            <p class="card-price">${precoFormatado}</p>
+            <div class="card-details">
+                ${isAutomovel ? 
+                    `<span><i class="fas fa-car"></i> ${anuncio.marca || ''} ${anuncio.modelo || ''}</span>
+                     <span><i class="fas fa-calendar-alt"></i> ${anuncio.ano || 'Ano não informado'}</span>` : 
+                    `<span><i class="fas fa-map-marker-alt"></i> ${anuncio.bairro || 'Local não informado'}</span>
+                     <span><i class="fas fa-expand"></i> ${anuncio.area ? anuncio.area + 'm²' : 'Área não informada'}</span>`
+                }
+            </div>
+        </div>
+        <div class="card-hover-effect">
+            <button class="btn-view-more">Ver detalhes</button>
         </div>
     `;
     
-    // Usar setTimeout para permitir que a UI atualize
-    setTimeout(() => {
-        try {
-            grid.innerHTML = '';
-            
-            if (!anuncios || anuncios.length === 0) {
-                grid.innerHTML = '<div class="no-results">Nenhum anúncio disponível</div>';
-                return;
-            }
-            
-            const totalPages = Math.ceil(anuncios.length / itemsPerPage);
-            const startIndex = (pagina - 1) * itemsPerPage;
-            const endIndex = Math.min(startIndex + itemsPerPage, anuncios.length);
-            
-            for (let i = startIndex; i < endIndex; i++) {
-                const anuncio = anuncios[i];
-                const card = criarCardAnuncio(anuncio, tipo === 'automoveis');
-                if (card) grid.appendChild(card);
-            }
-            
-            // Atualizar controles de paginação
-            updatePaginationControls(pagina, totalPages, tipo);
-            
-        } catch (error) {
-            console.error("Erro ao exibir anúncios:", error);
-            grid.innerHTML = `
-                <div class="error-message">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <p>Erro ao carregar anúncios</p>
-                    <button class="retry-btn">Tentar novamente</button>
-                </div>
-            `;
-            
-            // Configurar botão de tentar novamente
-            grid.querySelector('.retry-btn')?.addEventListener('click', carregarTodosAnunciosPaginados);
-        }
-    }, 100);
+    // Adicionar evento de clique
+    card.addEventListener('click', () => {
+        window.location.href = `detalhes.html?id=${anuncio.id}&tipo=${isAutomovel ? 'carro' : 'imovel'}`;
+    });
+    
+    return card;
 }
 
+// Efeitos metalizados
+function iniciarEfeitosMetalicos() {
+    const cards = document.querySelectorAll('.metal-card');
+    
+    // Efeito inicial
+    cards.forEach((card, index) => {
+        const delay = index * 100;
+        setTimeout(() => {
+            card.classList.add('metal-in');
+        }, delay);
+    });
+    
+    // Efeito contínuo de brilho
+    setInterval(() => {
+        const randomIndex = Math.floor(Math.random() * cards.length);
+        const randomCard = cards[randomIndex];
+        
+        if (randomCard) {
+            randomCard.classList.add('metal-glow');
+            setTimeout(() => {
+                randomCard.classList.remove('metal-glow');
+            }, 2000);
+        }
+    }, 3000);
+}
+
+// Atualizar controles de paginação
 function updatePaginationControls(currentPage, totalPages, tipo) {
-    const currentPageElement = document.querySelector(`.grid-pagination .current-page`);
-    const totalPagesElement = document.querySelector(`.grid-pagination .total-pages`);
+    const currentPageElement = document.querySelector('.grid-pagination .current-page');
+    const totalPagesElement = document.querySelector('.grid-pagination .total-pages');
     const prevBtn = document.querySelector('.prev-btn');
     const nextBtn = document.querySelector('.next-btn');
     
@@ -1043,11 +1098,38 @@ function updatePaginationControls(currentPage, totalPages, tipo) {
     }
 }
 
-// Configurar eventos
+// Configurar abas
+function setupAnunciosTabs() {
+    const tabs = document.querySelectorAll('.anuncios-tabs .tab-btn');
+    const grids = document.querySelectorAll('.metal-grid');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Ativar aba clicada
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // Mostrar grid correspondente
+            grids.forEach(g => g.classList.remove('active'));
+            const tabId = tab.getAttribute('data-tab');
+            document.getElementById(`grid-${tabId}`).classList.add('active');
+            
+            // Resetar paginação quando mudar de aba
+            if (tabId === 'imoveis') {
+                currentImoveisPage = 1;
+            } else {
+                currentAutomoveisPage = 1;
+            }
+        });
+    });
+}
+
+// Configurar controles de navegação
 function setupAnunciosControls() {
-    // Controles de paginação
-    document.querySelector('.prev-btn').addEventListener('click', () => {
-        const activeTab = document.querySelector('.tab-btn.active').getAttribute('data-tab');
+    // Botão anterior
+    document.querySelector('.prev-btn')?.addEventListener('click', () => {
+        const activeTab = document.querySelector('.anuncios-tabs .tab-btn.active').getAttribute('data-tab');
+        
         if (activeTab === 'imoveis' && currentImoveisPage > 1) {
             currentImoveisPage--;
             carregarTodosAnunciosPaginados();
@@ -1057,8 +1139,9 @@ function setupAnunciosControls() {
         }
     });
     
-    document.querySelector('.next-btn').addEventListener('click', () => {
-        const activeTab = document.querySelector('.tab-btn.active').getAttribute('data-tab');
+    // Botão próximo
+    document.querySelector('.next-btn')?.addEventListener('click', () => {
+        const activeTab = document.querySelector('.anuncios-tabs .tab-btn.active').getAttribute('data-tab');
         const totalPages = parseInt(document.querySelector('.total-pages').textContent);
         
         if (activeTab === 'imoveis' && currentImoveisPage < totalPages) {
@@ -1069,106 +1152,14 @@ function setupAnunciosControls() {
             carregarTodosAnunciosPaginados();
         }
     });
-    
-    // Tabs
-    const tabs = document.querySelectorAll('.tab-btn');
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            
-            document.querySelectorAll('.metal-grid').forEach(grid => {
-                grid.classList.remove('active');
-            });
-            
-            const tabId = tab.getAttribute('data-tab');
-            document.getElementById(`grid-${tabId}`).classList.add('active');
-        });
-    });
 }
 
-
-function criarCardAnuncio(anuncio, isAutomovel) {
-    const card = document.createElement('div');
-    card.className = 'anuncio-card';
-    
-    // Define a imagem padrão baseada no tipo de anúncio
-    const imagemPadrao = isAutomovel ? 'carro.png' : 'casa.png';
-    const imagemPrincipal = anuncio.imagens && anuncio.imagens.length > 0 ? 
-        anuncio.imagens[0] : imagemPadrao;
-    
-    // Formata o preço
-    const precoFormatado = anuncio.preco ? 
-        `R$ ${anuncio.preco.toLocaleString('pt-BR')}` : 'Preço sob consulta';
-    
-    // Cria o conteúdo do card
-    card.innerHTML = `
-        <div class="card-metal-effect"></div>
-        <img src="${imagemPrincipal}" alt="${anuncio.titulo || 'Anúncio'}" class="anuncio-img">
-        <div class="anuncio-info">
-            <h4 class="anuncio-titulo">${anuncio.titulo || 'Sem título'}</h4>
-            <p class="anuncio-preco">${precoFormatado}</p>
-            ${isAutomovel ? 
-                `<p class="anuncio-detalhe"><i class="fas fa-car"></i> ${anuncio.marca || ''} ${anuncio.modelo || ''}</p>` : 
-                `<p class="anuncio-detalhe"><i class="fas fa-map-marker-alt"></i> ${anuncio.bairro || 'Local não informado'}</p>`
-            }
-        </div>
-        <div class="card-badge">${isAutomovel ? 'Carro' : 'Imóvel'}</div>
-    `;
-    
-    // Adiciona evento de clique
-    card.addEventListener('click', () => {
-        window.location.href = `detalhes.html?id=${anuncio.id}&tipo=${isAutomovel ? 'carro' : 'imovel'}`;
-    });
-    
-    return card;
-}
-
-// Função para animação de brilho aleatório (mantida igual)
-function iniciarAnimacaoBrilho() {
-    const cards = document.querySelectorAll('.anuncio-card');
-    
-    cards.forEach(card => {
-        const delay = Math.random() * 3000;
-        setTimeout(() => {
-            card.classList.add('active');
-        }, delay);
-    });
-    
-    setInterval(() => {
-        const randomIndex = Math.floor(Math.random() * cards.length);
-        const randomCard = cards[randomIndex];
-        
-        randomCard.classList.add('highlight');
-        setTimeout(() => {
-            randomCard.classList.remove('highlight');
-        }, 2000);
-    }, 1000);
-}
-
-// Configurar tabs (mantida igual)
-function setupAnunciosTabs() {
-    const tabs = document.querySelectorAll('.tab-btn');
-    const grids = document.querySelectorAll('.metal-grid');
-    
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            grids.forEach(g => g.classList.remove('active'));
-            
-            tab.classList.add('active');
-            const tabId = tab.getAttribute('data-tab');
-            document.getElementById(`grid-${tabId}`).classList.add('active');
-        });
-    });
-}
-
-// Inicialização (atualizada para carregar todos anúncios)
+// Inicialização
 document.addEventListener("DOMContentLoaded", function() {
-    if (document.querySelector('.todos-anuncios')) {
+    if (document.querySelector('.meus-anuncios')) {
         setupAnunciosTabs();
-        setupAnunciosControls(); // Adicionar esta linha
-        carregarTodosAnunciosPaginados(); // Corrigir o nome da função
+        setupAnunciosControls();
+        carregarTodosAnunciosPaginados();
     }
 });
 // ============== EXPORTAÇÕES GLOBAIS ==============
