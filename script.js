@@ -486,34 +486,6 @@ function criarCardImovel(imovel) {
     
     return card;
 }
-// ============== FUNÇÕES DE CARREGAMENTO ==============
-async function carregarImoveisDestaque() {
-    try {
-        const destaqueRef = collection(db, "imoveis");
-        const destaqueQuery = query(destaqueRef, where("destaque", "==", true));
-        const querySnapshot = await getDocs(destaqueQuery);
-
-        const destaqueContainer = document.getElementById("destaqueContainer");
-        destaqueContainer.innerHTML = '';
-
-        if (querySnapshot.empty) {
-            console.log("Nenhum imóvel em destaque encontrado.");
-            return;
-        }
-
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            data.id = doc.id;
-            destaqueContainer.appendChild(criarCardComEvento(data, false));
-        });
-
-    } catch (error) {
-        console.error("Erro ao carregar destaques:", error);
-        document.getElementById("destaqueContainer").innerHTML = `
-            <p>Erro ao carregar destaques. Verifique suas permissões.</p>
-        `;
-    }
-}
 
 async function carregarLogo() {
     try {
@@ -680,7 +652,132 @@ function toggleFields(tipo) {
         formPesquisa.reset();
     }
 }
+// Função para criar cards de destaque
+function criarCardDestaque(dados, isAutomovel = false) {
+    const card = document.createElement('div');
+    card.className = 'highlight-card';
+    
+    // Adiciona classe aleatória para efeito de brilho (1 em cada 3 cards)
+    if (Math.random() < 0.33) {
+        card.classList.add('random-glow');
+    }
+    
+    const imagens = dados.imagens || ["images/default.jpg"];
+    const isFavorito = verificarFavorito(dados.id);
+    
+    card.innerHTML = `
+        <div class="card-image-container">
+            <img src="${imagens[0]}" alt="${dados.titulo}" class="card-image" loading="lazy">
+            <div class="card-badge">Destaque</div>
+            <button class="favorite-btn ${isFavorito ? 'favorited' : ''}" data-ad-id="${dados.id}">
+                <i class="fas fa-heart"></i>
+            </button>
+        </div>
+        <div class="card-content">
+            <h3 class="card-title">${dados.titulo || 'Sem título'}</h3>
+            <p class="card-price">R$ ${dados.preco?.toLocaleString('pt-BR') || 'Sob consulta'}</p>
+            <div class="card-details">
+                ${isAutomovel ? `
+                    <span><i class="fas fa-car"></i> ${dados.marca || 'Marca não informada'}</span>
+                    <span><i class="fas fa-tag"></i> ${dados.modelo || 'Modelo não informado'}</span>
+                    <span><i class="fas fa-calendar-alt"></i> ${dados.ano || 'Ano não informado'}</span>
+                ` : `
+                    <span><i class="fas fa-map-marker-alt"></i> ${dados.bairro || 'Local não informado'}</span>
+                    <span><i class="fas fa-expand"></i> ${dados.area ? dados.area + 'm²' : 'Área não informada'}</span>
+                    <span><i class="fas fa-bed"></i> ${dados.quartos || 0} quarto(s)</span>
+                `}
+            </div>
+        </div>
+        <div class="card-hover-effect">
+            <button class="btn-view-more">Ver Detalhes</button>
+        </div>
+    `;
+    
+    // Animação de entrada
+    setTimeout(() => {
+        card.classList.add('metal-in');
+    }, 100);
+    
+    // Evento do botão de favoritos
+    card.querySelector('.favorite-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        toggleFavorito(dados);
+    });
+    
+    // Evento de clique no card
+    card.addEventListener('click', (e) => {
+        if (!e.target.closest('button')) {
+            window.location.href = `detalhes.html?id=${dados.id}&tipo=${isAutomovel ? 'carro' : 'imovel'}`;
+        }
+    });
+    
+    return card;
+}
 
+// Função para carregar destaques
+async function carregarDestaques() {
+    try {
+        const destaqueContainer = document.getElementById('destaqueContainer');
+        destaqueContainer.innerHTML = '<div class="highlight-loading">Carregando destaques...</div>';
+        
+        // Carregar imóveis em destaque
+        const imoveisRef = collection(db, "imoveis");
+        const imoveisQuery = query(imoveisRef, where("destaque", "==", true));
+        const imoveisSnapshot = await getDocs(imoveisQuery);
+        
+        // Carregar automóveis em destaque
+        const automoveisRef = collection(db, "automoveis");
+        const automoveisQuery = query(automoveisRef, where("destaque", "==", true));
+        const automoveisSnapshot = await getDocs(automoveisQuery);
+        
+        // Limpar container
+        destaqueContainer.innerHTML = '';
+        
+        // Adicionar imóveis em destaque
+        imoveisSnapshot.forEach(doc => {
+            const data = doc.data();
+            data.id = doc.id;
+            destaqueContainer.appendChild(criarCardDestaque(data, false));
+        });
+        
+        // Adicionar automóveis em destaque
+        automoveisSnapshot.forEach(doc => {
+            const data = doc.data();
+            data.id = doc.id;
+            destaqueContainer.appendChild(criarCardDestaque(data, true));
+        });
+        
+        // Se não houver destaques
+        if (imoveisSnapshot.empty && automoveisSnapshot.empty) {
+            destaqueContainer.innerHTML = `
+                <div class="highlight-empty">
+                    <i class="fas fa-star"></i>
+                    <p>Nenhum anúncio em destaque no momento</p>
+                </div>
+            `;
+        }
+        
+    } catch (error) {
+        console.error("Erro ao carregar destaques:", error);
+        document.getElementById('destaqueContainer').innerHTML = `
+            <div class="highlight-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Erro ao carregar destaques</p>
+                <button class="retry-btn">Tentar novamente</button>
+            </div>
+        `;
+        
+        document.querySelector('.retry-btn')?.addEventListener('click', carregarDestaques);
+    }
+}
+
+// Inicializar quando o DOM estiver pronto
+document.addEventListener("DOMContentLoaded", function() {
+    if (document.querySelector('.highlights')) {
+        carregarDestaques();
+    }
+});
 // ============== INICIALIZAÇÃO ==============
 document.addEventListener("DOMContentLoaded", function() {
     // Configuração inicial
@@ -689,7 +786,8 @@ document.addEventListener("DOMContentLoaded", function() {
         .catch((error) => console.error("Erro na persistência:", error));
 
     // Carregar dados iniciais
-    carregarImoveisDestaque();
+            carregarDestaques();
+
     carregarLogo();
     preencherBairros();
 
@@ -1048,7 +1146,7 @@ window.openDetailsModal = openDetailsModal;
 window.closeDetailsModal = closeDetailsModal;
 window.buscarCarros = buscarCarros;
 window.buscarImoveis = buscarImoveis;
-window.carregarImoveisDestaque = carregarImoveisDestaque;
+window.carregarDestaques =         carregarDestaques;
 window.preencherBairros = preencherBairros;
 console.log("Elementos no DOM:");
 console.log("campos-imovel:", document.getElementById("campos-imovel"));
