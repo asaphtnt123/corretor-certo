@@ -1346,7 +1346,7 @@ main {
 .radio-group {
     display: flex;
     gap: 15px;
-    flex-direction: column;
+}
 
 .radio-group label {
     display: flex;
