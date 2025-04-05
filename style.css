@@ -1477,12 +1477,8 @@ body.search-ativo::before {
     transition: opacity 0.3s ease;
 }
 
-body.search-ativo.search-overlay-visible::before {
-    opacity: 1;
-    pointer-events: auto;
-}
 
-/* Overlay - inicialmente escondido */
+
 .search-overlay {
     position: fixed;
     top: 0;
@@ -1497,6 +1493,15 @@ body.search-ativo.search-overlay-visible::before {
     overflow-y: auto;
 }
 
+.search-overlay[hidden] {
+    display: block !important;
+    visibility: hidden;
+    right: -100%;
+}
+
+.search-overlay:not([hidden]) {
+    visibility: visible;
+}
 /* Classe ativa quando aberto */
 .search-overlay.active {
     right: 0;
