@@ -60,14 +60,20 @@
 
 	    </div>
         </section>
-<section class="todos-anuncios">
+<section class="meus-anuncios">
     <div class="container">
         <h2 class="section-title">Nossos Anúncios</h2>
         
         <!-- Abas de Navegação -->
         <div class="anuncios-tabs">
-            <button class="tab-btn active" data-tab="imoveis">Imóveis</button>
-            <button class="tab-btn" data-tab="automoveis">Automóveis</button>
+            <button class="tab-btn active" data-tab="imoveis">
+                <i class="fas fa-home"></i>
+                <span>Imóveis</span>
+            </button>
+            <button class="tab-btn" data-tab="automoveis">
+                <i class="fas fa-car"></i>
+                <span>Automóveis</span>
+            </button>
         </div>
         
         <!-- Container da Grade Metalizada -->
@@ -75,7 +81,7 @@
             <!-- Grade de Imóveis -->
             <div class="metal-grid active" id="grid-imoveis">
                 <div class="grid-placeholder">
-                    <i class="fas fa-home"></i>
+                    <div class="spinner"></div>
                     <p>Carregando imóveis disponíveis...</p>
                 </div>
             </div>
@@ -83,10 +89,23 @@
             <!-- Grade de Automóveis -->
             <div class="metal-grid" id="grid-automoveis">
                 <div class="grid-placeholder">
-                    <i class="fas fa-car"></i>
+                    <div class="spinner"></div>
                     <p>Carregando automóveis disponíveis...</p>
                 </div>
             </div>
+        </div>
+        
+        <!-- Controles de Navegação -->
+        <div class="grid-controls">
+            <button class="grid-nav-btn prev-btn" aria-label="Anterior">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="grid-pagination">
+                <span class="current-page">1</span> / <span class="total-pages">3</span>
+            </div>
+            <button class="grid-nav-btn next-btn" aria-label="Próximo">
+                <i class="fas fa-chevron-right"></i>
+            </button>
         </div>
     </div>
 </section>
