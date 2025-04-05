@@ -885,223 +885,134 @@ function showAlert(message, type = 'success') {
 
 
 
-// Variáveis globais para paginação
-let currentImoveisPage = 1;
-let currentAutomoveisPage = 1;
-const itemsPerPage = 12;
+// Variáveis globais
+let currentTab = 'imoveis';
 
-// Função principal para carregar anúncios
-async function carregarTodosAnunciosPaginados() {
+// Função para carregar miniaturas
+async function carregarMiniAnuncios() {
     try {
         // Mostrar estado de carregamento
-        document.getElementById('grid-imoveis').innerHTML = `
+        document.getElementById(`mini-grid-${currentTab}`).innerHTML = `
             <div class="grid-placeholder">
                 <div class="spinner"></div>
-                <p>Carregando imóveis disponíveis...</p>
-            </div>
-        `;
-        
-        document.getElementById('grid-automoveis').innerHTML = `
-            <div class="grid-placeholder">
-                <div class="spinner"></div>
-                <p>Carregando automóveis disponíveis...</p>
+                <p>Carregando ${currentTab === 'imoveis' ? 'imóveis' : 'automóveis'}...</p>
             </div>
         `;
 
-        // Carregar imóveis
-        const imoveisRef = collection(db, "imoveis");
-        const imoveisSnapshot = await getDocs(imoveisRef);
+        // Carregar dados do Firebase
+        const collectionRef = collection(db, currentTab);
+        const snapshot = await getDocs(collectionRef);
         
-        const allImoveis = [];
-        imoveisSnapshot.forEach(doc => {
+        const allItems = [];
+        snapshot.forEach(doc => {
             const data = doc.data();
             data.id = doc.id;
-            allImoveis.push(data);
+            allItems.push(data);
         });
         
-        exibirAnunciosPaginados(allImoveis, 'imoveis', currentImoveisPage);
-        
-        // Carregar automóveis
-        const automoveisRef = collection(db, "automoveis");
-        const automoveisSnapshot = await getDocs(automoveisRef);
-        
-        const allAutomoveis = [];
-        automoveisSnapshot.forEach(doc => {
-            const data = doc.data();
-            data.id = doc.id;
-            allAutomoveis.push(data);
-        });
-        
-        exibirAnunciosPaginados(allAutomoveis, 'automoveis', currentAutomoveisPage);
-        
-        // Iniciar efeitos visuais
-        iniciarEfeitosMetalicos();
+        exibirMiniAnuncios(allItems);
+        iniciarEfeitoLuzAleatoria();
         
     } catch (error) {
         console.error("Erro ao carregar anúncios:", error);
-        showAlert("Erro ao carregar os anúncios", "error");
+        document.getElementById(`mini-grid-${currentTab}`).innerHTML = `
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Erro ao carregar</p>
+                <button class="retry-btn">Tentar novamente</button>
+            </div>
+        `;
         
-        // Mostrar estado de erro nas grids
-        document.querySelectorAll('.metal-grid').forEach(grid => {
-            grid.innerHTML = `
-                <div class="error-message">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <p>Não foi possível carregar os anúncios</p>
-                    <button class="retry-btn">Tentar novamente</button>
-                </div>
-            `;
-        });
-        
-        // Configurar botão de tentar novamente
-        document.querySelectorAll('.retry-btn').forEach(btn => {
-            btn.addEventListener('click', carregarTodosAnunciosPaginados);
-        });
+        document.querySelector('.retry-btn')?.addEventListener('click', carregarMiniAnuncios);
     }
 }
 
-// Função para exibir anúncios paginados
-function exibirAnunciosPaginados(anuncios, tipo, pagina) {
-    const grid = document.getElementById(`grid-${tipo}`);
+// Função para exibir miniaturas
+function exibirMiniAnuncios(anuncios) {
+    const grid = document.getElementById(`mini-grid-${currentTab}`);
     
-    // Verificar se a grid existe
     if (!grid) {
-        console.error(`Elemento grid-${tipo} não encontrado`);
+        console.error(`Elemento mini-grid-${currentTab} não encontrado`);
         return;
     }
 
-    // Limpar a grid
+    // Limpar a grade
     grid.innerHTML = '';
     
     if (!anuncios || anuncios.length === 0) {
         grid.innerHTML = `
             <div class="no-results">
                 <i class="fas fa-info-circle"></i>
-                <p>Nenhum ${tipo === 'imoveis' ? 'imóvel' : 'automóvel'} disponível</p>
+                <p>Nenhum anúncio encontrado</p>
             </div>
         `;
         return;
     }
     
-    const totalPages = Math.ceil(anuncios.length / itemsPerPage);
-    const startIndex = (pagina - 1) * itemsPerPage;
-    const endIndex = Math.min(startIndex + itemsPerPage, anuncios.length);
-    
     // Criar fragmento para melhor performance
     const fragment = document.createDocumentFragment();
     
-    for (let i = startIndex; i < endIndex; i++) {
-        const anuncio = anuncios[i];
-        try {
-            const card = criarCardAnuncio(anuncio, tipo === 'automoveis');
-            if (card) fragment.appendChild(card);
-        } catch (error) {
-            console.error("Erro ao criar card:", error);
+    anuncios.forEach((anuncio, index) => {
+        const miniCard = criarMiniCard(anuncio, currentTab === 'automoveis');
+        if (miniCard) {
+            // Delay para animação de entrada
+            miniCard.style.animationDelay = `${index * 0.05}s`;
+            fragment.appendChild(miniCard);
         }
-    }
+    });
     
     grid.appendChild(fragment);
-    
-    // Atualizar controles de paginação
-    updatePaginationControls(pagina, totalPages, tipo);
 }
 
-// Função para criar cards de anúncio com efeito metalizado
-function criarCardAnuncio(anuncio, isAutomovel) {
-    const card = document.createElement('div');
-    card.className = 'anuncio-card metal-card';
+// Função para criar mini cards
+function criarMiniCard(anuncio, isAutomovel) {
+    const miniCard = document.createElement('div');
+    miniCard.className = 'mini-card';
     
     // Imagem principal ou padrão
-    const imagemPadrao = isAutomovel ? 'images/car-default.jpg' : 'images/house-default.jpg';
+    const imagemPadrao = isAutomovel ? 'images/car-mini.jpg' : 'images/home-mini.jpg';
     const imagemPrincipal = anuncio.imagens && anuncio.imagens.length > 0 ? 
         anuncio.imagens[0] : imagemPadrao;
     
-    // Formatar preço
-    const precoFormatado = anuncio.preco ? 
-        `R$ ${anuncio.preco.toLocaleString('pt-BR')}` : 'Preço sob consulta';
-    
     // Criar conteúdo do card
-    card.innerHTML = `
-        <div class="metal-effect"></div>
-        <div class="card-image-container">
-            <img src="${imagemPrincipal}" alt="${anuncio.titulo || 'Anúncio'}" class="card-image" loading="lazy">
-            <div class="card-badge">${isAutomovel ? 'Carro' : 'Imóvel'}</div>
-        </div>
-        <div class="card-content">
-            <h3 class="card-title">${anuncio.titulo || 'Sem título'}</h3>
-            <p class="card-price">${precoFormatado}</p>
-            <div class="card-details">
-                ${isAutomovel ? 
-                    `<span><i class="fas fa-car"></i> ${anuncio.marca || ''} ${anuncio.modelo || ''}</span>
-                     <span><i class="fas fa-calendar-alt"></i> ${anuncio.ano || 'Ano não informado'}</span>` : 
-                    `<span><i class="fas fa-map-marker-alt"></i> ${anuncio.bairro || 'Local não informado'}</span>
-                     <span><i class="fas fa-expand"></i> ${anuncio.area ? anuncio.area + 'm²' : 'Área não informada'}</span>`
-                }
-            </div>
-        </div>
-        <div class="card-hover-effect">
-            <button class="btn-view-more">Ver detalhes</button>
-        </div>
+    miniCard.innerHTML = `
+        <img src="${imagemPrincipal}" alt="${anuncio.titulo || 'Anúncio'}" class="mini-image" loading="lazy">
+        <div class="mini-badge">${isAutomovel ? 'C' : 'I'}</div>
     `;
     
-    // Adicionar evento de clique
-    card.addEventListener('click', () => {
+    // Tooltip com informações básicas
+    miniCard.title = `${anuncio.titulo || 'Sem título'}\n${isAutomovel ? 
+        `${anuncio.marca || ''} ${anuncio.modelo || ''}` : 
+        `${anuncio.bairro || 'Local não informado'}`}`;
+    
+    // Evento de clique
+    miniCard.addEventListener('click', () => {
         window.location.href = `detalhes.html?id=${anuncio.id}&tipo=${isAutomovel ? 'carro' : 'imovel'}`;
     });
     
-    return card;
+    return miniCard;
 }
 
-// Efeitos metalizados
-function iniciarEfeitosMetalicos() {
-    const cards = document.querySelectorAll('.metal-card');
+// Efeito de luz aleatória
+function iniciarEfeitoLuzAleatoria() {
+    const cards = document.querySelectorAll('.mini-card');
     
-    // Efeito inicial
-    cards.forEach((card, index) => {
-        const delay = index * 100;
-        setTimeout(() => {
-            card.classList.add('metal-in');
-        }, delay);
-    });
-    
-    // Efeito contínuo de brilho
     setInterval(() => {
         const randomIndex = Math.floor(Math.random() * cards.length);
         const randomCard = cards[randomIndex];
         
         if (randomCard) {
-            randomCard.classList.add('metal-glow');
+            randomCard.style.animation = 'randomGlow 2s ease';
             setTimeout(() => {
-                randomCard.classList.remove('metal-glow');
+                randomCard.style.animation = '';
             }, 2000);
         }
     }, 3000);
 }
 
-// Atualizar controles de paginação
-function updatePaginationControls(currentPage, totalPages, tipo) {
-    const currentPageElement = document.querySelector('.grid-pagination .current-page');
-    const totalPagesElement = document.querySelector('.grid-pagination .total-pages');
-    const prevBtn = document.querySelector('.prev-btn');
-    const nextBtn = document.querySelector('.next-btn');
-    
-    if (currentPageElement) currentPageElement.textContent = currentPage;
-    if (totalPagesElement) totalPagesElement.textContent = totalPages;
-    
-    if (prevBtn) prevBtn.disabled = currentPage <= 1;
-    if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
-    
-    // Armazenar a página atual para o tipo ativo
-    if (tipo === 'imoveis') {
-        currentImoveisPage = currentPage;
-    } else {
-        currentAutomoveisPage = currentPage;
-    }
-}
-
 // Configurar abas
-function setupAnunciosTabs() {
+function setupMiniTabs() {
     const tabs = document.querySelectorAll('.anuncios-tabs .tab-btn');
-    const grids = document.querySelectorAll('.metal-grid');
     
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
@@ -1109,57 +1020,26 @@ function setupAnunciosTabs() {
             tabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
             
-            // Mostrar grid correspondente
-            grids.forEach(g => g.classList.remove('active'));
-            const tabId = tab.getAttribute('data-tab');
-            document.getElementById(`grid-${tabId}`).classList.add('active');
+            // Atualizar tab atual
+            currentTab = tab.getAttribute('data-tab');
             
-            // Resetar paginação quando mudar de aba
-            if (tabId === 'imoveis') {
-                currentImoveisPage = 1;
-            } else {
-                currentAutomoveisPage = 1;
-            }
+            // Mostrar grade correspondente
+            document.querySelectorAll('.mini-grid').forEach(g => g.classList.remove('active'));
+            document.getElementById(`mini-grid-${currentTab}`).classList.add('active');
+            
+            // Carregar anúncios
+            carregarMiniAnuncios();
         });
     });
 }
 
-// Configurar controles de navegação
-function setupAnunciosControls() {
-    // Botão anterior
-    document.querySelector('.prev-btn')?.addEventListener('click', () => {
-        const activeTab = document.querySelector('.anuncios-tabs .tab-btn.active').getAttribute('data-tab');
-        
-        if (activeTab === 'imoveis' && currentImoveisPage > 1) {
-            currentImoveisPage--;
-            carregarTodosAnunciosPaginados();
-        } else if (activeTab === 'automoveis' && currentAutomoveisPage > 1) {
-            currentAutomoveisPage--;
-            carregarTodosAnunciosPaginados();
-        }
-    });
-    
-    // Botão próximo
-    document.querySelector('.next-btn')?.addEventListener('click', () => {
-        const activeTab = document.querySelector('.anuncios-tabs .tab-btn.active').getAttribute('data-tab');
-        const totalPages = parseInt(document.querySelector('.total-pages').textContent);
-        
-        if (activeTab === 'imoveis' && currentImoveisPage < totalPages) {
-            currentImoveisPage++;
-            carregarTodosAnunciosPaginados();
-        } else if (activeTab === 'automoveis' && currentAutomoveisPage < totalPages) {
-            currentAutomoveisPage++;
-            carregarTodosAnunciosPaginados();
-        }
-    });
-}
+
 
 // Inicialização
 document.addEventListener("DOMContentLoaded", function() {
-    if (document.querySelector('.meus-anuncios')) {
-        setupAnunciosTabs();
-        setupAnunciosControls();
-        carregarTodosAnunciosPaginados();
+    if (document.querySelector('.mini-anuncios')) {
+        setupMiniTabs();
+        carregarMiniAnuncios();
     }
 });
 // ============== EXPORTAÇÕES GLOBAIS ==============
