@@ -1160,6 +1160,48 @@ document.addEventListener("DOMContentLoaded", function() {
         console.error("Botão de busca NÃO encontrado no DOM");
     }
 });
+
+
+document.addEventListener("DOMContentLoaded", function() {
+    const btnAbrir = document.getElementById('btn-ativar-busca');
+    const btnFechar = document.getElementById('btn-fechar-busca');
+    const overlay = document.querySelector('.search-overlay');
+    const backdrop = document.createElement('div');
+    
+    // Adiciona o backdrop ao body
+    backdrop.className = 'overlay-backdrop';
+    document.body.appendChild(backdrop);
+
+    // Função para abrir a busca
+    function abrirBusca() {
+        overlay.classList.add('active');
+        backdrop.classList.add('active');
+        overlay.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden'; // Impede scroll na página principal
+    }
+
+    // Função para fechar a busca
+    function fecharBusca() {
+        overlay.classList.remove('active');
+        backdrop.classList.remove('active');
+        overlay.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = ''; // Restaura scroll
+    }
+
+    // Event listeners
+    btnAbrir.addEventListener('click', abrirBusca);
+    btnFechar.addEventListener('click', fecharBusca);
+    
+    // Fechar ao clicar no backdrop
+    backdrop.addEventListener('click', fecharBusca);
+    
+    // Fechar com tecla ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && overlay.classList.contains('active')) {
+            fecharBusca();
+        }
+    });
+});
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
 window.openDetailsModal = openDetailsModal;
