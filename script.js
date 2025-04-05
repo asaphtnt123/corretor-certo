@@ -1026,11 +1026,79 @@ function setupAnunciosControls() {
     });
 }
 
-// Inicialização
+
+// Função para criar card de anúncio (mantida igual)
+function criarCardAnuncio(anuncio, isAutomovel) {
+    const card = document.createElement('div');
+    card.className = 'anuncio-card';
+    
+    const imagemPrincipal = anuncio.imagens && anuncio.imagens.length > 0 ? 
+        anuncio.imagens[0] : (isAutomovel ? 'images/default-car.jpg' : 'images/default-house.jpg');
+    
+    card.innerHTML = `
+        <img src="${imagemPrincipal}" alt="${anuncio.titulo}" class="anuncio-img">
+        <div class="anuncio-info">
+            <h4 class="anuncio-titulo">${anuncio.titulo || 'Sem título'}</h4>
+            <p class="anuncio-preco">R$ ${anuncio.preco?.toLocaleString('pt-BR') || '--'}</p>
+            ${isAutomovel ? 
+                `<p class="anuncio-detalhe"><i class="fas fa-car"></i> ${anuncio.marca || ''} ${anuncio.modelo || ''}</p>` : 
+                `<p class="anuncio-detalhe"><i class="fas fa-map-marker-alt"></i> ${anuncio.bairro || 'Localização não informada'}</p>`
+            }
+        </div>
+    `;
+    
+    // Evento de clique para abrir detalhes
+    card.addEventListener('click', () => {
+        window.location.href = `detalhes.html?id=${anuncio.id}&tipo=${isAutomovel ? 'carro' : 'imovel'}`;
+    });
+    
+    return card;
+}
+
+// Função para animação de brilho aleatório (mantida igual)
+function iniciarAnimacaoBrilho() {
+    const cards = document.querySelectorAll('.anuncio-card');
+    
+    cards.forEach(card => {
+        const delay = Math.random() * 3000;
+        setTimeout(() => {
+            card.classList.add('active');
+        }, delay);
+    });
+    
+    setInterval(() => {
+        const randomIndex = Math.floor(Math.random() * cards.length);
+        const randomCard = cards[randomIndex];
+        
+        randomCard.classList.add('highlight');
+        setTimeout(() => {
+            randomCard.classList.remove('highlight');
+        }, 2000);
+    }, 1000);
+}
+
+// Configurar tabs (mantida igual)
+function setupAnunciosTabs() {
+    const tabs = document.querySelectorAll('.tab-btn');
+    const grids = document.querySelectorAll('.metal-grid');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            grids.forEach(g => g.classList.remove('active'));
+            
+            tab.classList.add('active');
+            const tabId = tab.getAttribute('data-tab');
+            document.getElementById(`grid-${tabId}`).classList.add('active');
+        });
+    });
+}
+
+// Inicialização (atualizada para carregar todos anúncios)
 document.addEventListener("DOMContentLoaded", function() {
-    if (document.querySelector('.meus-anuncios')) {
-        setupAnunciosControls();
-        carregarTodosAnunciosPaginados();
+    if (document.querySelector('.todos-anuncios')) {
+        setupAnunciosTabs();
+        carregarTodosAnuncios();
     }
 });
 // ============== EXPORTAÇÕES GLOBAIS ==============
