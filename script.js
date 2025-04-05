@@ -1140,6 +1140,26 @@ document.addEventListener("DOMContentLoaded", function() {
         carregarMiniAnuncios();
     }
 });
+
+
+document.addEventListener("DOMContentLoaded", function() {
+    const btnBusca = document.getElementById('btn-ativar-busca');
+    
+    if (btnBusca) {
+        console.log("Botão de busca encontrado no DOM");
+        btnBusca.style.display = 'flex'; // Força exibição
+        
+        // Teste visual - remove após confirmar que funciona
+        btnBusca.style.border = '2px solid red';
+        
+        btnBusca.addEventListener('click', function() {
+            console.log("Botão de busca clicado");
+            document.querySelector('.search-overlay').style.right = '0';
+        });
+    } else {
+        console.error("Botão de busca NÃO encontrado no DOM");
+    }
+});
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
 window.openDetailsModal = openDetailsModal;
