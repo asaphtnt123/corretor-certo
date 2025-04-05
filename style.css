@@ -1431,3 +1431,279 @@ input[type="checkbox"] {
         width: 100%;
     }
 }
+
+
+
+/* Seção Meus Anúncios */
+.meus-anuncios {
+    padding: 3rem 0;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.meus-anuncios::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: light-move 15s infinite linear;
+    z-index: 0;
+}
+
+.section-title {
+    font-size: 2.2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #2c3e50;
+    position: relative;
+    display: inline-block;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #3498db, transparent);
+}
+
+/* Abas */
+.anuncios-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+    gap: 1rem;
+}
+
+.tab-btn {
+    padding: 0.8rem 2rem;
+    background: none;
+    border: none;
+    border-radius: 30px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #7f8c8d;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.tab-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(52,152,219,0.1) 0%, rgba(52,152,219,0.3) 100%);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tab-btn.active {
+    color: #fff;
+    background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+}
+
+.tab-btn:not(.active):hover {
+    color: #3498db;
+}
+
+.tab-btn:not(.active):hover::before {
+    opacity: 1;
+}
+
+/* Grade Metalizada */
+.metal-grid-container {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    perspective: 1000px;
+}
+
+.metal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 15px;
+    display: none;
+    position: relative;
+}
+
+.metal-grid.active {
+    display: grid;
+}
+
+.grid-placeholder {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem 0;
+    color: #7f8c8d;
+}
+
+.grid-placeholder i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #bdc3c7;
+}
+
+/* Cards Metalizados */
+.anuncio-card {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.7);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.5s ease;
+    transform-style: preserve-3d;
+    opacity: 0.85;
+    height: 200px;
+}
+
+.anuncio-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(255,255,255,0.3) 0%,
+        rgba(255,255,255,0) 50%,
+        rgba(255,255,255,0.3) 100%
+    );
+    z-index: 2;
+    pointer-events: none;
+}
+
+.anuncio-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        to bottom right,
+        rgba(255,255,255,0) 45%,
+        rgba(255,255,255,0.8) 50%,
+        rgba(255,255,255,0) 55%
+    );
+    transform: rotate(30deg);
+    z-index: 3;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.anuncio-card:hover {
+    opacity: 1;
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.anuncio-card:hover::after {
+    opacity: 1;
+    animation: metal-shine 3s infinite;
+}
+
+.anuncio-card.active {
+    opacity: 1;
+    box-shadow: 0 0 20px rgba(52, 152, 219, 0.6);
+}
+
+.anuncio-card.active::after {
+    opacity: 1;
+    animation: metal-shine 2s infinite;
+}
+
+.anuncio-img {
+    width: 100%;
+    height: 70%;
+    object-fit: cover;
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+}
+
+.anuncio-info {
+    padding: 10px;
+    background: rgba(255,255,255,0.8);
+    height: 30%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.anuncio-titulo {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.anuncio-preco {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #27ae60;
+}
+
+/* Animações */
+@keyframes metal-shine {
+    0% { transform: rotate(30deg) translateX(-100%); }
+    100% { transform: rotate(30deg) translateX(100%); }
+}
+
+@keyframes light-move {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Efeito de brilho aleatório */
+@keyframes random-glow {
+    0%, 100% { box-shadow: 0 0 10px rgba(52, 152, 219, 0); }
+    50% { box-shadow: 0 0 20px rgba(52, 152, 219, 0.6); }
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .metal-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+    
+    .anuncio-card {
+        height: 180px;
+    }
+}
+
+@media (max-width: 480px) {
+    .metal-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+    }
+    
+    .anuncio-card {
+        height: 150px;
+    }
+    
+    .anuncio-titulo {
+        font-size: 0.8rem;
+    }
+    
+    .anuncio-preco {
+        font-size: 0.8rem;
+    }
+}
