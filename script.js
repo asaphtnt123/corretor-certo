@@ -885,20 +885,12 @@ function showAlert(message, type = 'success') {
 
 
 
-// Função para carregar os anúncios do usuário
-async function carregarMeusAnuncios() {
-    const user = auth.currentUser;
-    if (!user) {
-        // Redirecionar para login se não estiver autenticado
-        window.location.href = "login.html";
-        return;
-    }
-
+// Função para carregar TODOS os anúncios do site
+async function carregarTodosAnuncios() {
     try {
-        // Carregar imóveis do usuário
+        // Carregar todos os imóveis
         const imoveisRef = collection(db, "imoveis");
-        const qImoveis = query(imoveisRef, where("userId", "==", user.uid));
-        const imoveisSnapshot = await getDocs(qImoveis);
+        const imoveisSnapshot = await getDocs(imoveisRef);
         
         const gridImoveis = document.getElementById("grid-imoveis");
         gridImoveis.innerHTML = '';
@@ -910,13 +902,12 @@ async function carregarMeusAnuncios() {
         });
         
         if (imoveisSnapshot.empty) {
-            gridImoveis.innerHTML = '<div class="no-results">Nenhum imóvel cadastrado</div>';
+            gridImoveis.innerHTML = '<div class="no-results">Nenhum imóvel disponível no momento</div>';
         }
 
-        // Carregar automóveis do usuário
+        // Carregar todos os automóveis
         const automoveisRef = collection(db, "automoveis");
-        const qAutomoveis = query(automoveisRef, where("userId", "==", user.uid));
-        const automoveisSnapshot = await getDocs(qAutomoveis);
+        const automoveisSnapshot = await getDocs(automoveisRef);
         
         const gridAutomoveis = document.getElementById("grid-automoveis");
         gridAutomoveis.innerHTML = '';
@@ -928,7 +919,7 @@ async function carregarMeusAnuncios() {
         });
         
         if (automoveisSnapshot.empty) {
-            gridAutomoveis.innerHTML = '<div class="no-results">Nenhum automóvel cadastrado</div>';
+            gridAutomoveis.innerHTML = '<div class="no-results">Nenhum automóvel disponível no momento</div>';
         }
         
         // Iniciar animação de brilho aleatório
@@ -936,23 +927,27 @@ async function carregarMeusAnuncios() {
         
     } catch (error) {
         console.error("Erro ao carregar anúncios:", error);
-        showAlert("Erro ao carregar seus anúncios", "error");
+        showAlert("Erro ao carregar os anúncios", "error");
     }
 }
 
-// Função para criar card de anúncio
+// Função para criar card de anúncio (mantida igual)
 function criarCardAnuncio(anuncio, isAutomovel) {
     const card = document.createElement('div');
     card.className = 'anuncio-card';
     
     const imagemPrincipal = anuncio.imagens && anuncio.imagens.length > 0 ? 
-        anuncio.imagens[0] : (isAutomovel ? 'carro.png' : 'casa.png');
+        anuncio.imagens[0] : (isAutomovel ? 'images/default-car.jpg' : 'images/default-house.jpg');
     
     card.innerHTML = `
         <img src="${imagemPrincipal}" alt="${anuncio.titulo}" class="anuncio-img">
         <div class="anuncio-info">
             <h4 class="anuncio-titulo">${anuncio.titulo || 'Sem título'}</h4>
             <p class="anuncio-preco">R$ ${anuncio.preco?.toLocaleString('pt-BR') || '--'}</p>
+            ${isAutomovel ? 
+                `<p class="anuncio-detalhe"><i class="fas fa-car"></i> ${anuncio.marca || ''} ${anuncio.modelo || ''}</p>` : 
+                `<p class="anuncio-detalhe"><i class="fas fa-map-marker-alt"></i> ${anuncio.bairro || 'Localização não informada'}</p>`
+            }
         </div>
     `;
     
@@ -964,11 +959,10 @@ function criarCardAnuncio(anuncio, isAutomovel) {
     return card;
 }
 
-// Função para animação de brilho aleatório
+// Função para animação de brilho aleatório (mantida igual)
 function iniciarAnimacaoBrilho() {
     const cards = document.querySelectorAll('.anuncio-card');
     
-    // Primeiro ativa todos os cards com atraso aleatório
     cards.forEach(card => {
         const delay = Math.random() * 3000;
         setTimeout(() => {
@@ -976,53 +970,39 @@ function iniciarAnimacaoBrilho() {
         }, delay);
     });
     
-    // Depois mantém a animação em loop com brilhos aleatórios
     setInterval(() => {
         const randomIndex = Math.floor(Math.random() * cards.length);
         const randomCard = cards[randomIndex];
         
-        // Adiciona classe de destaque
         randomCard.classList.add('highlight');
-        
-        // Remove após a animação
         setTimeout(() => {
             randomCard.classList.remove('highlight');
         }, 2000);
-        
     }, 1000);
 }
 
-// Configurar tabs
+// Configurar tabs (mantida igual)
 function setupAnunciosTabs() {
     const tabs = document.querySelectorAll('.tab-btn');
     const grids = document.querySelectorAll('.metal-grid');
     
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            // Remover active de todas as tabs e grids
             tabs.forEach(t => t.classList.remove('active'));
             grids.forEach(g => g.classList.remove('active'));
             
-            // Adicionar active na tab clicada
             tab.classList.add('active');
-            
-            // Mostrar grid correspondente
             const tabId = tab.getAttribute('data-tab');
             document.getElementById(`grid-${tabId}`).classList.add('active');
         });
     });
 }
 
-// Chamar as funções quando o DOM estiver pronto
+// Inicialização (atualizada para carregar todos anúncios)
 document.addEventListener("DOMContentLoaded", function() {
-    if (document.querySelector('.meus-anuncios')) {
+    if (document.querySelector('.todos-anuncios')) {
         setupAnunciosTabs();
-        
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                carregarMeusAnuncios();
-            }
-        });
+        carregarTodosAnuncios();
     }
 });
 
