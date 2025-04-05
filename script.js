@@ -924,36 +924,22 @@ async function carregarTodosAnunciosPaginados() {
         
     } catch (error) {
         console.error("Erro ao carregar anúncios:", error);
-        showAlert("Erro ao carregar os anúncios", "error");
+        showAlert("Erro ao carregar os anúncios", "error");   // Mostrar estado de erro nas grids
+        document.querySelectorAll('.metal-grid').forEach(grid => {
+            grid.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Não foi possível carregar os anúncios</p>
+                    <button class="retry-btn">Tentar novamente</button>
+                </div>
+            `;
+        });
+        
+        // Configurar botão de tentar novamente
+        document.querySelectorAll('.retry-btn').forEach(btn => {
+            btn.addEventListener('click', carregarTodosAnunciosPaginados);
+        });
     }
-}
-
-// Função para exibir anúncios paginados
-function exibirAnunciosPaginados(anuncios, tipo, pagina) {
-    const grid = document.getElementById(`grid-${tipo}`);
-    grid.innerHTML = '';
-    
-    if (anuncios.length === 0) {
-        grid.innerHTML = '<div class="no-results">Nenhum anúncio disponível</div>';
-        return;
-    }
-    
-    const totalPages = Math.ceil(anuncios.length / itemsPerPage);
-    const startIndex = (pagina - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const anunciosPagina = anuncios.slice(startIndex, endIndex);
-    
-    anunciosPagina.forEach(anuncio => {
-        grid.appendChild(criarCardAnuncio(anuncio, tipo === 'automoveis'));
-    });
-    
-    // Atualizar controles de paginação
-    document.querySelector(`.grid-pagination .current-page`).textContent = pagina;
-    document.querySelector(`.grid-pagination .total-pages`).textContent = totalPages;
-    
-    // Habilitar/desabilitar botões
-    document.querySelector('.prev-btn').disabled = pagina <= 1;
-    document.querySelector('.next-btn').disabled = pagina >= totalPages;
 }
 
 // Função para iniciar efeitos visuais
@@ -980,6 +966,66 @@ function iniciarEfeitosVisuais() {
             randomCard.classList.remove('glow');
         }, 2000);
     }, 1000);
+}
+
+function exibirAnunciosPaginados(anuncios, tipo, pagina) {
+    const grid = document.getElementById(`grid-${tipo}`);
+    
+    // Mostrar estado de carregamento
+    grid.innerHTML = `
+        <div class="grid-placeholder">
+            <div class="spinner"></div>
+            <p>Carregando anúncios...</p>
+        </div>
+    `;
+    
+    // Usar setTimeout para permitir que a UI atualize antes do processamento pesado
+    setTimeout(() => {
+        grid.innerHTML = '';
+        
+        if (!anuncios || anuncios.length === 0) {
+            grid.innerHTML = '<div class="no-results">Nenhum anúncio disponível</div>';
+            return;
+        }
+        
+        const totalPages = Math.ceil(anuncios.length / itemsPerPage);
+        const startIndex = (pagina - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, anuncios.length);
+        
+        for (let i = startIndex; i < endIndex; i++) {
+            const anuncio = anuncios[i];
+            try {
+                const card = criarCardAnuncio(anuncio, tipo === 'automoveis');
+                grid.appendChild(card);
+            } catch (error) {
+                console.error("Erro ao criar card:", error);
+            }
+        }
+        
+        // Atualizar controles de paginação
+        updatePaginationControls(pagina, totalPages, tipo);
+        
+    }, 100);
+}
+
+function updatePaginationControls(currentPage, totalPages, tipo) {
+    const currentPageElement = document.querySelector(`.grid-pagination .current-page`);
+    const totalPagesElement = document.querySelector(`.grid-pagination .total-pages`);
+    const prevBtn = document.querySelector('.prev-btn');
+    const nextBtn = document.querySelector('.next-btn');
+    
+    if (currentPageElement) currentPageElement.textContent = currentPage;
+    if (totalPagesElement) totalPagesElement.textContent = totalPages;
+    
+    if (prevBtn) prevBtn.disabled = currentPage <= 1;
+    if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+    
+    // Armazenar a página atual para o tipo ativo
+    if (tipo === 'imoveis') {
+        currentImoveisPage = currentPage;
+    } else {
+        currentAutomoveisPage = currentPage;
+    }
 }
 
 // Configurar eventos
@@ -1027,27 +1073,35 @@ function setupAnunciosControls() {
 }
 
 
-// Função para criar card de anúncio (mantida igual)
 function criarCardAnuncio(anuncio, isAutomovel) {
     const card = document.createElement('div');
     card.className = 'anuncio-card';
     
+    // Define a imagem padrão baseada no tipo de anúncio
+    const imagemPadrao = isAutomovel ? 'carro.png' : 'casa.png';
     const imagemPrincipal = anuncio.imagens && anuncio.imagens.length > 0 ? 
-        anuncio.imagens[0] : (isAutomovel ? 'images/default-car.jpg' : 'images/default-house.jpg');
+        anuncio.imagens[0] : imagemPadrao;
     
+    // Formata o preço
+    const precoFormatado = anuncio.preco ? 
+        `R$ ${anuncio.preco.toLocaleString('pt-BR')}` : 'Preço sob consulta';
+    
+    // Cria o conteúdo do card
     card.innerHTML = `
-        <img src="${imagemPrincipal}" alt="${anuncio.titulo}" class="anuncio-img">
+        <div class="card-metal-effect"></div>
+        <img src="${imagemPrincipal}" alt="${anuncio.titulo || 'Anúncio'}" class="anuncio-img">
         <div class="anuncio-info">
             <h4 class="anuncio-titulo">${anuncio.titulo || 'Sem título'}</h4>
-            <p class="anuncio-preco">R$ ${anuncio.preco?.toLocaleString('pt-BR') || '--'}</p>
+            <p class="anuncio-preco">${precoFormatado}</p>
             ${isAutomovel ? 
                 `<p class="anuncio-detalhe"><i class="fas fa-car"></i> ${anuncio.marca || ''} ${anuncio.modelo || ''}</p>` : 
-                `<p class="anuncio-detalhe"><i class="fas fa-map-marker-alt"></i> ${anuncio.bairro || 'Localização não informada'}</p>`
+                `<p class="anuncio-detalhe"><i class="fas fa-map-marker-alt"></i> ${anuncio.bairro || 'Local não informado'}</p>`
             }
         </div>
+        <div class="card-badge">${isAutomovel ? 'Carro' : 'Imóvel'}</div>
     `;
     
-    // Evento de clique para abrir detalhes
+    // Adiciona evento de clique
     card.addEventListener('click', () => {
         window.location.href = `detalhes.html?id=${anuncio.id}&tipo=${isAutomovel ? 'carro' : 'imovel'}`;
     });
