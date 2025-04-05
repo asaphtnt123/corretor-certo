@@ -1776,7 +1776,6 @@ body {
 /* Estilos do Header */
 .header {
     background: rgba(255, 255, 255, 0.95);
-    padding: 20px 0;
     position: fixed;
     width: 100%;
     top: 0;
@@ -1800,7 +1799,7 @@ body {
 
 /* Estilos para o logo */
 .logo-img {
-    max-height: 50px; /* Ajuste conforme necessário */
+    max-height: 120px; /* Ajuste conforme necessário */
     width: auto;
     transition: opacity 0.3s ease;
 }
