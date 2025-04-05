@@ -1319,6 +1319,58 @@ document.addEventListener("DOMContentLoaded", function() {
         banner.appendChild(particlesContainer);
     }
 });
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Efeito de digitação no placeholder do logo
+    const logoPlaceholder = document.querySelector('.logo-placeholder');
+    if (logoPlaceholder) {
+        const texts = ["ConnectImóveis", "Sua Casa dos Sonhos", "Conectando Você"];
+        let count = 0;
+        let index = 0;
+        let currentText = '';
+        let letter = '';
+        
+        (function type() {
+            if (count === texts.length) {
+                count = 0;
+            }
+            
+            currentText = texts[count];
+            letter = currentText.slice(0, ++index);
+            
+            logoPlaceholder.textContent = letter;
+            if (letter.length === currentText.length) {
+                count++;
+                index = 0;
+                setTimeout(type, 2000);
+            } else {
+                setTimeout(type, 100);
+            }
+        })();
+    }
+
+    // Efeito de scroll no header
+    const header = document.querySelector('.header');
+    let lastScroll = 0;
+    
+    window.addEventListener('scroll', function() {
+        const currentScroll = window.pageYOffset;
+        
+        if (currentScroll <= 0) {
+            header.style.transform = 'translateY(0)';
+            header.style.boxShadow = '0 4px 30px rgba(0, 0, 0, 0.3)';
+        } 
+        
+        if (currentScroll > lastScroll && currentScroll > 100) {
+            header.style.transform = 'translateY(-100%)';
+        } else if (currentScroll < lastScroll) {
+            header.style.transform = 'translateY(0)';
+            header.style.boxShadow = '0 8px 30px rgba(0, 0, 0, 0.4)';
+        }
+        
+        lastScroll = currentScroll;
+    });
+});
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
 window.openDetailsModal = openDetailsModal;
