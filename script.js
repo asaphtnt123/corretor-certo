@@ -1166,39 +1166,86 @@ document.addEventListener("DOMContentLoaded", function() {
     const btnAbrir = document.getElementById('btn-ativar-busca');
     const btnFechar = document.getElementById('btn-fechar-busca');
     const overlay = document.querySelector('.search-overlay');
-    const backdrop = document.createElement('div');
+    const backdrop = document.querySelector('.overlay-backdrop');
     
-    // Adiciona o backdrop ao body
-    backdrop.className = 'overlay-backdrop';
-    document.body.appendChild(backdrop);
+    // Elemento que deve receber foco quando o overlay abrir
+    const primeiroElementoFocavel = btnFechar;
+    
+    // Variável para armazenar o último elemento focado antes de abrir o overlay
+    let ultimoElementoFocado;
 
-    // Função para abrir a busca
     function abrirBusca() {
-        overlay.classList.add('active');
+        // Armazena o elemento que tinha foco antes de abrir
+        ultimoElementoFocado = document.activeElement;
+        
+        // Mostra o overlay
+        overlay.removeAttribute('hidden');
+        
+        // Força reflow para garantir que a transição ocorra
+        void overlay.offsetWidth;
+        
+        // Adiciona classe active para animação
+        overlay.style.right = '0';
         backdrop.classList.add('active');
-        overlay.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden'; // Impede scroll na página principal
+        
+        // Move o foco para o primeiro elemento focável
+        setTimeout(() => {
+            primeiroElementoFocavel.focus();
+        }, 100);
+        
+        // Desabilita scroll na página principal
+        document.body.style.overflow = 'hidden';
     }
 
-    // Função para fechar a busca
     function fecharBusca() {
-        overlay.classList.remove('active');
+        // Animação de saída
+        overlay.style.right = '-100%';
         backdrop.classList.remove('active');
-        overlay.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = ''; // Restaura scroll
+        
+        // Esconde o overlay após a animação
+        setTimeout(() => {
+            overlay.setAttribute('hidden', '');
+            
+            // Restaura o foco para o elemento anterior
+            if (ultimoElementoFocado) {
+                ultimoElementoFocado.focus();
+            }
+            
+            // Restaura scroll na página principal
+            document.body.style.overflow = '';
+        }, 400); // Tempo deve corresponder à duração da transição
     }
 
     // Event listeners
     btnAbrir.addEventListener('click', abrirBusca);
     btnFechar.addEventListener('click', fecharBusca);
-    
-    // Fechar ao clicar no backdrop
     backdrop.addEventListener('click', fecharBusca);
     
     // Fechar com tecla ESC
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && overlay.classList.contains('active')) {
+        if (e.key === 'Escape' && !overlay.hasAttribute('hidden')) {
             fecharBusca();
+        }
+    });
+    
+    // Trapping focus dentro do overlay quando aberto
+    overlay.addEventListener('keydown', function(e) {
+        if (e.key === 'Tab' && !overlay.hasAttribute('hidden')) {
+            const focaveis = overlay.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            const primeiro = focaveis[0];
+            const ultimo = focaveis[focaveis.length - 1];
+            
+            if (e.shiftKey) {
+                if (document.activeElement === primeiro) {
+                    ultimo.focus();
+                    e.preventDefault();
+                }
+            } else {
+                if (document.activeElement === ultimo) {
+                    primeiro.focus();
+                    e.preventDefault();
+                }
+            }
         }
     });
 });
