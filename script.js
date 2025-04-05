@@ -971,6 +971,11 @@ function iniciarEfeitosVisuais() {
 function exibirAnunciosPaginados(anuncios, tipo, pagina) {
     const grid = document.getElementById(`grid-${tipo}`);
     
+    if (!grid) {
+        console.error(`Elemento grid-${tipo} não encontrado`);
+        return;
+    }
+
     // Mostrar estado de carregamento
     grid.innerHTML = `
         <div class="grid-placeholder">
@@ -979,32 +984,42 @@ function exibirAnunciosPaginados(anuncios, tipo, pagina) {
         </div>
     `;
     
-    // Usar setTimeout para permitir que a UI atualize antes do processamento pesado
+    // Usar setTimeout para permitir que a UI atualize
     setTimeout(() => {
-        grid.innerHTML = '';
-        
-        if (!anuncios || anuncios.length === 0) {
-            grid.innerHTML = '<div class="no-results">Nenhum anúncio disponível</div>';
-            return;
-        }
-        
-        const totalPages = Math.ceil(anuncios.length / itemsPerPage);
-        const startIndex = (pagina - 1) * itemsPerPage;
-        const endIndex = Math.min(startIndex + itemsPerPage, anuncios.length);
-        
-        for (let i = startIndex; i < endIndex; i++) {
-            const anuncio = anuncios[i];
-            try {
-                const card = criarCardAnuncio(anuncio, tipo === 'automoveis');
-                grid.appendChild(card);
-            } catch (error) {
-                console.error("Erro ao criar card:", error);
+        try {
+            grid.innerHTML = '';
+            
+            if (!anuncios || anuncios.length === 0) {
+                grid.innerHTML = '<div class="no-results">Nenhum anúncio disponível</div>';
+                return;
             }
+            
+            const totalPages = Math.ceil(anuncios.length / itemsPerPage);
+            const startIndex = (pagina - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, anuncios.length);
+            
+            for (let i = startIndex; i < endIndex; i++) {
+                const anuncio = anuncios[i];
+                const card = criarCardAnuncio(anuncio, tipo === 'automoveis');
+                if (card) grid.appendChild(card);
+            }
+            
+            // Atualizar controles de paginação
+            updatePaginationControls(pagina, totalPages, tipo);
+            
+        } catch (error) {
+            console.error("Erro ao exibir anúncios:", error);
+            grid.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Erro ao carregar anúncios</p>
+                    <button class="retry-btn">Tentar novamente</button>
+                </div>
+            `;
+            
+            // Configurar botão de tentar novamente
+            grid.querySelector('.retry-btn')?.addEventListener('click', carregarTodosAnunciosPaginados);
         }
-        
-        // Atualizar controles de paginação
-        updatePaginationControls(pagina, totalPages, tipo);
-        
     }, 100);
 }
 
@@ -1152,7 +1167,8 @@ function setupAnunciosTabs() {
 document.addEventListener("DOMContentLoaded", function() {
     if (document.querySelector('.todos-anuncios')) {
         setupAnunciosTabs();
-        carregarTodosAnuncios();
+        setupAnunciosControls(); // Adicionar esta linha
+        carregarTodosAnunciosPaginados(); // Corrigir o nome da função
     }
 });
 // ============== EXPORTAÇÕES GLOBAIS ==============
