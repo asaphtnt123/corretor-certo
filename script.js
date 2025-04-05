@@ -670,6 +670,13 @@ document.addEventListener("DOMContentLoaded", function() {
     carregarImoveisDestaque();
     carregarLogo();
     preencherBairros();
+       // Configurar abas
+    setupTabs();
+
+      // Carregar conteúdo inicial (imóveis por padrão)
+    if (typeof carregarImoveis === 'function') {
+        carregarImoveis();
+    }
 
     // Configuração do menu mobile
     const menuToggle = document.getElementById('menu-toggle');
@@ -860,6 +867,33 @@ function showAlert(message, type = 'success') {
         alert(`${type.toUpperCase()}: ${message}`);
     }
 }
+
+
+
+// Gerenciamento de abas
+function setupTabs() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remover classe active de todos os botões e conteúdos
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Adicionar classe active ao botão clicado
+            button.classList.add('active');
+            
+            // Mostrar o conteúdo correspondente
+            const tabId = button.getAttribute('data-tab');
+            document.getElementById(`${tabId}-tab`).classList.add('active');
+        });
+    });
+}
+
+
+
+
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
 window.openDetailsModal = openDetailsModal;
