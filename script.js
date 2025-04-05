@@ -30,22 +30,37 @@ const storage = getStorage(app);
 // ============== VARIÁVEIS GLOBAIS ==============
 let currentAdData = null;
 
-// ============== FUNÇÕES GLOBAIS ==============
 function mudarImagem(carrosselId, direcao) {
     const carrossel = document.getElementById(carrosselId);
+    if (!carrossel) return;
+    
     const imagens = carrossel.querySelectorAll('.carrossel-img');
     let indexAtivo = -1;
 
+    // Encontrar a imagem atualmente visível
     imagens.forEach((imagem, index) => {
-        if (imagem.style.display === 'block') indexAtivo = index;
+        if (imagem.style.display === 'block') {
+            indexAtivo = index;
+        }
     });
 
     if (indexAtivo !== -1) {
+        // Calcular novo índice
         let novoIndex = indexAtivo + direcao;
-        if (novoIndex < 0) novoIndex = imagens.length - 1;
-        if (novoIndex >= imagens.length) novoIndex = 0;
+        
+        // Verificar limites
+        if (novoIndex < 0) {
+            novoIndex = imagens.length - 1;
+        } else if (novoIndex >= imagens.length) {
+            novoIndex = 0;
+        }
 
-        imagens[indexAtivo].style.display = 'none';
+        // Esconder todas as imagens
+        imagens.forEach(img => {
+            img.style.display = 'none';
+        });
+        
+        // Mostrar a nova imagem
         imagens[novoIndex].style.display = 'block';
     }
 }
@@ -397,36 +412,13 @@ function validarFiltrosImoveis(filtros) {
 
     return true;
 }
-// Função para criar o card do imóvel (atualizada com os novos campos)
 function criarCardImovel(imovel) {
-    const card = document.createElement("div");
-    card.className = "card mb-3";
+    const card = document.createElement('div');
+    card.className = 'card';
     
-    // Carrossel de imagens
-    let carousel = '';
-    if (imovel.imagens && imovel.imagens.length > 0) {
-        carousel = `
-            <div id="carousel-${imovel.id}" class="carousel slide" data-bs-ride="carousel">
-                <div class="carousel-inner">
-                    ${imovel.imagens.map((img, index) => `
-                        <div class="carousel-item ${index === 0 ? 'active' : ''}">
-                            <img src="${img}" class="d-block w-100" alt="Imagem do imóvel" style="height: 200px; object-fit: cover;">
-                        </div>
-                    `).join('')}
-                </div>
-                ${imovel.imagens.length > 1 ? `
-                    <button class="carousel-control-prev" type="button" data-bs-target="#carousel-${imovel.id}" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Anterior</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#carousel-${imovel.id}" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Próximo</span>
-                    </button>
-                ` : ''}
-            </div>
-        `;
-    }
+    const imagens = imovel.imagens || ["images/default.jpg"];
+    const carrosselId = `carrossel-${imovel.id}`;
+    const isFavorito = verificarFavorito(imovel.id);
     
     // Características do imóvel
     const caracteristicas = [];
@@ -434,33 +426,63 @@ function criarCardImovel(imovel) {
     if (imovel.aceitaAnimais) caracteristicas.push('Aceita animais');
     
     card.innerHTML = `
-        ${carousel}
-        <div class="card-body">
-            <h5 class="card-title">${imovel.titulo}</h5>
-            <p class="card-text text-muted">${imovel.bairro} • ${imovel.tipo}</p>
-            <p class="card-text">${imovel.descricao.substring(0, 100)}...</p>
-            
-            <div class="d-flex justify-content-between mb-2">
-                <span class="badge bg-primary">${imovel.negociacao === 'venda' ? 'Venda' : 'Aluguel'}</span>
-                <span class="text-success fw-bold">R$ ${imovel.preco.toLocaleString('pt-BR')}</span>
+        <div class="carrossel" id="${carrosselId}">
+            <div class="carrossel-imagens">
+                ${imagens.map((imagem, index) => `
+                    <img src="${imagem}" alt="${imovel.titulo}" class="carrossel-img" 
+                         style="display: ${index === 0 ? 'block' : 'none'}" loading="lazy">
+                `).join('')}
             </div>
-            
-            <div class="d-flex justify-content-between mb-3">
-                <small><i class="fas fa-bed"></i> ${imovel.quartos} quarto(s)</small>
-                <small><i class="fas fa-bath"></i> ${imovel.banheiros} banheiro(s)</small>
-                <small><i class="fas fa-car"></i> ${imovel.garagem} vaga(s)</small>
-                <small><i class="fas fa-ruler-combined"></i> ${imovel.area}m²</small>
+            <button class="carrossel-seta carrossel-seta-esquerda">&#10094;</button>
+            <button class="carrossel-seta carrossel-seta-direita">&#10095;</button>
+            <button class="favorite-btn ${isFavorito ? 'favorited' : ''}" data-ad-id="${imovel.id}">
+                <i class="fas fa-heart"></i>
+            </button>
+        </div>
+        <div class="card-content">
+            <h4>${imovel.titulo || 'Sem título'}</h4>
+            <p><strong>Bairro:</strong> ${imovel.bairro || 'Não informado'}</p>
+            <p><strong>Tipo:</strong> ${imovel.titulo || 'Não informado'}</p>
+            <p><strong>Preço:</strong> R$ ${imovel.preco?.toLocaleString('pt-BR') || 'Não informado'}</p>
+            <div class="card-features">
+                <span><i class="fas fa-bed"></i> ${imovel.quartos || 0} quarto(s)</span>
+                <span><i class="fas fa-bath"></i> ${imovel.banheiros || 0} banheiro(s)</span>
+                <span><i class="fas fa-car"></i> ${imovel.garagem || 0} vaga(s)</span>
+                ${imovel.area ? `<span><i class="fas fa-ruler-combined"></i> ${imovel.area}m²</span>` : ''}
             </div>
-            
             ${caracteristicas.length > 0 ? `
-                <div class="d-flex flex-wrap gap-2 mb-3">
-                    ${caracteristicas.map(c => `<span class="badge bg-secondary">${c}</span>`).join('')}
+                <div class="card-tags">
+                    ${caracteristicas.map(c => `<span class="tag">${c}</span>`).join('')}
                 </div>
             ` : ''}
-            
-            <a href="detalhes.html?id=${imovel.id}" class="btn btn-primary w-100">Ver detalhes</a>
+            <a href="detalhes.html?id=${imovel.id}&tipo=imovel" class="btn-view-more">Ver Mais</a>
         </div>
     `;
+    
+    // Eventos do carrossel
+    card.querySelector('.carrossel-seta-esquerda').addEventListener('click', (e) => {
+        e.stopPropagation();
+        mudarImagem(carrosselId, -1);
+    });
+    
+    card.querySelector('.carrossel-seta-direita').addEventListener('click', (e) => {
+        e.stopPropagation();
+        mudarImagem(carrosselId, 1);
+    });
+    
+    // Evento do botão de favoritos
+    card.querySelector('.favorite-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        toggleFavorito(imovel);
+    });
+    
+    // Evento de clique no card (exceto nos botões)
+    card.addEventListener('click', (e) => {
+        if (!e.target.closest('button') && !e.target.closest('a')) {
+            window.location.href = `detalhes.html?id=${imovel.id}&tipo=imovel`;
+        }
+    });
     
     return card;
 }
