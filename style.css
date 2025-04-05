@@ -1475,276 +1475,26 @@ input[type="checkbox"] {
     background: linear-gradient(90deg, transparent, #3498db, transparent);
 }
 
-/* Abas */
-.anuncios-tabs {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 2rem;
-    gap: 1rem;
-}
-
-.tab-btn {
-    padding: 0.8rem 2rem;
-    background: none;
-    border: none;
-    border-radius: 30px;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #7f8c8d;
-    cursor: pointer;
-    transition: all 0.4s ease;
+/* Estilos para os cards metalizados */
+.metal-card {
     position: relative;
+    border-radius: 10px;
     overflow: hidden;
-    z-index: 1;
-}
-
-.tab-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, rgba(52,152,219,0.1) 0%, rgba(52,152,219,0.3) 100%);
-    z-index: -1;
+    background: linear-gradient(135deg, #2c3e50 0%, #4a6491 100%);
+    color: white;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    transform: translateY(20px);
     opacity: 0;
-    transition: opacity 0.3s;
+    cursor: pointer;
 }
 
-.tab-btn.active {
-    color: #fff;
-    background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
-    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
-}
-
-.tab-btn:not(.active):hover {
-    color: #3498db;
-}
-
-.tab-btn:not(.active):hover::before {
+.metal-card.metal-in {
+    transform: translateY(0);
     opacity: 1;
 }
 
-/* Grade Metalizada */
-.metal-grid-container {
-    position: relative;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    perspective: 1000px;
-}
-
-.metal-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 15px;
-    display: none;
-    position: relative;
-}
-
-.metal-grid.active {
-    display: grid;
-}
-
-.grid-placeholder {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 3rem 0;
-    color: #7f8c8d;
-}
-
-.grid-placeholder i {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    color: #bdc3c7;
-}
-
-/* Adicione estas regras ao seu CSS existente */
-
-/* Efeito de gradiente metálico nos cards */
-.anuncio-card {
-    background: linear-gradient(
-        135deg,
-        rgba(255,255,255,0.8) 0%,
-        rgba(230,230,230,0.9) 50%,
-        rgba(255,255,255,0.8) 100%
-    );
-    position: relative;
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.3);
-    box-shadow: 
-        0 4px 15px rgba(0,0,0,0.1),
-        0 0 0 1px rgba(255,255,255,0.5) inset;
-}
-
-/* Efeito de reflexo metálico dinâmico */
-.anuncio-card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 50%;
-    height: 100%;
-    background: linear-gradient(
-        to right,
-        rgba(255,255,255,0) 0%,
-        rgba(255,255,255,0.3) 50%,
-        rgba(255,255,255,0) 100%
-    );
-    transform: skewX(-25deg);
-    transition: left 0.6s;
-}
-
-.anuncio-card:hover::after {
-    left: 150%;
-}
-
-/* Controles de navegação */
-.grid-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 2rem;
-    margin-top: 2rem;
-}
-
-.grid-nav-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
-    color: white;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-}
-
-.grid-nav-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
-}
-
-.grid-nav-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none !important;
-}
-
-.grid-pagination {
-    font-size: 1.1rem;
-    color: #2c3e50;
-    font-weight: 500;
-    min-width: 80px;
-    text-align: center;
-}
-
-/* Spinner de carregamento */
-.spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid rgba(52, 152, 219, 0.2);
-    border-radius: 50%;
-    border-top: 4px solid #3498db;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 1rem;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Efeito de brilho aleatório */
-@keyframes random-glow {
-    0% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.8); }
-    50% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.9); }
-    100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.8); }
-}
-
-/* Aplicar brilho aleatório */
-.anuncio-card.glow {
-    animation: random-glow 2s infinite;
-}
-
-/* Efeito de destaque no hover */
-.anuncio-card:hover {
-    z-index: 10;
-    transform: translateY(-5px) scale(1.03);
-    box-shadow: 
-        0 10px 25px rgba(0,0,0,0.15),
-        0 0 30px rgba(52, 152, 219, 0.3);
-}
-
-/* Layout responsivo para a grade */
-@media (max-width: 1200px) {
-    .metal-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    }
-}
-
-@media (max-width: 768px) {
-    .metal-grid {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 12px;
-    }
-    
-    .anuncio-card {
-        height: 180px;
-    }
-}
-
-@media (max-width: 480px) {
-    .metal-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    }
-    
-    .anuncios-tabs .tab-btn {
-        padding: 0.6rem 1.2rem;
-        font-size: 0.9rem;
-    }
-    
-    .anuncio-card {
-        height: 160px;
-    }
-    
-    .anuncio-info {
-        padding: 8px;
-    }
-}
-
-.error-message {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 2rem;
-    color: #e74c3c;
-}
-
-.error-message i {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-}
-
-.retry-btn {
-    background-color: #3498db;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    margin-top: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.retry-btn:hover {
-    background-color: #2980b9;
-}
-
-/* Efeito metalizado do card */
-.card-metal-effect {
+.metal-effect {
     position: absolute;
     top: 0;
     left: 0;
@@ -1752,40 +1502,143 @@ input[type="checkbox"] {
     bottom: 0;
     background: linear-gradient(
         135deg,
-        rgba(255,255,255,0.2) 0%,
-        rgba(255,255,255,0) 20%,
-        rgba(255,255,255,0.2) 40%,
-        rgba(255,255,255,0.4) 50%,
-        rgba(255,255,255,0.2) 60%,
-        rgba(255,255,255,0) 80%,
-        rgba(255,255,255,0.2) 100%
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0) 50%,
+        rgba(255, 255, 255, 0.1) 100%
     );
     z-index: 1;
-    pointer-events: none;
-    opacity: 0.7;
 }
 
-/* Badge do tipo de anúncio */
+.metal-card.metal-glow .metal-effect {
+    animation: metalGlow 2s ease;
+}
+
+@keyframes metalGlow {
+    0% { box-shadow: 0 0 0 rgba(255, 255, 255, 0.1); }
+    50% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+    100% { box-shadow: 0 0 0 rgba(255, 255, 255, 0.1); }
+}
+
+.card-image-container {
+    position: relative;
+    height: 180px;
+    overflow: hidden;
+}
+
+.card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
 .card-badge {
     position: absolute;
     top: 10px;
     right: 10px;
-    background: linear-gradient(135deg, #3498db, #2c3e50);
+    background: #e74c3c;
     color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.7rem;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
     font-weight: bold;
+}
+
+.card-content {
+    padding: 15px;
+    position: relative;
     z-index: 2;
 }
 
-/* Efeito de brilho aleatório */
-@keyframes card-glow {
-    0% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.5); }
-    50% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.9); }
-    100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.5); }
+.card-title {
+    margin: 0 0 10px;
+    font-size: 18px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.anuncio-card.glow {
-    animation: card-glow 2s infinite;
+.card-price {
+    font-weight: bold;
+    font-size: 16px;
+    color: #f1c40f;
+    margin: 0 0 10px;
+}
+
+.card-details {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 14px;
+}
+
+.card-details span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.card-hover-effect {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 3;
+}
+
+.metal-card:hover .card-hover-effect {
+    opacity: 1;
+}
+
+.metal-card:hover .card-image {
+    transform: scale(1.1);
+}
+
+.btn-view-more {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-view-more:hover {
+    background: #2980b9;
+}
+
+/* Estilos para a grade */
+.metal-grid-container {
+    margin: 20px 0;
+}
+
+.metal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    display: none;
+}
+
+.metal-grid.active {
+    display: grid;
+}
+
+/* Efeito de entrada dos cards */
+@keyframes cardEntrance {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
