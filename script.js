@@ -1324,7 +1324,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // Efeito de digitação no placeholder do logo
     const logoPlaceholder = document.querySelector('.logo-placeholder');
     if (logoPlaceholder) {
-        const texts = ["ConnectImóveis", "Sua Casa dos Sonhos", "Conectando Você"];
+        const texts = ["Corretor certo", "Sua Casa dos Sonhos", "Conectando Você"];
         let count = 0;
         let index = 0;
         let currentText = '';
