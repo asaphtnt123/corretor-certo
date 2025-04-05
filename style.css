@@ -1702,6 +1702,90 @@ input[type="checkbox"] {
     .anuncio-titulo {
         font-size: 0.8rem;
     }
+
+
+	/* Ajustes para a seção de todos os anúncios */
+.todos-anuncios {
+    padding: 3rem 0;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+/* Estilo para informações adicionais nos cards */
+.anuncio-detalhe {
+    font-size: 0.8rem;
+    color: #7f8c8d;
+    margin-top: 3px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.anuncio-detalhe i {
+    font-size: 0.7rem;
+}
+
+/* Efeito de loading para quando estiver carregando */
+@keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+.grid-placeholder {
+    animation: pulse 1.5s infinite;
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem 0;
+    color: #7f8c8d;
+}
+
+.no-results {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 2rem;
+    color: #7f8c8d;
+    font-style: italic;
+}
+
+/* Melhorias na grade para muitos itens */
+.metal-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 15px;
+    display: none;
+    position: relative;
+}
+
+@media (max-width: 992px) {
+    .metal-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .metal-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .metal-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    }
+    
+    .anuncio-info {
+        padding: 8px;
+    }
+    
+    .anuncio-titulo {
+        font-size: 0.8rem;
+    }
+    
+    .anuncio-preco, .anuncio-detalhe {
+        font-size: 0.75rem;
+    }
+}
     
     .anuncio-preco {
         font-size: 0.8rem;
