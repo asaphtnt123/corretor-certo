@@ -1715,3 +1715,77 @@ input[type="checkbox"] {
         padding: 8px;
     }
 }
+
+.error-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 2rem;
+    color: #e74c3c;
+}
+
+.error-message i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.retry-btn {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    margin-top: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.retry-btn:hover {
+    background-color: #2980b9;
+}
+
+/* Efeito metalizado do card */
+.card-metal-effect {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(255,255,255,0.2) 0%,
+        rgba(255,255,255,0) 20%,
+        rgba(255,255,255,0.2) 40%,
+        rgba(255,255,255,0.4) 50%,
+        rgba(255,255,255,0.2) 60%,
+        rgba(255,255,255,0) 80%,
+        rgba(255,255,255,0.2) 100%
+    );
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+/* Badge do tipo de anúncio */
+.card-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: linear-gradient(135deg, #3498db, #2c3e50);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    z-index: 2;
+}
+
+/* Efeito de brilho aleatório */
+@keyframes card-glow {
+    0% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.5); }
+    50% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.9); }
+    100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.5); }
+}
+
+.anuncio-card.glow {
+    animation: card-glow 2s infinite;
+}
