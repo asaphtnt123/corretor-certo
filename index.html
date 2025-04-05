@@ -3,28 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Encontre imóveis e automóveis para alugar ou comprar com facilidade e segurança no Corretor Certo. Anuncie seu imóvel ou carro e alcance milhares de pessoas.">
+    <meta name="keywords" content="aluguel de imóveis, venda de imóveis, aluguel de carros, venda de carros, corretor certo, imóveis, automóveis">
     <title>Corretor Certo - Imóveis e Automóveis</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
     <link rel="stylesheet" href="style.css">
+    
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 </head>
 <body>
-    <!-- Header (mantido como no seu arquivo) -->
+    <!-- Header -->
     <header class="header">
-        <!-- ... seu header existente ... -->
+        <div class="container">
+            <nav class="navbar" role="navigation">
+                <a href="index.html" class="logo" id="logoContainer">
+                    <span class="logo-placeholder">Corretor Certo</span>
+                </a>
+                
+                <!-- Botão do Menu Mobile -->
+                <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menu">☰</button>
+
+                <ul class="nav-menu" id="nav-menu" role="menu">
+                    <li><a href="#" role="menuitem">Início</a></li>
+                    <li><a href="#imoveis" role="menuitem">Imóveis</a></li>
+                    <li><a href="#automoveis" role="menuitem">Automóveis</a></li>
+                    <li><a href="sobre.html" role="menuitem">Sobre</a></li>
+                    <li><a href="contato.html" role="menuitem">Contato</a></li>
+                </ul>
+
+                <div class="header-actions">
+                    <a href="login.html" id="login-btn" class="user-icon" aria-label="Perfil do usuário">
+                        <p id="user-name">Login / Cadastro</p>
+                    </a>
+                </div>
+            </nav>
+        </div>
     </header>
 
     <!-- Conteúdo Principal -->
     <main class="main-container">
-        <!-- Seção de Destaques -->
-        <section class="featured-section">
+        <!-- Banner de Boas-Vindas -->
+        <section class="hero-banner" role="banner">
             <div class="container">
-                <h2 class="section-title">Encontre o que você procura</h2>
+                <div class="banner-content">
+                    <h1>Encontre o imóvel ou carro dos seus sonhos!</h1>
+                    <p>Anuncie, compre e alugue imóveis e automóveis com facilidade e confiança.</p>
+                    <div class="banner-buttons">
+                        <button id="btn-anunciar" class="btn btn-primary">Anunciar Agora</button>
+                        <a href="#imoveis" class="btn btn-secondary">Explorar</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção de Abas (Imóveis e Automóveis) -->
+        <section class="tabs-section" id="imoveis">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Descubra as melhores ofertas</h2>
+                    <p class="section-subtitle">Navegue pelos nossos anúncios e encontre o que procura</p>
+                </div>
                 
                 <!-- Abas de Navegação -->
                 <div class="tabs-container">
                     <div class="tabs">
                         <button class="tab-button active" data-tab="imoveis">Imóveis</button>
-                        <button class="tab-button" data-tab="automoveis">Automóveis</button>
+                        <button class="tab-button" data-tab="automoveis" id="automoveis">Automóveis</button>
                     </div>
                     
                     <!-- Conteúdo das Abas -->
@@ -40,6 +95,7 @@
                                             <option value="casa">Casa</option>
                                             <option value="apartamento">Apartamento</option>
                                             <option value="terreno">Terreno</option>
+                                            <option value="comercial">Comercial</option>
                                         </select>
                                     </div>
                                     
@@ -53,6 +109,16 @@
                                     </div>
                                     
                                     <div class="filter-group">
+                                        <label for="bairro-imovel">Bairro</label>
+                                        <input type="text" id="bairro-imovel" placeholder="Digite o bairro" list="bairros">
+                                        <datalist id="bairros">
+                                            <!-- Preenchido via JavaScript -->
+                                        </datalist>
+                                    </div>
+                                </div>
+                                
+                                <div class="filter-row">
+                                    <div class="filter-group">
                                         <label for="preco-min-imovel">Preço Mín.</label>
                                         <input type="number" id="preco-min-imovel" placeholder="R$">
                                     </div>
@@ -61,9 +127,7 @@
                                         <label for="preco-max-imovel">Preço Máx.</label>
                                         <input type="number" id="preco-max-imovel" placeholder="R$">
                                     </div>
-                                </div>
-                                
-                                <div class="filter-row">
+                                    
                                     <div class="filter-group">
                                         <label for="quartos-imovel">Quartos</label>
                                         <select id="quartos-imovel" name="quartos">
@@ -71,6 +135,7 @@
                                             <option value="1">1+</option>
                                             <option value="2">2+</option>
                                             <option value="3">3+</option>
+                                            <option value="4">4+</option>
                                         </select>
                                     </div>
                                     
@@ -80,9 +145,12 @@
                                             <option value="">Qualquer</option>
                                             <option value="1">1+</option>
                                             <option value="2">2+</option>
+                                            <option value="3">3+</option>
                                         </select>
                                     </div>
-                                    
+                                </div>
+                                
+                                <div class="filter-row">
                                     <div class="filter-group">
                                         <label for="garagem-imovel">Vagas</label>
                                         <select id="garagem-imovel" name="garagem">
@@ -90,6 +158,24 @@
                                             <option value="1">1+</option>
                                             <option value="2">2+</option>
                                         </select>
+                                    </div>
+                                    
+                                    <div class="filter-group">
+                                        <label for="area-min-imovel">Área Mín. (m²)</label>
+                                        <input type="number" id="area-min-imovel" placeholder="Ex: 50">
+                                    </div>
+                                    
+                                    <div class="filter-group checkboxes">
+                                        <label class="checkbox-container">
+                                            <input type="checkbox" id="aceita-animais" name="aceita-animais">
+                                            <span class="checkmark"></span>
+                                            Aceita animais
+                                        </label>
+                                        <label class="checkbox-container">
+                                            <input type="checkbox" id="mobiliado" name="mobiliado">
+                                            <span class="checkmark"></span>
+                                            Mobiliado
+                                        </label>
                                     </div>
                                     
                                     <button type="submit" class="filter-button">Filtrar</button>
@@ -153,9 +239,21 @@
                                             <option value="alcool">Álcool</option>
                                             <option value="flex">Flex</option>
                                             <option value="eletrico">Elétrico</option>
+                                            <option value="hibrido">Híbrido</option>
                                         </select>
                                     </div>
                                     
+                                    <div class="filter-group">
+                                        <label for="cambio-automovel">Câmbio</label>
+                                        <select id="cambio-automovel">
+                                            <option value="">Todos</option>
+                                            <option value="automatico">Automático</option>
+                                            <option value="manual">Manual</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="filter-row">
                                     <button type="submit" class="filter-button">Filtrar</button>
                                     <button type="reset" class="filter-button secondary">Limpar</button>
                                 </div>
@@ -174,17 +272,134 @@
                 </div>
             </div>
         </section>
-        
+
         <!-- Seção de Destaques -->
         <section class="highlights-section">
             <div class="container">
-                <h2 class="section-title">Destaques</h2>
+                <div class="section-header">
+                    <h2 class="section-title">Imóveis e Automóveis em Destaque</h2>
+                    <p class="section-subtitle">As melhores oportunidades selecionadas para você</p>
+                </div>
+                
                 <div id="destaqueContainer" class="highlight-cards">
-                    <!-- Itens em destaque serão carregados aqui -->
+                    <!-- Itens em destaque serão carregados aqui via JavaScript -->
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>Carregando destaques...</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção de Benefícios -->
+        <section class="benefits-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Por que escolher o Corretor Certo?</h2>
+                </div>
+                
+                <div class="benefits-grid">
+                    <div class="benefit-card">
+                        <div class="benefit-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3>Segurança</h3>
+                        <p>Todos os anúncios são verificados para garantir sua segurança e confiabilidade.</p>
+                    </div>
+                    
+                    <div class="benefit-card">
+                        <div class="benefit-icon">
+                            <i class="fas fa-search-dollar"></i>
+                        </div>
+                        <h3>Diversidade</h3>
+                        <p>Milhares de opções para você encontrar exatamente o que procura.</p>
+                    </div>
+                    
+                    <div class="benefit-card">
+                        <div class="benefit-icon">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <h3>Suporte</h3>
+                        <p>Equipe especializada pronta para te ajudar em todas as etapas.</p>
+                    </div>
+                    
+                    <div class="benefit-card">
+                        <div class="benefit-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3>Melhores Preços</h3>
+                        <p>As melhores oportunidades do mercado em um só lugar.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chamada para Ação -->
+        <section class="cta-section">
+            <div class="container">
+                <div class="cta-content">
+                    <h2>Pronto para encontrar o imóvel ou carro perfeito?</h2>
+                    <p>Cadastre-se gratuitamente e comece sua busca agora mesmo!</p>
+                    <div class="cta-buttons">
+                        <a href="cadastro.html" class="btn btn-primary">Cadastre-se</a>
+                        <a href="login.html" class="btn btn-secondary">Login</a>
+                    </div>
                 </div>
             </div>
         </section>
     </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-column">
+                    <h3 class="footer-title">Corretor Certo</h3>
+                    <p>A plataforma mais confiável para compra, venda e aluguel de imóveis e automóveis.</p>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-column">
+                    <h3 class="footer-title">Links Rápidos</h3>
+                    <ul class="footer-links">
+                        <li><a href="index.html">Início</a></li>
+                        <li><a href="#imoveis">Imóveis</a></li>
+                        <li><a href="#automoveis">Automóveis</a></li>
+                        <li><a href="sobre.html">Sobre Nós</a></li>
+                        <li><a href="contato.html">Contato</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3 class="footer-title">Ajuda</h3>
+                    <ul class="footer-links">
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="termos.html">Termos de Uso</a></li>
+                        <li><a href="privacidade.html">Política de Privacidade</a></li>
+                        <li><a href="trocas.html">Trocas e Devoluções</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3 class="footer-title">Contato</h3>
+                    <ul class="footer-contact">
+                        <li><i class="fas fa-map-marker-alt"></i> Rua Exemplo, 123 - Centro, Cidade/UF</li>
+                        <li><i class="fas fa-phone"></i> (00) 1234-5678</li>
+                        <li><i class="fas fa-envelope"></i> contato@corretorcerto.com.br</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2023 Corretor Certo. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
 
     <!-- Modal de Detalhes -->
     <div id="detalhesModal" class="modal">
@@ -194,10 +409,22 @@
         </div>
     </div>
 
+    <!-- Overlay para modal -->
+    <div class="overlay" id="overlay"></div>
+
     <!-- Scripts -->
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script type="module" src="script.js"></script>
-    <script type="module" src="imoveis.js"></script>
-    <script type="module" src="automoveis.js"></script>
+    
+    <!-- Módulos JavaScript -->
+    <script src="script.js" type="module"></script>
+    <script src="imoveis.js" type="module"></script>
+    <script src="automoveis.js" type="module"></script>
 </body>
 </html>
