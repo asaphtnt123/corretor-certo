@@ -26,23 +26,32 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// Elementos da UI
+// Elementos da UI com verificações de existência
+function getElementSafe(id) {
+    const element = document.getElementById(id);
+    if (!element) {
+        console.error(`Elemento com ID ${id} não encontrado`);
+    }
+    return element;
+}
+
 const elements = {
-    title: document.getElementById('detailTitle'),
-    price: document.getElementById('detailPrice'),
-    location: document.getElementById('detailLocation'),
-    area: document.getElementById('detailArea'),
-    bedrooms: document.getElementById('detailBedrooms'),
-    bathrooms: document.getElementById('detailBathrooms'),
-    description: document.getElementById('detailDescription'),
-    featuresGrid: document.getElementById('featuresGrid'),
-    carouselInner: document.getElementById('carousel-inner'),
-    thumbnailsContainer: document.getElementById('thumbnails-container'),
-    btnWhatsApp: document.getElementById('btnWhatsApp'),
-    btnFavorite: document.getElementById('btnFavorite'),
-    btnReport: document.getElementById('btnReport'),
-    agentName: document.getElementById('agentName'),
-    agentType: document.getElementById('agentType')
+    conteudoDetalhes: getElementSafe('conteudo-detalhes'),
+    title: getElementSafe('detailTitle'),
+    price: getElementSafe('detailPrice'),
+    location: getElementSafe('detailLocation'),
+    area: getElementSafe('detailArea'),
+    bedrooms: getElementSafe('detailBedrooms'),
+    bathrooms: getElementSafe('detailBathrooms'),
+    description: getElementSafe('detailDescription'),
+    featuresGrid: getElementSafe('featuresGrid'),
+    carouselInner: getElementSafe('carousel-inner'),
+    thumbnailsContainer: getElementSafe('thumbnails-container'),
+    btnWhatsApp: getElementSafe('btnWhatsApp'),
+    btnFavorite: getElementSafe('btnFavorite'),
+    btnReport: getElementSafe('btnReport'),
+    agentName: getElementSafe('agentName'),
+    agentType: getElementSafe('agentType')
 };
 
 // Variáveis globais
@@ -50,268 +59,266 @@ let currentAd = null;
 let currentAdType = null;
 let isFavorite = false;
 
-// No script.js da página detalhes.html
+// Função principal quando o DOM é carregado
 document.addEventListener('DOMContentLoaded', async function() {
+    // Verificar se o container principal existe
+    if (!elements.conteudoDetalhes) {
+        console.error('Elemento principal #conteudo-detalhes não encontrado');
+        return;
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const adId = urlParams.get('id');
     const adType = urlParams.get('tipo'); // 'imovel' ou 'carro'
     
     if (!adId || !adType) {
-        document.getElementById('conteudo-detalhes').innerHTML = `
-            <div class="error-message">
-                <h3>Anúncio não encontrado</h3>
-                <p>O link pode estar incorreto ou o anúncio foi removido.</p>
-                <a href="index.html" class="btn-voltar">Voltar à página inicial</a>
-            </div>
-        `;
+        showError("Anúncio não especificado");
         return;
     }
     
     try {
         // Mostrar loading
-        document.getElementById('conteudo-detalhes').innerHTML = `
-            <div class="loading">
-                <div class="spinner"></div>
-                <p>Carregando anúncio...</p>
-            </div>
-        `;
+        showLoading();
         
         // Buscar os dados do anúncio no Firestore
-        const docRef = doc(db, adType === 'carro' ? 'automoveis' : 'imoveis', adId);
+        const collectionName = adType === 'carro' ? 'automoveis' : 'imoveis';
+        const docRef = doc(db, collectionName, adId);
         const docSnap = await getDoc(docRef);
         
         if (!docSnap.exists()) {
-            throw new Error('Anúncio não encontrado');
+            throw new Error('Anúncio não encontrado no banco de dados');
         }
         
-        const adData = { id: docSnap.id, ...docSnap.data() };
-        renderizarDetalhes(adData, adType === 'carro');
+        currentAd = { id: docSnap.id, ...docSnap.data() };
+        currentAdType = adType;
+        
+        // Renderizar os detalhes
+        renderAdDetails();
+        
+        // Verificar se o usuário está logado e se o anúncio é favorito
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                checkIfFavorite(user.uid, currentAd.id);
+            }
+        });
         
     } catch (error) {
         console.error('Erro ao carregar detalhes:', error);
-        document.getElementById('conteudo-detalhes').innerHTML = `
-            <div class="error-message">
-                <h3>Erro ao carregar anúncio</h3>
-                <p>${error.message}</p>
-                <a href="index.html" class="btn-voltar">Voltar à página inicial</a>
-            </div>
-        `;
+        showError(error.message || "Erro ao carregar o anúncio");
     }
 });
 
-function renderizarDetalhes(adData, isAutomovel) {
-    const container = document.getElementById('conteudo-detalhes');
-    
-    // Montar o HTML dos detalhes conforme seu código existente
-    container.innerHTML = `
-        <div class="detalhes-container">
-            <!-- Seu código existente de renderização -->
-            ${isAutomovel ? renderDetalhesCarro(adData) : renderDetalhesImovel(adData)}
-        </div>
-    `;
-    
-    // Configurar o carrossel de imagens
-    inicializarCarrossel(adData.imagens || []);
-    
-    // Configurar botão de favorito
-    const favoriteBtn = document.getElementById('favorite-btn');
-    if (favoriteBtn) {
-        favoriteBtn.addEventListener('click', () => toggleFavorito(adData));
-    }
-}
-
-// Função para carregar detalhes do anúncio
-async function loadAdDetails(adId, adType) {
-    try {
-        const docRef = doc(db, adType === 'imovel' ? 'imoveis' : 'automoveis', adId);
-        const docSnap = await getDoc(docRef);
-
-        if (!docSnap.exists()) {
-            throw new Error("Anúncio não encontrado");
-        }
-
-        currentAd = docSnap.data();
-        currentAd.id = docSnap.id;
-        
-        // Preencher dados básicos
-        fillBasicInfo(currentAd, adType);
-        
-        // Configurar galeria de imagens
-        setupImageGallery(currentAd.imagens || ["images/default.jpg"]);
-        
-        // Preencher características
-        fillFeatures(currentAd, adType);
-        
-        // Preencher informações do anunciante
-        fillAgentInfo(currentAd.userId);
-
-    } catch (error) {
-        throw error;
-    }
-}
-
-// Preencher informações básicas e detalhadas
-function fillBasicInfo(ad, type) {
-    // Informações básicas (comuns a ambos)
-    elements.title.textContent = ad.titulo || "Sem título";
-    elements.price.textContent = ad.preco ? `R$ ${ad.preco.toLocaleString('pt-BR')}` : "Preço não informado";
-    
-    // Descrição detalhada - vamos incluir todas as informações aqui
-    let fullDescription = ad.descricao || "Nenhuma descrição fornecida.";
-    fullDescription += "\n\n";
-
-    if (type === 'imovel') {
-        // Informações específicas de imóvel
-        elements.location.textContent = ad.bairro || "Local não informado";
-        elements.area.textContent = ad.area ? `${ad.area} m²` : "Área não informada";
-        elements.bedrooms.textContent = ad.quartos || "0";
-        elements.bathrooms.textContent = ad.banheiros || "0";
-
-        // Adiciona todas as informações à descrição
-        fullDescription += `Tipo: ${ad.tipo || 'Não informado'}\n`;
-        fullDescription += `Área: ${ad.area || 'Não informada'} m²\n`;
-        fullDescription += `Quartos: ${ad.quartos || 'Não informado'}\n`;
-        fullDescription += `Banheiros: ${ad.banheiros || 'Não informado'}\n`;
-        fullDescription += `Vagas na garagem: ${ad.vagas || 'Não informado'}\n`;
-        fullDescription += `Mobiliado: ${ad.mobiliado ? 'Sim' : 'Não'}\n`;
-        fullDescription += `Condomínio: ${ad.condominio ? `R$ ${ad.condominio.toLocaleString('pt-BR')}` : 'Não informado'}\n`;
-        fullDescription += `IPTU: ${ad.iptu ? `R$ ${ad.iptu.toLocaleString('pt-BR')}` : 'Não informado'}\n`;
-        fullDescription += `Andar: ${ad.andar || 'Não informado'}\n`;
-        fullDescription += `Data de construção: ${ad.anoConstrucao || 'Não informado'}\n`;
-        fullDescription += `Próximo a: ${ad.proximoA || 'Não informado'}\n`;
-        fullDescription += `Características: ${ad.caracteristicas?.join(', ') || 'Não informado'}\n`;
-
-    } else {
-        // Informações específicas de automóvel
-        elements.location.textContent = `${ad.marca || ''} ${ad.modelo || ''}`.trim() || "Veículo";
-        elements.area.textContent = ad.ano || "Ano não informado";
-        elements.bedrooms.textContent = ad.km ? `${ad.km.toLocaleString('pt-BR')} km` : "KM não informada";
-        elements.bathrooms.textContent = ad.cor || "Cor não informada";
-
-        // Adiciona todas as informações à descrição
-        fullDescription += `Marca: ${ad.marca || 'Não informada'}\n`;
-        fullDescription += `Modelo: ${ad.modelo || 'Não informado'}\n`;
-        fullDescription += `Ano: ${ad.ano || 'Não informado'}\n`;
-        fullDescription += `Quilometragem: ${ad.km ? `${ad.km.toLocaleString('pt-BR')} km` : 'Não informada'}\n`;
-        fullDescription += `Cor: ${ad.cor || 'Não informada'}\n`;
-        fullDescription += `Câmbio: ${ad.cambio || 'Não informado'}\n`;
-        fullDescription += `Combustível: ${ad.combustivel || 'Não informado'}\n`;
-        fullDescription += `Portas: ${ad.portas || 'Não informado'}\n`;
-        fullDescription += `Final da placa: ${ad.finalPlaca || 'Não informado'}\n`;
-        fullDescription += `Acessórios: ${ad.acessorios?.join(', ') || 'Não informado'}\n`;
-        fullDescription += `Opcionais: ${ad.opcionais?.join(', ') || 'Não informado'}\n`;
-        fullDescription += `Histórico: ${ad.historico || 'Não informado'}\n`;
-    }
-
-    // Adiciona informações comuns a ambos
-    fullDescription += `\nData de publicação: ${new Date(ad.data?.toDate()).toLocaleDateString('pt-BR') || 'Não informada'}\n`;
-    
-    // Atualiza a descrição na página
-    elements.description.textContent = fullDescription;
-}
-// Configurar galeria de imagens
-function setupImageGallery(images) {
-    // Limpar galeria existente
-    elements.carouselInner.innerHTML = '';
-    elements.thumbnailsContainer.innerHTML = '';
-
-    // Adicionar imagens ao carrossel
-    images.forEach((img, index) => {
-        const carouselItem = document.createElement('div');
-        carouselItem.className = `carousel-item ${index === 0 ? 'active' : ''}`;
-        carouselItem.innerHTML = `
-            <img src="${img}" class="d-block w-100" alt="Imagem do anúncio">
-        `;
-        elements.carouselInner.appendChild(carouselItem);
-
-        // Adicionar miniaturas
-        const thumbnail = document.createElement('img');
-        thumbnail.src = img;
-        thumbnail.className = `thumbnail ${index === 0 ? 'active' : ''}`;
-        thumbnail.alt = "Miniatura";
-        thumbnail.addEventListener('click', () => {
-            // Atualizar carrossel principal
-            const carousel = new bootstrap.Carousel(document.getElementById('mainCarousel'));
-            carousel.to(index);
-            
-            // Atualizar miniaturas ativas
-            document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
-            thumbnail.classList.add('active');
-        });
-        
-        elements.thumbnailsContainer.appendChild(thumbnail);
-    });
-
-    // Se não houver imagens, adicionar placeholder
-    if (images.length === 0) {
-        elements.carouselInner.innerHTML = `
-            <div class="carousel-item active">
-                <img src="images/default.jpg" class="d-block w-100" alt="Sem imagem">
+function showLoading() {
+    if (elements.conteudoDetalhes) {
+        elements.conteudoDetalhes.innerHTML = `
+            <div class="loading text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Carregando...</span>
+                </div>
+                <p class="mt-3">Carregando anúncio...</p>
             </div>
         `;
     }
 }
 
-// Preencher características em cards organizados
-function fillFeatures(ad, type) {
-    elements.featuresGrid.innerHTML = '';
+function renderAdDetails() {
+    if (!elements.conteudoDetalhes) return;
 
-    const features = type === 'imovel' ? [
-        { icon: 'fa-home', title: 'Tipo', value: ad.tipo || 'Não informado' },
-        { icon: 'fa-ruler-combined', title: 'Área', value: ad.area ? `${ad.area} m²` : 'Não informada' },
-        { icon: 'fa-bed', title: 'Quartos', value: ad.quartos || 'Não informado' },
-        { icon: 'fa-bath', title: 'Banheiros', value: ad.banheiros || 'Não informado' },
-        { icon: 'fa-car', title: 'Vagas', value: ad.vagas || 'Não informado' },
-        { icon: 'fa-couch', title: 'Mobiliado', value: ad.mobiliado ? 'Sim' : 'Não' },
-        { icon: 'fa-building', title: 'Condomínio', value: ad.condominio ? `R$ ${ad.condominio.toLocaleString('pt-BR')}` : 'Não informado' },
-        { icon: 'fa-file-invoice-dollar', title: 'IPTU', value: ad.iptu ? `R$ ${ad.iptu.toLocaleString('pt-BR')}` : 'Não informado' },
-        { icon: 'fa-layer-group', title: 'Andar', value: ad.andar || 'Não informado' },
-        { icon: 'fa-calendar', title: 'Ano Construção', value: ad.anoConstrucao || 'Não informado' },
-        { icon: 'fa-map-marker-alt', title: 'Próximo a', value: ad.proximoA || 'Não informado' },
-        { icon: 'fa-list', title: 'Características', value: ad.caracteristicas?.join(', ') || 'Não informado' }
-    ] : [
-        { icon: 'fa-car', title: 'Marca', value: ad.marca || 'Não informada' },
-        { icon: 'fa-tag', title: 'Modelo', value: ad.modelo || 'Não informado' },
-        { icon: 'fa-calendar-alt', title: 'Ano', value: ad.ano || 'Não informado' },
-        { icon: 'fa-tachometer-alt', title: 'Quilometragem', value: ad.km ? `${ad.km.toLocaleString('pt-BR')} km` : 'Não informada' },
-        { icon: 'fa-palette', title: 'Cor', value: ad.cor || 'Não informada' },
-        { icon: 'fa-cogs', title: 'Câmbio', value: ad.cambio || 'Não informado' },
-        { icon: 'fa-gas-pump', title: 'Combustível', value: ad.combustivel || 'Não informado' },
-        { icon: 'fa-car-side', title: 'Portas', value: ad.portas || 'Não informado' },
-        { icon: 'fa-plate', title: 'Final Placa', value: ad.finalPlaca || 'Não informado' },
-        { icon: 'fa-tools', title: 'Acessórios', value: ad.acessorios?.join(', ') || 'Não informado' },
-        { icon: 'fa-list-check', title: 'Opcionais', value: ad.opcionais?.join(', ') || 'Não informado' },
-        { icon: 'fa-history', title: 'Histórico', value: ad.historico || 'Não informado' }
-    ];
+    // Criar o HTML dos detalhes
+    let html = `
+        <div class="container py-4">
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Carrossel de Imagens -->
+                    <div id="mainCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+                        <div class="carousel-inner" id="carousel-inner">
+                            ${renderCarouselImages()}
+                        </div>
+                        ${currentAd.imagens?.length > 1 ? renderCarouselControls() : ''}
+                    </div>
+                    
+                    <!-- Miniaturas -->
+                    ${currentAd.imagens?.length > 1 ? `
+                    <div class="thumbnails-container d-flex flex-wrap gap-2 mb-4" id="thumbnails-container">
+                        ${renderThumbnails()}
+                    </div>
+                    ` : ''}
+                    
+                    <!-- Descrição -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h2 id="detailTitle">${currentAd.titulo || 'Sem título'}</h2>
+                            <h4 class="text-primary my-3" id="detailPrice">
+                                R$ ${currentAd.preco?.toLocaleString('pt-BR') || 'Preço não informado'}
+                            </h4>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <p><strong>Localização:</strong> <span id="detailLocation">${getLocationText()}</span></p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p><strong>${currentAdType === 'imovel' ? 'Área' : 'Ano'}:</strong> <span id="detailArea">${getAreaOrYearText()}</span></p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p><strong>${currentAdType === 'imovel' ? 'Quartos' : 'KM'}:</strong> <span id="detailBedrooms">${getBedroomsOrKmText()}</span></p>
+                                </div>
+                            </div>
+                            <div class="description" id="detailDescription">
+                                <h5>Descrição</h5>
+                                <p>${currentAd.descricao || 'Nenhuma descrição fornecida.'}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Características -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Características</h5>
+                            <div class="row" id="featuresGrid">
+                                ${renderFeatures()}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <!-- Anunciante -->
+                    <div class="card mb-4">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-user-circle fa-4x text-secondary"></i>
+                            </div>
+                            <h5 id="agentName">Carregando...</h5>
+                            <p class="text-muted" id="agentType"></p>
+                            <div class="d-grid gap-2">
+                                <a href="#" class="btn btn-success" id="btnWhatsApp">
+                                    <i class="fab fa-whatsapp me-2"></i> Contatar via WhatsApp
+                                </a>
+                                <button class="btn btn-outline-primary" id="btnFavorite">
+                                    <i class="far fa-heart me-2"></i> Adicionar aos Favoritos
+                                </button>
+                                <button class="btn btn-outline-secondary" id="btnReport">
+                                    <i class="fas fa-flag me-2"></i> Denunciar anúncio
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
 
-    features.forEach(feature => {
-        const featureCard = document.createElement('div');
-        featureCard.className = 'feature-card';
-        
-        // Se o valor for muito longo, exibe como bloco
-        const isLongValue = feature.value && feature.value.length > 30;
-        
-        featureCard.innerHTML = `
-            <div class="feature-icon"><i class="fas ${feature.icon}"></i></div>
-            <div class="feature-title">${feature.title}</div>
-            <div class="feature-value ${isLongValue ? 'long-value' : ''}">${feature.value}</div>
-        `;
-        elements.featuresGrid.appendChild(featureCard);
-    });
+    // Inserir o HTML no container principal
+    elements.conteudoDetalhes.innerHTML = html;
+
+    // Configurar os elementos após renderização
+    setupElementsAfterRender();
+    loadAgentInfo();
 }
 
-// Preencher informações do anunciante
-async function fillAgentInfo(userId) {
+function renderCarouselImages() {
+    const images = currentAd.imagens || ["images/default.jpg"];
+    return images.map((img, index) => `
+        <div class="carousel-item ${index === 0 ? 'active' : ''}">
+            <img src="${img}" class="d-block w-100" alt="Imagem do anúncio" style="height: 400px; object-fit: cover;">
+        </div>
+    `).join('');
+}
+
+function renderCarouselControls() {
+    return `
+        <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Próximo</span>
+        </button>
+    `;
+}
+
+function renderThumbnails() {
+    const images = currentAd.imagens || [];
+    return images.map((img, index) => `
+        <img src="${img}" class="thumbnail ${index === 0 ? 'active' : ''}" 
+             style="width: 60px; height: 60px; object-fit: cover; cursor: pointer;" 
+             alt="Miniatura" data-bs-target="#mainCarousel" data-bs-slide-to="${index}">
+    `).join('');
+}
+
+function getLocationText() {
+    if (currentAdType === 'imovel') {
+        return currentAd.bairro || 'Local não informado';
+    } else {
+        return `${currentAd.marca || ''} ${currentAd.modelo || ''}`.trim() || 'Veículo';
+    }
+}
+
+function getAreaOrYearText() {
+    if (currentAdType === 'imovel') {
+        return currentAd.area ? `${currentAd.area} m²` : 'Área não informada';
+    } else {
+        return currentAd.ano || 'Ano não informado';
+    }
+}
+
+function getBedroomsOrKmText() {
+    if (currentAdType === 'imovel') {
+        return currentAd.quartos || '0';
+    } else {
+        return currentAd.km ? `${currentAd.km.toLocaleString('pt-BR')} km` : 'KM não informada';
+    }
+}
+
+function renderFeatures() {
+    const features = currentAdType === 'imovel' ? [
+        { icon: 'fa-home', title: 'Tipo', value: currentAd.tipo || 'Não informado' },
+        { icon: 'fa-ruler-combined', title: 'Área', value: currentAd.area ? `${currentAd.area} m²` : 'Não informada' },
+        { icon: 'fa-bed', title: 'Quartos', value: currentAd.quartos || 'Não informado' },
+        { icon: 'fa-bath', title: 'Banheiros', value: currentAd.banheiros || 'Não informado' },
+        { icon: 'fa-car', title: 'Vagas', value: currentAd.garagem || 'Não informado' },
+        { icon: 'fa-couch', title: 'Mobiliado', value: currentAd.mobiliado ? 'Sim' : 'Não' },
+        { icon: 'fa-building', title: 'Condomínio', value: currentAd.condominio ? `R$ ${currentAd.condominio.toLocaleString('pt-BR')}` : 'Não informado' },
+        { icon: 'fa-file-invoice-dollar', title: 'IPTU', value: currentAd.iptu ? `R$ ${currentAd.iptu.toLocaleString('pt-BR')}` : 'Não informado' }
+    ] : [
+        { icon: 'fa-car', title: 'Marca', value: currentAd.marca || 'Não informada' },
+        { icon: 'fa-tag', title: 'Modelo', value: currentAd.modelo || 'Não informado' },
+        { icon: 'fa-calendar-alt', title: 'Ano', value: currentAd.ano || 'Não informado' },
+        { icon: 'fa-tachometer-alt', title: 'Quilometragem', value: currentAd.km ? `${currentAd.km.toLocaleString('pt-BR')} km` : 'Não informada' },
+        { icon: 'fa-palette', title: 'Cor', value: currentAd.cor || 'Não informada' },
+        { icon: 'fa-cogs', title: 'Câmbio', value: currentAd.cambio || 'Não informado' },
+        { icon: 'fa-gas-pump', title: 'Combustível', value: currentAd.combustivel || 'Não informado' }
+    ];
+
+    return features.map(feat => `
+        <div class="col-md-6 mb-3">
+            <div class="d-flex align-items-center">
+                <i class="fas ${feat.icon} me-3 text-primary"></i>
+                <div>
+                    <small class="text-muted">${feat.title}</small>
+                    <div class="fw-bold">${feat.value}</div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function loadAgentInfo() {
+    if (!currentAd?.userId) return;
+
     try {
-        const userDoc = await getDoc(doc(db, "users", userId));
+        const userDoc = await getDoc(doc(db, "users", currentAd.userId));
         if (userDoc.exists()) {
             const userData = userDoc.data();
-            elements.agentName.textContent = userData.name || "Anunciante";
-            elements.agentType.textContent = userData.userType === 'comercial' ? 'Profissional' : 'Particular';
             
-            // Configurar link do WhatsApp
-            if (userData.phone) {
-                elements.btnWhatsApp.href = `https://wa.me/55${userData.phone.replace(/\D/g, '')}?text=Olá, vi seu anúncio no ConnectFamília e gostaria de mais informações`;
+            const agentName = getElementSafe('agentName');
+            const agentType = getElementSafe('agentType');
+            const btnWhatsApp = getElementSafe('btnWhatsApp');
+            
+            if (agentName) agentName.textContent = userData.name || "Anunciante";
+            if (agentType) agentType.textContent = userData.userType === 'comercial' ? 'Profissional' : 'Particular';
+            if (btnWhatsApp && userData.phone) {
+                btnWhatsApp.href = `https://wa.me/55${userData.phone.replace(/\D/g, '')}?text=Olá, vi seu anúncio e gostaria de mais informações`;
             }
         }
     } catch (error) {
@@ -319,7 +326,6 @@ async function fillAgentInfo(userId) {
     }
 }
 
-// Verificar se o anúncio é favorito
 async function checkIfFavorite(userId, adId) {
     try {
         const userDoc = await getDoc(doc(db, "users", userId));
@@ -333,92 +339,111 @@ async function checkIfFavorite(userId, adId) {
     }
 }
 
-// Atualizar botão de favorito
 function updateFavoriteButton() {
+    const btnFavorite = getElementSafe('btnFavorite');
+    if (!btnFavorite) return;
+
     if (isFavorite) {
-        elements.btnFavorite.innerHTML = '<i class="fas fa-heart me-2"></i> Remover dos Favoritos';
-        elements.btnFavorite.classList.add('btn-danger');
-        elements.btnFavorite.classList.remove('btn-outline-primary');
+        btnFavorite.innerHTML = '<i class="fas fa-heart me-2"></i> Remover dos Favoritos';
+        btnFavorite.classList.remove('btn-outline-primary');
+        btnFavorite.classList.add('btn-danger');
     } else {
-        elements.btnFavorite.innerHTML = '<i class="far fa-heart me-2"></i> Adicionar aos Favoritos';
-        elements.btnFavorite.classList.remove('btn-danger');
-        elements.btnFavorite.classList.add('btn-outline-primary');
+        btnFavorite.innerHTML = '<i class="far fa-heart me-2"></i> Adicionar aos Favoritos';
+        btnFavorite.classList.remove('btn-danger');
+        btnFavorite.classList.add('btn-outline-primary');
     }
 }
 
-// Configurar eventos
-function setupEventListeners() {
-    // Botão de favorito
-    elements.btnFavorite.addEventListener('click', async () => {
-        const user = auth.currentUser;
-        if (!user) {
-            showAlert("Você precisa estar logado para adicionar favoritos", "error");
-            return;
-        }
-
-        try {
-            const userDocRef = doc(db, "users", user.uid);
-            
-            if (isFavorite) {
-                await updateDoc(userDocRef, {
-                    favoritos: arrayRemove(currentAd.id)
-                });
-                isFavorite = false;
-                showAlert("Anúncio removido dos favoritos", "success");
-            } else {
-                await updateDoc(userDocRef, {
-                    favoritos: arrayUnion(currentAd.id)
-                });
-                isFavorite = true;
-                showAlert("Anúncio adicionado aos favoritos", "success");
-            }
-            
-            updateFavoriteButton();
-            
-        } catch (error) {
-            console.error("Erro ao atualizar favoritos:", error);
-            showAlert("Erro ao atualizar favoritos", "error");
-        }
-    });
-
-    // Botão de denúncia
-    elements.btnReport.addEventListener('click', () => {
-        showAlert("Funcionalidade de denúncia será implementada em breve", "info");
-    });
-
-    // Botão do WhatsApp
-    elements.btnWhatsApp.addEventListener('click', (e) => {
-        if (!elements.btnWhatsApp.href) {
-            e.preventDefault();
-            showAlert("Número de WhatsApp não disponível", "info");
-        }
+function setupElementsAfterRender() {
+    // Configurar eventos dos botões
+    const btnFavorite = getElementSafe('btnFavorite');
+    const btnReport = getElementSafe('btnReport');
+    
+    if (btnFavorite) {
+        btnFavorite.addEventListener('click', toggleFavorite);
+    }
+    
+    if (btnReport) {
+        btnReport.addEventListener('click', () => {
+            showAlert("Funcionalidade de denúncia será implementada em breve", "info");
+        });
+    }
+    
+    // Configurar miniaturas do carrossel
+    const thumbnails = document.querySelectorAll('.thumbnail');
+    thumbnails.forEach(thumb => {
+        thumb.addEventListener('click', function() {
+            thumbnails.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+        });
     });
 }
 
-// Função para mostrar erro
+async function toggleFavorite() {
+    const user = auth.currentUser;
+    if (!user) {
+        showAlert("Você precisa estar logado para adicionar favoritos", "error");
+        return;
+    }
+
+    try {
+        const userDocRef = doc(db, "users", user.uid);
+        
+        if (isFavorite) {
+            await updateDoc(userDocRef, {
+                favoritos: arrayRemove(currentAd.id)
+            });
+            isFavorite = false;
+            showAlert("Anúncio removido dos favoritos", "success");
+        } else {
+            await updateDoc(userDocRef, {
+                favoritos: arrayUnion(currentAd.id)
+            });
+            isFavorite = true;
+            showAlert("Anúncio adicionado aos favoritos", "success");
+        }
+        
+        updateFavoriteButton();
+        
+    } catch (error) {
+        console.error("Erro ao atualizar favoritos:", error);
+        showAlert("Erro ao atualizar favoritos", "error");
+    }
+}
+
 function showError(message) {
-    document.querySelector('main').innerHTML = `
-        <div class="error-container text-center py-5">
-            <i class="fas fa-exclamation-triangle fa-4x text-danger mb-4"></i>
-            <h2 class="mb-3">${message}</h2>
-            <p class="mb-4">O anúncio solicitado não está disponível ou foi removido.</p>
-            <a href="index.html" class="btn btn-primary">Voltar à página inicial</a>
-        </div>
-    `;
+    if (elements.conteudoDetalhes) {
+        elements.conteudoDetalhes.innerHTML = `
+            <div class="container py-5 text-center">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Erro:</strong> ${message}
+                </div>
+                <a href="index.html" class="btn btn-primary mt-3">
+                    <i class="fas fa-arrow-left me-2"></i> Voltar à página inicial
+                </a>
+            </div>
+        `;
+    } else {
+        document.body.innerHTML = `
+            <div class="container py-5 text-center">
+                <h2 class="text-danger">Erro</h2>
+                <p>${message}</p>
+                <a href="index.html" class="btn btn-primary">Voltar</a>
+            </div>
+        `;
+    }
 }
 
-// Função para mostrar alertas
 function showAlert(message, type = 'success') {
-    Swal.fire({
-        title: type === 'error' ? 'Erro!' : type === 'info' ? 'Informação' : 'Sucesso!',
-        text: message,
-        icon: type,
-        confirmButtonText: 'OK',
-        customClass: {
-            popup: 'custom-swal'
-        }
-    });
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: type === 'error' ? 'Erro!' : type === 'info' ? 'Informação' : 'Sucesso!',
+            text: message,
+            icon: type,
+            confirmButtonText: 'OK'
+        });
+    } else {
+        alert(`${type.toUpperCase()}: ${message}`);
+    }
 }
-
-// Exportar para uso global se necessário
-window.loadAdDetails = loadAdDetails;
