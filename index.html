@@ -103,188 +103,265 @@
 </section>
 
 	    
-    <!-- Seção de Busca Atualizada -->
-<section class="search" role="search">
-    <div class="container">
-        <h2>🔍 Busque pelo que você deseja</h2>
-        <form id="form-pesquisa" method="get">
-            <div class="search-fields">
-                <!-- Seletor de Tipo -->
-                <div class="form-group">
-                    <label for="tipo">Tipo</label>
-                    <div class="tipo-pesquisa">
-                        <div class="tipo-option active" data-tipo="imovel">
-                            <img src="casa.png" alt="Ícone de Casa">
-                            <span>Imóvel</span>
+<section class="search-overlay" role="search" aria-hidden="true">
+    <div class="search-container">
+        <button id="btn-fechar-busca" class="btn-fechar" aria-label="Fechar busca">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <div class="container">
+            <h2><i class="fas fa-search"></i> Busque pelo que você deseja</h2>
+            
+            <form id="form-pesquisa" method="get" class="search-form">
+                <div class="search-fields">
+                    <!-- Seletor de Tipo -->
+                    <div class="form-group">
+                        <label for="tipo">Tipo de Anúncio</label>
+                        <div class="tipo-pesquisa">
+                            <div class="tipo-option active" data-tipo="imovel" role="button" tabindex="0">
+                                <img src="casa.png" alt="Ícone de Casa" aria-hidden="true">
+                                <span>Imóvel</span>
+                            </div>
+                            <div class="tipo-option" data-tipo="carro" role="button" tabindex="0">
+                                <img src="carro.png" alt="Ícone de Carro" aria-hidden="true">
+                                <span>Automóvel</span>
+                            </div>
                         </div>
-                        <div class="tipo-option" data-tipo="carro">
-                            <img src="carro.png" alt="Ícone de Carro">
-                            <span>Automóvel</span>
-                        </div>
-                    </div>
-                    <input type="hidden" id="tipo" name="tipo" value="imovel" required>
-                </div>
-
-                <!-- Campos para Imóveis -->
-                <div id="campos-imovel">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="bairro">Bairro:</label>
-                            <input type="text" id="bairro" name="bairro" placeholder="Digite um bairro" list="bairros">
-                            <datalist id="bairros">
-                                <!-- Lista preenchida via JavaScript -->
-                            </datalist>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="tipo-imovel">Tipo de Imóvel:</label>
-                            <select id="tipo-imovel" name="tipo-imovel">
-                                <option value="">Qualquer</option>
-                                <option value="casa">Casa</option>
-                                <option value="apartamento">Apartamento</option>
-                                <option value="terreno">Terreno</option>
-                            </select>
-                        </div>
+                        <input type="hidden" id="tipo" name="tipo" value="imovel" required>
                     </div>
 
+                    <!-- Campos para Imóveis -->
+                    <div id="campos-imovel" class="campos-busca">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="bairro">Bairro:</label>
+                                <div class="input-with-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <input type="text" id="bairro" name="bairro" placeholder="Digite um bairro" list="bairros">
+                                    <datalist id="bairros"></datalist>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="tipo-imovel">Tipo de Imóvel:</label>
+                                <div class="select-with-icon">
+                                    <i class="fas fa-home"></i>
+                                    <select id="tipo-imovel" name="tipo-imovel">
+                                        <option value="">Qualquer tipo</option>
+                                        <option value="casa">Casa</option>
+                                        <option value="apartamento">Apartamento</option>
+                                        <option value="terreno">Terreno</option>
+                                        <option value="comercial">Comercial</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Negociação:</label>
+                                <div class="radio-group">
+                                    <label class="radio-option">
+                                        <input type="radio" name="negociacao" value="aluguel" checked>
+                                        <span class="radio-custom"></span>
+                                        <span class="radio-label">Aluguel</span>
+                                    </label>
+                                    <label class="radio-option">
+                                        <input type="radio" name="negociacao" value="venda">
+                                        <span class="radio-custom"></span>
+                                        <span class="radio-label">Venda</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="quartos">Quartos:</label>
+                                <div class="select-with-icon">
+                                    <i class="fas fa-bed"></i>
+                                    <select id="quartos" name="quartos">
+                                        <option value="">Qualquer</option>
+                                        <option value="1">1+</option>
+                                        <option value="2">2+</option>
+                                        <option value="3">3+</option>
+                                        <option value="4">4+</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="banheiros">Banheiros:</label>
+                                <div class="select-with-icon">
+                                    <i class="fas fa-bath"></i>
+                                    <select id="banheiros" name="banheiros">
+                                        <option value="">Qualquer</option>
+                                        <option value="1">1+</option>
+                                        <option value="2">2+</option>
+                                        <option value="3">3+</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="garagem">Vagas:</label>
+                                <div class="select-with-icon">
+                                    <i class="fas fa-car"></i>
+                                    <select id="garagem" name="garagem">
+                                        <option value="">Qualquer</option>
+                                        <option value="1">1+</option>
+                                        <option value="2">2+</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="area-min">Área mínima (m²):</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-expand"></i>
+                                <input type="number" id="area-min" name="area-min" placeholder="Ex: 50">
+                            </div>
+                        </div>
+
+                        <div class="form-group checkboxes">
+                            <label class="checkbox-option">
+                                <input type="checkbox" id="aceita-animais" name="aceita-animais">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label">Aceita animais</span>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" id="mobiliado" name="mobiliado">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label">Mobiliado</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Campos para Automóveis -->
+                    <div id="campos-carro" class="campos-busca" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="marca">Marca:</label>
+                                <div class="input-with-icon">
+                                    <i class="fas fa-tag"></i>
+                                    <input type="text" id="marca" name="marca" placeholder="Digite a marca">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="modelo">Modelo:</label>
+                                <div class="input-with-icon">
+                                    <i class="fas fa-car-side"></i>
+                                    <input type="text" id="modelo" name="modelo" placeholder="Digite o modelo">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="ano">Ano:</label>
+                                <div class="input-with-icon">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <input type="number" id="ano" name="ano" placeholder="Digite o ano">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="combustivel">Combustível:</label>
+                                <div class="select-with-icon">
+                                    <i class="fas fa-gas-pump"></i>
+                                    <select id="combustivel" name="combustivel">
+                                        <option value="">Qualquer</option>
+                                        <option value="gasolina">Gasolina</option>
+                                        <option value="alcool">Álcool</option>
+                                        <option value="flex">Flex</option>
+                                        <option value="eletrico">Elétrico</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campos comuns -->
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="negociacao">Negociação:</label>
-                            <div class="radio-group">
-                                <label>
-                                    <input type="radio" name="negociacao" value="aluguel" checked> Aluguel
-                                </label>
-                                <label>
-                                    <input type="radio" name="negociacao" value="venda"> Venda
-                                </label>
+                            <label for="preco-min">Preço Mínimo (R$):</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                                <input type="number" id="preco-min" name="preco-min" placeholder="Ex: 1000">
                             </div>
                         </div>
                         
                         <div class="form-group">
-                            <label for="quartos">Quartos:</label>
-                            <select id="quartos" name="quartos">
-                                <option value="">Qualquer</option>
-                                <option value="1">1+</option>
-                                <option value="2">2+</option>
-                                <option value="3">3+</option>
-                                <option value="4">4+</option>
-                            </select>
+                            <label for="preco-max">Preço Máximo (R$):</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                                <input type="number" id="preco-max" name="preco-max" placeholder="Ex: 5000">
+                            </div>
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="banheiros">Banheiros:</label>
-                            <select id="banheiros" name="banheiros">
-                                <option value="">Qualquer</option>
-                                <option value="1">1+</option>
-                                <option value="2">2+</option>
-                                <option value="3">3+</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="garagem">Vagas:</label>
-                            <select id="garagem" name="garagem">
-                                <option value="">Qualquer</option>
-                                <option value="1">1+</option>
-                                <option value="2">2+</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="area-min">Área mínima (m²):</label>
-                        <input type="number" id="area-min" name="area-min" placeholder="Ex: 50">
-                    </div>
-
-                    <div class="form-group checkboxes">
-                        <label>
-                            <input type="checkbox" id="aceita-animais" name="aceita-animais"> Aceita animais
-                        </label>
-                        <label>
-                            <input type="checkbox" id="mobiliado" name="mobiliado"> Mobiliado
-                        </label>
-                    </div>
+                    <button type="submit" class="btn-buscar">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
                 </div>
-
-                <!-- Campos para Automóveis -->
-                <div id="campos-carro" style="display: none;">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="marca">Marca:</label>
-                            <input type="text" id="marca" name="marca" placeholder="Digite a marca">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="modelo">Modelo:</label>
-                            <input type="text" id="modelo" name="modelo" placeholder="Digite o modelo">
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="ano">Ano:</label>
-                            <input type="number" id="ano" name="ano" placeholder="Digite o ano">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="combustivel">Combustível:</label>
-                            <select id="combustivel" name="combustivel">
-                                <option value="">Qualquer</option>
-                                <option value="gasolina">Gasolina</option>
-                                <option value="alcool">Álcool</option>
-                                <option value="flex">Flex</option>
-                                <option value="eletrico">Elétrico</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Campos comuns -->
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="preco-min">Preço Mínimo (R$):</label>
-                        <input type="number" id="preco-min" name="preco-min" placeholder="Ex: 1000">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="preco-max">Preço Máximo (R$):</label>
-                        <input type="number" id="preco-max" name="preco-max" placeholder="Ex: 5000">
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-buscar">Buscar</button>
-            </div>
-        </form>
-        
-        <!-- Seção de Resultados -->
-        <div id="resultados" class="resultados-container">
-            <div class="resultados-header">
-                <h3>Resultados da Busca</h3>
-                <div class="ordenacao">
-                    <label for="ordenar-por">Ordenar por:</label>
-                    <select id="ordenar-por">
-                        <option value="relevancia">Relevância</option>
-                        <option value="preco-asc">Preço (menor primeiro)</option>
-                        <option value="preco-desc">Preço (maior primeiro)</option>
-                        <option value="recentes">Mais recentes</option>
-                    </select>
-                </div>
-            </div>
+            </form>
             
-            <div id="lista-resultados" class="lista-resultados">
-                <!-- Resultados serão inseridos aqui via JavaScript -->
-            </div>
-            
-            <div class="sem-resultados" style="display: none;">
-                <p>Nenhum resultado encontrado com os filtros selecionados.</p>
-                <button class="btn-limpar-filtros">Limpar filtros</button>
-            </div>
-            
-            <div class="carregando" style="display: none;">
-                <div class="spinner"></div>
-                <p>Carregando resultados...</p>
+            <!-- Seção de Resultados -->
+            <div id="resultados" class="resultados-container">
+                <div class="resultados-header">
+                    <h3>Resultados da Busca</h3>
+                    <div class="resultados-controls">
+                        <div class="ordenacao">
+                            <label for="ordenar-por">Ordenar por:</label>
+                            <div class="select-with-icon">
+                                <i class="fas fa-sort"></i>
+                                <select id="ordenar-por">
+                                    <option value="relevancia">Relevância</option>
+                                    <option value="preco-asc">Preço (menor primeiro)</option>
+                                    <option value="preco-desc">Preço (maior primeiro)</option>
+                                    <option value="recentes">Mais recentes</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn-limpar-filtros">
+                            <i class="fas fa-times"></i> Limpar filtros
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="lista-resultados" class="lista-resultados">
+                    <!-- Resultados serão inseridos aqui via JavaScript -->
+                </div>
+                
+                <div class="sem-resultados">
+                    <div class="empty-state">
+                        <i class="fas fa-search"></i>
+                        <h4>Nenhum resultado encontrado</h4>
+                        <p>Experimente ajustar seus filtros de busca</p>
+                        <button class="btn-limpar-filtros">
+                            <i class="fas fa-redo"></i> Limpar filtros
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="carregando">
+                    <div class="spinner-container">
+                        <div class="spinner"></div>
+                        <p>Carregando resultados...</p>
+                    </div>
+                </div>
+                
+                <div class="paginacao">
+                    <button class="btn-paginacao prev" disabled>
+                        <i class="fas fa-chevron-left"></i> Anterior
+                    </button>
+                    <span class="contador-pagina">Página 1 de 1</span>
+                    <button class="btn-paginacao next" disabled>
+                        Próxima <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
