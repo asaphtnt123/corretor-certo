@@ -1288,15 +1288,16 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 
-// Efeito de partículas para o banner
 document.addEventListener("DOMContentLoaded", function() {
-    const particlesContainer = document.getElementById('banner-particles');
-    
-    if (particlesContainer) {
-        // Criar partículas
-        for (let i = 0; i < 30; i++) {
+    // Criar partículas para o banner
+    const banner = document.querySelector('section.banner');
+    if (banner) {
+        const particlesContainer = document.createElement('div');
+        particlesContainer.className = 'banner-particles';
+        
+        for (let i = 0; i < 20; i++) {
             const particle = document.createElement('div');
-            particle.classList.add('particle');
+            particle.className = 'particle';
             
             // Posição e tamanho aleatórios
             const size = Math.random() * 5 + 1;
@@ -1314,6 +1315,8 @@ document.addEventListener("DOMContentLoaded", function() {
             
             particlesContainer.appendChild(particle);
         }
+        
+        banner.appendChild(particlesContainer);
     }
 });
 // ============== EXPORTAÇÕES GLOBAIS ==============
