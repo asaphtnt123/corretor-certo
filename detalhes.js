@@ -67,8 +67,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
     }
 
+   
+
     const urlParams = new URLSearchParams(window.location.search);
-    const adId = urlParams.get('id');
+    const anuncioId = urlParams.get('id');
+
     const adType = urlParams.get('tipo'); // 'imovel' ou 'carro'
     
     if (!adId || !adType) {
