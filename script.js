@@ -1163,11 +1163,18 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 document.addEventListener("DOMContentLoaded", function() {
+    // Elementos com verificação de existência
     const btnAbrir = document.getElementById('btn-ativar-busca');
     const btnFechar = document.getElementById('btn-fechar-busca');
     const overlay = document.querySelector('.search-overlay');
     const backdrop = document.querySelector('.overlay-backdrop');
     
+    // Verifica se todos os elementos necessários existem
+    if (!btnAbrir || !btnFechar || !overlay || !backdrop) {
+        console.error('Um ou mais elementos necessários não foram encontrados no DOM');
+        return;
+    }
+
     // Elemento que deve receber foco quando o overlay abrir
     const primeiroElementoFocavel = btnFechar;
     
@@ -1175,79 +1182,109 @@ document.addEventListener("DOMContentLoaded", function() {
     let ultimoElementoFocado;
 
     function abrirBusca() {
-        // Armazena o elemento que tinha foco antes de abrir
-        ultimoElementoFocado = document.activeElement;
-        
-        // Mostra o overlay
-        overlay.removeAttribute('hidden');
-        
-        // Força reflow para garantir que a transição ocorra
-        void overlay.offsetWidth;
-        
-        // Adiciona classe active para animação
-        overlay.style.right = '0';
-        backdrop.classList.add('active');
-        
-        // Move o foco para o primeiro elemento focável
-        setTimeout(() => {
-            primeiroElementoFocavel.focus();
-        }, 100);
-        
-        // Desabilita scroll na página principal
-        document.body.style.overflow = 'hidden';
+        try {
+            // Armazena o elemento que tinha foco antes de abrir
+            ultimoElementoFocado = document.activeElement;
+            
+            // Mostra o overlay
+            overlay.removeAttribute('hidden');
+            
+            // Força reflow para garantir que a transição ocorra
+            void overlay.offsetWidth;
+            
+            // Adiciona classe active para animação
+            overlay.style.right = '0';
+            if (backdrop) {
+                backdrop.classList.add('active');
+            }
+            
+            // Move o foco para o primeiro elemento focável
+            setTimeout(() => {
+                if (primeiroElementoFocavel) {
+                    primeiroElementoFocavel.focus();
+                }
+            }, 100);
+            
+            // Desabilita scroll na página principal
+            document.body.style.overflow = 'hidden';
+        } catch (error) {
+            console.error('Erro ao abrir a busca:', error);
+        }
     }
 
     function fecharBusca() {
-        // Animação de saída
-        overlay.style.right = '-100%';
-        backdrop.classList.remove('active');
-        
-        // Esconde o overlay após a animação
-        setTimeout(() => {
-            overlay.setAttribute('hidden', '');
-            
-            // Restaura o foco para o elemento anterior
-            if (ultimoElementoFocado) {
-                ultimoElementoFocado.focus();
+        try {
+            // Animação de saída
+            overlay.style.right = '-100%';
+            if (backdrop) {
+                backdrop.classList.remove('active');
             }
             
-            // Restaura scroll na página principal
-            document.body.style.overflow = '';
-        }, 400); // Tempo deve corresponder à duração da transição
+            // Esconde o overlay após a animação
+            setTimeout(() => {
+                overlay.setAttribute('hidden', '');
+                
+                // Restaura o foco para o elemento anterior
+                if (ultimoElementoFocado && 'focus' in ultimoElementoFocado) {
+                    ultimoElementoFocado.focus();
+                }
+                
+                // Restaura scroll na página principal
+                document.body.style.overflow = '';
+            }, 400); // Tempo deve corresponder à duração da transição
+        } catch (error) {
+            console.error('Erro ao fechar a busca:', error);
+        }
     }
 
-    // Event listeners
-    btnAbrir.addEventListener('click', abrirBusca);
-    btnFechar.addEventListener('click', fecharBusca);
-    backdrop.addEventListener('click', fecharBusca);
-    
+    // Adiciona event listeners com verificação
+    if (btnAbrir) {
+        btnAbrir.addEventListener('click', abrirBusca);
+    } else {
+        console.error('Botão de abrir busca não encontrado');
+    }
+
+    if (btnFechar) {
+        btnFechar.addEventListener('click', fecharBusca);
+    } else {
+        console.error('Botão de fechar busca não encontrado');
+    }
+
+    if (backdrop) {
+        backdrop.addEventListener('click', fecharBusca);
+    }
+
     // Fechar com tecla ESC
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && !overlay.hasAttribute('hidden')) {
+        if (e.key === 'Escape' && overlay && !overlay.hasAttribute('hidden')) {
             fecharBusca();
         }
     });
     
     // Trapping focus dentro do overlay quando aberto
-    overlay.addEventListener('keydown', function(e) {
-        if (e.key === 'Tab' && !overlay.hasAttribute('hidden')) {
-            const focaveis = overlay.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-            const primeiro = focaveis[0];
-            const ultimo = focaveis[focaveis.length - 1];
-            
-            if (e.shiftKey) {
-                if (document.activeElement === primeiro) {
-                    ultimo.focus();
-                    e.preventDefault();
-                }
-            } else {
-                if (document.activeElement === ultimo) {
-                    primeiro.focus();
-                    e.preventDefault();
+    if (overlay) {
+        overlay.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab' && overlay && !overlay.hasAttribute('hidden')) {
+                const focaveis = overlay.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                if (focaveis.length > 0) {
+                    const primeiro = focaveis[0];
+                    const ultimo = focaveis[focaveis.length - 1];
+                    
+                    if (e.shiftKey) {
+                        if (document.activeElement === primeiro) {
+                            ultimo.focus();
+                            e.preventDefault();
+                        }
+                    } else {
+                        if (document.activeElement === ultimo) {
+                            primeiro.focus();
+                            e.preventDefault();
+                        }
+                    }
                 }
             }
-        }
-    });
+        });
+    }
 });
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
