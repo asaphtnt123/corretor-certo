@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Encontre imóveis e automóveis para alugar com facilidade e segurança no Corretor Certo. Anuncie seu imóvel ou carro e alcance milhares de pessoas.">
     <meta name="keywords" content="aluguel de imóveis, aluguel de carros, corretor certo, imóveis, automóveis">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <title>Corretor Certo - Imóveis e Automóveis</title>
 	
     <link rel="stylesheet" href="style.css">
@@ -60,7 +61,9 @@
 
 	    </div>
         </section>
-<section class="meus-anuncios">
+
+
+	    <section class="mini-anuncios">
     <div class="container">
         <h2 class="section-title">Nossos Anúncios</h2>
         
@@ -76,39 +79,28 @@
             </button>
         </div>
         
-        <!-- Container da Grade Metalizada -->
-        <div class="metal-grid-container">
+        <!-- Container da Grade Horizontal -->
+        <div class="horizontal-scroll-container">
             <!-- Grade de Imóveis -->
-            <div class="metal-grid active" id="grid-imoveis">
+            <div class="mini-grid active" id="mini-grid-imoveis">
                 <div class="grid-placeholder">
                     <div class="spinner"></div>
-                    <p>Carregando imóveis disponíveis...</p>
+                    <p>Carregando imóveis...</p>
                 </div>
             </div>
             
             <!-- Grade de Automóveis -->
-            <div class="metal-grid" id="grid-automoveis">
+            <div class="mini-grid" id="mini-grid-automoveis">
                 <div class="grid-placeholder">
                     <div class="spinner"></div>
-                    <p>Carregando automóveis disponíveis...</p>
+                    <p>Carregando automóveis...</p>
                 </div>
             </div>
         </div>
-        
-        <!-- Controles de Navegação -->
-        <div class="grid-controls">
-            <button class="grid-nav-btn prev-btn" aria-label="Anterior">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <div class="grid-pagination">
-                <span class="current-page">1</span> / <span class="total-pages">1</span>
-            </div>
-            <button class="grid-nav-btn next-btn" aria-label="Próximo">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
     </div>
 </section>
+
+	    
     <!-- Seção de Busca Atualizada -->
 <section class="search" role="search">
     <div class="container">
