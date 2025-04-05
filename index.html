@@ -3,424 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Encontre imóveis e automóveis para alugar com facilidade e segurança no Corretor Certo. Anuncie seu imóvel ou carro e alcance milhares de pessoas.">
-    <meta name="keywords" content="aluguel de imóveis, aluguel de carros, corretor certo, imóveis, automóveis">
     <title>Corretor Certo - Imóveis e Automóveis</title>
-	
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-	
-
-    
-    <script src="script.js" type="module"></script>
-
-
-
-
 </head>
 <body>
-
-    <!-- Header -->
+    <!-- Header (mantido como no seu arquivo) -->
     <header class="header">
-        <div class="container">
-            <nav class="navbar" role="navigation">
-<a href="index.html" class="logo" id="logoContainer">
-    <!-- Espaço para o logo (será preenchido via JavaScript) -->
-    <span class="logo-placeholder">Carregando logo...</span>
-</a>
-                <!-- Botão do Menu Mobile -->
-                <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menu">☰</button>
-
-                <ul class="nav-menu" id="nav-menu" role="menu">
-                    <li><a href="#" role="menuitem">Início</a></li>
-                    <li><a href="#" role="menuitem">Imóveis</a></li>
-                    <li><a href="#" role="menuitem">Automóveis</a></li>
-                    <li><a href="#" role="menuitem">Sobre</a></li>
-                    <li><a href="#" role="menuitem">Contato</a></li>
-                </ul>
-
-            <div class="header-actions">
-		    <a href="login.html" id="login-btn" class="user-icon" aria-label="Perfil do usuário">
-        <p id="user-name">Login / Cadastro</p>
-    </a>
-</div>
-
-
-            </nav>
-        </div>
+        <!-- ... seu header existente ... -->
     </header>
 
     <!-- Conteúdo Principal -->
-    <main>
-        <!-- Banner de Boas-Vindas -->
-        <section class="banner" role="banner">
-            <div class="banner-content">
-                <h1>Encontre o imóvel ou carro dos seus sonhos!</h1>
-                <p>Anuncie Compre e Alugue imóveis e automóveis com facilidade e confiança.</p>
-<button id="btn-anunciar" class="btn btn-primary">Anunciar</button>   
-
-	    </div>
-        </section>
-
-    <!-- Seção de Busca Atualizada -->
-<section class="search" role="search">
-    <div class="container">
-        <h2>🔍 Busque pelo que você deseja</h2>
-        <form id="form-pesquisa" method="get">
-            <div class="search-fields">
-                <!-- Seletor de Tipo -->
-                <div class="form-group">
-                    <label for="tipo">Tipo</label>
-                    <div class="tipo-pesquisa">
-                        <div class="tipo-option active" data-tipo="imovel">
-                            <img src="casa.png" alt="Ícone de Casa">
-                            <span>Imóvel</span>
-                        </div>
-                        <div class="tipo-option" data-tipo="carro">
-                            <img src="carro.png" alt="Ícone de Carro">
-                            <span>Automóvel</span>
-                        </div>
-                    </div>
-                    <input type="hidden" id="tipo" name="tipo" value="imovel" required>
-                </div>
-
-                <!-- Campos para Imóveis -->
-                <div id="campos-imovel">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="bairro">Bairro:</label>
-                            <input type="text" id="bairro" name="bairro" placeholder="Digite um bairro" list="bairros">
-                            <datalist id="bairros">
-                                <!-- Lista preenchida via JavaScript -->
-                            </datalist>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="tipo-imovel">Tipo de Imóvel:</label>
-                            <select id="tipo-imovel" name="tipo-imovel">
-                                <option value="">Qualquer</option>
-                                <option value="casa">Casa</option>
-                                <option value="apartamento">Apartamento</option>
-                                <option value="terreno">Terreno</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="negociacao">Negociação:</label>
-                            <div class="radio-group">
-                                <label>
-                                    <input type="radio" name="negociacao" value="aluguel" checked> Aluguel
-                                </label>
-                                <label>
-                                    <input type="radio" name="negociacao" value="venda"> Venda
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="quartos">Quartos:</label>
-                            <select id="quartos" name="quartos">
-                                <option value="">Qualquer</option>
-                                <option value="1">1+</option>
-                                <option value="2">2+</option>
-                                <option value="3">3+</option>
-                                <option value="4">4+</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="banheiros">Banheiros:</label>
-                            <select id="banheiros" name="banheiros">
-                                <option value="">Qualquer</option>
-                                <option value="1">1+</option>
-                                <option value="2">2+</option>
-                                <option value="3">3+</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="garagem">Vagas:</label>
-                            <select id="garagem" name="garagem">
-                                <option value="">Qualquer</option>
-                                <option value="1">1+</option>
-                                <option value="2">2+</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="area-min">Área mínima (m²):</label>
-                        <input type="number" id="area-min" name="area-min" placeholder="Ex: 50">
-                    </div>
-
-                    <div class="form-group checkboxes">
-                        <label>
-                            <input type="checkbox" id="aceita-animais" name="aceita-animais"> Aceita animais
-                        </label>
-                        <label>
-                            <input type="checkbox" id="mobiliado" name="mobiliado"> Mobiliado
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Campos para Automóveis -->
-                <div id="campos-carro" style="display: none;">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="marca">Marca:</label>
-                            <input type="text" id="marca" name="marca" placeholder="Digite a marca">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="modelo">Modelo:</label>
-                            <input type="text" id="modelo" name="modelo" placeholder="Digite o modelo">
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="ano">Ano:</label>
-                            <input type="number" id="ano" name="ano" placeholder="Digite o ano">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="combustivel">Combustível:</label>
-                            <select id="combustivel" name="combustivel">
-                                <option value="">Qualquer</option>
-                                <option value="gasolina">Gasolina</option>
-                                <option value="alcool">Álcool</option>
-                                <option value="flex">Flex</option>
-                                <option value="eletrico">Elétrico</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Campos comuns -->
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="preco-min">Preço Mínimo (R$):</label>
-                        <input type="number" id="preco-min" name="preco-min" placeholder="Ex: 1000">
+    <main class="main-container">
+        <!-- Seção de Destaques -->
+        <section class="featured-section">
+            <div class="container">
+                <h2 class="section-title">Encontre o que você procura</h2>
+                
+                <!-- Abas de Navegação -->
+                <div class="tabs-container">
+                    <div class="tabs">
+                        <button class="tab-button active" data-tab="imoveis">Imóveis</button>
+                        <button class="tab-button" data-tab="automoveis">Automóveis</button>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="preco-max">Preço Máximo (R$):</label>
-                        <input type="number" id="preco-max" name="preco-max" placeholder="Ex: 5000">
+                    <!-- Conteúdo das Abas -->
+                    <div class="tab-content active" id="imoveis-tab">
+                        <!-- Filtros para Imóveis -->
+                        <div class="filters-container">
+                            <form id="filtros-imoveis" class="filters-form">
+                                <div class="filter-row">
+                                    <div class="filter-group">
+                                        <label for="tipo-imovel">Tipo</label>
+                                        <select id="tipo-imovel" name="tipo">
+                                            <option value="">Todos</option>
+                                            <option value="casa">Casa</option>
+                                            <option value="apartamento">Apartamento</option>
+                                            <option value="terreno">Terreno</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="filter-group">
+                                        <label for="negociacao-imovel">Negociação</label>
+                                        <select id="negociacao-imovel" name="negociacao">
+                                            <option value="">Todas</option>
+                                            <option value="venda">Venda</option>
+                                            <option value="aluguel">Aluguel</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="filter-group">
+                                        <label for="preco-min-imovel">Preço Mín.</label>
+                                        <input type="number" id="preco-min-imovel" placeholder="R$">
+                                    </div>
+                                    
+                                    <div class="filter-group">
+                                        <label for="preco-max-imovel">Preço Máx.</label>
+                                        <input type="number" id="preco-max-imovel" placeholder="R$">
+                                    </div>
+                                </div>
+                                
+                                <div class="filter-row">
+                                    <div class="filter-group">
+                                        <label for="quartos-imovel">Quartos</label>
+                                        <select id="quartos-imovel" name="quartos">
+                                            <option value="">Qualquer</option>
+                                            <option value="1">1+</option>
+                                            <option value="2">2+</option>
+                                            <option value="3">3+</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="filter-group">
+                                        <label for="banheiros-imovel">Banheiros</label>
+                                        <select id="banheiros-imovel" name="banheiros">
+                                            <option value="">Qualquer</option>
+                                            <option value="1">1+</option>
+                                            <option value="2">2+</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="filter-group">
+                                        <label for="garagem-imovel">Vagas</label>
+                                        <select id="garagem-imovel" name="garagem">
+                                            <option value="">Qualquer</option>
+                                            <option value="1">1+</option>
+                                            <option value="2">2+</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <button type="submit" class="filter-button">Filtrar</button>
+                                    <button type="reset" class="filter-button secondary">Limpar</button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Grade de Anúncios de Imóveis -->
+                        <div id="grade-imoveis" class="ads-grid">
+                            <!-- Anúncios serão carregados aqui via JavaScript -->
+                            <div class="loading-spinner">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <span>Carregando imóveis...</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="automoveis-tab">
+                        <!-- Filtros para Automóveis -->
+                        <div class="filters-container">
+                            <form id="filtros-automoveis" class="filters-form">
+                                <div class="filter-row">
+                                    <div class="filter-group">
+                                        <label for="marca-automovel">Marca</label>
+                                        <input type="text" id="marca-automovel" placeholder="Ex: Toyota">
+                                    </div>
+                                    
+                                    <div class="filter-group">
+                                        <label for="modelo-automovel">Modelo</label>
+                                        <input type="text" id="modelo-automovel" placeholder="Ex: Corolla">
+                                    </div>
+                                    
+                                    <div class="filter-group">
+                                        <label for="ano-min-automovel">Ano Mín.</label>
+                                        <input type="number" id="ano-min-automovel" placeholder="Ex: 2010">
+                                    </div>
+                                    
+                                    <div class="filter-group">
+                                        <label for="ano-max-automovel">Ano Máx.</label>
+                                        <input type="number" id="ano-max-automovel" placeholder="Ex: 2023">
+                                    </div>
+                                </div>
+                                
+                                <div class="filter-row">
+                                    <div class="filter-group">
+                                        <label for="preco-min-automovel">Preço Mín.</label>
+                                        <input type="number" id="preco-min-automovel" placeholder="R$">
+                                    </div>
+                                    
+                                    <div class="filter-group">
+                                        <label for="preco-max-automovel">Preço Máx.</label>
+                                        <input type="number" id="preco-max-automovel" placeholder="R$">
+                                    </div>
+                                    
+                                    <div class="filter-group">
+                                        <label for="combustivel-automovel">Combustível</label>
+                                        <select id="combustivel-automovel">
+                                            <option value="">Todos</option>
+                                            <option value="gasolina">Gasolina</option>
+                                            <option value="alcool">Álcool</option>
+                                            <option value="flex">Flex</option>
+                                            <option value="eletrico">Elétrico</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <button type="submit" class="filter-button">Filtrar</button>
+                                    <button type="reset" class="filter-button secondary">Limpar</button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Grade de Anúncios de Automóveis -->
+                        <div id="grade-automoveis" class="ads-grid">
+                            <!-- Anúncios serão carregados aqui via JavaScript -->
+                            <div class="loading-spinner">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <span>Carregando automóveis...</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-
-                <button type="submit" class="btn-buscar">Buscar</button>
-            </div>
-        </form>
-        
-        <!-- Seção de Resultados -->
-        <div id="resultados" class="resultados-container">
-            <div class="resultados-header">
-                <h3>Resultados da Busca</h3>
-                <div class="ordenacao">
-                    <label for="ordenar-por">Ordenar por:</label>
-                    <select id="ordenar-por">
-                        <option value="relevancia">Relevância</option>
-                        <option value="preco-asc">Preço (menor primeiro)</option>
-                        <option value="preco-desc">Preço (maior primeiro)</option>
-                        <option value="recentes">Mais recentes</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div id="lista-resultados" class="lista-resultados">
-                <!-- Resultados serão inseridos aqui via JavaScript -->
-            </div>
-            
-            <div class="sem-resultados" style="display: none;">
-                <p>Nenhum resultado encontrado com os filtros selecionados.</p>
-                <button class="btn-limpar-filtros">Limpar filtros</button>
-            </div>
-            
-            <div class="carregando" style="display: none;">
-                <div class="spinner"></div>
-                <p>Carregando resultados...</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Fundo escuro -->
-<div class="overlay" id="overlay"></div>
-
-<!-- Fundo escuro -->
-<div class="overlay" id="overlay"></div>
-
-<!-- Formulário de Seleção -->
-<section class="anunciar" id="form-anuncio-container" style="display: none;">
-    <button id="fechar-form" class="btn-fechar">X</button>
-    <h1>Anuncie seu Imóvel ou Automóvel</h1>
-    <p>Escolha o tipo de anúncio e preencha os detalhes.</p>
-
-    <form id="form-anuncio"  method="POST">
-        <div class="form-group">
-            <label for="tipo">Tipo de Anúncio:</label>
-            <select id="tipo" name="tipo" required>
-                <option value="" disabled selected>Selecione</option>
-                <option value="imovel">Imóvel</option>
-                <option value="carro">Automóvel</option>
-            </select>
-        </div>
-    </form>
-
-<!-- Formulário para Imóveis -->
-<form id="form-imovel" class="form-dinamico"  method="POST" style="display: none;">
-    <h2>Detalhes do Imóvel</h2>
-
-    <div class="form-group">
-        <label for="titulo-imovel">Título do Anúncio:</label>
-        <input type="text" id="titulo-imovel" name="titulo" placeholder="Ex: Apartamento de Luxo" required>
-    </div>
-
-    <div class="form-group">
-        <label for="tipo-imovel">Tipo de Imóvel:</label>
-        <select id="tipo-imovel" name="tipo-imovel" required>
-            <option value="casa">Casa</option>
-            <option value="apartamento">Apartamento</option>
-            <option value="terreno">Terreno</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label for="descricao-imovel">Descrição:</label>
-        <textarea id="descricao-imovel" name="descricao" rows="4" placeholder="Detalhes sobre o imóvel" required></textarea>
-    </div>
-
-    <div class="form-group">
-        <label for="preco-imovel">Preço do Aluguel (R$):</label>
-        <input type="number" id="preco-imovel" name="preco" placeholder="Digite o valor" required>
-    </div>
-
-    <div class="form-group">
-        <label for="tamanho-imovel">Tamanho (m²):</label>
-        <input type="number" id="tamanho-imovel" name="tamanho" placeholder="Ex: 80" required>
-    </div>
-
-    <div class="form-group">
-        <label for="quartos-imovel">Quantidade de Quartos:</label>
-        <input type="number" id="quartos-imovel" name="quartos" placeholder="Ex: 3" required>
-    </div>
-
-    <div class="form-group">
-        <label for="banheiros-imovel">Quantidade de Banheiros:</label>
-        <input type="number" id="banheiros-imovel" name="banheiros" placeholder="Ex: 2" required>
-    </div>
-
-    <div class="form-group">
-        <label for="bairro-imovel">Bairro ou Localização:</label>
-        <input type="text" id="bairro-imovel" name="bairro" placeholder="Digite a localização" required>
-    </div>
-
-    <div class="form-group">
-        <label for="imagem-imovel">Imagens do Imóvel:</label>
-        <input type="file" id="imagem-imovel" name="imagem" accept="image/*" multiple>
-    </div>
-
-    <button type="submit" class="btn-anunciar">Anunciar Imóvel</button>
-</form>
-
-
-    <!-- Formulário para Automóveis -->
-	<div class="form-scroll-container">
-
-    <form id="form-carro" class="form-dinamico"  method="POST" style="display: none;">
-        <h2>Detalhes do Automóvel</h2>
-
-        <div class="form-group">
-            <label for="titulo-carro">Título do Anúncio:</label>
-            <input type="text" id="titulo-carro" name="titulo" placeholder="Ex: BMW Série 3 2021" required>
-        </div>
-
-        <div class="form-group">
-            <label for="marca">Marca:</label>
-            <input type="text" id="marca" name="marca" placeholder="Digite a marca" required>
-        </div>
-
-        <div class="form-group">
-            <label for="modelo">Modelo:</label>
-            <input type="text" id="modelo" name="modelo" placeholder="Digite o modelo" required>
-        </div>
-
-        <div class="form-group">
-            <label for="ano">Ano:</label>
-            <input type="number" id="ano" name="ano" placeholder="Digite o ano" required>
-        </div>
-
-        <div class="form-group">
-            <label for="preco-carro">Preço do Aluguel (R$):</label>
-            <input type="number" id="preco-carro" name="preco" placeholder="Digite o valor" required>
-        </div>
-
-        <div class="form-group">
-            <label for="imagem-carro">Imagens do Automóvel:</label>
-            <input type="file" id="imagem-carro" name="imagem" accept="image/*" multiple>
-        </div>
-
-        <button type="submit" class="btn-anunciar">Anunciar Automóvel</button>
-    </form>
-	</div>
-</section>
-
-
-
-<section class="highlights">
-    <div class="container">
-        <h2>Imóveis e Automóveis em Destaque</h2>
-        <div class="highlight-cards">
-          <div id="destaqueContainer" class="destaque-container">
-    <!-- Os itens em destaque serão inseridos aqui dinamicamente -->
-</div>
-        </div>
-    </div>
-</section>
-
-
-
-	    
-        <!-- Chamada para Anunciar -->
-        <section class="call-to-action">
-            <div class="container">
-                <h2>Tem um imóvel ou carro para alugar?</h2>
-                <p>Anuncie com a gente e alcance milhares de pessoas!</p>
-                <a href="#" class="btn-anunciar">Anunciar Agora</a>
             </div>
         </section>
-
-        <!-- Informações Rápidas -->
-        <section class="about">
+        
+        <!-- Seção de Destaques -->
+        <section class="highlights-section">
             <div class="container">
-                <h2>Sobre o Corretor Certo</h2>
-                <p>Somos uma plataforma confiável para aluguel de imóveis e automóveis. Encontre o que você precisa e anuncie seus produtos facilmente. Nossa missão é facilitar a vida de quem deseja alugar com segurança e transparência.</p>
+                <h2 class="section-title">Destaques</h2>
+                <div id="destaqueContainer" class="highlight-cards">
+                    <!-- Itens em destaque serão carregados aqui -->
+                </div>
             </div>
         </section>
     </main>
 
-	<!-- index.html -->
-<div id="detalhesModal" class="modal">
-    <div class="modal-content">
-        <span class="close-modal">&times;</span>
-        <div id="modalContent"></div>
+    <!-- Modal de Detalhes -->
+    <div id="detalhesModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="modalContent"></div>
+        </div>
     </div>
-</div>
 
-	
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-   <!-- Configurações do seu projeto do Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
-
-
-
-	
-	
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module" src="script.js"></script>
+    <script type="module" src="imoveis.js"></script>
+    <script type="module" src="automoveis.js"></script>
 </body>
 </html>
