@@ -1774,6 +1774,12 @@ body {
 
 
 /* ============ HEADER STYLES ============ */
+
+
+.logo-img {
+    width: 130px;
+    height: 120px;
+}
 .header {
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     padding: 12px 0;
@@ -1807,7 +1813,7 @@ body {
 }
 
 #logoContainer {
-    height: 40px; /* Altura fixa para o container do logo */
+    height: 80px; /* Altura fixa para o container do logo */
     display: flex;
     align-items: center;
 }
