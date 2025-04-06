@@ -351,6 +351,10 @@ body {
   backdrop-filter: blur(5px);
 }
 
+.hidden {
+  display: none !important;
+}
+
 .loader-content {
   text-align: center;
 }
@@ -532,6 +536,16 @@ body {
 </head>
 <body>
 
+
+    <div id="profile-loader" class="hidden">
+  <div class="loader-content">
+    <div class="loader-spinner"></div>
+    <p class="loader-text">Carregando seu perfil...</p>
+  </div>
+</div>
+
+
+    
     <div id="profile-loader" class="hidden">
   <div class="loader-spinner"></div>
   <p>Carregando seu perfil...</p>
@@ -1378,6 +1392,43 @@ async function viewFavoriteAd(adId) {
 
 // Adicionar evento de submit ao formulário
 document.getElementById('perfil-form')?.addEventListener('submit', saveProfileChanges);
+
+
+
+        // Mostrar loader
+function showLoader() {
+  document.getElementById('profile-loader').classList.remove('hidden');
+}
+
+// Esconder loader
+function hideLoader() {
+  document.getElementById('profile-loader').classList.add('hidden');
+}
+
+// Exemplo de uso com fetch
+async function loadProfileData() {
+  try {
+    showLoader();
+    
+    const response = await fetch('/api/perfil');
+    const data = await response.json();
+    
+    // Atualize a UI com os dados aqui
+    updateProfileUI(data);
+    
+  } catch (error) {
+    console.error('Erro ao carregar perfil:', error);
+    // Mostrar mensagem de erro para o usuário
+  } finally {
+    hideLoader(); // SEMPRE esconde o loader, mesmo se houver erro
+  }
+}
+
+// Função para atualizar a interface
+function updateProfileUI(data) {
+  // Implemente a atualização dos campos do perfil aqui
+  document.getElementById('profile-view').classList.remove('hidden');
+}
 </script>
 </body>
 </html>
