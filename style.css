@@ -1284,11 +1284,7 @@ body.search-ativo::before {
     background: #1a1a1a;
 }
 
-.container {
-    max-width: 100%;
-    padding: 0 20px;
-    overflow: hidden;
-}
+
 
 .section-title {
     text-align: center;
@@ -1497,6 +1493,12 @@ body.search-ativo::before {
     background: #2980b9;
 }
 
+.container {
+	height: 85px;
+    max-width: 100%;
+    padding: 0 20px;
+    overflow: hidden;
+}
 
 
 
@@ -1795,11 +1797,8 @@ body {
     -webkit-backdrop-filter: blur(8px);
 }
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
+
+
 
 .navbar {
     display: flex;
@@ -3249,12 +3248,7 @@ body.search-ativo::before {
     background: #1a1a1a;
 }
 
-.container {
-	height: 65px;
-    max-width: 100%;
-    padding: 0 20px;
-    overflow: hidden;
-}
+
 
 .section-title {
     text-align: center;
