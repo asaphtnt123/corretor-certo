@@ -340,14 +340,6 @@ footer {
 
 
 /* Logo */
-
-.logo-img {
-    width: 140px;
-    height: auto;
-    margin-top: 50px;
-}
-
-
 .logo {
     font-size: 28px;
     font-weight: bold;
@@ -3250,7 +3242,6 @@ body.search-ativo::before {
 }
 
 .container {
-	height: 65px;
     max-width: 100%;
     padding: 0 20px;
     overflow: hidden;
