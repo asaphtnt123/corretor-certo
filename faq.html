@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ - CorretorCerto</title>
+    <style>
+        .faq-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        h1 {
+            color: #2c5364;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .faq-category {
+            margin-bottom: 3rem;
+        }
+        .faq-category h2 {
+            color: #203a43;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 0.5rem;
+        }
+        .faq-item {
+            margin-bottom: 1.5rem;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .faq-question {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .faq-question:hover {
+            background-color: #e9ecef;
+        }
+        .faq-answer {
+            padding: 1rem;
+            background: white;
+            display: none;
+        }
+        .faq-answer.show {
+            display: block;
+        }
+        .contact-support {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1.5rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="faq-container">
+        <h1>PERGUNTAS FREQUENTES - CORRETORCERTO</h1>
+        
+        <div class="faq-category">
+            <h2>🛠️ Cadastro e Conta</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleAnswer(this)">
+                    <span>Como criar uma conta no CorretorCerto?</span>
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Clique em "Cadastre-se" no menu superior, preencha o formulário com seus dados pessoais válidos e siga as instruções para ativação da conta.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleAnswer(this)">
+                    <span>Esqueci minha senha, como recuperar?</span>
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Na página de login, clique em "Esqueci minha senha" e informe o e-mail cadastrado. Você receberá um link para criar uma nova senha.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="faq-category">
+            <h2>🏠 Anúncios de Imóveis</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleAnswer(this)">
+                    <span>Quais documentos preciso para anunciar um imóvel?</span>
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Recomendamos ter em mãos:</p>
+                    <ul>
+                        <li>Documento de identificação do proprietário</li>
+                        <li>Matrícula ou registro do imóvel</li>
+                        <li>IPTU atualizado</li>
+                        <li>Fotos reais do imóvel</li>
+                    </ul>
+                    <p>O CorretorCerto não armazena esses documentos, mas pode solicitar verificação em caso de denúncias.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleAnswer(this)">
+                    <span>Como destacar meu anúncio?</span>
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Na página do anúncio, você pode ativar o "Destaque" que colocará seu anúncio em posições privilegiadas nos resultados de busca por um período determinado.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="faq-category">
+            <h2>🚗 Anúncios de Veículos</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleAnswer(this)">
+                    <span>Quais informações são obrigatórias para anunciar um veículo?</span>
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Para veículos, solicitamos:</p>
+                    <ul>
+                        <li>Marca, modelo e ano</li>
+                        <li>Quilometragem</li>
+                        <li>Estado de conservação</li>
+                        <li>Fotos reais do veículo</li>
+                        <li>Informações sobre documentação</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="faq-category">
+            <h2>⚖️ Questões Legais</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleAnswer(this)">
+                    <span>O CorretorCerto é responsável pelos anúncios?</span>
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>O CorretorCerto atua como plataforma de conexão entre anunciantes e interessados, não nos responsabilizando por:</p>
+                    <ul>
+                        <li>Veracidade das informações dos anúncios</li>
+                        <li>Negociações entre as partes</li>
+                        <li>Documentação dos imóveis/veículos anunciados</li>
+                    </ul>
+                    <p>Recomendamos sempre verificar cuidadosamente todas as informações antes de fechar qualquer negócio.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="contact-support">
+            <h3>Não encontrou sua dúvida?</h3>
+            <p>Entre em contato conosco pelo e-mail: suporte@corretorcerto.com</p>
+            <p>Responderemos em até 48 horas úteis.</p>
+        </div>
+    </div>
+
+    <script>
+        function toggleAnswer(element) {
+            const answer = element.nextElementSibling;
+            const icon = element.querySelector('span:last-child');
+            
+            if (answer.classList.contains('show')) {
+                answer.classList.remove('show');
+                icon.textContent = '+';
+            } else {
+                answer.classList.add('show');
+                icon.textContent = '-';
+            }
+        }
+    </script>
+</body>
+</html>
