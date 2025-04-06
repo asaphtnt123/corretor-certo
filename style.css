@@ -1499,7 +1499,7 @@ body.search-ativo::before {
 }
 
 .highlights .container {
-    max-width: 1200px;
+    max-width: 100%;
     margin: 0 auto;
     padding: 0 20px;
 }
@@ -1788,7 +1788,7 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 100%;
     margin: 0 auto;
     padding: 0 20px;
 }
@@ -3464,7 +3464,7 @@ body.search-ativo::before {
 }
 
 .highlights .container {
-    max-width: 1200px;
+    max-width: 100%;
     margin: 0 auto;
     padding: 0 20px;
 }
@@ -3727,7 +3727,7 @@ section.banner {
     text-align: center;
     overflow: hidden;
     margin: 20px auto;
-    max-width: 1200px;
+    max-width: 100%;
     width: 95%;
     border-radius: 16px;
     box-shadow: 
