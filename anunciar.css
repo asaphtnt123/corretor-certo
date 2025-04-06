@@ -11,10 +11,7 @@ body {
 }
 
 /* Header */
-.header {
-    background-color: white;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
+
 
 /* Form Container */
 .card {
@@ -181,7 +178,8 @@ body {
 
 .brand-logo {
     transition: transform 0.3s ease;
-}
+    width: 120px;
+    height: 115px;
 
 .brand-logo:hover {
     transform: scale(1.05);
