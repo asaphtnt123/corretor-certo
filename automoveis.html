@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automóveis | CorretorCerto</title>
+    
+    <!-- Fontes e Ícones -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="automoveis.css">
+    
+    <!-- Meta tags SEO -->
+    <meta name="description" content="Encontre os melhores automóveis à venda - carros, motos, caminhões e mais no CorretorCerto">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container">
+                <a class="navbar-brand" href="index.html">
+                    <img src="img/logo-corretorcerto.png" alt="CorretorCerto" class="brand-logo">
+                </a>
+                
+                <!-- Menu Mobile -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <!-- Navegação -->
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">Início</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="automoveis.html">Automóveis</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="imoveis.html">Imóveis</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="anunciar.html">Anunciar</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="login.html">Entrar</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <h1 class="hero-title">Encontre Seu Veículo Perfeito</h1>
+            <p class="hero-subtitle">Mais de 5.000 veículos à sua escolha</p>
+        </div>
+    </section>
+
+    <!-- Barra de Tipos de Veículos -->
+    <section class="vehicle-types-section">
+        <div class="container-fluid">
+            <div class="vehicle-types-scroll">
+                <div class="vehicle-types-container">
+                    <button class="vehicle-type active" data-type="todos">
+                        <i class="fas fa-car"></i>
+                        <span>Todos</span>
+                    </button>
+                    <button class="vehicle-type" data-type="carro">
+                        <i class="fas fa-car-side"></i>
+                        <span>Carros</span>
+                    </button>
+                    <button class="vehicle-type" data-type="moto">
+                        <i class="fas fa-motorcycle"></i>
+                        <span>Motos</span>
+                    </button>
+                    <button class="vehicle-type" data-type="caminhonete">
+                        <i class="fas fa-truck-pickup"></i>
+                        <span>Caminhonetes</span>
+                    </button>
+                    <button class="vehicle-type" data-type="caminhao">
+                        <i class="fas fa-truck"></i>
+                        <span>Caminhões</span>
+                    </button>
+                    <button class="vehicle-type" data-type="onibus">
+                        <i class="fas fa-bus"></i>
+                        <span>Ônibus</span>
+                    </button>
+                    <button class="vehicle-type" data-type="van">
+                        <i class="fas fa-shuttle-van"></i>
+                        <span>Vans</span>
+                    </button>
+                    <button class="vehicle-type" data-type="suv">
+                        <i class="fas fa-car-alt"></i>
+                        <span>SUVs</span>
+                    </button>
+                    <button class="vehicle-type" data-type="luxo">
+                        <i class="fas fa-gem"></i>
+                        <span>Luxo</span>
+                    </button>
+                    <button class="vehicle-type" data-type="classico">
+                        <i class="fas fa-history"></i>
+                        <span>Clássicos</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filtros -->
+    <section class="filters-section">
+        <div class="container">
+            <div class="filters-container">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <select class="form-select" id="filter-marca">
+                            <option selected>Marca</option>
+                            <option>Chevrolet</option>
+                            <option>Ford</option>
+                            <option>Volkswagen</option>
+                            <!-- Outras marcas -->
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="filter-modelo">
+                            <option selected>Modelo</option>
+                            <!-- Modelos serão preenchidos via JS -->
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="filter-ano">
+                            <option selected>Ano</option>
+                            <!-- Anos serão preenchidos via JS -->
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="filter-preco">
+                            <option selected>Preço</option>
+                            <option>Até R$ 20.000</option>
+                            <option>R$ 20.000 - 50.000</option>
+                            <option>R$ 50.000 - 100.000</option>
+                            <option>Acima de R$ 100.000</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-primary w-100" id="btn-filtrar">
+                            <i class="fas fa-filter me-2"></i>Filtrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Listagem de Anúncios -->
+    <section class="listings-section">
+        <div class="container">
+            <div class="row" id="anuncios-container">
+                <!-- Anúncios serão inseridos via JavaScript -->
+                
+                <!-- Exemplo de Card (será gerado dinamicamente) -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="vehicle-card metal-card">
+                        <div class="card-badge">Destaque</div>
+                        <div class="card-image-container">
+                            <img src="https://via.placeholder.com/800x600" alt="Carro Exemplo" class="card-image">
+                            <div class="image-overlay"></div>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">Chevrolet Onix Premier 1.0 Turbo</h3>
+                            <p class="card-price">R$ 85.900</p>
+                            <div class="card-details">
+                                <span><i class="fas fa-calendar-alt"></i> 2022/2023</span>
+                                <span><i class="fas fa-tachometer-alt"></i> 25.000 km</span>
+                                <span><i class="fas fa-gas-pump"></i> Flex</span>
+                            </div>
+                        </div>
+                        <div class="card-hover-effect">
+                            <button class="btn-view-more">Ver Detalhes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Paginação -->
+            <nav aria-label="Page navigation" class="mt-5">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1">Anterior</a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">Próxima</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="img/logo-corretorcerto-white.png" alt="CorretorCerto" class="footer-logo">
+                    <p class="footer-slogan">Soluções automotivas premium</p>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="link-group">
+                        <h4 class="link-title">Navegação</h4>
+                        <a href="index.html" class="footer-link">Início</a>
+                        <a href="automoveis.html" class="footer-link">Automóveis</a>
+                        <a href="imoveis.html" class="footer-link">Imóveis</a>
+                        <a href="anunciar.html" class="footer-link">Anunciar</a>
+                    </div>
+                    
+                    <div class="link-group">
+                        <h4 class="link-title">Legal</h4>
+                        <a href="#" class="footer-link">Termos de Uso</a>
+                        <a href="#" class="footer-link">Política de Privacidade</a>
+                        <a href="#" class="footer-link">FAQ</a>
+                    </div>
+                    
+                    <div class="link-group">
+                        <h4 class="link-title">Contato</h4>
+                        <p class="contact-info"><i class="fas fa-phone"></i> (11) 99999-9999</p>
+                        <p class="contact-info"><i class="fas fa-envelope"></i> contato@corretorcerto.com</p>
+                        <p class="contact-info"><i class="fas fa-map-marker-alt"></i> São Paulo, SP</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <div class="social-links">
+                    <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-whatsapp"></i></a>
+                </div>
+                <p class="copyright">&copy; 2023 CorretorCerto. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="automoveis.js" type="module"></script>
+</body>
+</html>
