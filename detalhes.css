@@ -140,3 +140,10 @@ body {
         padding: 1rem;
     }
 }
+
+.navbar-brand img {
+    height: 100px;
+    width: 120px;
+}
+
+
