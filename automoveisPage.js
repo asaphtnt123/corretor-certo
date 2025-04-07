@@ -41,6 +41,25 @@ let currentFilters = {
     preco: ''
 };
 
+
+
+// Adicione esta função no seu arquivo automoveis.js
+function setupCardClickEvents() {
+    document.querySelectorAll('.vehicle-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Evitar abrir detalhes se clicar em botões dentro do card
+            if (e.target.closest('button') || e.target.tagName === 'A') {
+                return;
+            }
+            
+            // Encontrar o ID do anúncio
+            const adId = this.closest('[data-ad-id]')?.dataset.adId;
+            if (adId) {
+                window.location.href = `detalhes.html?id=${adId}&tipo=carro`;
+            }
+        });
+    });
+}
 // Carregar anúncios
 async function loadAnuncios() {
     try {
@@ -89,6 +108,9 @@ async function loadAnuncios() {
             data.id = doc.id;
             anunciosContainer.appendChild(createVehicleCard(data));
         });
+
+        // Configurar eventos de clique
+        setupCardClickEvents();
         
     } catch (error) {
         console.error("Erro ao carregar anúncios:", error);
@@ -105,10 +127,10 @@ async function loadAnuncios() {
     }
 }
 
-// Criar card de veículo
 function createVehicleCard(vehicle) {
     const col = document.createElement('div');
     col.className = 'col-lg-4 col-md-6 mb-4';
+    col.dataset.adId = vehicle.id; // Adiciona o ID do anúncio
     
     col.innerHTML = `
         <div class="vehicle-card metal-card">
@@ -128,16 +150,22 @@ function createVehicleCard(vehicle) {
                 </div>
             </div>
             <div class="card-hover-effect">
-                <button class="btn-view-more" onclick="window.location.href='detalhes.html?id=${vehicle.id}&tipo=carro'">
+                <button class="btn-view-more">
                     Ver Detalhes
                 </button>
             </div>
         </div>
     `;
     
+    // Adiciona evento de clique no botão "Ver Detalhes"
+    const btn = col.querySelector('.btn-view-more');
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        window.location.href = `detalhes.html?id=${vehicle.id}&tipo=carro`;
+    });
+    
     return col;
 }
-
 // Event Listeners
 vehicleTypes.forEach(type => {
     type.addEventListener('click', () => {
