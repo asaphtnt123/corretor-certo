@@ -22,7 +22,8 @@ body {
 
 /* Navbar e Logo */
 .navbar {
-    background-color:#dee2e6;
+        background: var(--gradient-primary);
+
     box-shadow: var(--shadow-md);
     padding: 0.8rem 1rem;
 }
