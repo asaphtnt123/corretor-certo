@@ -64,54 +64,110 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Verificar se o container principal existe
     if (!elements.conteudoDetalhes) {
         console.error('Elemento principal #conteudo-detalhes não encontrado');
+        showError("Erro ao carregar a página. Recarregue e tente novamente.");
         return;
     }
 
-   
-
+    // Obter parâmetros da URL
     const urlParams = new URLSearchParams(window.location.search);
     const anuncioId = urlParams.get('id');
-    console.log("ID do anúncio:", anuncioId);
-
-
     const adType = urlParams.get('tipo'); // 'imovel' ou 'carro'
     
+    console.log("ID do anúncio:", anuncioId, "Tipo:", adType);
+
+    // Validações iniciais
     if (!anuncioId) {
-  throw new Error("Anúncio não especificado");
-}
-    
+        showError("Anúncio não especificado na URL");
+        return;
+    }
+
+    if (adType !== 'imovel' && adType !== 'carro') {
+        showError("Tipo de anúncio inválido. Deve ser 'imovel' ou 'carro'");
+        return;
+    }
+
     try {
-        // Mostrar loading
+        // Mostrar estado de carregamento
         showLoading();
         
+        // Configurar timeout para evitar espera infinita
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error("Tempo excedido ao carregar o anúncio")), 10000)
+        );
+
         // Buscar os dados do anúncio no Firestore
         const collectionName = adType === 'carro' ? 'automoveis' : 'imoveis';
-        const docRef = doc(db, collectionName, adId);
-        const docSnap = await getDoc(docRef);
-        
+        const docRef = doc(db, collectionName, anuncioId);
+
+        // Race entre a busca do documento e o timeout
+        const docSnap = await Promise.race([
+            getDoc(docRef),
+            timeoutPromise
+        ]);
+
         if (!docSnap.exists()) {
             throw new Error('Anúncio não encontrado no banco de dados');
         }
         
-        currentAd = { id: docSnap.id, ...docSnap.data() };
+        // Armazenar dados do anúncio
+        currentAd = { 
+            id: docSnap.id, 
+            ...docSnap.data(),
+            // Garantir que imagens existam ou usar padrão
+            imagens: docSnap.data().imagens || ["images/default.jpg"]
+        };
         currentAdType = adType;
         
-        // Renderizar os detalhes
+        // Renderizar os detalhes do anúncio
         renderAdDetails();
         
         // Verificar se o usuário está logado e se o anúncio é favorito
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
-                checkIfFavorite(user.uid, currentAd.id);
+                try {
+                    await checkIfFavorite(user.uid, currentAd.id);
+                    // Atualizar botão de WhatsApp com dados do usuário se disponível
+                    if (currentAd.userId) {
+                        await loadAgentInfo();
+                    }
+                } catch (error) {
+                    console.error("Erro ao verificar favoritos:", error);
+                }
             }
         });
         
     } catch (error) {
         console.error('Erro ao carregar detalhes:', error);
-        showError(error.message || "Erro ao carregar o anúncio");
+        
+        // Mensagens de erro mais amigáveis
+        let errorMessage = "Erro ao carregar o anúncio";
+        if (error.message.includes("Tempo excedido")) {
+            errorMessage = "O anúncio está demorando muito para carregar. Verifique sua conexão.";
+        } else if (error.message.includes("Anúncio não encontrado")) {
+            errorMessage = "O anúncio solicitado não foi encontrado. Pode ter sido removido.";
+        }
+        
+        showError(errorMessage);
+        
+        // Opção para voltar à página anterior
+        const backButton = document.createElement('a');
+        backButton.href = "javascript:history.back()";
+        backButton.className = "btn btn-primary mt-3";
+        backButton.innerHTML = '<i class="fas fa-arrow-left me-2"></i> Voltar';
+        elements.conteudoDetalhes.appendChild(backButton);
     }
 });
 
+function renderCarouselImages() {
+    const images = currentAd.imagens || ["images/default.jpg"];
+    return images.map((img, index) => `
+        <div class="carousel-item ${index === 0 ? 'active' : ''}">
+            <img src="${img}" class="d-block w-100" alt="Imagem do anúncio" 
+                 style="height: 400px; object-fit: cover;"
+                 onerror="this.src='images/default.jpg'">
+        </div>
+    `).join('');
+}
 function showLoading() {
     if (elements.conteudoDetalhes) {
         elements.conteudoDetalhes.innerHTML = `
