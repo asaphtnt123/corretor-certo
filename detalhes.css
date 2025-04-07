@@ -22,14 +22,14 @@ body {
 
 /* Navbar e Logo */
 .navbar {
-    background: var(--gradient-primary);
+    background-color:#dee2e6;
     box-shadow: var(--shadow-md);
     padding: 0.8rem 1rem;
 }
 
 .navbar-brand img {
-    height: 70px;
-    width: auto;
+    height: 100px;
+    width: 120px;
     transition: var(--transition);
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
 }
@@ -295,7 +295,7 @@ body {
     }
     
     .navbar-brand img {
-        height: 60px;
+        height: 100px;
     }
 }
 
