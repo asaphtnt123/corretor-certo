@@ -275,14 +275,7 @@ function renderAdDetails() {
     loadAgentInfo();
 }
 
-function renderCarouselImages() {
-    const images = currentAd.imagens || ["images/default.jpg"];
-    return images.map((img, index) => `
-        <div class="carousel-item ${index === 0 ? 'active' : ''}">
-            <img src="${img}" class="d-block w-100" alt="Imagem do anúncio" style="height: 400px; object-fit: cover;">
-        </div>
-    `).join('');
-}
+
 
 function renderCarouselControls() {
     return `
