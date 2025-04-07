@@ -585,3 +585,17 @@ body {
         font-size: 1.2rem;
     }
 }
+/* Adicione ao seu arquivo automoveis.css */
+.vehicle-card {
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.vehicle-card:active {
+    transform: scale(0.98);
+}
+
+.btn-view-more {
+    cursor: pointer;
+    pointer-events: auto; /* Garante que o botão é clicável */
+}
