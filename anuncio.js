@@ -143,9 +143,9 @@ function validateStep(stepIndex) {
             console.error('Descrição muito curta (mínimo 20 caracteres)');
         }
 
-        // Validação especial para preço
+        // Validação especial para preço - CORREÇÃO AQUI
         const preco = document.getElementById('preco');
-        if (isNaN(parseFloat(preco.value)) {
+        if (isNaN(parseFloat(preco.value))) {  // Adicionei o parêntese que faltava
             preco.classList.add('is-invalid');
             isValid = false;
             console.error('Preço inválido');
@@ -171,7 +171,6 @@ function validateStep(stepIndex) {
     
     return isValid;
 }
-
 // Função para validar o passo 2 (Detalhes)
 function validateStep2() {
     let isValid = true;
