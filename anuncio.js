@@ -76,6 +76,8 @@ function nextStep() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+
+
 // Função para voltar ao passo anterior
 function prevStep() {
     if (currentStep > 0) {
@@ -99,16 +101,21 @@ function updateStepper() {
     });
 }
 
-// Função para validar o passo atual
 function validateStep(stepIndex) {
     let isValid = true;
     
     if (stepIndex === 0) {
         // Validação do passo 1 (Informações Básicas)
-        const inputs = document.querySelectorAll('#step-1 input[required], #step-1 textarea[required]');
+        const inputs = document.querySelectorAll('#step-1 input[required], #step-1 select[required], #step-1 textarea[required]');
         
         inputs.forEach(input => {
-            if (!input.value.trim()) {
+            // Verifica se é um select e se tem valor selecionado
+            if (input.tagName === 'SELECT' && input.value === "") {
+                input.classList.add('is-invalid');
+                isValid = false;
+            } 
+            // Verifica inputs e textareas
+            else if (!input.value.trim()) {
                 input.classList.add('is-invalid');
                 isValid = false;
             } else {
@@ -125,8 +132,17 @@ function validateStep(stepIndex) {
         } else {
             descricao.classList.remove('is-invalid');
         }
+        
+        // Validação adicional para preço
+        const preco = document.getElementById('preco');
+        if (!preco.value || isNaN(parseFloat(preco.value))) {
+            preco.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            preco.classList.remove('is-invalid');
+        }
+        
     } else if (stepIndex === 1) {
-        // Validação do passo 2 (Detalhes)
         isValid = validateStep2();
     }
     
