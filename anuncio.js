@@ -218,7 +218,20 @@ function updateReview() {
         document.getElementById('review-banheiros').textContent = document.getElementById('banheiros').value || '0';
         document.getElementById('review-garagem').textContent = document.getElementById('garagem').value || '0';
         document.getElementById('review-area').textContent = document.getElementById('area').value || '0';
-        
+
+        // Dentro da função updateReview()
+const tipoVeiculo = {
+    'carro': 'Carro',
+    'caminhonete': 'Caminhonete',
+    'van': 'Van',
+    'caminhao': 'Caminhão',
+    'moto': 'Moto',
+    'onibus': 'Ônibus',
+    'outro': 'Outro'
+};
+
+document.getElementById('review-tipo-veiculo').textContent = 
+    tipoVeiculo[document.getElementById('tipo-automovel').value] || 'Não informado';
         // Características
         const caracteristicas = [];
         if (document.getElementById('mobiliado').checked) caracteristicas.push('Mobiliado');
@@ -372,6 +385,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 await addDoc(collection(db, 'imoveis'), formData);
             } else {
+                formData.tipo = document.getElementById('tipo-automovel').value; // Adicione esta linha
                 formData.marca = document.getElementById('marca').value;
                 formData.modelo = document.getElementById('modelo').value;
                 formData.ano = parseInt(document.getElementById('ano').value);
