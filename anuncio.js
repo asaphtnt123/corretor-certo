@@ -60,22 +60,40 @@ function showStep(stepIndex) {
     }
 }
 
-// Função para avançar para o próximo passo
 function nextStep() {
-    // Validação do passo atual
     if (!validateStep(currentStep)) {
         console.error('Validação falhou no passo', currentStep);
+        highlightInvalidFields();
+        
+        // Mostra mensagem mais amigável
+        if (currentStep === 0) {
+            const errorMessage = document.createElement('div');
+            errorMessage.className = 'alert alert-danger mt-3';
+            errorMessage.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>Por favor, preencha todos os campos obrigatórios corretamente';
+            
+            // Remove mensagem anterior se existir
+            const oldMessage = document.querySelector('#step-1 .alert');
+            if (oldMessage) oldMessage.remove();
+            
+            document.querySelector('#step-1').appendChild(errorMessage);
+        }
         return;
     }
     
-    // Avança para o próximo passo
     currentStep++;
     showStep(currentStep);
-    
-    // Scroll para o topo
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function highlightInvalidFields() {
+    const invalidFields = document.querySelectorAll('.is-invalid');
+    if (invalidFields.length > 0) {
+        invalidFields[0].scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center'
+        });
+    }
+}
 
 
 // Função para voltar ao passo anterior
