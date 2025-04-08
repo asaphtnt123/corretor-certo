@@ -65,18 +65,16 @@ function nextStep() {
         console.error('Validação falhou no passo', currentStep);
         highlightInvalidFields();
         
-        // Mostra mensagem mais amigável
-        if (currentStep === 0) {
-            const errorMessage = document.createElement('div');
-            errorMessage.className = 'alert alert-danger mt-3';
-            errorMessage.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>Por favor, preencha todos os campos obrigatórios corretamente';
-            
-            // Remove mensagem anterior se existir
-            const oldMessage = document.querySelector('#step-1 .alert');
-            if (oldMessage) oldMessage.remove();
-            
-            document.querySelector('#step-1').appendChild(errorMessage);
-        }
+        // Mostra mensagem específica
+        let errorMessage = 'Por favor, corrija os seguintes erros:';
+        const invalidFields = document.querySelectorAll('.is-invalid');
+        
+        invalidFields.forEach(field => {
+            const fieldName = field.id || field.name;
+            errorMessage += `\n- Campo ${fieldName} inválido`;
+        });
+        
+        alert(errorMessage);
         return;
     }
     
@@ -123,43 +121,50 @@ function validateStep(stepIndex) {
     let isValid = true;
     
     if (stepIndex === 0) {
-        // Validação do passo 1 (Informações Básicas)
-        const inputs = document.querySelectorAll('#step-1 input[required], #step-1 select[required], #step-1 textarea[required]');
+        debugValidation(); // Adicione esta linha para debug
         
-        inputs.forEach(input => {
-            // Verifica se é um select e se tem valor selecionado
-            if (input.tagName === 'SELECT' && input.value === "") {
-                input.classList.add('is-invalid');
+        const requiredFields = document.querySelectorAll('#step-1 input[required], #step-1 select[required], #step-1 textarea[required]');
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
                 isValid = false;
-            } 
-            // Verifica inputs e textareas
-            else if (!input.value.trim()) {
-                input.classList.add('is-invalid');
-                isValid = false;
+                console.error(`Campo obrigatório não preenchido: ${field.id}`);
             } else {
-                input.classList.remove('is-invalid');
+                field.classList.remove('is-invalid');
             }
         });
-        
-        // Validação adicional para descrição
+
+        // Validação especial para descrição
         const descricao = document.getElementById('descricao');
         if (descricao.value.length < 20) {
             descricao.classList.add('is-invalid');
-            document.querySelector('#step-1 .form-text').textContent = 'A descrição precisa ter pelo menos 20 caracteres';
             isValid = false;
-        } else {
-            descricao.classList.remove('is-invalid');
+            console.error('Descrição muito curta (mínimo 20 caracteres)');
         }
-        
-        // Validação adicional para preço
+
+        // Validação especial para preço
         const preco = document.getElementById('preco');
-        if (!preco.value || isNaN(parseFloat(preco.value))) {
+        if (isNaN(parseFloat(preco.value)) {
             preco.classList.add('is-invalid');
             isValid = false;
-        } else {
-            preco.classList.remove('is-invalid');
+            console.error('Preço inválido');
         }
-        
+
+        // Validação para tipo de negociação
+        const negociacao = document.querySelector('input[name="negociacao"]:checked');
+        if (!negociacao) {
+            console.error('Selecione um tipo de negociação');
+            isValid = false;
+            // Adiciona classe de erro nos radios
+            document.querySelectorAll('input[name="negociacao"]').forEach(radio => {
+                radio.closest('.form-check').classList.add('is-invalid');
+            });
+        } else {
+            document.querySelectorAll('input[name="negociacao"]').forEach(radio => {
+                radio.closest('.form-check').classList.remove('is-invalid');
+            });
+        }
     } else if (stepIndex === 1) {
         isValid = validateStep2();
     }
