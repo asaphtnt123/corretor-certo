@@ -564,3 +564,12 @@ body {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+.loading-container {
+    /* ... outros estilos ... */
+    transition: opacity 0.3s ease;
+    opacity: 0;
+}
+
+.loading-container[style*="display: flex"] {
+    opacity: 1;
+}
