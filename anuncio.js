@@ -171,6 +171,17 @@ function validateStep(stepIndex) {
     
     return isValid;
 }
+
+
+function debugValidation() {
+    const requiredFields = document.querySelectorAll('#step-1 input[required], #step-1 select[required], #step-1 textarea[required]');
+    console.log("--- Validação Debug ---");
+    requiredFields.forEach(field => {
+        console.log(`Campo: ${field.id}, Valor: ${field.value}, Válido: ${field.value.trim() !== ''}`);
+    });
+    console.log("Descrição length:", document.getElementById('descricao').value.length);
+    console.log("Preço válido:", !isNaN(parseFloat(document.getElementById('preco').value)));
+}
 // Função para validar o passo 2 (Detalhes)
 function validateStep2() {
     let isValid = true;
