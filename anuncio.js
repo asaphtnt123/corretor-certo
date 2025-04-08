@@ -121,8 +121,9 @@ function validateStep(stepIndex) {
     let isValid = true;
     
     if (stepIndex === 0) {
-        debugValidation(); // Adicione esta linha para debug
+        debugValidation();
         
+        // Validação dos campos obrigatórios
         const requiredFields = document.querySelectorAll('#step-1 input[required], #step-1 select[required], #step-1 textarea[required]');
         
         requiredFields.forEach(field => {
@@ -135,34 +136,48 @@ function validateStep(stepIndex) {
             }
         });
 
-        // Validação especial para descrição
+        // Validação da descrição
         const descricao = document.getElementById('descricao');
-        if (descricao.value.length < 20) {
+        if (descricao && descricao.value.length < 20) {
             descricao.classList.add('is-invalid');
             isValid = false;
             console.error('Descrição muito curta (mínimo 20 caracteres)');
+        } else if (descricao) {
+            descricao.classList.remove('is-invalid');
         }
 
-        // Validação especial para preço - CORREÇÃO AQUI
+        // Validação do preço
         const preco = document.getElementById('preco');
-        if (isNaN(parseFloat(preco.value))) {  // Adicionei o parêntese que faltava
+        if (preco && isNaN(parseFloat(preco.value))) {
             preco.classList.add('is-invalid');
             isValid = false;
             console.error('Preço inválido');
+        } else if (preco) {
+            preco.classList.remove('is-invalid');
         }
 
-        // Validação para tipo de negociação
-        const negociacao = document.querySelector('input[name="negociacao"]:checked');
-        if (!negociacao) {
+        // Validação da negociação (corrigido)
+        const negociacaoRadios = document.querySelectorAll('input[name="negociacao"]');
+        const negociacaoSelecionada = document.querySelector('input[name="negociacao"]:checked');
+        
+        if (!negociacaoSelecionada) {
             console.error('Selecione um tipo de negociação');
             isValid = false;
-            // Adiciona classe de erro nos radios
-            document.querySelectorAll('input[name="negociacao"]').forEach(radio => {
-                radio.closest('.form-check').classList.add('is-invalid');
-            });
-        } else {
-            document.querySelectorAll('input[name="negociacao"]').forEach(radio => {
-                radio.closest('.form-check').classList.remove('is-invalid');
+            
+            if (negociacaoRadios.length > 0) {
+                negociacaoRadios.forEach(radio => {
+                    const formCheck = radio.closest('.form-check');
+                    if (formCheck) {
+                        formCheck.classList.add('is-invalid');
+                    }
+                });
+            }
+        } else if (negociacaoRadios.length > 0) {
+            negociacaoRadios.forEach(radio => {
+                const formCheck = radio.closest('.form-check');
+                if (formCheck) {
+                    formCheck.classList.remove('is-invalid');
+                }
             });
         }
     } else if (stepIndex === 1) {
