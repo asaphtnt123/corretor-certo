@@ -338,80 +338,101 @@ document.addEventListener('DOMContentLoaded', function() {
     // Preview de imagens
     imageInput.addEventListener('change', previewImages);
 
-    // Form Submission
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const user = auth.currentUser;
-        if (!user) {
-            alert('Você precisa estar logado para criar um anúncio');
+   // Form Submission
+form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const user = auth.currentUser;
+    if (!user) {
+        alert('Você precisa estar logado para criar um anúncio');
+        return;
+    }
+
+    // Mostra o loading apropriado
+    if (btnImovel.checked) {
+        document.getElementById('loading-imovel').style.display = 'flex';
+    } else {
+        document.getElementById('loading-automovel').style.display = 'flex';
+    }
+    
+    // Desabilita o botão de submit para evitar múltiplos envios
+    const submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    
+    try {
+        // Verificar se há imagens
+        if (selectedFiles.length === 0) {
+            // Esconder loadings antes de mostrar o alerta
+            document.getElementById('loading-imovel').style.display = 'none';
+            document.getElementById('loading-automovel').style.display = 'none';
+            submitBtn.disabled = false;
+            
+            alert('Por favor, adicione pelo menos uma imagem');
             return;
         }
         
-        try {
-            // Verificar se há imagens
-            if (selectedFiles.length === 0) {
-                alert('Por favor, adicione pelo menos uma imagem');
-                return;
-            }
+        // Obter dados do formulário
+        const formData = {
+            titulo: document.getElementById('titulo').value,
+            descricao: document.getElementById('descricao').value,
+            preco: parseFloat(document.getElementById('preco').value),
+            negociacao: document.querySelector('input[name="negociacao"]:checked').value,
+            userId: user.uid,
+            data: new Date(),
+            status: 'ativo'
+        };
+        
+        // Adicionar campos específicos
+        if (btnImovel.checked) {
+            formData.tipo = document.getElementById('tipo-imovel').value;
+            formData.bairro = document.getElementById('bairro').value;
+            formData.quartos = parseInt(document.getElementById('quartos').value) || 0;
+            formData.banheiros = parseInt(document.getElementById('banheiros').value) || 0;
+            formData.garagem = parseInt(document.getElementById('garagem').value) || 0;
+            formData.area = parseFloat(document.getElementById('area').value);
+            formData.mobiliado = document.getElementById('mobiliado').checked;
+            formData.aceitaAnimais = document.getElementById('aceita-animais').checked;
+            formData.endereco = document.getElementById('endereco').value;
+            formData.proximoA = document.getElementById('proximo-a').value;
             
-            // Obter dados do formulário
-            const formData = {
-                titulo: document.getElementById('titulo').value,
-                descricao: document.getElementById('descricao').value,
-                preco: parseFloat(document.getElementById('preco').value),
-                negociacao: document.querySelector('input[name="negociacao"]:checked').value,
-                userId: user.uid,
-                data: new Date(),
-                status: 'ativo'
-            };
+            // Upload de imagens e salvar no Firestore
+            const imageUrls = await uploadImages(selectedFiles, 'imoveis', user.uid);
+            formData.imagens = imageUrls;
             
-            // Adicionar campos específicos
-            if (btnImovel.checked) {
-                formData.tipo = document.getElementById('tipo-imovel').value;
-                formData.bairro = document.getElementById('bairro').value;
-                formData.quartos = parseInt(document.getElementById('quartos').value) || 0;
-                formData.banheiros = parseInt(document.getElementById('banheiros').value) || 0;
-                formData.garagem = parseInt(document.getElementById('garagem').value) || 0;
-                formData.area = parseFloat(document.getElementById('area').value);
-                formData.mobiliado = document.getElementById('mobiliado').checked;
-                formData.aceitaAnimais = document.getElementById('aceita-animais').checked;
-                formData.endereco = document.getElementById('endereco').value;
-                formData.proximoA = document.getElementById('proximo-a').value;
-                
-                // Upload de imagens e salvar no Firestore
-                const imageUrls = await uploadImages(selectedFiles, 'imoveis', user.uid);
-                formData.imagens = imageUrls;
-                
-                await addDoc(collection(db, 'imoveis'), formData);
-            } else {
-                formData.tipo = document.getElementById('tipo-automovel').value; // Adicione esta linha
-                formData.marca = document.getElementById('marca').value;
-                formData.modelo = document.getElementById('modelo').value;
-                formData.ano = parseInt(document.getElementById('ano').value);
-                formData.km = parseInt(document.getElementById('km').value) || 0;
-                formData.cor = document.getElementById('cor').value;
-                formData.combustivel = document.getElementById('combustivel').value;
-                formData.cambio = document.getElementById('cambio').value;
-                
-                // Upload de imagens e salvar no Firestore
-                const imageUrls = await uploadImages(selectedFiles, 'automoveis', user.uid);
-                formData.imagens = imageUrls;
-                
-                await addDoc(collection(db, 'automoveis'), formData);
-            }
+            await addDoc(collection(db, 'imoveis'), formData);
+        } else {
+            formData.tipo = document.getElementById('tipo-automovel').value;
+            formData.marca = document.getElementById('marca').value;
+            formData.modelo = document.getElementById('modelo').value;
+            formData.ano = parseInt(document.getElementById('ano').value);
+            formData.km = parseInt(document.getElementById('km').value) || 0;
+            formData.cor = document.getElementById('cor').value;
+            formData.combustivel = document.getElementById('combustivel').value;
+            formData.cambio = document.getElementById('cambio').value;
             
-            alert('Anúncio criado com sucesso!');
-            window.location.href = 'perfil.html';
+            // Upload de imagens e salvar no Firestore
+            const imageUrls = await uploadImages(selectedFiles, 'automoveis', user.uid);
+            formData.imagens = imageUrls;
             
-        } catch (error) {
-            console.error('Erro ao criar anúncio:', error);
-            alert('Erro ao criar anúncio. Por favor, tente novamente.');
+            await addDoc(collection(db, 'automoveis'), formData);
         }
-    });
+        
+        alert('Anúncio criado com sucesso!');
+        window.location.href = 'perfil.html';
+        
+    } catch (error) {
+        console.error('Erro ao criar anúncio:', error);
+        alert('Erro ao criar anúncio. Por favor, tente novamente.');
+    } finally {
+        // Esconde o loading e reabilita o botão
+        document.getElementById('loading-imovel').style.display = 'none';
+        document.getElementById('loading-automovel').style.display = 'none';
+        submitBtn.disabled = false;
+    }
+});
 
-    // Inicialização
-    showStep(0);
+// Inicialização
+showStep(0);
 });
 
 // Função para fazer upload das imagens
