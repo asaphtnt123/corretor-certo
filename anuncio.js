@@ -138,6 +138,15 @@ function validateStep2() {
     let isValid = true;
     
     if (btnImovel.checked) {
+
+        // Validação para automóveis
+        if (!document.getElementById('tipo-automovel').value) {
+            document.getElementById('tipo-automovel').classList.add('is-invalid');
+            isValid = false;
+        } else {
+            document.getElementById('tipo-automovel').classList.remove('is-invalid');
+        }
+        
         // Validação para imóveis
         if (!document.getElementById('tipo-imovel').value) {
             document.getElementById('tipo-imovel').classList.add('is-invalid');
@@ -227,6 +236,9 @@ function updateReview() {
         document.getElementById('review-automovel-details').style.display = 'block';
         
         // Detalhes do automóvel
+         // Detalhes do automóvel
+        document.getElementById('review-tipo-veiculo').textContent = 
+            document.getElementById('tipo-automovel').value;
         document.getElementById('review-marca-modelo').textContent = 
             `${document.getElementById('marca').value} ${document.getElementById('modelo').value}`;
         document.getElementById('review-ano').textContent = document.getElementById('ano').value;
