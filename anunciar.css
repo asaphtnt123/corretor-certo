@@ -595,3 +595,11 @@ body {
     color: #dc3545;
     font-size: 0.875em;
 }
+/* Adicione ao seu CSS */
+.form-check.is-invalid .form-check-label {
+    color: #dc3545;
+}
+
+.form-check.is-invalid .form-check-input {
+    border-color: #dc3545;
+}
