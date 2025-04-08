@@ -573,3 +573,13 @@ body {
 .loading-container[style*="display: flex"] {
     opacity: 1;
 }
+@media (max-width: 768px) {
+    .house-animation, .car-animation {
+        transform: scale(0.8);
+    }
+    
+    .loading-content {
+        padding: 20px;
+        max-width: 250px;
+    }
+}
