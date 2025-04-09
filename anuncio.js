@@ -223,65 +223,75 @@ function debugValidation() {
     console.log("Descrição length:", document.getElementById('descricao').value.length);
     console.log("Preço válido:", !isNaN(parseFloat(document.getElementById('preco').value)));
 }
+
+
 function validateStep2() {
     let isValid = true;
     
     if (btnImovel.checked) {
         // Validação apenas para imóveis
-        if (!document.getElementById('tipo-imovel').value) {
-            document.getElementById('tipo-imovel').classList.add('is-invalid');
+        const tipoImovel = document.getElementById('tipo-imovel');
+        const bairro = document.getElementById('bairro');
+        const area = document.getElementById('area');
+        
+        if (!tipoImovel.value) {
+            tipoImovel.classList.add('is-invalid');
             isValid = false;
         } else {
-            document.getElementById('tipo-imovel').classList.remove('is-invalid');
+            tipoImovel.classList.remove('is-invalid');
         }
         
-        if (!document.getElementById('bairro').value.trim()) {
-            document.getElementById('bairro').classList.add('is-invalid');
+        if (!bairro.value.trim()) {
+            bairro.classList.add('is-invalid');
             isValid = false;
         } else {
-            document.getElementById('bairro').classList.remove('is-invalid');
+            bairro.classList.remove('is-invalid');
         }
         
-        if (!document.getElementById('area').value) {
-            document.getElementById('area').classList.add('is-invalid');
+        if (!area.value) {
+            area.classList.add('is-invalid');
             isValid = false;
         } else {
-            document.getElementById('area').classList.remove('is-invalid');
+            area.classList.remove('is-invalid');
         }
     } else {
         // Validação apenas para automóveis
-        if (!document.getElementById('tipo-automovel').value) {
-            document.getElementById('tipo-automovel').classList.add('is-invalid');
+        const tipoAutomovel = document.getElementById('tipo-automovel');
+        const marca = document.getElementById('marca');
+        const modelo = document.getElementById('modelo');
+        const ano = document.getElementById('ano');
+        
+        if (!tipoAutomovel.value) {
+            tipoAutomovel.classList.add('is-invalid');
             isValid = false;
         } else {
-            document.getElementById('tipo-automovel').classList.remove('is-invalid');
+            tipoAutomovel.classList.remove('is-invalid');
         }
         
-        if (!document.getElementById('marca').value) {
-            document.getElementById('marca').classList.add('is-invalid');
+        if (!marca.value) {
+            marca.classList.add('is-invalid');
             isValid = false;
         } else {
-            document.getElementById('marca').classList.remove('is-invalid');
+            marca.classList.remove('is-invalid');
         }
         
-        if (!document.getElementById('modelo').value.trim()) {
-            document.getElementById('modelo').classList.add('is-invalid');
+        if (!modelo.value.trim()) {
+            modelo.classList.add('is-invalid');
             isValid = false;
         } else {
-            document.getElementById('modelo').classList.remove('is-invalid');
+            modelo.classList.remove('is-invalid');
         }
         
-        if (!document.getElementById('ano').value) {
-            document.getElementById('ano').classList.add('is-invalid');
+        if (!ano.value) {
+            ano.classList.add('is-invalid');
             isValid = false;
         } else {
-            document.getElementById('ano').classList.remove('is-invalid');
+            ano.classList.remove('is-invalid');
         }
     }
     
     return isValid;
 }
-
 // Função para atualizar a revisão
 function updateReview() {
     // Informações básicas
@@ -334,6 +344,21 @@ document.getElementById('review-tipo-veiculo').textContent =
         document.getElementById('review-tipo').textContent = 'Automóvel';
         document.getElementById('review-imovel-details').style.display = 'none';
         document.getElementById('review-automovel-details').style.display = 'block';
+
+
+         const tipoVeiculoMap = {
+            'carro': 'Carro',
+            'caminhonete': 'Caminhonete',
+            'van': 'Van',
+            'caminhao': 'Caminhão',
+            'moto': 'Moto',
+            'onibus': 'Ônibus',
+            'outro': 'Outro'
+        };
+
+         const tipoVeiculo = document.getElementById('tipo-automovel').value;
+        document.getElementById('review-tipo-veiculo').textContent = tipoVeiculoMap[tipoVeiculo] || tipoVeiculo;
+
         
         // Detalhes do automóvel
          // Detalhes do automóvel
