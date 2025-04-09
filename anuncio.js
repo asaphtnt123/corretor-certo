@@ -121,72 +121,96 @@ function validateStep(stepIndex) {
     let isValid = true;
     
     if (stepIndex === 0) {
-        debugValidation();
+        // Validação comum para todos os anúncios
+        const requiredCommonFields = document.querySelectorAll(`
+            #step-1 #titulo[required],
+            #step-1 #descricao[required],
+            #step-1 #preco[required],
+            #step-1 input[name="negociacao"][required]
+        `);
         
-        // Validação dos campos obrigatórios
-        const requiredFields = document.querySelectorAll('#step-1 input[required], #step-1 select[required], #step-1 textarea[required]');
-        
-        requiredFields.forEach(field => {
-            if (!field.value.trim()) {
+        requiredCommonFields.forEach(field => {
+            if (!field.value || !field.value.trim()) {
                 field.classList.add('is-invalid');
                 isValid = false;
-                console.error(`Campo obrigatório não preenchido: ${field.id}`);
             } else {
                 field.classList.remove('is-invalid');
             }
         });
 
-        // Validação da descrição
-        const descricao = document.getElementById('descricao');
-        if (descricao && descricao.value.length < 20) {
-            descricao.classList.add('is-invalid');
-            isValid = false;
-            console.error('Descrição muito curta (mínimo 20 caracteres)');
-        } else if (descricao) {
-            descricao.classList.remove('is-invalid');
-        }
-
-        // Validação do preço
-        const preco = document.getElementById('preco');
-        if (preco && isNaN(parseFloat(preco.value))) {
-            preco.classList.add('is-invalid');
-            isValid = false;
-            console.error('Preço inválido');
-        } else if (preco) {
-            preco.classList.remove('is-invalid');
-        }
-
-        // Validação da negociação (corrigido)
-        const negociacaoRadios = document.querySelectorAll('input[name="negociacao"]');
-        const negociacaoSelecionada = document.querySelector('input[name="negociacao"]:checked');
-        
-        if (!negociacaoSelecionada) {
-            console.error('Selecione um tipo de negociação');
-            isValid = false;
+        // Validação específica para imóveis
+        if (btnImovel.checked) {
+            const requiredImovelFields = document.querySelectorAll(`
+                #step-1 #tipo-imovel[required],
+                #step-1 #bairro[required],
+                #step-1 #area[required]
+            `);
             
-            if (negociacaoRadios.length > 0) {
-                negociacaoRadios.forEach(radio => {
-                    const formCheck = radio.closest('.form-check');
-                    if (formCheck) {
-                        formCheck.classList.add('is-invalid');
-                    }
-                });
-            }
-        } else if (negociacaoRadios.length > 0) {
-            negociacaoRadios.forEach(radio => {
-                const formCheck = radio.closest('.form-check');
-                if (formCheck) {
-                    formCheck.classList.remove('is-invalid');
+            requiredImovelFields.forEach(field => {
+                if (!field.value || !field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
                 }
             });
         }
+        // Validação específica para automóveis
+        else if (btnAutomovel.checked) {
+            const requiredAutomovelFields = document.querySelectorAll(`
+                #step-1 #tipo-automovel[required],
+                #step-1 #marca[required],
+                #step-1 #modelo[required],
+                #step-1 #ano[required]
+            `);
+            
+            requiredAutomovelFields.forEach(field => {
+                if (!field.value || !field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+        }
+        
+        // Validação adicional para descrição
+        const descricao = document.getElementById('descricao');
+        if (descricao.value.length < 20) {
+            descricao.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            descricao.classList.remove('is-invalid');
+        }
+        
+        // Validação adicional para preço
+        const preco = document.getElementById('preco');
+        if (isNaN(parseFloat(preco.value))) {
+            preco.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            preco.classList.remove('is-invalid');
+        }
+        
+        // Validação para tipo de negociação
+        const negociacao = document.querySelector('input[name="negociacao"]:checked');
+        if (!negociacao) {
+            isValid = false;
+            document.querySelectorAll('input[name="negociacao"]').forEach(radio => {
+                radio.closest('.btn-group').classList.add('is-invalid');
+            });
+        } else {
+            document.querySelectorAll('input[name="negociacao"]').forEach(radio => {
+                radio.closest('.btn-group').classList.remove('is-invalid');
+            });
+        }
+        
     } else if (stepIndex === 1) {
         isValid = validateStep2();
     }
     
     return isValid;
 }
-
 
 function debugValidation() {
     const requiredFields = document.querySelectorAll('#step-1 input[required], #step-1 select[required], #step-1 textarea[required]');
