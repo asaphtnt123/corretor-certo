@@ -118,6 +118,8 @@ function updateStepper() {
 }
 
 function validateStep(stepIndex) {
+        console.log("Validando passo 2 - Tipo:", btnImovel.checked ? "Imóvel" : "Automóvel");
+
     let isValid = true;
     
     if (stepIndex === 0) {
@@ -221,21 +223,11 @@ function debugValidation() {
     console.log("Descrição length:", document.getElementById('descricao').value.length);
     console.log("Preço válido:", !isNaN(parseFloat(document.getElementById('preco').value)));
 }
-// Função para validar o passo 2 (Detalhes)
 function validateStep2() {
     let isValid = true;
     
     if (btnImovel.checked) {
-
-        // Validação para automóveis
-        if (!document.getElementById('tipo-automovel').value) {
-            document.getElementById('tipo-automovel').classList.add('is-invalid');
-            isValid = false;
-        } else {
-            document.getElementById('tipo-automovel').classList.remove('is-invalid');
-        }
-        
-        // Validação para imóveis
+        // Validação apenas para imóveis
         if (!document.getElementById('tipo-imovel').value) {
             document.getElementById('tipo-imovel').classList.add('is-invalid');
             isValid = false;
@@ -257,7 +249,14 @@ function validateStep2() {
             document.getElementById('area').classList.remove('is-invalid');
         }
     } else {
-        // Validação para automóveis
+        // Validação apenas para automóveis
+        if (!document.getElementById('tipo-automovel').value) {
+            document.getElementById('tipo-automovel').classList.add('is-invalid');
+            isValid = false;
+        } else {
+            document.getElementById('tipo-automovel').classList.remove('is-invalid');
+        }
+        
         if (!document.getElementById('marca').value) {
             document.getElementById('marca').classList.add('is-invalid');
             isValid = false;
