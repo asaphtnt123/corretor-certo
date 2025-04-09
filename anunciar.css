@@ -438,6 +438,7 @@ body {
 
 
 /* Estilos gerais do loading */
+/* Estilos para os loadings */
 .loading-container {
     position: fixed;
     top: 0;
@@ -459,13 +460,23 @@ body {
     max-width: 300px;
 }
 
-/* Animação da casa (imóvel) */
+/* Animação da casa */
 .house-animation {
     width: 100px;
     height: 100px;
     margin: 0 auto 20px;
     position: relative;
 }
+
+/* Animação do carro */
+.car-animation {
+    width: 120px;
+    height: 60px;
+    margin: 0 auto 20px;
+    position: relative;
+}
+
+
 
 .roof {
     width: 0;
@@ -503,13 +514,7 @@ body {
     right: 15px;
 }
 
-/* Animação do carro (automóvel) */
-.car-animation {
-    width: 120px;
-    height: 60px;
-    margin: 0 auto 20px;
-    position: relative;
-}
+
 
 .car-body {
     width: 100%;
