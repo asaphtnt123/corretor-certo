@@ -141,21 +141,32 @@
                                 <!-- Imóvel Fields -->
                                 <div id="imovel-fields">
                                     <div class="row">
-                                        <div class="col-md-6 mb-4">
-                                            <label for="tipo-imovel" class="form-label">Tipo de Imóvel*</label>
-                                            <select class="form-select" id="tipo-imovel" name="tipo-imovel" required>
-                                                <option value="" selected disabled>Selecione...</option>
-                                                <option value="casa">Casa</option>
-                                                <option value="apartamento">Apartamento</option>
+                                     
+
+                                        <!-- Para o campo tipo-imovel -->
+                                    <div class="col-md-6 mb-4">
+                                        <label for="tipo-imovel" class="form-label">Tipo de Imóvel*</label>
+                                        <select class="form-select" id="tipo-imovel" name="tipo-imovel" required>
+                                            <option value="" selected disabled>Selecione...</option>
+                                              <option value="casa">Casa</option>
+                                                        <option value="apartamento">Apartamento</option>
                                                 <option value="terreno">Terreno</option>
                                                 <option value="comercial">Comercial</option>
                                                 <option value="rural">Rural</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-6 mb-4">
-                                            <label for="bairro" class="form-label">Bairro*</label>
-                                            <input type="text" class="form-control" id="bairro" name="bairro" required>
-                                        </div>
+                                            <!-- opções... -->
+                                        </select>
+                                        <div class="invalid-feedback">Por favor, selecione o tipo de imóvel</div>
+                                    </div>
+
+<!-- Para o campo bairro -->
+<div class="col-md-6 mb-4">
+    <label for="bairro" class="form-label">Bairro*</label>
+    <input type="text" class="form-control" id="bairro" name="bairro" required>
+    <div class="invalid-feedback">Por favor, informe o bairro</div>
+</div>
+
+
+                                       
                                     </div>
                                     
                                     <div class="row">
@@ -171,10 +182,12 @@
                                             <label for="garagem" class="form-label">Vagas</label>
                                             <input type="number" class="form-control" id="garagem" name="garagem" min="0">
                                         </div>
-                                        <div class="col-md-3 mb-4">
-                                            <label for="area" class="form-label">Área (m²)*</label>
-                                            <input type="number" class="form-control" id="area" name="area" min="0" required>
-                                        </div>
+                                     <!-- Para o campo area -->
+<div class="col-md-3 mb-4">
+    <label for="area" class="form-label">Área (m²)*</label>
+    <input type="number" class="form-control" id="area" name="area" min="0" required>
+    <div class="invalid-feedback">Por favor, informe a área</div>
+</div>
                                     </div>
                                     
                                     <div class="mb-4">
@@ -230,9 +243,9 @@
 
                                     <div class="row">
     <div class="col-md-6 mb-4">
-        <label for="tipo-automovel" class="form-label">Tipo de Veículo*</label>
-        <select class="form-select" id="tipo-automovel" name="tipo-automovel" required>
-            <option value="" selected disabled>Selecione...</option>
+    <label for="tipo-automovel" class="form-label">Tipo de Veículo*</label>
+    <select class="form-select" id="tipo-automovel" name="tipo-automovel" required>
+        <option value="" selected disabled>Selecione...</option>
             <option value="carro">Carro</option>
             <option value="caminhonete">Caminhonete</option>
             <option value="van">Van</option>
@@ -241,6 +254,8 @@
             <option value="onibus">Ônibus</option>
             <option value="outro">Outro</option>
         </select>
+            <div class="invalid-feedback">Por favor, selecione o tipo de veículo</div>
+
     </div>
 </div>
                                     <div class="row">
