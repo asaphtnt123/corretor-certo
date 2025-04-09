@@ -437,157 +437,7 @@ body {
 }
 
 
-/* Estilos gerais do loading */
-/* Estilos para os loadings */
-.loading-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-}
 
-.loading-content {
-    background: white;
-    padding: 30px;
-    border-radius: 10px;
-    text-align: center;
-    max-width: 300px;
-}
-
-/* Animação da casa */
-.house-animation {
-    width: 100px;
-    height: 100px;
-    margin: 0 auto 20px;
-    position: relative;
-}
-
-/* Animação do carro */
-.car-animation {
-    width: 120px;
-    height: 60px;
-    margin: 0 auto 20px;
-    position: relative;
-}
-
-
-
-.roof {
-    width: 0;
-    height: 0;
-    border-left: 50px solid transparent;
-    border-right: 50px solid transparent;
-    border-bottom: 40px solid #4a6baf;
-    animation: pulse 1.5s infinite;
-}
-
-.walls {
-    width: 80px;
-    height: 60px;
-    background: #6a8fd8;
-    margin: 0 auto;
-    position: relative;
-    top: -20px;
-}
-
-.door {
-    width: 20px;
-    height: 30px;
-    background: #4a4a4a;
-    position: absolute;
-    bottom: 0;
-    left: 15px;
-}
-
-.window {
-    width: 20px;
-    height: 20px;
-    background: #f0f0f0;
-    position: absolute;
-    top: 15px;
-    right: 15px;
-}
-
-
-
-.car-body {
-    width: 100%;
-    height: 100%;
-    background: #e74c3c;
-    border-radius: 15px 15px 5px 5px;
-    position: relative;
-    animation: moveCar 1.5s infinite;
-}
-
-.car-top {
-    width: 60%;
-    height: 60%;
-    background: #e74c3c;
-    position: absolute;
-    top: -30%;
-    left: 20%;
-    border-radius: 10px 10px 0 0;
-}
-
-.car-wheel {
-    width: 20px;
-    height: 20px;
-    background: #333;
-    border-radius: 50%;
-    position: absolute;
-    bottom: -10px;
-    animation: spinWheel 1s linear infinite;
-}
-
-.car-wheel.front {
-    left: 15px;
-}
-
-.car-wheel.back {
-    right: 15px;
-}
-
-/* Animações */
-@keyframes pulse {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.05); opacity: 0.8; }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes moveCar {
-    0%, 100% { transform: translateX(0); }
-    50% { transform: translateX(10px); }
-}
-
-@keyframes spinWheel {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-.loading-container {
-    /* ... outros estilos ... */
-    transition: opacity 0.3s ease;
-    opacity: 0;
-}
-
-.loading-container[style*="display: flex"] {
-    opacity: 1;
-}
-@media (max-width: 768px) {
-    .house-animation, .car-animation {
-        transform: scale(0.8);
-    }
-    
-    .loading-content {
-        padding: 20px;
-        max-width: 250px;
-    }
-}
 .is-invalid {
     border-color: #dc3545 !important;
 }
@@ -607,4 +457,25 @@ body {
 
 .form-check.is-invalid .form-check-input {
     border-color: #dc3545;
+}
+
+
+
+#loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.8);
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+#loading-text {
+  font-size: 1.2rem;
+  font-weight: 500;
 }
