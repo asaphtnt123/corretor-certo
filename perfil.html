@@ -890,55 +890,78 @@ body {
   }
 
   // Função para carregar os dados do perfil
- // Atualizar a função loadProfileData para preencher o formulário de edição também
 async function loadProfileData(user) {
     try {
-        const userDocRef = doc(db, "users", user.uid);
-        const userDoc = await getDoc(userDocRef);
-        
+        const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
             const userData = userDoc.data();
-        
-        // Preencher informações básicas
-        document.getElementById("profile-name").textContent = userData.name || "Não informado";
-        document.getElementById("profile-email").textContent = userData.email || "Não informado";
-        document.getElementById("profile-phone").textContent = userData.phone || "Não informado";
-        document.getElementById("profile-doc").textContent = userData.cpfCnpj || "Não informado";
-        
-        // Definir tipo de usuário
-        if (userData.userType === "comum") {
-          document.getElementById("profile-type").textContent = "Usuário Comum";
-          document.getElementById("profile-common-info").classList.remove("hidden");
-          document.getElementById("profile-interest").textContent = 
-            userData.interests?.join(", ") || "Não informado";
-        } else if (userData.userType === "comercial") {
-          document.getElementById("profile-type").textContent = "Profissional";
-          document.getElementById("profile-professional-info").classList.remove("hidden");
-          document.getElementById("profile-area").textContent = 
-            userData.professional?.area || "Não informado";
-          
-          // Mostrar CRECI ou CNPJ
-          if (userData.professional?.creci) {
-            document.getElementById("profile-creci-cnpj").textContent = 
-              `CRECI ${userData.professional.creci}`;
-          } else if (userData.professional?.cnpj) {
-            document.getElementById("profile-creci-cnpj").textContent = 
-              `CNPJ ${userData.professional.cnpj}`;
-          } else {
-            document.getElementById("profile-creci-cnpj").textContent = "Não informado";
-          }
+            console.log("Dados completos do Firestore:", userData); // Para depuração
+
+            // 1. Preenche os campos básicos
+            document.getElementById("profile-name").textContent = userData.name || "Não informado";
+            document.getElementById("profile-email").textContent = userData.email || "Não informado";
+            document.getElementById("profile-phone").textContent = userData.phone || "Não informado";
+
+            // 2. Verifica se é um vendedor profissional
+            const isProfessional = userData.sellerProfile?.professional?.sellerType === "professional";
+            
+            if (isProfessional) {
+                const profData = userData.sellerProfile.professional;
+                
+                // 3. Preenche CNPJ (formatação opcional)
+                const cnpjElement = document.getElementById("profile-doc");
+                cnpjElement.textContent = profData.cnpj ? formatCnpj(profData.cnpj) : "Não informado";
+                
+                // 4. Configura para perfil profissional
+                document.getElementById("profile-type").textContent = "Profissional";
+                document.getElementById("profile-professional-info").classList.remove("d-none");
+                document.getElementById("profile-common-info").classList.add("d-none");
+                
+                // 5. Preenche os dados profissionais
+                document.getElementById("profile-area").textContent = 
+                    profData.area ? formatArea(profData.area) : "Não informado";
+                
+                document.getElementById("profile-about-business").textContent = 
+                    userData.sellerProfile.aboutBusiness || "Não informado";
+                
+                // 6. Exibe CRECI se existir (mesmo que vazio)
+                const creciElement = document.getElementById("profile-creci");
+                if (profData.creci) {
+                    creciElement.textContent = `CRECI ${profData.creci}`;
+                    document.getElementById("profile-creci-container").classList.remove("d-none");
+                } else {
+                    document.getElementById("profile-creci-container").classList.add("d-none");
+                }
+            } else {
+                // 7. Configura para perfil comum
+                document.getElementById("profile-type").textContent = "Usuário Comum";
+                document.getElementById("profile-common-info").classList.remove("d-none");
+                document.getElementById("profile-professional-info").classList.add("d-none");
+            }
+            
+        } else {
+            console.log("Documento do usuário não encontrado");
+            showAlert("Perfil não encontrado", "error");
         }
-        
-        console.log("Perfil carregado com sucesso");
-      } else {
-        console.log("Nenhum documento de usuário encontrado");
-        showAlert("Seus dados de perfil não foram encontrados", "error");
-      }
     } catch (error) {
-      console.error("Erro ao carregar perfil:", error);
-      showAlert("Erro ao carregar informações do perfil. Tente novamente.", "error");
+        console.error("Erro ao carregar perfil:", error);
+        showAlert("Erro ao carregar dados do perfil", "error");
     }
-  }
+}
+
+// Funções auxiliares de formatação
+function formatCnpj(cnpj) {
+    // Remove caracteres não numéricos e formata
+    const cleaned = cnpj.replace(/\D/g, '');
+    return cleaned.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+}
+
+function formatArea(area) {
+    // Converte "automoveis-venda" para "Automóveis (Venda)"
+    return area.split('-')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' ');
+}
 
   // Função para carregar anúncios do usuário
   async function loadUserAds(userId) {
