@@ -788,46 +788,48 @@ async function loadProfileData(user) {
             const userData = userDoc.data();
             
             // Preenche os campos básicos (comuns a todos os usuários)
-            cardNome.textContent = userData.nome || "Não informado";
-            cardTelefone.textContent = userData.telefone || "Não informado";
-            cardEmail.textContent = userData.email || "Não informado";
-            cardCpfCnpj.textContent = userData.cpfCnpj || "Não informado";
+            document.getElementById("profile-name").textContent = userData.nome || "Não informado";
+            document.getElementById("profile-email").textContent = userData.email || "Não informado";
+            document.getElementById("profile-phone").textContent = userData.telefone || "Não informado";
+            document.getElementById("profile-doc").textContent = userData.cpfCnpj || "Não informado";
             
-            // Define o tipo de usuário
+            // Define o tipo de usuário e mostra/esconde as seções apropriadas
+            const profileCommonInfo = document.getElementById("profile-common-info");
+            const profileProfessionalInfo = document.getElementById("profile-professional-info");
+            
             if (userData.tipoUsuario === "comum") {
-                cardTipoUsuario.textContent = "Usuário Comum";
-                cardComum.classList.remove("d-none");
-                cardComercial.classList.add("d-none");
+                document.getElementById("profile-type").textContent = "Usuário Comum";
+                profileCommonInfo.classList.remove("hidden");
+                profileProfessionalInfo.classList.add("hidden");
                 
                 // Preenche dados específicos de usuário comum
-                const tipoInteresse = userData.comum?.tipoInteresse || "Não informado";
-                cardTipoInteresse.textContent = tipoInteresse;
+                document.getElementById("profile-interest").textContent = 
+                    userData.comum?.tipoInteresse || "Não informado";
                 
-                if (tipoInteresse === "imoveis") {
-                    cardImoveis.classList.remove("d-none");
-                    cardAutomoveis.classList.add("d-none");
-                    cardLocalizacaoImovel.textContent = userData.comum?.imoveis?.localizacao || "Não informado";
-                    cardFaixaPrecoImovel.textContent = userData.comum?.imoveis?.faixaPreco || "Não informado";
-                } else if (tipoInteresse === "automoveis") {
-                    cardAutomoveis.classList.remove("d-none");
-                    cardImoveis.classList.add("d-none");
-                    cardMarcaAutomovel.textContent = userData.comum?.automoveis?.marca || "Não informado";
-                    cardFaixaPrecoAutomovel.textContent = userData.comum?.automoveis?.faixaPreco || "Não informado";
-                }
             } else if (userData.tipoUsuario === "comercial") {
-                cardTipoUsuario.textContent = "Profissional Comercial";
-                cardComercial.classList.remove("d-none");
-                cardComum.classList.add("d-none");
+                document.getElementById("profile-type").textContent = "Profissional";
+                profileProfessionalInfo.classList.remove("hidden");
+                profileCommonInfo.classList.add("hidden");
                 
                 // Preenche dados específicos de profissional
-                cardCreci.textContent = userData.comercial?.creci || "Não informado";
-                cardCnpj.textContent = userData.comercial?.cnpj || "Não informado";
-                cardAreaAtuacao.textContent = userData.comercial?.areaAtuacao || "Não informado";
-                cardDescricaoEmpresa.textContent = userData.comercial?.descricaoEmpresa || "Não informado";
+                document.getElementById("profile-area").textContent = 
+                    userData.comercial?.areaAtuacao || "Não informado";
+                
+                // Exibe CRECI ou CNPJ conforme disponível
+                const creciCnpjElement = document.getElementById("profile-creci-cnpj");
+                if (userData.comercial?.creci) {
+                    creciCnpjElement.textContent = `CRECI ${userData.comercial.creci}`;
+                } else if (userData.comercial?.cnpj) {
+                    creciCnpjElement.textContent = `CNPJ ${userData.comercial.cnpj}`;
+                } else {
+                    creciCnpjElement.textContent = "Não informado";
+                }
             }
             
             // Preenche o formulário de edição
             fillEditForm(userData);
+            
+            console.log("Dados do perfil carregados:", userData);
         } else {
             console.log("Documento do usuário não encontrado");
             showAlert("Perfil não encontrado", "error");
