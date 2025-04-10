@@ -787,49 +787,45 @@ async function loadProfileData(user) {
         if (userDoc.exists()) {
             const userData = userDoc.data();
             
-            // Preenche os campos básicos (comuns a todos os usuários)
-            document.getElementById("profile-name").textContent = userData.nome || "Não informado";
+            // Preenche os campos básicos
+            document.getElementById("profile-name").textContent = userData.name || "Não informado";
             document.getElementById("profile-email").textContent = userData.email || "Não informado";
-            document.getElementById("profile-phone").textContent = userData.telefone || "Não informado";
-            document.getElementById("profile-doc").textContent = userData.cpfCnpj || "Não informado";
+            document.getElementById("profile-phone").textContent = userData.phone || "Não informado";
             
-            // Define o tipo de usuário e mostra/esconde as seções apropriadas
-            const profileCommonInfo = document.getElementById("profile-common-info");
-            const profileProfessionalInfo = document.getElementById("profile-professional-info");
+            // Verifica se é um vendedor profissional
+            const isProfessional = userData.sellerProfile?.professional?.sellerType === "professional";
             
-            if (userData.tipoUsuario === "comum") {
-                document.getElementById("profile-type").textContent = "Usuário Comum";
-                profileCommonInfo.classList.remove("hidden");
-                profileProfessionalInfo.classList.add("hidden");
-                
-                // Preenche dados específicos de usuário comum
-                document.getElementById("profile-interest").textContent = 
-                    userData.comum?.tipoInteresse || "Não informado";
-                
-            } else if (userData.tipoUsuario === "comercial") {
+            if (isProfessional) {
+                // Configura para perfil profissional
                 document.getElementById("profile-type").textContent = "Profissional";
-                profileProfessionalInfo.classList.remove("hidden");
-                profileCommonInfo.classList.add("hidden");
+                document.getElementById("profile-professional-info").classList.remove("hidden");
+                document.getElementById("profile-common-info").classList.add("hidden");
                 
-                // Preenche dados específicos de profissional
+                // Preenche os dados profissionais
                 document.getElementById("profile-area").textContent = 
-                    userData.comercial?.areaAtuacao || "Não informado";
+                    userData.sellerProfile.professional.area || "Não informado";
                 
-                // Exibe CRECI ou CNPJ conforme disponível
-                const creciCnpjElement = document.getElementById("profile-creci-cnpj");
-                if (userData.comercial?.creci) {
-                    creciCnpjElement.textContent = `CRECI ${userData.comercial.creci}`;
-                } else if (userData.comercial?.cnpj) {
-                    creciCnpjElement.textContent = `CNPJ ${userData.comercial.cnpj}`;
-                } else {
-                    creciCnpjElement.textContent = "Não informado";
-                }
+                // Exibe CNPJ (formata se necessário)
+                const cnpj = userData.sellerProfile.professional.cnpj || "Não informado";
+                document.getElementById("profile-creci-cnpj").textContent = `CNPJ ${formatCnpj(cnpj)}`;
+                
+                // Sobre o negócio (aboutBusiness)
+                document.getElementById("profile-about-business").textContent = 
+                    userData.sellerProfile.aboutBusiness || "Não informado";
+                
+            } else {
+                // Configura para perfil comum
+                document.getElementById("profile-type").textContent = "Usuário Comum";
+                document.getElementById("profile-common-info").classList.remove("hidden");
+                document.getElementById("profile-professional-info").classList.add("hidden");
+                
+                // Você pode adicionar campos específicos para usuários comuns aqui
+                document.getElementById("profile-interest").textContent = "Não especificado";
             }
             
-            // Preenche o formulário de edição
+            // Atualiza o formulário de edição
             fillEditForm(userData);
             
-            console.log("Dados do perfil carregados:", userData);
         } else {
             console.log("Documento do usuário não encontrado");
             showAlert("Perfil não encontrado", "error");
@@ -840,59 +836,77 @@ async function loadProfileData(user) {
     }
 }
 
+// Função auxiliar para formatar CNPJ (opcional)
+function formatCnpj(cnpj) {
+    if (!cnpj || typeof cnpj !== 'string') return cnpj;
+    // Remove caracteres não numéricos
+    const cleaned = cnpj.replace(/\D/g, '');
+    // Aplica a formatação: 00.000.000/0000-00
+    return cleaned.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+}
+
 function fillEditForm(userData) {
     // Campos básicos
-    document.getElementById("nome").value = userData.nome || "";
-    document.getElementById("telefone").value = userData.telefone || "";
+    document.getElementById("nome").value = userData.name || "";
+    document.getElementById("telefone").value = userData.phone || "";
     document.getElementById("email").value = userData.email || "";
-    document.getElementById("cpf-cnpj").value = userData.cpfCnpj || "";
     
-    // Tipo de usuário
-    if (userData.tipoUsuario) {
-        document.querySelector(`input[name="tipo-usuario"][value="${userData.tipoUsuario}"]`).checked = true;
-        toggleUserTypeFields(userData.tipoUsuario);
+    // Verifica se é um vendedor profissional
+    const isProfessional = userData.sellerProfile?.professional?.sellerType === "professional";
+    
+    if (isProfessional) {
+        // Configura para perfil profissional
+        document.querySelector('input[name="tipo-usuario"][value="comercial"]').checked = true;
+        toggleUserTypeFields("comercial");
         
-        // Preenche campos específicos
-        if (userData.tipoUsuario === "comum" && userData.comum) {
-            document.getElementById("tipo-interesse").value = userData.comum.tipoInteresse || "";
-            toggleInterestFields(userData.comum.tipoInteresse);
-            
-            if (userData.comum.tipoInteresse === "imoveis" && userData.comum.imoveis) {
-                document.getElementById("localizacao-imovel").value = userData.comum.imoveis.localizacao || "";
-                document.getElementById("faixa-preco-imovel").value = userData.comum.imoveis.faixaPreco || "";
-            } else if (userData.comum.tipoInteresse === "automoveis" && userData.comum.automoveis) {
-                document.getElementById("marca-automovel").value = userData.comum.automoveis.marca || "";
-                document.getElementById("faixa-preco-automovel").value = userData.comum.automoveis.faixaPreco || "";
-            }
-        } else if (userData.tipoUsuario === "comercial" && userData.comercial) {
-            document.getElementById("creci").value = userData.comercial.creci || "";
-            document.getElementById("cnpj").value = userData.comercial.cnpj || "";
-            document.getElementById("area-atuacao").value = userData.comercial.areaAtuacao || "";
-            document.getElementById("descricao-empresa").value = userData.comercial.descricaoEmpresa || "";
+        // Preenche os dados profissionais
+        const profData = userData.sellerProfile.professional;
+        document.getElementById("cnpj").value = profData.cnpj || "";
+        document.getElementById("area-atuacao").value = profData.area || "";
+        document.getElementById("descricao-empresa").value = userData.sellerProfile.aboutBusiness || "";
+        
+        // Se você tiver campo CRECI no seu formulário
+        if (document.getElementById("creci")) {
+            document.getElementById("creci").value = profData.creci || "";
+        }
+    } else {
+        // Configura para perfil comum (caso tenha essa opção)
+        document.querySelector('input[name="tipo-usuario"][value="comum"]').checked = true;
+        toggleUserTypeFields("comum");
+        
+        // Você pode adicionar aqui os campos para usuário comum se necessário
+        if (document.getElementById("tipo-interesse")) {
+            document.getElementById("tipo-interesse").value = "";
+            toggleInterestFields("");
         }
     }
 }
 
 function toggleUserTypeFields(tipoUsuario) {
     if (tipoUsuario === "comum") {
-        formComum.classList.remove("d-none");
-        formComercial.classList.add("d-none");
+        // Mostra campos de usuário comum e esconde os profissionais
+        if (formComum) formComum.classList.remove("d-none");
+        if (formComercial) formComercial.classList.add("d-none");
     } else if (tipoUsuario === "comercial") {
-        formComercial.classList.remove("d-none");
-        formComum.classList.add("d-none");
+        // Mostra campos de profissional e esconde os comuns
+        if (formComercial) formComercial.classList.remove("d-none");
+        if (formComum) formComum.classList.add("d-none");
     }
 }
 
 function toggleInterestFields(tipoInteresse) {
-    if (tipoInteresse === "imoveis") {
-        formImoveis.classList.remove("d-none");
-        formAutomoveis.classList.add("d-none");
-    } else if (tipoInteresse === "automoveis") {
-        formAutomoveis.classList.remove("d-none");
-        formImoveis.classList.add("d-none");
+    // Ajuste esta função conforme seus campos de interesse
+    if (formImoveis && formAutomoveis) {
+        if (tipoInteresse === "imoveis") {
+            formImoveis.classList.remove("d-none");
+            formAutomoveis.classList.add("d-none");
+        } else if (tipoInteresse === "automoveis") {
+            formAutomoveis.classList.remove("d-none");
+            formImoveis.classList.add("d-none");
+        }
     }
 }
-
+console.log("Dados recebidos no fillEditForm:", userData);
 // Funções para alternar entre visualização e edição
 function toggleEditMode(showEdit) {
     if (showEdit) {
