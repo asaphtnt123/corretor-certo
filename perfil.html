@@ -317,25 +317,172 @@ body {
   object-fit: cover;
 }
 
-.profile-info h4 {
-  color: var(--color-primary);
-  font-weight: 700;
-  padding-bottom: 0.75rem;
-  border-bottom: 2px solid rgba(0, 0, 0, 0.05);
-  margin-bottom: 1.5rem;
+/* ESTILOS GERAIS DO PERFIL */
+.profile-info {
+    animation: fadeIn 0.8s ease-out forwards;
+    opacity: 0;
 }
 
 .profile-info p {
-  margin-bottom: 1rem;
-  color: var(--text-medium);
+    position: relative;
+    padding-left: 30px;
+    margin-bottom: 1.2rem;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+}
+
+.profile-info p:hover {
+    transform: translateX(10px);
 }
 
 .profile-info strong {
-  color: var(--text-dark);
-  min-width: 120px;
-  display: inline-block;
-  font-weight: 600;
+    color: #4a5568;
+    font-weight: 600;
+    display: inline-block;
+    min-width: 180px;
+    position: relative;
 }
+
+.profile-info strong::after {
+    content: ":";
+    position: absolute;
+    right: 5px;
+    color: #718096;
+}
+
+.profile-info span {
+    color: #2d3748;
+    font-weight: 500;
+    background: linear-gradient(90deg, #f7fafc, #edf2f7);
+    padding: 0.3rem 0.8rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.profile-info p:hover span {
+    background: linear-gradient(90deg, #ebf4ff, #c3dafe);
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.15);
+    transform: translateY(-2px);
+}
+
+/* ÍCONES */
+.profile-info .fas {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #4299e1, #3182ce);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    box-shadow: 0 3px 8px rgba(66, 153, 225, 0.3);
+    transition: all 0.3s ease;
+}
+
+.profile-info p:hover .fas {
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 5px 15px rgba(66, 153, 225, 0.4);
+}
+
+/* ANIMAÇÕES ESPECÍFICAS */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+}
+
+/* ESTILOS PARA DADOS ESPECÍFICOS */
+#profile-name {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2b6cb0;
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+}
+
+#profile-name::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #4299e1, #90cdf4);
+    border-radius: 3px;
+    animation: expandLine 1s ease-out forwards;
+}
+
+#profile-type {
+    background: linear-gradient(90deg, #38a169, #48bb78);
+    color: white;
+    padding: 0.2rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-block;
+    animation: pulse 2s infinite;
+}
+
+#profile-about-business {
+    font-style: italic;
+    background: linear-gradient(90deg, #f7fafc, #e2e8f0);
+    padding: 0.8rem;
+    border-radius: 8px;
+    display: inline-block;
+    border-left: 3px solid #4299e1;
+}
+
+#profile-budget {
+    font-weight: 700;
+    color: #2f855a;
+    background: linear-gradient(90deg, #f0fff4, #c6f6d5);
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+#profile-location {
+    position: relative;
+    padding-left: 25px;
+}
+
+#profile-location::before {
+    content: '📍';
+    position: absolute;
+    left: 0;
+}
+
+/* ANIMAÇÃO PARA CARGA */
+@keyframes expandLine {
+    from { width: 0; opacity: 0; }
+    to { width: 60px; opacity: 1; }
+}
+
+/* EFEITO DE CARGA PARA OS ITENS */
+.profile-info p:nth-child(1) { animation-delay: 0.1s; }
+.profile-info p:nth-child(2) { animation-delay: 0.2s; }
+.profile-info p:nth-child(3) { animation-delay: 0.3s; }
+.profile-info p:nth-child(4) { animation-delay: 0.4s; }
+.profile-info p:nth-child(5) { animation-delay: 0.5s; }
+.profile-info p:nth-child(6) { animation-delay: 0.6s; }
 
 /* Loader Moderno */
 #profile-loader {
@@ -606,9 +753,11 @@ body {
     <p><strong><i class="fas fa-user-tag me-2"></i>Tipo:</strong> <span id="profile-type"></span></p>
     
     <!-- Seção para Compradores -->
-    <div id="profile-common-info" class="d-none">
-        <p><strong><i class="fas fa-heart me-2"></i>Interesse:</strong> <span id="profile-interest"></span></p>
-    </div>
+   <div id="profile-common-info" class="d-none">
+    <p><strong><i class="fas fa-heart me-2"></i>Interesse:</strong> <span id="profile-interest"></span></p>
+    <p><strong><i class="fas fa-map-marker-alt me-2"></i>Localização Preferida:</strong> <span id="profile-location"></span></p>
+    <p><strong><i class="fas fa-money-bill-wave me-2"></i>Faixa de Preço:</strong> <span id="profile-budget"></span></p>
+</div>
     
     <!-- Seção para Vendedores Profissionais -->
     <div id="profile-professional-info" class="d-none">
@@ -970,8 +1119,17 @@ async function loadProfileData(user) {
                     }).join(", ");
                 }
                 
+                // Preenche os novos campos
                 document.getElementById("profile-interest").textContent = interestText;
                 document.getElementById("profile-doc").textContent = userData.cpf ? formatCpf(userData.cpf) : "Não informado";
+                
+                // Localização preferida
+                document.getElementById("profile-location").textContent = 
+                    userData.buyerProfile?.preferenceLocation || "Não informado";
+                
+                // Faixa de preço
+                document.getElementById("profile-budget").textContent = 
+                    userData.buyerProfile?.budgetRange ? formatBudget(userData.buyerProfile.budgetRange) : "Não informado";
             }
             
         } else {
@@ -995,6 +1153,15 @@ function formatCpf(cpf) {
     if (!cpf) return "Não informado";
     const cleaned = cpf.replace(/\D/g, '');
     return cleaned.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+}
+
+function formatBudget(budget) {
+    if (!budget) return "Não informado";
+    // Formata valores como "100000" para "R$ 100.000,00"
+    return parseFloat(budget).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
 }
 
 function formatArea(area) {
