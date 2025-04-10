@@ -786,7 +786,8 @@ async function loadProfileData(user) {
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
             const userData = userDoc.data();
-            
+            console.log("Dados completos do usuário:", userData); // Para depuração
+
             // Preenche os campos básicos
             document.getElementById("profile-name").textContent = userData.name || "Não informado";
             document.getElementById("profile-email").textContent = userData.email || "Não informado";
@@ -794,37 +795,47 @@ async function loadProfileData(user) {
             
             // Verifica se é um vendedor profissional
             const isProfessional = userData.sellerProfile?.professional?.sellerType === "professional";
+            const professionalData = userData.sellerProfile?.professional || {};
             
+            // Preenche CPF/CNPJ (prioriza CNPJ para profissionais)
+            const cpfCnpjElement = document.getElementById("profile-doc");
+            if (isProfessional && professionalData.cnpj) {
+                cpfCnpjElement.textContent = formatCnpj(professionalData.cnpj);
+            } else if (userData.cpf) {
+                cpfCnpjElement.textContent = formatCpf(userData.cpf);
+            } else {
+                cpfCnpjElement.textContent = "Não informado";
+            }
+
             if (isProfessional) {
                 // Configura para perfil profissional
                 document.getElementById("profile-type").textContent = "Profissional";
-                document.getElementById("profile-professional-info").classList.remove("hidden");
-                document.getElementById("profile-common-info").classList.add("hidden");
+                document.getElementById("profile-professional-info").classList.remove("d-none");
+                document.getElementById("profile-common-info").classList.add("d-none");
                 
                 // Preenche os dados profissionais
                 document.getElementById("profile-area").textContent = 
-                    userData.sellerProfile.professional.area || "Não informado";
+                    professionalData.area ? formatArea(professionalData.area) : "Não informado";
                 
-                // Exibe CNPJ (formata se necessário)
-                const cnpj = userData.sellerProfile.professional.cnpj || "Não informado";
-                document.getElementById("profile-creci-cnpj").textContent = `CNPJ ${formatCnpj(cnpj)}`;
-                
-                // Sobre o negócio (aboutBusiness)
                 document.getElementById("profile-about-business").textContent = 
                     userData.sellerProfile.aboutBusiness || "Não informado";
                 
+                // Exibe CRECI se existir
+                if (professionalData.creci) {
+                    document.getElementById("profile-creci").textContent = `CRECI ${professionalData.creci}`;
+                    document.getElementById("profile-creci-container").classList.remove("d-none");
+                } else {
+                    document.getElementById("profile-creci-container").classList.add("d-none");
+                }
             } else {
                 // Configura para perfil comum
                 document.getElementById("profile-type").textContent = "Usuário Comum";
-                document.getElementById("profile-common-info").classList.remove("hidden");
-                document.getElementById("profile-professional-info").classList.add("hidden");
+                document.getElementById("profile-common-info").classList.remove("d-none");
+                document.getElementById("profile-professional-info").classList.add("d-none");
                 
                 // Você pode adicionar campos específicos para usuários comuns aqui
                 document.getElementById("profile-interest").textContent = "Não especificado";
             }
-            
-            // Atualiza o formulário de edição
-            fillEditForm(userData);
             
         } else {
             console.log("Documento do usuário não encontrado");
@@ -836,13 +847,24 @@ async function loadProfileData(user) {
     }
 }
 
-// Função auxiliar para formatar CNPJ (opcional)
+// Funções auxiliares para formatação
 function formatCnpj(cnpj) {
-    if (!cnpj || typeof cnpj !== 'string') return cnpj;
-    // Remove caracteres não numéricos
-    const cleaned = cnpj.replace(/\D/g, '');
-    // Aplica a formatação: 00.000.000/0000-00
-    return cleaned.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+    if (!cnpj) return "Não informado";
+    // Formatação: 00.000.000/0000-00
+    return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+}
+
+function formatCpf(cpf) {
+    if (!cpf) return "Não informado";
+    // Formatação: 000.000.000-00
+    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+}
+
+function formatArea(area) {
+    // Converte "automoveis-venda" para "Automóveis (Venda)"
+    return area.split('-')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' ');
 }
 
 function fillEditForm(userData) {
