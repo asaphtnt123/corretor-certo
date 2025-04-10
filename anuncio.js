@@ -462,39 +462,43 @@ document.addEventListener('DOMContentLoaded', function() {
     // Preview de imagens
     imageInput.addEventListener('change', previewImages);
 
-   // Form Submission
+// Form Submission
 form.addEventListener('submit', async function(e) {
     e.preventDefault();
     
     const user = auth.currentUser;
     if (!user) {
-        alert('Você precisa estar logado para criar um anúncio');
+        alert('Você precisa estar logado para criar anúncio');
         return;
     }
 
-    // Mostra o loading
+    // Configuração do loading
     const loadingScreen = document.getElementById('loading-screen');
     const loadingText = document.getElementById('loading-text');
     
-    // Define o texto conforme o tipo de anúncio
+    // Mostrar loading com fade
     loadingText.textContent = btnImovel.checked 
         ? 'Salvando seu imóvel...' 
         : 'Salvando seu veículo...';
-    
     loadingScreen.style.display = 'flex';
+    setTimeout(() => loadingScreen.classList.add('show'), 10);
     loadingAnimation.play();
     
     // Desabilita o botão de submit
     const submitBtn = form.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
     
-   try {
+    try {
         // Verificar se há imagens
         if (selectedFiles.length === 0) {
-            loadingScreen.style.display = 'none';
-            loadingAnimation.stop();
-            submitBtn.disabled = false;
+            // Esconder loading com fade
+            loadingScreen.classList.remove('show');
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+                loadingAnimation.stop();
+            }, 300);
             
+            submitBtn.disabled = false;
             alert('Por favor, adicione pelo menos uma imagem');
             return;
         }
@@ -552,10 +556,13 @@ form.addEventListener('submit', async function(e) {
         console.error('Erro ao criar anúncio:', error);
         alert('Erro ao criar anúncio. Por favor, tente novamente.');
     } finally {
-        // Esconde o loading
-        loadingScreen.style.display = 'none';
-        loadingAnimation.stop();
-        submitBtn.disabled = false;
+        // Esconder loading com fade
+        loadingScreen.classList.remove('show');
+        setTimeout(() => {
+            loadingScreen.style.display = 'none';
+            loadingAnimation.stop();
+            submitBtn.disabled = false;
+        }, 300);
     }
 });
 
