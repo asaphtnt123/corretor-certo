@@ -43,6 +43,18 @@ const btnAutomovel = document.getElementById('btn-automovel');
 let currentStep = 0;
 let selectedFiles = [];
 
+let loadingAnimation;
+// Inicialize a animação quando o DOM estiver carregado
+document.addEventListener('DOMContentLoaded', function() {
+    loadingAnimation = lottie.loadAnimation({
+        container: document.getElementById('loading-corretor'),
+        renderer: 'svg',
+        loop: true,
+        autoplay: false, // Não autoplay inicialmente
+        path: '/LoadingAnuncioCar.json' // Ajuste o caminho conforme necessário
+    });
+});
+
 // Função para mostrar o passo atual
 function showStep(stepIndex) {
     steps.forEach((step, index) => {
@@ -460,23 +472,27 @@ form.addEventListener('submit', async function(e) {
         return;
     }
 
-    // Mostra o loading apropriado
-    if (btnImovel.checked) {
-        document.getElementById('loading-imovel').style.display = 'flex';
-    } else {
-        document.getElementById('loading-automovel').style.display = 'flex';
-    }
+    // Mostra o loading
+    const loadingScreen = document.getElementById('loading-screen');
+    const loadingText = document.getElementById('loading-text');
     
-    // Desabilita o botão de submit para evitar múltiplos envios
+    // Define o texto conforme o tipo de anúncio
+    loadingText.textContent = btnImovel.checked 
+        ? 'Salvando seu imóvel...' 
+        : 'Salvando seu veículo...';
+    
+    loadingScreen.style.display = 'flex';
+    loadingAnimation.play();
+    
+    // Desabilita o botão de submit
     const submitBtn = form.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
     
-    try {
+   try {
         // Verificar se há imagens
         if (selectedFiles.length === 0) {
-            // Esconder loadings antes de mostrar o alerta
-            document.getElementById('loading-imovel').style.display = 'none';
-            document.getElementById('loading-automovel').style.display = 'none';
+            loadingScreen.style.display = 'none';
+            loadingAnimation.stop();
             submitBtn.disabled = false;
             
             alert('Por favor, adicione pelo menos uma imagem');
@@ -536,9 +552,9 @@ form.addEventListener('submit', async function(e) {
         console.error('Erro ao criar anúncio:', error);
         alert('Erro ao criar anúncio. Por favor, tente novamente.');
     } finally {
-        // Esconde o loading e reabilita o botão
-        document.getElementById('loading-imovel').style.display = 'none';
-        document.getElementById('loading-automovel').style.display = 'none';
+        // Esconde o loading
+        loadingScreen.style.display = 'none';
+        loadingAnimation.stop();
         submitBtn.disabled = false;
     }
 });
