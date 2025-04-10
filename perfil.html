@@ -909,14 +909,14 @@ async function loadProfileData(user) {
             document.getElementById("profile-phone").textContent = userData.phone || "Não informado";
 
             // Verifica se é um vendedor profissional
-            const isProfessional = userData.sellerProfile?.professional?.sellerType === "professional";
+            const isProfessional = userData.sellerProfile?.sellerType === "professional";
             
             if (isProfessional) {
                 const profData = userData.sellerProfile.professional;
                 
-                // Preenche CNPJ (formatação)
+                // Preenche CNPJ
                 document.getElementById("profile-doc").textContent = 
-                    profData.cnpj ? formatCnpj(profData.cnpj) : "Não informado";
+                    profData?.cnpj ? formatCnpj(profData.cnpj) : "Não informado";
                 
                 // Configura para perfil profissional
                 document.getElementById("profile-type").textContent = "Profissional";
@@ -925,19 +925,20 @@ async function loadProfileData(user) {
                 
                 // Preenche os dados profissionais
                 document.getElementById("profile-area").textContent = 
-                    profData.area === 'imoveis' ? 'Imóveis' : 
-                    profData.area === 'automoveis' ? 'Automóveis' : 
-                    profData.area || "Não informado";
+                    profData?.area === 'automoveis-venda' ? 'Automóveis (Venda)' : 
+                    profData?.area === 'imoveis-venda' ? 'Imóveis (Venda)' :
+                    profData?.area || "Não informado";
                 
                 document.getElementById("profile-about-business").textContent = 
                     userData.sellerProfile.aboutBusiness || "Não informado";
                 
                 // Exibe CRECI se existir
-                if (profData.creci) {
+                const creciContainer = document.getElementById("profile-creci-container");
+                if (profData?.creci) {
                     document.getElementById("profile-creci").textContent = profData.creci;
-                    document.getElementById("profile-creci-container").classList.remove("d-none");
+                    creciContainer?.classList.remove("d-none");
                 } else {
-                    document.getElementById("profile-creci-container").classList.add("d-none");
+                    creciContainer?.classList.add("d-none");
                 }
             } else {
                 // Configura para perfil comum
