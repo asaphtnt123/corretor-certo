@@ -605,7 +605,7 @@ body {
                                         <div id="profile-common-info" class="hidden">
                                             <p><strong><i class="fas fa-heart me-2"></i>Interesse:</strong> <span id="profile-interest"></span></p>
                                         </div>
-                                     <div id="profile-professional-info" class="d-none">
+                                   <div id="profile-professional-info" class="d-none">
     <p><strong><i class="fas fa-briefcase me-2"></i>Área:</strong> <span id="profile-area"></span></p>
     <p id="profile-creci-container" class="d-none">
         <strong><i class="fas fa-id-badge me-2"></i>CRECI:</strong> <span id="profile-creci"></span>
@@ -898,37 +898,35 @@ async function loadProfileData(user) {
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
             const userData = userDoc.data();
-            console.log("Dados completos do usuário:", userData); // Para depuração
+            console.log("Dados completos do Firestore:", userData);
 
-            // 1. Preenche os campos básicos
+            // Preenche os campos básicos
             document.getElementById("profile-name").textContent = userData.name || "Não informado";
             document.getElementById("profile-email").textContent = userData.email || "Não informado";
             document.getElementById("profile-phone").textContent = userData.phone || "Não informado";
 
-            // 2. Verifica o tipo de usuário
+            // Verifica se é um vendedor profissional
             const isProfessional = userData.sellerProfile?.professional?.sellerType === "professional";
             
-            // 3. Preenche CPF/CNPJ
-            const docElement = document.getElementById("profile-doc");
-            if (isProfessional && userData.sellerProfile.professional.cnpj) {
-                docElement.textContent = formatCnpj(userData.sellerProfile.professional.cnpj);
-            } else if (userData.cpf) {
-                docElement.textContent = formatCpf(userData.cpf);
-            } else {
-                docElement.textContent = "Não informado";
-            }
-
-            // 4. Configura a exibição conforme o tipo de usuário
             if (isProfessional) {
                 const profData = userData.sellerProfile.professional;
                 
+                // Preenche CNPJ (formatação)
+                const formattedCnpj = profData.cnpj ? 
+                    profData.cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5') : 
+                    "Não informado";
+                document.getElementById("profile-doc").textContent = formattedCnpj;
+                
+                // Configura para perfil profissional
                 document.getElementById("profile-type").textContent = "Profissional";
                 document.getElementById("profile-professional-info").classList.remove("d-none");
                 document.getElementById("profile-common-info").classList.add("d-none");
                 
-                // Preenche dados profissionais
+                // Preenche os dados profissionais
                 document.getElementById("profile-area").textContent = 
-                    profData.area ? formatArea(profData.area) : "Não informado";
+                    profData.area === 'imoveis' ? 'Imóveis' : 
+                    profData.area === 'automoveis' ? 'Automóveis' : 
+                    profData.area || "Não informado";
                 
                 document.getElementById("profile-about-business").textContent = 
                     userData.sellerProfile.aboutBusiness || "Não informado";
@@ -941,13 +939,11 @@ async function loadProfileData(user) {
                     document.getElementById("profile-creci-container").classList.add("d-none");
                 }
             } else {
+                // Configura para perfil comum
                 document.getElementById("profile-type").textContent = "Usuário Comum";
                 document.getElementById("profile-common-info").classList.remove("d-none");
                 document.getElementById("profile-professional-info").classList.add("d-none");
             }
-            
-            // 5. Preenche o formulário de edição
-            fillEditForm(userData);
             
         } else {
             console.log("Documento do usuário não encontrado");
