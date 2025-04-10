@@ -479,3 +479,13 @@ body {
   font-size: 1.2rem;
   font-weight: 500;
 }
+
+#loading-screen {
+    /* ... outros estilos ... */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#loading-screen.show {
+    opacity: 1;
+}
