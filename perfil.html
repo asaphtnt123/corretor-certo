@@ -31,7 +31,9 @@ body {
   padding: 0;
   margin: 0;
 }
-
+.d-none {
+    display: none !important;
+}
 /* Container principal */
 .main-container {
   max-width: 1200px;
@@ -602,10 +604,11 @@ body {
                                     </div>
                                     <div class="col-md-6">
                                         <p><strong><i class="fas fa-user-tag me-2"></i>Tipo:</strong> <span id="profile-type"></span></p>
-                                        <div id="profile-common-info" class="hidden">
-                                            <p><strong><i class="fas fa-heart me-2"></i>Interesse:</strong> <span id="profile-interest"></span></p>
-                                        </div>
-                                   <div id="profile-professional-info" class="d-none">
+                                       <div id="profile-common-info" class="d-none">
+    <p><strong><i class="fas fa-heart me-2"></i>Interesse:</strong> <span id="profile-interest"></span></p>
+</div>
+
+<div id="profile-professional-info" class="d-none">
     <p><strong><i class="fas fa-briefcase me-2"></i>Área:</strong> <span id="profile-area"></span></p>
     <p id="profile-creci-container" class="d-none">
         <strong><i class="fas fa-id-badge me-2"></i>CRECI:</strong> <span id="profile-creci"></span>
@@ -912,10 +915,8 @@ async function loadProfileData(user) {
                 const profData = userData.sellerProfile.professional;
                 
                 // Preenche CNPJ (formatação)
-                const formattedCnpj = profData.cnpj ? 
-                    profData.cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5') : 
-                    "Não informado";
-                document.getElementById("profile-doc").textContent = formattedCnpj;
+                document.getElementById("profile-doc").textContent = 
+                    profData.cnpj ? formatCnpj(profData.cnpj) : "Não informado";
                 
                 // Configura para perfil profissional
                 document.getElementById("profile-type").textContent = "Profissional";
@@ -955,13 +956,13 @@ async function loadProfileData(user) {
     }
 }
 
-// Funções auxiliares de formatação
+// Função auxiliar para formatar CNPJ
 function formatCnpj(cnpj) {
+    if (!cnpj) return "Não informado";
     // Remove caracteres não numéricos e formata
     const cleaned = cnpj.replace(/\D/g, '');
     return cleaned.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
 }
-
 function formatCpf(cpf) {
     // Remove caracteres não numéricos e formata
     const cleaned = cpf.replace(/\D/g, '');
