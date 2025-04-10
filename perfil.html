@@ -317,35 +317,31 @@ body {
   object-fit: cover;
 }
 
-/* ESTILOS GERAIS DO PERFIL */
-.profile-info {
-    animation: fadeIn 0.8s ease-out forwards;
-    opacity: 0;
-}
-
+* ESTILOS REVISADOS PARA OS ÍCONES E TEXTO */
 .profile-info p {
     position: relative;
-    padding-left: 30px;
-    margin-bottom: 1.2rem;
+    padding-left: 42px; /* Aumentei o padding para dar mais espaço */
+    margin-bottom: 1.5rem; /* Aumentei o espaçamento entre linhas */
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
-}
-
-.profile-info p:hover {
-    transform: translateX(10px);
+    min-height: 28px; /* Garante altura mínima para o ícone */
+    display: flex;
+    align-items: center;
 }
 
 .profile-info strong {
     color: #4a5568;
     font-weight: 600;
-    display: inline-block;
     min-width: 180px;
     position: relative;
+    display: inline-block;
+    padding-right: 15px; /* Espaço após os dois pontos */
+    margin-right: 10px; /* Separação entre o rótulo e o valor */
 }
 
 .profile-info strong::after {
     content: ":";
     position: absolute;
-    right: 5px;
+    right: 0;
     color: #718096;
 }
 
@@ -353,43 +349,67 @@ body {
     color: #2d3748;
     font-weight: 500;
     background: linear-gradient(90deg, #f7fafc, #edf2f7);
-    padding: 0.3rem 0.8rem;
+    padding: 0.4rem 1rem; /* Aumentei o padding para melhor legibilidade */
     border-radius: 12px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     transition: all 0.3s ease;
     display: inline-block;
+    flex-grow: 1;
 }
 
-.profile-info p:hover span {
-    background: linear-gradient(90deg, #ebf4ff, #c3dafe);
-    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.15);
-    transform: translateY(-2px);
-}
-
-/* ÍCONES */
+/* ÍCONES REVISADOS */
 .profile-info .fas {
     position: absolute;
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    width: 24px;
-    height: 24px;
+    width: 28px; /* Aumentei o tamanho */
+    height: 28px;
     background: linear-gradient(135deg, #4299e1, #3182ce);
     color: white;
-    border-radius: 50%;
+    border-radius: 8px; /* Mudei para borda quadrada */
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     box-shadow: 0 3px 8px rgba(66, 153, 225, 0.3);
     transition: all 0.3s ease;
+    margin-right: 12px; /* Espaço adicional entre ícone e texto */
+}
+
+/* MELHORIAS NA DISPOSIÇÃO */
+.profile-info {
+    animation: fadeIn 0.8s ease-out forwards;
+    opacity: 0;
+    padding: 1rem 0;
+}
+
+.profile-info p:hover {
+    transform: translateX(8px);
 }
 
 .profile-info p:hover .fas {
-    transform: translateY(-50%) scale(1.1);
+    transform: translateY(-50%) scale(1.1) translateX(3px);
     box-shadow: 0 5px 15px rgba(66, 153, 225, 0.4);
 }
 
+/* AJUSTES ESPECÍFICOS PARA MOBILE */
+@media (max-width: 768px) {
+    .profile-info p {
+        flex-direction: column;
+        align-items: flex-start;
+        padding-left: 42px;
+    }
+    
+    .profile-info strong {
+        min-width: auto;
+        margin-bottom: 4px;
+    }
+    
+    .profile-info span {
+        width: 100%;
+    }
+}
 /* ANIMAÇÕES ESPECÍFICAS */
 @keyframes fadeIn {
     from {
