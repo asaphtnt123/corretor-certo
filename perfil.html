@@ -602,22 +602,25 @@ body {
                                         <p><strong><i class="fas fa-phone me-2"></i>Telefone:</strong> <span id="profile-phone"></span></p>
                                         <p><strong><i class="fas fa-id-card me-2"></i>CPF/CNPJ:</strong> <span id="profile-doc"></span></p>
                                     </div>
-                                    <div class="col-md-6">
-                                        <p><strong><i class="fas fa-user-tag me-2"></i>Tipo:</strong> <span id="profile-type"></span></p>
-                                       <div id="profile-common-info" class="d-none">
-    <p><strong><i class="fas fa-heart me-2"></i>Interesse:</strong> <span id="profile-interest"></span></p>
+                                   <div class="col-md-6">
+    <p><strong><i class="fas fa-user-tag me-2"></i>Tipo:</strong> <span id="profile-type"></span></p>
+    
+    <!-- Seção para Compradores -->
+    <div id="profile-common-info" class="d-none">
+        <p><strong><i class="fas fa-heart me-2"></i>Interesse:</strong> <span id="profile-interest"></span></p>
+    </div>
+    
+    <!-- Seção para Vendedores Profissionais -->
+    <div id="profile-professional-info" class="d-none">
+        <p><strong><i class="fas fa-briefcase me-2"></i>Área:</strong> <span id="profile-area"></span></p>
+        <p id="profile-creci-container" class="d-none">
+            <strong><i class="fas fa-id-badge me-2"></i>CRECI:</strong> <span id="profile-creci"></span>
+        </p>
+        <p><strong><i class="fas fa-info-circle me-2"></i>Sobre o Negócio:</strong> 
+           <span id="profile-about-business"></span>
+        </p>
+    </div>
 </div>
-
-<div id="profile-professional-info" class="d-none">
-    <p><strong><i class="fas fa-briefcase me-2"></i>Área:</strong> <span id="profile-area"></span></p>
-    <p id="profile-creci-container" class="d-none">
-        <strong><i class="fas fa-id-badge me-2"></i>CRECI:</strong> <span id="profile-creci"></span>
-    </p>
-    <p><strong><i class="fas fa-info-circle me-2"></i>Sobre o Negócio:</strong> 
-       <span id="profile-about-business"></span>
-    </p>
-</div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -903,48 +906,72 @@ async function loadProfileData(user) {
             const userData = userDoc.data();
             console.log("Dados completos do Firestore:", userData);
 
-            // Preenche os campos básicos
+            // Preenche os campos básicos (comuns a todos)
             document.getElementById("profile-name").textContent = userData.name || "Não informado";
             document.getElementById("profile-email").textContent = userData.email || "Não informado";
             document.getElementById("profile-phone").textContent = userData.phone || "Não informado";
 
-            // Verifica se é um vendedor profissional
-            const isProfessional = userData.sellerProfile?.sellerType === "professional";
-            
-            if (isProfessional) {
-                const profData = userData.sellerProfile.professional;
+            // Esconde todas as seções específicas primeiro
+            document.getElementById("profile-common-info").classList.add("d-none");
+            document.getElementById("profile-professional-info").classList.add("d-none");
+
+            // Verifica o tipo de usuário
+            if (userData.userRole === "seller") {
+                // Lógica para VENDEDORES
+                const isProfessional = userData.sellerProfile?.sellerType === "professional";
                 
-                // Preenche CNPJ
-                document.getElementById("profile-doc").textContent = 
-                    profData?.cnpj ? formatCnpj(profData.cnpj) : "Não informado";
-                
-                // Configura para perfil profissional
-                document.getElementById("profile-type").textContent = "Profissional";
-                document.getElementById("profile-professional-info").classList.remove("d-none");
-                document.getElementById("profile-common-info").classList.add("d-none");
-                
-                // Preenche os dados profissionais
-                document.getElementById("profile-area").textContent = 
-                    profData?.area === 'automoveis-venda' ? 'Automóveis (Venda)' : 
-                    profData?.area === 'imoveis-venda' ? 'Imóveis (Venda)' :
-                    profData?.area || "Não informado";
-                
-                document.getElementById("profile-about-business").textContent = 
-                    userData.sellerProfile.aboutBusiness || "Não informado";
-                
-                // Exibe CRECI se existir
-                const creciContainer = document.getElementById("profile-creci-container");
-                if (profData?.creci) {
-                    document.getElementById("profile-creci").textContent = profData.creci;
-                    creciContainer?.classList.remove("d-none");
+                if (isProfessional) {
+                    // PERFIL PROFISSIONAL (Vendedor)
+                    const profData = userData.sellerProfile.professional;
+                    
+                    document.getElementById("profile-doc").textContent = 
+                        profData?.cnpj ? formatCnpj(profData.cnpj) : "Não informado";
+                    
+                    document.getElementById("profile-type").textContent = "Profissional";
+                    document.getElementById("profile-professional-info").classList.remove("d-none");
+                    
+                    document.getElementById("profile-area").textContent = 
+                        profData?.area === 'automoveis-venda' ? 'Automóveis (Venda)' : 
+                        profData?.area === 'imoveis-venda' ? 'Imóveis (Venda)' :
+                        profData?.area || "Não informado";
+                    
+                    document.getElementById("profile-about-business").textContent = 
+                        userData.sellerProfile.aboutBusiness || "Não informado";
+                    
+                    // CRECI (se for corretor)
+                    const creciContainer = document.getElementById("profile-creci-container");
+                    if (profData?.creci) {
+                        document.getElementById("profile-creci").textContent = profData.creci;
+                        creciContainer?.classList.remove("d-none");
+                    } else {
+                        creciContainer?.classList.add("d-none");
+                    }
                 } else {
-                    creciContainer?.classList.add("d-none");
+                    // VENDEDOR NÃO PROFISSIONAL
+                    document.getElementById("profile-type").textContent = "Anunciante";
+                    document.getElementById("profile-doc").textContent = "Não informado";
                 }
-            } else {
-                // Configura para perfil comum
-                document.getElementById("profile-type").textContent = "Usuário Comum";
+            } else if (userData.userRole === "buyer") {
+                // Lógica para COMPRADORES
+                document.getElementById("profile-type").textContent = "Comprador";
                 document.getElementById("profile-common-info").classList.remove("d-none");
-                document.getElementById("profile-professional-info").classList.add("d-none");
+                
+                // Preenche interesses do comprador
+                const interests = userData.buyerProfile?.interests || [];
+                let interestText = "Não informado";
+                
+                if (interests.length > 0) {
+                    interestText = interests.map(interest => {
+                        if (interest === "imoveis-comprar") return "Comprar Imóvel";
+                        if (interest === "imoveis-alugar") return "Alugar Imóvel";
+                        if (interest === "automoveis-comprar") return "Comprar Automóvel";
+                        if (interest === "automoveis-alugar") return "Alugar Automóvel";
+                        return interest;
+                    }).join(", ");
+                }
+                
+                document.getElementById("profile-interest").textContent = interestText;
+                document.getElementById("profile-doc").textContent = userData.cpf ? formatCpf(userData.cpf) : "Não informado";
             }
             
         } else {
@@ -957,15 +984,15 @@ async function loadProfileData(user) {
     }
 }
 
-// Função auxiliar para formatar CNPJ
+// Funções auxiliares de formatação
 function formatCnpj(cnpj) {
     if (!cnpj) return "Não informado";
-    // Remove caracteres não numéricos e formata
     const cleaned = cnpj.replace(/\D/g, '');
     return cleaned.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
 }
+
 function formatCpf(cpf) {
-    // Remove caracteres não numéricos e formata
+    if (!cpf) return "Não informado";
     const cleaned = cpf.replace(/\D/g, '');
     return cleaned.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
 }
