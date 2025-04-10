@@ -212,6 +212,7 @@ async function handleRegister(e) {
     const phone = registerForm.registerPhone.value.trim();
     const password = registerForm.registerPassword.value;
     const userRole = document.querySelector('input[name="userRole"]:checked').value;
+    let sellerType = null; // Definir a variável aqui
     
     try {
         // Criar usuário no Firebase Auth
@@ -238,7 +239,7 @@ async function handleRegister(e) {
         } 
         // Adicionar dados específicos do vendedor
         else {
-            const sellerType = document.querySelector('input[name="sellerType"]:checked').value;
+            sellerType = document.querySelector('input[name="sellerType"]:checked').value; // Atribuir valor aqui
             userData.sellerProfile = {
                 sellerType,
                 aboutBusiness: registerForm.aboutBusiness.value.trim()
@@ -307,7 +308,6 @@ async function handleRegister(e) {
         });
     }
 }
-
 function validateForm() {
     let isValid = true;
     
