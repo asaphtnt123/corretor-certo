@@ -299,211 +299,148 @@ body {
   border-color: rgba(0, 0, 0, 0.15);
 }
 
-/* Estilos do Perfil */
-.profile-picture {
-  position: relative;
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
-  overflow: hidden;
-  margin: 0 auto 1.5rem;
-  border: 5px solid white;
-  box-shadow: var(--shadow-md);
-}
-
-.profile-picture img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-* ESTILOS REVISADOS PARA OS ÍCONES E TEXTO */
-.profile-info p {
-    position: relative;
-    padding-left: 42px; /* Aumentei o padding para dar mais espaço */
-    margin-bottom: 1.5rem; /* Aumentei o espaçamento entre linhas */
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
-    min-height: 28px; /* Garante altura mínima para o ícone */
-    display: flex;
-    align-items: center;
-}
-
-.profile-info strong {
-    color: #4a5568;
-    font-weight: 600;
-    min-width: 180px;
-    position: relative;
-    display: inline-block;
-    padding-right: 15px; /* Espaço após os dois pontos */
-    margin-right: 10px; /* Separação entre o rótulo e o valor */
-}
-
-.profile-info strong::after {
-    content: ":";
-    position: absolute;
-    right: 0;
-    color: #718096;
-}
-
-.profile-info span {
-    color: #2d3748;
-    font-weight: 500;
-    background: linear-gradient(90deg, #f7fafc, #edf2f7);
-    padding: 0.4rem 1rem; /* Aumentei o padding para melhor legibilidade */
-    border-radius: 12px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
-    display: inline-block;
-    flex-grow: 1;
-}
-
-/* ÍCONES REVISADOS */
-.profile-info .fas {
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 28px; /* Aumentei o tamanho */
-    height: 28px;
-    background: linear-gradient(135deg, #4299e1, #3182ce);
-    color: white;
-    border-radius: 8px; /* Mudei para borda quadrada */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.9rem;
-    box-shadow: 0 3px 8px rgba(66, 153, 225, 0.3);
-    transition: all 0.3s ease;
-    margin-right: 12px; /* Espaço adicional entre ícone e texto */
-}
-
-/* MELHORIAS NA DISPOSIÇÃO */
-.profile-info {
-    animation: fadeIn 0.8s ease-out forwards;
-    opacity: 0;
-    padding: 1rem 0;
-}
-
-.profile-info p:hover {
-    transform: translateX(8px);
-}
-
-.profile-info p:hover .fas {
-    transform: translateY(-50%) scale(1.1) translateX(3px);
-    box-shadow: 0 5px 15px rgba(66, 153, 225, 0.4);
-}
-
-/* AJUSTES ESPECÍFICOS PARA MOBILE */
-@media (max-width: 768px) {
-    .profile-info p {
-        flex-direction: column;
-        align-items: flex-start;
-        padding-left: 42px;
-    }
+v class="tab-pane fade show active" id="perfil" role="tabpanel" aria-labelledby="perfil-tab">
+            <!-- Card de Visualização -->
+            <div id="profile-view" class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Seu Perfil</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                           
+                            <button id="edit-profile-btn" class="btn btn-outline-primary">
+                                <i class="fas fa-edit me-2"></i>Editar Perfil
+                            </button>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="profile-info">
+                                <h4 id="profile-name" class="mb-3"></h4>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong><i class="fas fa-envelope me-2"></i>Email:</strong> <span id="profile-email"></span></p>
+                                        <p><strong><i class="fas fa-phone me-2"></i>Telefone:</strong> <span id="profile-phone"></span></p>
+                                        <p><strong><i class="fas fa-id-card me-2"></i>CPF/CNPJ:</strong> <span id="profile-doc"></span></p>
+                                    </div>
+                                   <div class="col-md-6">
+    <p><strong><i class="fas fa-user-tag me-2"></i>Tipo:</strong> <span id="profile-type"></span></p>
     
-    .profile-info strong {
-        min-width: auto;
-        margin-bottom: 4px;
-    }
+    <!-- Seção para Compradores -->
+   <div id="profile-common-info" class="d-none">
+    <p><strong><i class="fas fa-heart me-2"></i>Interesse:</strong> <span id="profile-interest"></span></p>
+    <p><strong><i class="fas fa-map-marker-alt me-2"></i>Localização Preferida:</strong> <span id="profile-location"></span></p>
+    <p><strong><i class="fas fa-money-bill-wave me-2"></i>Faixa de Preço:</strong> <span id="profile-budget"></span></p>
+</div>
     
-    .profile-info span {
-        width: 100%;
-    }
-}
-/* ANIMAÇÕES ESPECÍFICAS */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+    <!-- Seção para Vendedores Profissionais -->
+    <div id="profile-professional-info" class="d-none">
+        <p><strong><i class="fas fa-briefcase me-2"></i>Área:</strong> <span id="profile-area"></span></p>
+        <p id="profile-creci-container" class="d-none">
+            <strong><i class="fas fa-id-badge me-2"></i>CRECI:</strong> <span id="profile-creci"></span>
+        </p>
+        <p><strong><i class="fas fa-info-circle me-2"></i>Sobre o Negócio:</strong> 
+           <span id="profile-about-business"></span>
+        </p>
+    </div>
+</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.03); }
-    100% { transform: scale(1); }
-}
-
-/* ESTILOS PARA DADOS ESPECÍFICOS */
-#profile-name {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #2b6cb0;
-    position: relative;
-    display: inline-block;
-    margin-bottom: 1.5rem;
-}
-
-#profile-name::after {
-    content: '';
-    position: absolute;
-    bottom: -8px;
-    left: 0;
-    width: 60px;
-    height: 3px;
-    background: linear-gradient(90deg, #4299e1, #90cdf4);
-    border-radius: 3px;
-    animation: expandLine 1s ease-out forwards;
-}
-
-#profile-type {
-    background: linear-gradient(90deg, #38a169, #48bb78);
-    color: white;
-    padding: 0.2rem 0.8rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    display: inline-block;
-    animation: pulse 2s infinite;
-}
-
-#profile-about-business {
-    font-style: italic;
-    background: linear-gradient(90deg, #f7fafc, #e2e8f0);
-    padding: 0.8rem;
-    border-radius: 8px;
-    display: inline-block;
-    border-left: 3px solid #4299e1;
-}
-
-#profile-budget {
-    font-weight: 700;
-    color: #2f855a;
-    background: linear-gradient(90deg, #f0fff4, #c6f6d5);
-    padding: 0.4rem 1rem;
-    border-radius: 6px;
-    display: inline-block;
-}
-
-#profile-location {
-    position: relative;
-    padding-left: 25px;
-}
-
-#profile-location::before {
-    content: '📍';
-    position: absolute;
-    left: 0;
-}
-
-/* ANIMAÇÃO PARA CARGA */
-@keyframes expandLine {
-    from { width: 0; opacity: 0; }
-    to { width: 60px; opacity: 1; }
-}
-
-/* EFEITO DE CARGA PARA OS ITENS */
-.profile-info p:nth-child(1) { animation-delay: 0.1s; }
-.profile-info p:nth-child(2) { animation-delay: 0.2s; }
-.profile-info p:nth-child(3) { animation-delay: 0.3s; }
-.profile-info p:nth-child(4) { animation-delay: 0.4s; }
-.profile-info p:nth-child(5) { animation-delay: 0.5s; }
-.profile-info p:nth-child(6) { animation-delay: 0.6s; }
-
+            <!-- Formulário de Edição -->
+            <div id="profile-edit" class="card hidden">
+                <div class="card-header bg-secondary text-white">
+                    <h3 class="mb-0">Editar Perfil</h3>
+                </div>
+                <div class="card-body">
+                    <form id="perfil-form">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="edit-name" class="form-label">Nome Completo</label>
+                                    <input type="text" class="form-control" id="edit-name" required>
+                                </div>
+                                
+                                <div class="form-group mb-3">
+                                    <label for="edit-phone" class="form-label">Telefone</label>
+                                    <input type="tel" class="form-control" id="edit-phone" required>
+                                </div>
+                                
+                                <div class="form-group mb-3">
+                                    <label for="edit-email" class="form-label">E-mail</label>
+                                    <input type="email" class="form-control" id="edit-email" required>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="edit-doc" class="form-label">CPF/CNPJ</label>
+                                    <input type="text" class="form-control" id="edit-doc" disabled>
+                                    <small class="text-muted">Para alterar seu documento, entre em contato com o suporte</small>
+                                </div>
+                                
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Tipo de Usuário</label>
+                                    <div class="form-control" style="background-color: #e9ecef;">
+                                        <span id="display-user-type"></span>
+                                        <input type="hidden" id="edit-user-type">
+                                    </div>
+                                    <small class="text-muted">Não é possível alterar o tipo de usuário</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Seção dinâmica para usuários comuns -->
+                        <div id="edit-common-section" class="hidden">
+                            <div class="form-group mb-3">
+                                <label for="edit-interests" class="form-label">Interesses</label>
+                                <select class="form-select" id="edit-interests" multiple>
+                                    <option value="imoveis-comprar">Comprar Imóvel</option>
+                                    <option value="imoveis-alugar">Alugar Imóvel</option>
+                                    <option value="automoveis-comprar">Comprar Automóvel</option>
+                                    <option value="automoveis-alugar">Alugar Automóvel</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Seção dinâmica para profissionais -->
+                        <div id="edit-professional-section" class="hidden">
+                            <div class="form-group mb-3">
+                                <label for="edit-area" class="form-label">Área de Atuação</label>
+                                <input type="text" class="form-control" id="edit-area" disabled>
+                            </div>
+                            
+                            <div id="edit-creci-field" class="form-group mb-3 hidden">
+                                <label for="edit-creci" class="form-label">CRECI</label>
+                                <input type="text" class="form-control" id="edit-creci">
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label for="edit-cnpj" class="form-label">CNPJ (opcional)</label>
+                                <input type="text" class="form-control" id="edit-cnpj">
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label for="edit-about" class="form-label">Sobre seu Negócio</label>
+                                <textarea class="form-control" id="edit-about" rows="3"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="button" id="cancel-edit-btn" class="btn btn-outline-secondary me-2">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Salvar Alterações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 /* Loader Moderno */
 #profile-loader {
   position: fixed;
