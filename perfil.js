@@ -781,42 +781,56 @@ function showAlert(message, type) {
 
 
 
-// Função para carregar e exibir os dados do perfil
 async function loadProfileData(user) {
     try {
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
             const userData = userDoc.data();
             
-            // Preenche o card de visualização
-            document.getElementById("profile-name").textContent = userData.nome || "Não informado";
-            document.getElementById("profile-email").textContent = userData.email || "Não informado";
-            document.getElementById("profile-phone").textContent = userData.telefone || "Não informado";
-            document.getElementById("profile-doc").textContent = userData.cpfCnpj || "Não informado";
+            // Preenche os campos básicos (comuns a todos os usuários)
+            cardNome.textContent = userData.nome || "Não informado";
+            cardTelefone.textContent = userData.telefone || "Não informado";
+            cardEmail.textContent = userData.email || "Não informado";
+            cardCpfCnpj.textContent = userData.cpfCnpj || "Não informado";
             
             // Define o tipo de usuário
             if (userData.tipoUsuario === "comum") {
-                document.getElementById("profile-type").textContent = "Usuário Comum";
-                document.getElementById("profile-common-info").classList.remove("hidden");
-                document.getElementById("profile-interest").textContent = userData.comum?.tipoInteresse || "Não informado";
+                cardTipoUsuario.textContent = "Usuário Comum";
+                cardComum.classList.remove("d-none");
+                cardComercial.classList.add("d-none");
                 
-                // Adiciona detalhes específicos do interesse
-                if (userData.comum?.tipoInteresse === "imoveis") {
-                    // Adicione detalhes de imóveis se necessário
-                } else if (userData.comum?.tipoInteresse === "automoveis") {
-                    // Adicione detalhes de automóveis se necessário
+                // Preenche dados específicos de usuário comum
+                const tipoInteresse = userData.comum?.tipoInteresse || "Não informado";
+                cardTipoInteresse.textContent = tipoInteresse;
+                
+                if (tipoInteresse === "imoveis") {
+                    cardImoveis.classList.remove("d-none");
+                    cardAutomoveis.classList.add("d-none");
+                    cardLocalizacaoImovel.textContent = userData.comum?.imoveis?.localizacao || "Não informado";
+                    cardFaixaPrecoImovel.textContent = userData.comum?.imoveis?.faixaPreco || "Não informado";
+                } else if (tipoInteresse === "automoveis") {
+                    cardAutomoveis.classList.remove("d-none");
+                    cardImoveis.classList.add("d-none");
+                    cardMarcaAutomovel.textContent = userData.comum?.automoveis?.marca || "Não informado";
+                    cardFaixaPrecoAutomovel.textContent = userData.comum?.automoveis?.faixaPreco || "Não informado";
                 }
             } else if (userData.tipoUsuario === "comercial") {
-                document.getElementById("profile-type").textContent = "Profissional";
-                document.getElementById("profile-professional-info").classList.remove("hidden");
-                document.getElementById("profile-area").textContent = userData.comercial?.areaAtuacao || "Não informado";
-                document.getElementById("profile-creci-cnpj").textContent = 
-                    userData.comercial?.creci ? `CRECI ${userData.comercial.creci}` : 
-                    userData.comercial?.cnpj ? `CNPJ ${userData.comercial.cnpj}` : "Não informado";
+                cardTipoUsuario.textContent = "Profissional Comercial";
+                cardComercial.classList.remove("d-none");
+                cardComum.classList.add("d-none");
+                
+                // Preenche dados específicos de profissional
+                cardCreci.textContent = userData.comercial?.creci || "Não informado";
+                cardCnpj.textContent = userData.comercial?.cnpj || "Não informado";
+                cardAreaAtuacao.textContent = userData.comercial?.areaAtuacao || "Não informado";
+                cardDescricaoEmpresa.textContent = userData.comercial?.descricaoEmpresa || "Não informado";
             }
             
             // Preenche o formulário de edição
             fillEditForm(userData);
+        } else {
+            console.log("Documento do usuário não encontrado");
+            showAlert("Perfil não encontrado", "error");
         }
     } catch (error) {
         console.error("Erro ao carregar perfil:", error);
@@ -824,17 +838,14 @@ async function loadProfileData(user) {
     }
 }
 
-
-// Função para preencher o formulário de edição
 function fillEditForm(userData) {
-    // Preenche campos básicos
+    // Campos básicos
     document.getElementById("nome").value = userData.nome || "";
     document.getElementById("telefone").value = userData.telefone || "";
     document.getElementById("email").value = userData.email || "";
     document.getElementById("cpf-cnpj").value = userData.cpfCnpj || "";
-    document.getElementById("data-nascimento").value = userData.dataNascimento || "";
     
-    // Define o tipo de usuário
+    // Tipo de usuário
     if (userData.tipoUsuario) {
         document.querySelector(`input[name="tipo-usuario"][value="${userData.tipoUsuario}"]`).checked = true;
         toggleUserTypeFields(userData.tipoUsuario);
@@ -857,6 +868,26 @@ function fillEditForm(userData) {
             document.getElementById("area-atuacao").value = userData.comercial.areaAtuacao || "";
             document.getElementById("descricao-empresa").value = userData.comercial.descricaoEmpresa || "";
         }
+    }
+}
+
+function toggleUserTypeFields(tipoUsuario) {
+    if (tipoUsuario === "comum") {
+        formComum.classList.remove("d-none");
+        formComercial.classList.add("d-none");
+    } else if (tipoUsuario === "comercial") {
+        formComercial.classList.remove("d-none");
+        formComum.classList.add("d-none");
+    }
+}
+
+function toggleInterestFields(tipoInteresse) {
+    if (tipoInteresse === "imoveis") {
+        formImoveis.classList.remove("d-none");
+        formAutomoveis.classList.add("d-none");
+    } else if (tipoInteresse === "automoveis") {
+        formAutomoveis.classList.remove("d-none");
+        formImoveis.classList.add("d-none");
     }
 }
 
