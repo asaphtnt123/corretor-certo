@@ -1112,8 +1112,13 @@ function formatArea(area) {
       showAlert("Erro ao carregar seus anúncios", "error");
     }
   }
+const cardHTML = createAdCard(data, type, id);
+console.log('HTML gerado:', cardHTML);
 
+        
 function createAdCard(data, type, id) {
+      console.log('createAdCard chamada com:', { data, type, id });
+
   // Validação básica dos parâmetros
   if (!data || !type || !id) {
     console.error('Parâmetros inválidos para createAdCard:', {data, type, id});
