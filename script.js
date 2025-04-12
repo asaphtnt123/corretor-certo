@@ -715,67 +715,307 @@ function criarCardDestaque(dados, isAutomovel = false) {
     return card;
 }
 
-// Função para carregar destaques
-async function carregarDestaques() {
+// Função principal para carregar anúncios recomendados
+async function carregarAnunciosRecomendados() {
+    const user = auth.currentUser;
+    if (!user) return carregarDestaques(); // Se não logado, mostra destaques gerais
+
     try {
-        const destaqueContainer = document.getElementById('destaqueContainer');
-        destaqueContainer.innerHTML = '<div class="highlight-loading">Carregando destaques...</div>';
+        // 1. Obter dados do usuário
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (!userDoc.exists()) return carregarDestaques();
         
-        // Carregar imóveis em destaque
-        const imoveisRef = collection(db, "imoveis");
-        const imoveisQuery = query(imoveisRef, where("destaque", "==", true));
-        const imoveisSnapshot = await getDocs(imoveisQuery);
+        const userData = userDoc.data();
         
-        // Carregar automóveis em destaque
-        const automoveisRef = collection(db, "automoveis");
-        const automoveisQuery = query(automoveisRef, where("destaque", "==", true));
-        const automoveisSnapshot = await getDocs(automoveisQuery);
+        // 2. Determinar tipo de usuário (comprador/vendedor)
+        if (userData.userRole === "buyer") {
+            // Usuário é comprador - mostrar anúncios relevantes
+            await carregarAnunciosParaComprador(userData);
+        } else if (userData.userRole === "seller") {
+            // Usuário é vendedor - mostrar insights/dicas
+            await carregarInsightsParaVendedor(userData);
+        } else {
+            // Tipo não definido - mostrar destaques
+            carregarDestaques();
+        }
         
-        // Limpar container
-        destaqueContainer.innerHTML = '';
+    } catch (error) {
+        console.error("Erro ao carregar anúncios recomendados:", error);
+        carregarDestaques(); // Fallback para destaques em caso de erro
+    }
+}
+
+async function carregarAnunciosParaComprador(userData) {
+    const buyerProfile = userData.buyerProfile || {};
+    const interesses = buyerProfile.interests || [];
+    const localizacaoPref = buyerProfile.preferenceLocation;
+    const faixaPreco = buyerProfile.budgetRange;
+    
+    // Verificar container de resultados
+    const container = document.getElementById('destaqueContainer');
+    if (!container) return;
+    
+    container.innerHTML = '<div class="highlight-loading">Carregando recomendações para você...</div>';
+    
+    try {
+        // 1. Construir queries baseadas nos interesses
+        let queries = [];
         
-        // Adicionar imóveis em destaque
-        imoveisSnapshot.forEach(doc => {
-            const data = doc.data();
-            data.id = doc.id;
-            destaqueContainer.appendChild(criarCardDestaque(data, false));
+        if (interesses.includes("imoveis-comprar")) {
+            queries.push(criarQueryImoveis("venda", localizacaoPref, faixaPreco));
+        }
+        if (interesses.includes("imoveis-alugar")) {
+            queries.push(criarQueryImoveis("aluguel", localizacaoPref, faixaPreco));
+        }
+        if (interesses.includes("automoveis-comprar")) {
+            queries.push(criarQueryAutomoveis("venda", localizacaoPref, faixaPreco));
+        }
+        if (interesses.includes("automoveis-alugar")) {
+            queries.push(criarQueryAutomoveis("aluguel", localizacaoPref, faixaPreco));
+        }
+        
+        // 2. Executar todas as queries em paralelo
+        const snapshots = await Promise.all(queries.map(q => getDocs(q)));
+        
+        // 3. Processar resultados
+        container.innerHTML = '';
+        let encontrouResultados = false;
+        
+        snapshots.forEach((snapshot, index) => {
+            if (!snapshot.empty) {
+                encontrouResultados = true;
+                const tipo = queries[index]._query.collection === "imoveis" ? "imóvel" : "automóvel";
+                const negocio = queries[index]._query.filters.find(f => f.field === "negociacao")?.value || "";
+                
+                // Adicionar seção de título
+                const sectionTitle = document.createElement('h3');
+                sectionTitle.className = 'recommendation-title';
+                sectionTitle.textContent = `${tipo.charAt(0).toUpperCase() + tipo.slice(1)} para ${negocio}`;
+                container.appendChild(sectionTitle);
+                
+                // Adicionar cards
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    data.id = doc.id;
+                    const card = criarCardDestaque(data, tipo === "automóvel");
+                    container.appendChild(card);
+                });
+            }
         });
         
-        // Adicionar automóveis em destaque
-        automoveisSnapshot.forEach(doc => {
-            const data = doc.data();
-            data.id = doc.id;
-            destaqueContainer.appendChild(criarCardDestaque(data, true));
-        });
-        
-        // Se não houver destaques
-        if (imoveisSnapshot.empty && automoveisSnapshot.empty) {
-            destaqueContainer.innerHTML = `
+        // 4. Mensagem se não houver resultados
+        if (!encontrouResultados) {
+            container.innerHTML = `
                 <div class="highlight-empty">
-                    <i class="fas fa-star"></i>
-                    <p>Nenhum anúncio em destaque no momento</p>
+                    <i class="fas fa-info-circle"></i>
+                    <p>Nenhum anúncio encontrado que corresponda aos seus critérios</p>
+                    <button class="btn-show-all" onclick="carregarDestaques()">Mostrar todos os destaques</button>
                 </div>
             `;
         }
         
     } catch (error) {
-        console.error("Erro ao carregar destaques:", error);
-        document.getElementById('destaqueContainer').innerHTML = `
+        console.error("Erro ao carregar anúncios para comprador:", error);
+        container.innerHTML = `
             <div class="highlight-error">
                 <i class="fas fa-exclamation-triangle"></i>
-                <p>Erro ao carregar destaques</p>
-                <button class="retry-btn">Tentar novamente</button>
+                <p>Erro ao carregar recomendações</p>
+                <button class="retry-btn" onclick="carregarAnunciosRecomendados()">Tentar novamente</button>
             </div>
         `;
-        
-        document.querySelector('.retry-btn')?.addEventListener('click', carregarDestaques);
     }
 }
 
+function criarQueryImoveis(negociacao, localizacao, faixaPreco) {
+    let q = query(collection(db, "imoveis"), 
+        where("negociacao", "==", negociacao),
+        where("status", "==", "ativo")
+    );
+    
+    // Filtro por localização
+    if (localizacao) {
+        q = query(q, where("bairro", "==", localizacao));
+    }
+    
+    // Filtro por faixa de preço
+    if (faixaPreco) {
+        q = query(q, where("preco", "<=", faixaPreco));
+    }
+    
+    // Ordenar por destaque e depois por data (mais recentes primeiro)
+    q = query(q, orderBy("destaque", "desc"), orderBy("createdAt", "desc"));
+    
+    return q;
+}
+
+function criarQueryAutomoveis(negociacao, localizacao, faixaPreco) {
+    let q = query(collection(db, "automoveis"), 
+        where("negociacao", "==", negociacao),
+        where("status", "==", "ativo")
+    );
+    
+    // Filtro por localização (se aplicável)
+    if (localizacao) {
+        q = query(q, where("localizacao", "==", localizacao));
+    }
+    
+    // Filtro por faixa de preço
+    if (faixaPreco) {
+        q = query(q, where("preco", "<=", faixaPreco));
+    }
+    
+    // Ordenar por destaque e depois por data
+    q = query(q, orderBy("destaque", "desc"), orderBy("createdAt", "desc"));
+    
+    return q;
+}
+
+async function carregarInsightsParaVendedor(userData) {
+    const container = document.getElementById('destaqueContainer');
+    if (!container) return;
+    
+    container.innerHTML = '<div class="highlight-loading">Carregando insights para seu negócio...</div>';
+    
+    try {
+        // 1. Obter dados específicos do vendedor
+        const sellerProfile = userData.sellerProfile || {};
+        const isProfessional = sellerProfile.sellerType === "professional";
+        const areaAtuacao = isProfessional ? sellerProfile.professional?.area : null;
+        
+        // 2. Carregar estatísticas/dicas relevantes
+        let stats = {};
+        if (areaAtuacao) {
+            if (areaAtuacao.includes("imoveis")) {
+                stats = await carregarEstatisticasImoveis();
+            } else if (areaAtuacao.includes("automoveis")) {
+                stats = await carregarEstatisticasAutomoveis();
+            }
+        }
+        
+        // 3. Exibir cards de insights
+        container.innerHTML = '';
+        
+        // Card de desempenho
+        const performanceCard = document.createElement('div');
+        performanceCard.className = 'insight-card performance';
+        performanceCard.innerHTML = `
+            <h3><i class="fas fa-chart-line"></i> Seu Desempenho</h3>
+            <div class="insight-metrics">
+                <div class="metric">
+                    <span class="value">${stats.views || '--'}</span>
+                    <span class="label">Visualizações</span>
+                </div>
+                <div class="metric">
+                    <span class="value">${stats.contacts || '--'}</span>
+                    <span class="label">Contatos</span>
+                </div>
+                <div class="metric">
+                    <span class="value">${stats.conversion || '--'}%</span>
+                    <span class="label">Conversão</span>
+                </div>
+            </div>
+            <button class="btn-insight" onclick="location.href='perfil.html#anuncios'">
+                Gerenciar Anúncios
+            </button>
+        `;
+        container.appendChild(performanceCard);
+        
+        // Card de dicas
+        const tipsCard = document.createElement('div');
+        tipsCard.className = 'insight-card tips';
+        tipsCard.innerHTML = `
+            <h3><i class="fas fa-lightbulb"></i> Dicas para Você</h3>
+            <ul class="tips-list">
+                <li>${getRandomTip(areaAtuacao)}</li>
+                <li>${getRandomTip(areaAtuacao)}</li>
+                <li>${getRandomTip(areaAtuacao)}</li>
+            </ul>
+            <button class="btn-insight" onclick="location.href='dicas.html'">
+                Ver Mais Dicas
+            </button>
+        `;
+        container.appendChild(tipsCard);
+        
+        // Card de destaques (se for profissional)
+        if (isProfessional) {
+            const highlightCard = document.createElement('div');
+            highlightCard.className = 'insight-card highlight';
+            highlightCard.innerHTML = `
+                <h3><i class="fas fa-star"></i> Seus Destaques</h3>
+                <p>Você tem ${stats.highlights || 0} anúncios em destaque</p>
+                <p class="small">Destaques aumentam em 3x a visibilidade</p>
+                <button class="btn-insight" onclick="location.href='perfil.html#anuncios'">
+                    ${stats.highlights ? 'Gerenciar' : 'Adicionar'} Destaques
+                </button>
+            `;
+            container.appendChild(highlightCard);
+        }
+        
+    } catch (error) {
+        console.error("Erro ao carregar insights:", error);
+        container.innerHTML = `
+            <div class="highlight-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Erro ao carregar insights</p>
+                <button class="retry-btn" onclick="carregarInsightsParaVendedor()">Tentar novamente</button>
+            </div>
+        `;
+    }
+}
+
+// Funções para carregar estatísticas (exemplos)
+async function carregarEstatisticasImoveis() {
+    // Implementação real buscaria dados do Firestore
+    return {
+        views: 245,
+        contacts: 12,
+        conversion: 4.9,
+        highlights: 2
+    };
+}
+
+async function carregarEstatisticasAutomoveis() {
+    return {
+        views: 180,
+        contacts: 8,
+        conversion: 4.4,
+        highlights: 1
+    };
+}
+
+// Banco de dicas contextualizadas
+function getRandomTip(area) {
+    const allTips = {
+        imoveis: [
+            "Fotos profissionais aumentam em 70% o interesse nos anúncios",
+            "Anúncios com preços competitivos recebem 3x mais contatos",
+            "Descrições detalhadas melhoram a conversão em 40%",
+            "Atualizar anúncios semanalmente mantém eles relevantes"
+        ],
+        automoveis: [
+            "Fotos em ângulo de 3/4 aumentam o interesse no veículo",
+            "Incluir histórico de manutenção pode acelerar a venda",
+            "Anúncios com vídeo recebem 50% mais visualizações",
+            "Responder rapidamente a perguntas aumenta as chances de venda"
+        ],
+        default: [
+            "Manter contato com clientes anteriores gera indicações",
+            "Anúncios ativos nos fins de semana recebem mais visualizações",
+            "Usar palavras-chave relevantes melhora a busca",
+            "Promover anúncios em redes sociais aumenta o alcance"
+        ]
+    };
+    
+    let tips = allTips.default;
+    if (area?.includes("imoveis")) tips = [...tips, ...allTips.imoveis];
+    if (area?.includes("automoveis")) tips = [...tips, ...allTips.automoveis];
+    
+    return tips[Math.floor(Math.random() * tips.length)];
+}
 // Inicializar quando o DOM estiver pronto
 document.addEventListener("DOMContentLoaded", function() {
     if (document.querySelector('.highlights')) {
-        carregarDestaques();
+        carregarAnunciosRecomendados();
     }
 });
 // ============== INICIALIZAÇÃO ==============
@@ -786,7 +1026,7 @@ document.addEventListener("DOMContentLoaded", function() {
         .catch((error) => console.error("Erro na persistência:", error));
 
     // Carregar dados iniciais
-            carregarDestaques();
+             carregarAnunciosRecomendados();
 
     carregarLogo();
     preencherBairros();
