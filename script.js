@@ -1614,60 +1614,204 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 // Função para carregar destaques
-async function carregarDestaques() {
+async function async function carregarDestaques() {
     try {
         const destaqueContainer = document.getElementById('destaqueContainer');
-        destaqueContainer.innerHTML = '<div class="highlight-loading">Carregando destaques...</div>';
+        if (!destaqueContainer) return;
         
-        // Carregar imóveis em destaque
-        const imoveisRef = collection(db, "imoveis");
-        const imoveisQuery = query(imoveisRef, where("destaque", "==", true));
-        const imoveisSnapshot = await getDocs(imoveisQuery);
+        destaqueContainer.innerHTML = '<div class="highlight-loading">Carregando destaques relevantes...</div>';
         
-        // Carregar automóveis em destaque
-        const automoveisRef = collection(db, "automoveis");
-        const automoveisQuery = query(automoveisRef, where("destaque", "==", true));
-        const automoveisSnapshot = await getDocs(automoveisQuery);
+        const user = auth.currentUser;
+        let userData = null;
         
-        // Limpar container
+        // Obter dados do usuário se estiver logado
+        if (user) {
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (userDoc.exists()) {
+                userData = userDoc.data();
+            }
+        }
+        
+        // Construir queries com filtros personalizados
+        const [imoveisQuery, automoveisQuery] = criarQueriesPersonalizadas(userData);
+        
+        // Executar queries em paralelo
+        const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
+            getDocs(imoveisQuery),
+            getDocs(automoveisQuery)
+        ]);
+        
+        // Processar resultados
         destaqueContainer.innerHTML = '';
         
-        // Adicionar imóveis em destaque
+        // Adicionar imóveis em destaque que correspondam ao perfil
         imoveisSnapshot.forEach(doc => {
             const data = doc.data();
             data.id = doc.id;
             destaqueContainer.appendChild(criarCardDestaque(data, false));
         });
         
-        // Adicionar automóveis em destaque
+        // Adicionar automóveis em destaque que correspondam ao perfil
         automoveisSnapshot.forEach(doc => {
             const data = doc.data();
             data.id = doc.id;
             destaqueContainer.appendChild(criarCardDestaque(data, true));
         });
         
-        // Se não houver destaques
+        // Mensagem se não houver resultados relevantes
         if (imoveisSnapshot.empty && automoveisSnapshot.empty) {
-            destaqueContainer.innerHTML = `
-                <div class="highlight-empty">
-                    <i class="fas fa-star"></i>
-                    <p>Nenhum anúncio em destaque no momento</p>
-                </div>
-            `;
+            mostrarMensagemSemResultados(destaqueContainer, userData);
         }
         
     } catch (error) {
         console.error("Erro ao carregar destaques:", error);
-        document.getElementById('destaqueContainer').innerHTML = `
-            <div class="highlight-error">
-                <i class="fas fa-exclamation-triangle"></i>
-                <p>Erro ao carregar destaques</p>
-                <button class="retry-btn">Tentar novamente</button>
+        mostrarMensagemErro(destaqueContainer);
+    }
+}
+
+// Função para criar queries personalizadas baseadas no perfil do usuário
+function criarQueriesPersonalizadas(userData) {
+    const isBuyer = userData?.userRole === "buyer";
+    const buyerProfile = userData?.buyerProfile || {};
+    
+    // Filtros base para imóveis
+    let imoveisBaseQuery = query(
+        collection(db, "imoveis"),
+        where("destaque", "==", true),
+        where("status", "==", "ativo")
+    );
+    
+    // Filtros base para automóveis
+    let automoveisBaseQuery = query(
+        collection(db, "automoveis"),
+        where("destaque", "==", true),
+        where("status", "==", "ativo")
+    );
+    
+    // Aplicar filtros adicionais para compradores
+    if (isBuyer) {
+        const interesses = buyerProfile.interests || [];
+        const localizacao = buyerProfile.preferenceLocation;
+        const faixaPreco = buyerProfile.budgetRange;
+        
+        // Filtro para imóveis baseado em interesses
+        if (interesses.some(i => i.includes("imoveis"))) {
+            const negociacao = interesses.includes("imoveis-alugar") ? "aluguel" : "venda";
+            imoveisBaseQuery = query(imoveisBaseQuery, where("negociacao", "==", negociacao));
+            
+            if (localizacao) {
+                imoveisBaseQuery = query(imoveisBaseQuery, where("bairro", "==", localizacao));
+            }
+            
+            if (faixaPreco) {
+                imoveisBaseQuery = query(imoveisBaseQuery, where("preco", "<=", faixaPreco));
+            }
+        } else {
+            // Se não tem interesse em imóveis, retornar query vazia
+            imoveisBaseQuery = query(imoveisBaseQuery, where("id", "==", "invalid"));
+        }
+        
+        // Filtro para automóveis baseado em interesses
+        if (interesses.some(i => i.includes("automoveis"))) {
+            const negociacao = interesses.includes("automoveis-alugar") ? "aluguel" : "venda";
+            automoveisBaseQuery = query(automoveisBaseQuery, where("negociacao", "==", negociacao));
+            
+            if (localizacao) {
+                automoveisBaseQuery = query(automoveisBaseQuery, where("localizacao", "==", localizacao));
+            }
+            
+            if (faixaPreco) {
+                automoveisBaseQuery = query(automoveisBaseQuery, where("preco", "<=", faixaPreco));
+            }
+        } else {
+            // Se não tem interesse em automóveis, retornar query vazia
+            automoveisBaseQuery = query(automoveisBaseQuery, where("id", "==", "invalid"));
+        }
+    }
+    
+    // Ordenação para ambos
+    imoveisBaseQuery = query(imoveisBaseQuery, orderBy("createdAt", "desc"));
+    automoveisBaseQuery = query(automoveisBaseQuery, orderBy("createdAt", "desc"));
+    
+    return [imoveisBaseQuery, automoveisBaseQuery];
+}
+
+// Função para mostrar mensagem quando não há resultados
+function mostrarMensagemSemResultados(container, userData) {
+    if (userData?.userRole === "buyer") {
+        container.innerHTML = `
+            <div class="highlight-empty">
+                <i class="fas fa-info-circle"></i>
+                <p>Nenhum destaque encontrado para seus critérios atuais</p>
+                <div class="suggestion-buttons">
+                    <button class="btn-suggestion" onclick="atualizarPreferencias()">
+                        Atualizar Minhas Preferências
+                    </button>
+                    <button class="btn-suggestion" onclick="carregarTodosDestaques()">
+                        Ver Todos os Destaques
+                    </button>
+                </div>
             </div>
         `;
-        
-        document.querySelector('.retry-btn')?.addEventListener('click', carregarDestaques);
+    } else {
+        container.innerHTML = `
+            <div class="highlight-empty">
+                <i class="fas fa-star"></i>
+                <p>Nenhum anúncio em destaque no momento</p>
+            </div>
+        `;
     }
+}
+
+// Função para mostrar mensagem de erro
+function mostrarMensagemErro(container) {
+    container.innerHTML = `
+        <div class="highlight-error">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>Erro ao carregar destaques</p>
+            <button class="retry-btn" onclick="carregarDestaques()">Tentar novamente</button>
+        </div>
+    `;
+}
+
+// Função auxiliar para carregar todos os destaques (ignorando preferências)
+async function carregarTodosDestaques() {
+    try {
+        const destaqueContainer = document.getElementById('destaqueContainer');
+        destaqueContainer.innerHTML = '<div class="highlight-loading">Carregando todos os destaques...</div>';
+        
+        const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
+            getDocs(query(collection(db, "imoveis"), where("destaque", "==", true))),
+            getDocs(query(collection(db, "automoveis"), where("destaque", "==", true)))
+        ]);
+        
+        destaqueContainer.innerHTML = '';
+        
+        imoveisSnapshot.forEach(doc => {
+            const data = doc.data();
+            data.id = doc.id;
+            destaqueContainer.appendChild(criarCardDestaque(data, false));
+        });
+        
+        automoveisSnapshot.forEach(doc => {
+            const data = doc.data();
+            data.id = doc.id;
+            destaqueContainer.appendChild(criarCardDestaque(data, true));
+        });
+        
+        if (imoveisSnapshot.empty && automoveisSnapshot.empty) {
+            mostrarMensagemSemResultados(destaqueContainer, null);
+        }
+        
+    } catch (error) {
+        console.error("Erro ao carregar todos os destaques:", error);
+        mostrarMensagemErro(destaqueContainer);
+    }
+}
+
+// Função para redirecionar para edição de perfil
+function atualizarPreferencias() {
+    window.location.href = "perfil.html#perfil-tab";
 }
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
