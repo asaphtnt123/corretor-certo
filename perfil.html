@@ -1113,61 +1113,89 @@ function formatArea(area) {
     }
   }
 
-  // Função para criar card de anúncio
-  function createAdCard(data, type, id) {
-    const status = data.status || 'ativo';
-    const destaque = data.destaque || false;
-    const precoFormatado = data.preco?.toLocaleString('pt-BR', { 
-      style: 'currency', 
-      currency: 'BRL' 
-    }) || 'Preço não informado';
-    
-    return `
-      <div class="col-md-6 col-lg-4 mb-4">
-        <div class="anuncio-card" data-id="${id}" data-tipo="${type.toLowerCase()}">
-          <div class="anuncio-header">
-            <img src="${data.imagens?.[0] || 'img/sem-imagem.jpg'}" alt="${data.titulo}" class="anuncio-imagem-principal">
-            <span class="anuncio-badge">${type}</span>
+function createAdCard(data, type, id) {
+  // Validação básica dos parâmetros
+  if (!data || !type || !id) {
+    console.error('Parâmetros inválidos para createAdCard:', {data, type, id});
+    return '';
+  }
+
+  // Valores padrão e formatações
+  const status = data.status || 'ativo';
+  const destaque = data.destaque || false;
+  const precoFormatado = data.preco?.toLocaleString('pt-BR', { 
+    style: 'currency', 
+    currency: 'BRL' 
+  }) || 'Preço não informado';
+  
+  // Formatação segura da data
+  const dataCriacao = data.createdAt?.toDate 
+    ? new Date(data.createdAt.toDate()).toLocaleDateString('pt-BR') 
+    : 'Data não disponível';
+
+  return `
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="anuncio-card ${status === 'inativo' ? 'anuncio-inativo' : ''}" 
+           data-id="${id}" 
+           data-tipo="${type.toLowerCase()}">
+        <div class="anuncio-header">
+          <img src="${data.imagens?.[0] || 'img/sem-imagem.jpg'}"
+               onerror="this.src='img/sem-imagem.jpg'"
+               alt="${data.titulo || 'Imagem do anúncio'}" 
+               class="anuncio-imagem-principal">
+          <span class="anuncio-badge">${type}</span>
+
+          <div class="anuncio-card ${status === 'inativo' ? 'anuncio-inativo' : ''} theme-${data.theme || 'light'}">
+          <div itemscope itemtype="http://schema.org/${type === 'Imóvel' ? 'RealEstateListing' : 'Car'}">
+          // Poderíamos passar um objeto de traduções como parâmetro
+const textoEditar = translations?.edit || 'Editar';
+          <div class="anuncio-controls">
+            <button class="btn-status-toggle ${status === 'ativo' ? 'active' : ''}" 
+                    data-status="${status}"
+                    aria-label="${status === 'ativo' ? 'Desativar anúncio' : 'Ativar anúncio'}">
+              <span class="toggle-handle"></span>
+            </button>
             
-            <div class="anuncio-controls">
-              <button class="btn-status-toggle ${status === 'ativo' ? 'active' : ''}" 
-                      data-status="${status}">
-                <span class="toggle-handle"></span>
-              </button>
-              
-              <button class="btn-destaque-toggle ${destaque ? 'active' : ''}"
-                      data-destaque="${destaque}">
-                <i class="fas fa-star"></i>
-              </button>
-            </div>
+            <button class="btn-destaque-toggle ${destaque ? 'active' : ''}"
+                    data-destaque="${destaque}"
+                    aria-label="${destaque ? 'Remover destaque' : 'Destacar anúncio'}">
+              <i class="fas fa-star"></i>
+            </button>
+          </div>
+        </div>
+        
+        <div class="anuncio-body">
+          <h3 class="anuncio-titulo">${data.titulo || 'Sem título'}</h3>
+          <div class="anuncio-preco">${precoFormatado}</div>
+          
+          <div class="detalhes-grid">
+            ${type === 'Imóvel' ? getImovelDetails(data) : getAutomovelDetails(data)}
           </div>
           
-          <div class="anuncio-body">
-            <h3 class="anuncio-titulo">${data.titulo || 'Sem título'}</h3>
-            <div class="anuncio-preco">${precoFormatado}</div>
-            
-            <div class="detalhes-grid">
-              ${type === 'Imóvel' ? getImovelDetails(data) : getAutomovelDetails(data)}
-            </div>
-            
-            <p class="anuncio-descricao">${data.descricao || 'Nenhuma descrição fornecida'}</p>
-          </div>
-          
-          <div class="anuncio-footer">
-            <span class="anuncio-data">${new Date(data.createdAt?.toDate()).toLocaleDateString('pt-BR')}</span>
-            <div class="anuncio-acoes">
-              <button class="btn-editar" data-id="${id}" data-tipo="${type.toLowerCase()}">
-                <i class="fas fa-edit"></i> Editar
-              </button>
-              <button class="btn-excluir" data-id="${id}" data-tipo="${type.toLowerCase()}">
-                <i class="fas fa-trash"></i> Excluir
-              </button>
-            </div>
+          <p class="anuncio-descricao">${data.descricao || 'Nenhuma descrição fornecida'}</p>
+        </div>
+        
+        <div class="anuncio-footer">
+          <span class="anuncio-data">${dataCriacao}</span>
+          <div class="anuncio-acoes">
+            <button class="btn-editar" 
+                    data-id="${id}" 
+                    data-tipo="${type.toLowerCase()}"
+                    aria-label="Editar anúncio">
+              <i class="fas fa-edit"></i> Editar
+            </button>
+            <button class="btn-excluir" 
+                    data-id="${id}" 
+                    data-tipo="${type.toLowerCase()}"
+                    aria-label="Excluir anúncio">
+              <i class="fas fa-trash"></i> Excluir
+            </button>
           </div>
         </div>
       </div>
-    `;
-  }
+    </div>
+  `;
+}
 
   // Funções auxiliares para detalhes
   function getImovelDetails(data) {
