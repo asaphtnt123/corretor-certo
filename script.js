@@ -1614,7 +1614,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 // Função para carregar destaques
-async function async function carregarDestaques() {
+async function carregarDestaques() {
     try {
         const destaqueContainer = document.getElementById('destaqueContainer');
         if (!destaqueContainer) return;
