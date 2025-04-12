@@ -1611,6 +1611,64 @@ document.addEventListener("DOMContentLoaded", function() {
         lastScroll = currentScroll;
     });
 });
+
+
+// Função para carregar destaques
+async function carregarDestaques() {
+    try {
+        const destaqueContainer = document.getElementById('destaqueContainer');
+        destaqueContainer.innerHTML = '<div class="highlight-loading">Carregando destaques...</div>';
+        
+        // Carregar imóveis em destaque
+        const imoveisRef = collection(db, "imoveis");
+        const imoveisQuery = query(imoveisRef, where("destaque", "==", true));
+        const imoveisSnapshot = await getDocs(imoveisQuery);
+        
+        // Carregar automóveis em destaque
+        const automoveisRef = collection(db, "automoveis");
+        const automoveisQuery = query(automoveisRef, where("destaque", "==", true));
+        const automoveisSnapshot = await getDocs(automoveisQuery);
+        
+        // Limpar container
+        destaqueContainer.innerHTML = '';
+        
+        // Adicionar imóveis em destaque
+        imoveisSnapshot.forEach(doc => {
+            const data = doc.data();
+            data.id = doc.id;
+            destaqueContainer.appendChild(criarCardDestaque(data, false));
+        });
+        
+        // Adicionar automóveis em destaque
+        automoveisSnapshot.forEach(doc => {
+            const data = doc.data();
+            data.id = doc.id;
+            destaqueContainer.appendChild(criarCardDestaque(data, true));
+        });
+        
+        // Se não houver destaques
+        if (imoveisSnapshot.empty && automoveisSnapshot.empty) {
+            destaqueContainer.innerHTML = `
+                <div class="highlight-empty">
+                    <i class="fas fa-star"></i>
+                    <p>Nenhum anúncio em destaque no momento</p>
+                </div>
+            `;
+        }
+        
+    } catch (error) {
+        console.error("Erro ao carregar destaques:", error);
+        document.getElementById('destaqueContainer').innerHTML = `
+            <div class="highlight-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Erro ao carregar destaques</p>
+                <button class="retry-btn">Tentar novamente</button>
+            </div>
+        `;
+        
+        document.querySelector('.retry-btn')?.addEventListener('click', carregarDestaques);
+    }
+}
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
 window.openDetailsModal = openDetailsModal;
