@@ -8,7 +8,9 @@ import {
     collection,
     query,
     where,
-    getDocs
+    getDocs,
+    orderBy
+
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
@@ -1613,7 +1615,6 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 
-// Função para carregar destaques
 async function carregarDestaques() {
     try {
         const destaqueContainer = document.getElementById('destaqueContainer');
@@ -1624,7 +1625,6 @@ async function carregarDestaques() {
         const user = auth.currentUser;
         let userData = null;
         
-        // Obter dados do usuário se estiver logado
         if (user) {
             const userDoc = await getDoc(doc(db, "users", user.uid));
             if (userDoc.exists()) {
@@ -1632,10 +1632,61 @@ async function carregarDestaques() {
             }
         }
         
-        // Construir queries com filtros personalizados
-        const [imoveisQuery, automoveisQuery] = criarQueriesPersonalizadas(userData);
+        // Construir queries
+        const imoveisRef = collection(db, "imoveis");
+        const automoveisRef = collection(db, "automoveis");
         
-        // Executar queries em paralelo
+        let imoveisQuery = query(imoveisRef, 
+            where("destaque", "==", true),
+            where("status", "==", "ativo")
+        );
+        
+        let automoveisQuery = query(automoveisRef,
+            where("destaque", "==", true),
+            where("status", "==", "ativo")
+        );
+        
+        // Aplicar filtros personalizados se for comprador
+        if (userData?.userRole === "buyer") {
+            const buyerProfile = userData.buyerProfile || {};
+            const interesses = buyerProfile.interests || [];
+            const localizacao = buyerProfile.preferenceLocation;
+            const faixaPreco = buyerProfile.budgetRange;
+            
+            // Filtros para imóveis
+            if (interesses.some(i => i.includes("imoveis"))) {
+                const negociacao = interesses.includes("imoveis-alugar") ? "aluguel" : "venda";
+                imoveisQuery = query(imoveisQuery, where("negociacao", "==", negociacao));
+                
+                if (localizacao) {
+                    imoveisQuery = query(imoveisQuery, where("bairro", "==", localizacao));
+                }
+                
+                if (faixaPreco) {
+                    imoveisQuery = query(imoveisQuery, where("preco", "<=", faixaPreco));
+                }
+            }
+            
+            // Filtros para automóveis
+            if (interesses.some(i => i.includes("automoveis"))) {
+                const negociacao = interesses.includes("automoveis-alugar") ? "aluguel" : "venda";
+                automoveisQuery = query(automoveisQuery, where("negociacao", "==", negociacao));
+                
+                if (localizacao) {
+                    automoveisQuery = query(automoveisQuery, where("localizacao", "==", localizacao));
+                }
+                
+                if (faixaPreco) {
+                    automoveisQuery = query(automoveisQuery, where("preco", "<=", faixaPreco));
+                }
+            }
+        }
+        
+        // Adicionar ordenação
+        imoveisQuery = query(imoveisQuery, orderBy("createdAt", "desc"));
+        automoveisQuery = query(automoveisQuery, orderBy("createdAt", "desc"));
+        
+        // Executar queries
         const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
             getDocs(imoveisQuery),
             getDocs(automoveisQuery)
@@ -1644,21 +1695,18 @@ async function carregarDestaques() {
         // Processar resultados
         destaqueContainer.innerHTML = '';
         
-        // Adicionar imóveis em destaque que correspondam ao perfil
         imoveisSnapshot.forEach(doc => {
             const data = doc.data();
             data.id = doc.id;
             destaqueContainer.appendChild(criarCardDestaque(data, false));
         });
         
-        // Adicionar automóveis em destaque que correspondam ao perfil
         automoveisSnapshot.forEach(doc => {
             const data = doc.data();
             data.id = doc.id;
             destaqueContainer.appendChild(criarCardDestaque(data, true));
         });
         
-        // Mensagem se não houver resultados relevantes
         if (imoveisSnapshot.empty && automoveisSnapshot.empty) {
             mostrarMensagemSemResultados(destaqueContainer, userData);
         }
@@ -1668,7 +1716,6 @@ async function carregarDestaques() {
         mostrarMensagemErro(destaqueContainer);
     }
 }
-
 // Função para criar queries personalizadas baseadas no perfil do usuário
 function criarQueriesPersonalizadas(userData) {
     const isBuyer = userData?.userRole === "buyer";
