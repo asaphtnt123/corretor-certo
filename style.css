@@ -4244,3 +4244,57 @@ section.banner .btn:hover::before {
     margin-top: 1rem;
     cursor: pointer;
 }
+.highlight-empty {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-medium);
+}
+
+.highlight-empty i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: var(--color-primary);
+}
+
+.suggestion-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+.btn-suggestion {
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-suggestion:hover {
+    background: var(--color-secondary);
+    transform: translateY(-2px);
+}
+
+.highlight-error {
+    text-align: center;
+    padding: 2rem;
+    color: var(--color-accent);
+}
+
+.highlight-error i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.retry-btn {
+    background: var(--color-accent);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    margin-top: 1rem;
+    cursor: pointer;
+}
