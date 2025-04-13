@@ -2041,7 +2041,12 @@ function renderDefaultCTA() {
 document.addEventListener('DOMContentLoaded', () => {
     auth.onAuthStateChanged(loadDynamicCTA);
 });
+// Em seu main.js ou arquivo principal
+import { loadDynamicCTA } from './cta-loader.js';
 
+document.addEventListener('DOMContentLoaded', () => {
+    loadDynamicCTA();
+});
 
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
