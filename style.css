@@ -1324,7 +1324,17 @@ body.search-ativo::before {
     width: 100%;
     overflow-x: auto;
     padding: 10px 0;
-    -webkit-overflow-scrolling: touch;
+    display: flex
+;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(44, 62, 80, 0.9) 0%, rgba(74, 100, 145, 0.9) 100%), url(images/banner-background.jpg) center / cover no-repeat;
+    color: #fff;
+    text-align: center;
+    width: unset;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transform-style: preserve-3d;
 }
 
 .horizontal-scroll-container::-webkit-scrollbar {
@@ -1383,8 +1393,8 @@ body.search-ativo::before {
 /* Mini Cards Metalizados */
 .mini-card {
     position: relative;
-    width: 70px;
-    height: 70px;
+    width: 85px;
+    height: 85px;
     border-radius: 8px;
     overflow: hidden;
     background: linear-gradient(135deg, #2c3e50 0%, #4a6491 100%);
@@ -1491,7 +1501,6 @@ body.search-ativo::before {
 
 /* Estilo da seção de destaques */
 .highlights {
-    padding: 60px 0;
     background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
     position: relative;
     overflow: hidden;
@@ -3815,7 +3824,7 @@ section.banner .btn:hover::before {
 @media (max-width: 768px) {
     section.banner {
         height: 400px;
-        margin-top: 70px;
+        margin-top: 25px;
     }
     
     section.banner h1 {
