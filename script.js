@@ -1921,8 +1921,7 @@ function atualizarPreferencias() {
 
 
 
-import { auth, db } from './firebase-config.js';
-import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
 
 export async function loadDynamicCTA() {
     const user = auth.currentUser;
