@@ -497,15 +497,67 @@
 
 	    
         <!-- Chamada para Anunciar -->
-       <section class="call-to-action">
+      <section class="call-to-action" id="dynamic-cta">
     <div class="container">
-        <h2>Pronto para dar o próximo passo?</h2>
-        <p>Junte-se a milhares de usuários e comece a anunciar seus imóveis ou veículos hoje mesmo.</p>
-        <button class="btn-anunciar pulse">
-            <i class="fas fa-plus"></i> Criar Anúncio Agora
-        </button>
+        <div class="cta-content">
+            <!-- Conteúdo será preenchido dinamicamente pelo JavaScript -->
+            <div class="loading-cta">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Carregando recomendações...</p>
+            </div>
+        </div>
     </div>
 </section>
+
+	    <div class="cta-content">
+    <h2 class="cta-title">Maximize Seu Potencial de Vendas!</h2>
+    <p class="cta-description">
+        Nossa plataforma conecta você aos melhores clientes. Comece agora!
+    </p>
+    <a href="anunciar.html" class="cta-button pulse">
+        <i class="fas fa-plus-circle"></i> Criar Anúncio
+    </a>
+    <div class="cta-stats">
+        <div class="stat-item">
+            <div class="stat-number">+85%</div>
+            <div class="stat-label">Conversão</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">3x</div>
+            <div class="stat-label">Mais Visibilidade</div>
+        </div>
+    </div>
+</div>
+
+	    <div class="cta-content">
+    <div class="cta-buyer">
+        <h2 class="cta-title">Alugar o Imóvel Perfeito em Pinheirinho</h2>
+        <p class="cta-description">
+            Encontre as melhores opções para alugar imóveis com até R$ 3.000,00.
+        </p>
+        <a href="buscar.html?type=imoveis&interest=alugar" class="cta-button pulse">
+            <i class="fas fa-home"></i> Alugar Agora
+        </a>
+        <div class="cta-tip">
+            <i class="fas fa-lightbulb"></i> Dica: Atualize suas preferências para receber recomendações melhores!
+        </div>
+    </div>
+</div>
+
+	    <div class="cta-content">
+    <h2 class="cta-title">Encontre o Imóvel ou Veículo Ideal</h2>
+    <p class="cta-description">
+        Cadastre-se gratuitamente e tenha acesso às melhores oportunidades do mercado.
+    </p>
+    <div class="cta-buttons">
+        <a href="registro.html?role=buyer" class="cta-button pulse">
+            <i class="fas fa-search"></i> Quero Comprar/Alugar
+        </a>
+        <a href="registro.html?role=seller" class="cta-button secondary">
+            <i class="fas fa-plus"></i> Quero Anunciar
+        </a>
+    </div>
+</div>
 
        <footer class="footer">
     <div class="footer-container">
