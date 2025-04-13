@@ -322,17 +322,4 @@ body {
     }
 }
 
-@media (max-width: 576px) {
-    .carousel-inner {
-        height: 40vh;
-    }
-    
-    .thumbnails-container img {
-        width: 60px;
-        height: 60px;
-    }
-    
-    .property-title {
-        font-size: 1.5rem;
-    }
-}
+
