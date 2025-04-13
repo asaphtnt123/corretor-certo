@@ -1734,34 +1734,35 @@ async function carregarDestaques() {
         
         snapshots.forEach((snapshot, index) => {
             if (!snapshot.empty) {
-                encontrouResultados = true;
-                const tipo = queries[index]._query.collection === "imoveis" ? "imóvel" : "automóvel";
-                const negocio = queries[index]._query.filters.find(f => f.field === "negociacao")?.value || "";
-                
-                // Adicionar título da seção
-                const sectionTitle = document.createElement('h2');
-                sectionTitle.className = 'section-title';
-                sectionTitle.innerHTML = `<i class="fas ${tipo === 'imóvel' ? 'fa-home' : 'fa-car'}"></i> ${tipo.charAt(0).toUpperCase() + tipo.slice(1)} para ${negocio}`;
-                
-                // Adicionar localização se existir
-                if (localizacao) {
-                    sectionTitle.innerHTML += ` em ${localizacao}`;
-                }
-                
-                // Adicionar faixa de preço se existir
-                if (faixaPreco) {
-                    sectionTitle.innerHTML += ` até R$ ${faixaPreco.toLocaleString('pt-BR')}`;
-                }
-                
-                destaqueContainer.appendChild(sectionTitle);
-                
-                // Adicionar cards
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    data.id = doc.id;
-                    destaqueContainer.appendChild(criarCardDestaque(data, tipo === 'automóvel'));
-                });
-            }
+    encontrouResultados = true;
+    const tipo = queries[index]._query.collection === "imoveis" ? "imóvel" : "automóvel";
+    const negocio = queries[index]._query.filters.find(f => f.field === "negociacao")?.value || "";
+    
+    // Criar container da seção
+    const sectionContainer = document.createElement('div');
+    sectionContainer.className = 'destaque-container';
+    
+    // Adicionar título
+    const sectionTitle = document.createElement('h2');
+    sectionTitle.className = 'section-title';
+    sectionTitle.innerHTML = `<i class="fas ${tipo === 'imóvel' ? 'fa-home' : 'fa-car'}"></i> ${tipo === 'imóvel' ? 'Imóveis' : 'Veículos'} para ${negocio}`;
+    
+    // Adicionar container de scroll
+    const scrollContainer = document.createElement('div');
+    scrollContainer.className = 'highlight-scroll';
+    
+    // Adicionar cards
+    snapshot.forEach(doc => {
+        const data = doc.data();
+        data.id = doc.id;
+        scrollContainer.appendChild(criarCardDestaque(data, tipo === 'automóvel'));
+    });
+    
+    // Montar a estrutura
+    sectionContainer.appendChild(sectionTitle);
+    sectionContainer.appendChild(scrollContainer);
+    destaqueContainer.appendChild(sectionContainer);
+}
         });
         
         // Se não encontrou resultados, mostrar mensagem
@@ -1797,7 +1798,6 @@ async function carregarDestaquesGerais() {
         
         destaqueContainer.innerHTML = '<div class="highlight-loading">Carregando destaques...</div>';
         
-        // Buscar imóveis e automóveis em destaque (limitado a 5 cada)
         const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
             getDocs(query(collection(db, "imoveis"), where("destaque", "==", true), limit(5))),
             getDocs(query(collection(db, "automoveis"), where("destaque", "==", true), limit(5)))
@@ -1807,30 +1807,48 @@ async function carregarDestaquesGerais() {
         
         // Adicionar imóveis se existirem
         if (!imoveisSnapshot.empty) {
+            const sectionContainer = document.createElement('div');
+            sectionContainer.className = 'destaque-container';
+            
             const sectionTitle = document.createElement('h2');
             sectionTitle.className = 'section-title';
             sectionTitle.innerHTML = '<i class="fas fa-home"></i> Imóveis em destaque';
-            destaqueContainer.appendChild(sectionTitle);
+            sectionContainer.appendChild(sectionTitle);
+            
+            const scrollContainer = document.createElement('div');
+            scrollContainer.className = 'highlight-scroll';
             
             imoveisSnapshot.forEach(doc => {
                 const data = doc.data();
                 data.id = doc.id;
-                destaqueContainer.appendChild(criarCardDestaque(data, false));
+                scrollContainer.appendChild(criarCardDestaque(data, false));
             });
+            
+            sectionContainer.appendChild(scrollContainer);
+            destaqueContainer.appendChild(sectionContainer);
         }
         
         // Adicionar automóveis se existirem
         if (!automoveisSnapshot.empty) {
+            const sectionContainer = document.createElement('div');
+            sectionContainer.className = 'destaque-container';
+            
             const sectionTitle = document.createElement('h2');
             sectionTitle.className = 'section-title';
             sectionTitle.innerHTML = '<i class="fas fa-car"></i> Veículos em destaque';
-            destaqueContainer.appendChild(sectionTitle);
+            sectionContainer.appendChild(sectionTitle);
+            
+            const scrollContainer = document.createElement('div');
+            scrollContainer.className = 'highlight-scroll';
             
             automoveisSnapshot.forEach(doc => {
                 const data = doc.data();
                 data.id = doc.id;
-                destaqueContainer.appendChild(criarCardDestaque(data, true));
+                scrollContainer.appendChild(criarCardDestaque(data, true));
             });
+            
+            sectionContainer.appendChild(scrollContainer);
+            destaqueContainer.appendChild(sectionContainer);
         }
         
         // Se não houver resultados
@@ -1848,7 +1866,6 @@ async function carregarDestaquesGerais() {
         mostrarMensagemErro();
     }
 }
-
 function mostrarMensagemErro() {
     const destaqueContainer = document.getElementById('destaqueContainer');
     if (!destaqueContainer) return;
