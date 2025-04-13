@@ -1861,21 +1861,6 @@ function mostrarMensagemErro() {
         </div>
     `;
 }
-
-
-
-
-// Função para mostrar mensagem de erro
-function mostrarMensagemErro(container) {
-    container.innerHTML = `
-        <div class="highlight-error">
-            <i class="fas fa-exclamation-triangle"></i>
-            <p>Erro ao carregar destaques</p>
-            <button class="retry-btn" onclick="carregarDestaques()">Tentar novamente</button>
-        </div>
-    `;
-}
-
 // Função auxiliar para carregar todos os destaques (ignorando preferências)
 async function carregarTodosDestaques() {
     try {
