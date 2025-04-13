@@ -1489,112 +1489,406 @@ body.search-ativo::before {
 /* Estilo da seção de destaques */
 
 
-/* Container principal dos destaques */
+/* Estilo da seção de destaques */
+.highlights {
+    padding: 60px 0;
+    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.highlights::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 20% 50%, rgba(241, 196, 15, 0.1) 0%, transparent 50%);
+    z-index: 0;
+}
+
+.highlights .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.highlights h2 {
+    text-align: center;
+    margin-bottom: 40px;
+    font-size: 2.2rem;
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: 1px;
+    position: relative;
+    display: inline-block;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.highlights h2::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 4px;
+    background: #f1c40f;
+    margin: 15px auto 0;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.highlights h2:hover::after {
+    width: 120px;
+}
+
+/* Container dos cards de destaque */
 .destaque-container {
-  width: 100%;
-  overflow-x: auto;
-  padding: 20px 0;
-  margin-bottom: 30px;
+    width: 100%;
+    padding: 20px 0 40px;
+    margin-bottom: 20px;
+    position: relative;
 }
 
 /* Títulos das seções */
 .section-title {
-  font-size: 1.5rem;
-  margin: 30px 0 15px 0;
-  color: #333;
-  padding-left: 15px;
-  font-weight: 600;
-  position: relative;
+    font-size: 1.5rem;
+    margin: 0 0 20px 15px;
+    color: #fff;
+    font-weight: 600;
+    position: relative;
+    display: flex;
+    align-items: center;
 }
 
 .section-title i {
-  color: #4a6baf;
-  margin-right: 10px;
+    color: #f1c40f;
+    margin-right: 12px;
+    font-size: 1.8rem;
 }
 
 .section-title::after {
-  content: "";
-  position: absolute;
-  left: 15px;
-  bottom: -5px;
-  width: 50px;
-  height: 3px;
-  background-color: #4a6baf;
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -8px;
+    width: 50px;
+    height: 3px;
+    background-color: #f1c40f;
+    border-radius: 3px;
+    transition: width 0.3s ease;
 }
 
-/* Container dos cards */
+.section-title:hover::after {
+    width: 80px;
+}
+
+/* Container dos cards com scroll horizontal */
 .highlight-scroll {
-  display: flex;
-  gap: 20px;
-  padding: 15px;
-  overflow-x: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #4a6baf #f1f1f1;
+    display: flex;
+    gap: 25px;
+    padding: 20px 15px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
 }
 
-/* Estilizando a scrollbar */
+/* Esconde a scrollbar padrão */
+.highlight-scroll {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE e Edge */
+}
+
 .highlight-scroll::-webkit-scrollbar {
-  height: 8px;
+    display: none; /* Chrome, Safari e Opera */
 }
 
-.highlight-scroll::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.highlight-scroll::-webkit-scrollbar-thumb {
-  background-color: #4a6baf;
-  border-radius: 10px;
-}
-
-/* Cards individuais */
+/* Cards individuais - Design modernizado */
 .highlight-card {
-  min-width: 280px;
-  flex-shrink: 0;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
-  overflow: hidden;
+    min-width: 300px;
+    width: 300px;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    overflow: hidden;
+    position: relative;
+    scroll-snap-align: start;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .highlight-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+    z-index: 10;
 }
 
+/* Efeito de metal moderno */
+.highlight-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.15) 0%,
+        rgba(255, 255, 255, 0) 50%,
+        rgba(255, 255, 255, 0.15) 100%
+    );
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* Efeito de brilho aleatório */
+.highlight-card.random-glow {
+    animation: randomHighlight 6s infinite alternate;
+}
+
+@keyframes randomHighlight {
+    0% {
+        box-shadow: 0 0 0 rgba(241, 196, 15, 0);
+    }
+    100% {
+        box-shadow: 0 0 30px rgba(241, 196, 15, 0.6);
+    }
+}
+
+/* Container da imagem */
+.highlight-card .card-image-container {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.highlight-card .card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s ease;
+}
+
+.highlight-card:hover .card-image {
+    transform: scale(1.1);
+}
+
+/* Badge de destaque */
+.highlight-card .card-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    z-index: 2;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Conteúdo do card */
+.highlight-card .card-content {
+    padding: 20px;
+    position: relative;
+    z-index: 2;
+    background: white;
+}
+
+.highlight-card .card-title {
+    margin: 0 0 12px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #2c3e50;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.highlight-card .card-price {
+    font-weight: 800;
+    font-size: 20px;
+    color: #f1c40f;
+    margin: 0 0 15px;
+    text-shadow: 0 2px 4px rgba(241, 196, 15, 0.3);
+    letter-spacing: 0.5px;
+}
+
+.highlight-card .card-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 14px;
+    color: #7f8c8d;
+    margin-bottom: 20px;
+}
+
+.highlight-card .card-details span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.highlight-card .card-details i {
+    color: #3498db;
+    width: 20px;
+    text-align: center;
+}
+
+/* Efeito de hover */
+.highlight-card .card-hover-effect {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(52, 152, 219, 0.8) 0%, rgba(41, 128, 185, 0.9) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 3;
+}
+
+.highlight-card:hover .card-hover-effect {
+    opacity: 1;
+}
+
+/* Botão "Ver Mais" */
+.highlight-card .btn-view-more {
+    background: white;
+    color: #2980b9;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.highlight-card .btn-view-more:hover {
+    background: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Navegação do scroll */
+.scroll-nav {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 0 15px 15px;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+}
+
+.scroll-nav button {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
+    color: white;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.scroll-nav button:hover {
+    background: rgba(241, 196, 15, 0.8);
+    transform: scale(1.1);
+}
+
+.scroll-nav button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Mensagens de estado */
+.highlight-loading,
+.highlight-empty,
+.highlight-error {
+    text-align: center;
+    padding: 40px 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.highlight-loading i,
+.highlight-empty i,
+.highlight-error i {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.highlight-empty i {
+    color: #f1c40f;
+}
+
+.highlight-error i {
+    color: #e74c3c;
+}
+
+/* Botões de ação */
+.btn-suggestion,
 .retry-btn {
     margin-top: 20px;
-    padding: 10px 25px;
-    background: #3498db;
+    padding: 12px 25px;
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
     color: white;
     border: none;
     border-radius: 30px;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
     font-weight: 600;
+    display: inline-block;
+    box-shadow: 0 4px 15px rgba(41, 128, 185, 0.4);
 }
 
+.btn-suggestion:hover,
 .retry-btn:hover {
-    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(41, 128, 185, 0.6);
 }
 
-/* Efeito de brilho aleatório para destaques */
-@keyframes randomHighlight {
-    0%, 100% { 
-        box-shadow: 0 0 0 rgba(241, 196, 15, 0);
-        transform: scale(1);
+/* Responsividade */
+@media (max-width: 768px) {
+    .highlights h2 {
+        font-size: 1.8rem;
     }
-    50% { 
-        box-shadow: 0 0 25px rgba(241, 196, 15, 0.7);
-        transform: scale(1.02);
+    
+    .highlight-card {
+        min-width: 260px;
+        width: 260px;
+    }
+    
+    .section-title {
+        font-size: 1.3rem;
     }
 }
 
-/* Adiciona classe para animação aleatória */
-.random-glow {
-    animation: randomHighlight 3s infinite;
-}
+
 
 
 
