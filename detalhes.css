@@ -66,7 +66,19 @@ body {
     height: 100%;
     width: 100%;
 }
+.carousel-item.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.carousel-inner {
+  border-radius: 10px; /* Opcional */
+  overflow: hidden;
+}
 
+.carousel-item img {
+  object-fit: cover;
+}
 .thumbnails-container {
     display: flex;
     gap: 12px;
