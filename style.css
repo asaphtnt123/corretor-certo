@@ -1282,13 +1282,7 @@ body.search-ativo::before {
     overflow: hidden;
 }
 
-.section-title {
-    text-align: center;
-    margin-bottom: 30px;
-    font-size: 2rem;
-    color: #f1c40f;
-    text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
-}
+
 
 /* Estilos das abas */
 .anuncios-tabs {
@@ -1493,225 +1487,80 @@ body.search-ativo::before {
 
 
 /* Estilo da seção de destaques */
-.highlights {
-    padding: 60px 0;
-    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
-}
 
-.highlights .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
 
-.highlights h2 {
-    text-align: center;
-    margin-bottom: 40px;
-    font-size: 2.5rem;
-    color: #f1c40f;
-    text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
-    position: relative;
-}
-
-.highlights h2::after {
-    content: '';
-    display: block;
-    width: 100px;
-    height: 3px;
-    background: #f1c40f;
-    margin: 15px auto 0;
-    box-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
-}
-
-/* Container dos cards de destaque */
+/* Container principal dos destaques */
 .destaque-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 25px;
-    padding: 20px 0;
+  width: 100%;
+  overflow-x: auto;
+  padding: 20px 0;
+  margin-bottom: 30px;
 }
 
-/* Cards de destaque com efeito metalizado */
+/* Títulos das seções */
+.section-title {
+  font-size: 1.5rem;
+  margin: 30px 0 15px 0;
+  color: #333;
+  padding-left: 15px;
+  font-weight: 600;
+  position: relative;
+}
+
+.section-title i {
+  color: #4a6baf;
+  margin-right: 10px;
+}
+
+.section-title::after {
+  content: "";
+  position: absolute;
+  left: 15px;
+  bottom: -5px;
+  width: 50px;
+  height: 3px;
+  background-color: #4a6baf;
+}
+
+/* Container dos cards */
+.highlight-scroll {
+  display: flex;
+  gap: 20px;
+  padding: 15px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #4a6baf #f1f1f1;
+}
+
+/* Estilizando a scrollbar */
+.highlight-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.highlight-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.highlight-scroll::-webkit-scrollbar-thumb {
+  background-color: #4a6baf;
+  border-radius: 10px;
+}
+
+/* Cards individuais */
 .highlight-card {
-    position: relative;
-    border-radius: 10px;
-    overflow: hidden;
-    background: linear-gradient(135deg, #2c3e50 0%, #4a6491 100%);
-    color: white;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
-    transform: translateY(20px);
-    opacity: 0;
-    cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+  min-width: 280px;
+  flex-shrink: 0;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+  overflow: hidden;
 }
 
-.highlight-card.metal-in {
-    transform: translateY(0);
-    opacity: 1;
-}
-
-.highlight-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.1) 0%,
-        rgba(255, 255, 255, 0) 50%,
-        rgba(255, 255, 255, 0.1) 100%
-    );
-    z-index: 1;
-}
-
-.highlight-card.glow-effect::before {
-    animation: metalGlow 2s ease;
-}
-
-@keyframes metalGlow {
-    0% { box-shadow: 0 0 0 rgba(255, 255, 255, 0.1); }
-    50% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
-    100% { box-shadow: 0 0 0 rgba(255, 255, 255, 0.1); }
-}
-
-.highlight-card .card-image-container {
-    position: relative;
-    height: 200px;
-    overflow: hidden;
-}
-
-.highlight-card .card-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-}
-
-.highlight-card .card-badge {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: #e74c3c;
-    color: white;
-    padding: 5px 15px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: bold;
-    z-index: 2;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-}
-
-.highlight-card .card-content {
-    padding: 20px;
-    position: relative;
-    z-index: 2;
-}
-
-.highlight-card .card-title {
-    margin: 0 0 15px;
-    font-size: 20px;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.highlight-card .card-price {
-    font-weight: bold;
-    font-size: 18px;
-    color: #f1c40f;
-    margin: 0 0 15px;
-    text-shadow: 0 0 5px rgba(241, 196, 15, 0.5);
-}
-
-.highlight-card .card-details {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    font-size: 15px;
-}
-
-.highlight-card .card-details span {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.highlight-card .card-hover-effect {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: 3;
-}
-
-.highlight-card:hover .card-hover-effect {
-    opacity: 1;
-}
-
-.highlight-card:hover .card-image {
-    transform: scale(1.1);
-}
-
-.highlight-card .btn-view-more {
-    background: #3498db;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 30px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 600;
-    box-shadow: 0 2px 10px rgba(52, 152, 219, 0.5);
-}
-
-.highlight-card .btn-view-more:hover {
-    background: #2980b9;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.7);
-}
-
-/* Efeito de entrada dos cards */
-@keyframes highlightEntrance {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Mensagens de erro e vazio */
-.highlight-empty {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 40px;
-    color: #f1c40f;
-    font-size: 1.2rem;
-}
-
-.highlight-error {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 40px;
-    color: #e74c3c;
-}
-
-.highlight-error i {
-    font-size: 2.5rem;
-    margin-bottom: 15px;
+.highlight-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
 .retry-btn {
@@ -3253,13 +3102,7 @@ body.search-ativo::before {
     overflow: hidden;
 }
 
-.section-title {
-    text-align: center;
-    margin-bottom: 30px;
-    font-size: 2rem;
-    color: #f1c40f;
-    text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
-}
+
 
 /* Estilos das abas */
 .anuncios-tabs {
@@ -3463,260 +3306,6 @@ body.search-ativo::before {
 
 
 
-/* Estilo da seção de destaques */
-.highlights {
-    padding: 60px 0;
-    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
-}
-
-.highlights .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
-
-.highlights h2 {
-    text-align: center;
-    margin-bottom: 40px;
-    font-size: 2.5rem;
-    color: #f1c40f;
-    text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
-    position: relative;
-}
-
-.highlights h2::after {
-    content: '';
-    display: block;
-    width: 100px;
-    height: 3px;
-    background: #f1c40f;
-    margin: 15px auto 0;
-    box-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
-}
-
-/* Container dos cards de destaque */
-.destaque-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 25px;
-    padding: 20px 0;
-}
-
-/* Cards de destaque com efeito metalizado */
-.highlight-card {
-    position: relative;
-    border-radius: 10px;
-    overflow: hidden;
-    background: linear-gradient(135deg, #2c3e50 0%, #4a6491 100%);
-    color: white;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
-    transform: translateY(20px);
-    opacity: 0;
-    cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.highlight-card.metal-in {
-    transform: translateY(0);
-    opacity: 1;
-}
-
-.highlight-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.1) 0%,
-        rgba(255, 255, 255, 0) 50%,
-        rgba(255, 255, 255, 0.1) 100%
-    );
-    z-index: 1;
-}
-
-.highlight-card.glow-effect::before {
-    animation: metalGlow 2s ease;
-}
-
-@keyframes metalGlow {
-    0% { box-shadow: 0 0 0 rgba(255, 255, 255, 0.1); }
-    50% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
-    100% { box-shadow: 0 0 0 rgba(255, 255, 255, 0.1); }
-}
-
-.highlight-card .card-image-container {
-    position: relative;
-    height: 200px;
-    overflow: hidden;
-}
-
-.highlight-card .card-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-}
-
-.highlight-card .card-badge {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: #e74c3c;
-    color: white;
-    padding: 5px 15px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: bold;
-    z-index: 2;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-}
-
-.highlight-card .card-content {
-    padding: 20px;
-    position: relative;
-    z-index: 2;
-}
-
-.highlight-card .card-title {
-    margin: 0 0 15px;
-    font-size: 20px;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.highlight-card .card-price {
-    font-weight: bold;
-    font-size: 18px;
-    color: #f1c40f;
-    margin: 0 0 15px;
-    text-shadow: 0 0 5px rgba(241, 196, 15, 0.5);
-}
-
-.highlight-card .card-details {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    font-size: 15px;
-}
-
-.highlight-card .card-details span {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.highlight-card .card-hover-effect {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: 3;
-}
-
-.highlight-card:hover .card-hover-effect {
-    opacity: 1;
-}
-
-.highlight-card:hover .card-image {
-    transform: scale(1.1);
-}
-
-.highlight-card .btn-view-more {
-    background: #3498db;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 30px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 600;
-    box-shadow: 0 2px 10px rgba(52, 152, 219, 0.5);
-}
-
-.highlight-card .btn-view-more:hover {
-    background: #2980b9;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.7);
-}
-
-/* Efeito de entrada dos cards */
-@keyframes highlightEntrance {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Mensagens de erro e vazio */
-.highlight-empty {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 40px;
-    color: #f1c40f;
-    font-size: 1.2rem;
-}
-
-.highlight-error {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 40px;
-    color: #e74c3c;
-}
-
-.highlight-error i {
-    font-size: 2.5rem;
-    margin-bottom: 15px;
-}
-
-.retry-btn {
-    margin-top: 20px;
-    padding: 10px 25px;
-    background: #3498db;
-    color: white;
-    border: none;
-    border-radius: 30px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    font-weight: 600;
-}
-
-.retry-btn:hover {
-    background: #2980b9;
-}
-
-/* Efeito de brilho aleatório para destaques */
-@keyframes randomHighlight {
-    0%, 100% { 
-        box-shadow: 0 0 0 rgba(241, 196, 15, 0);
-        transform: scale(1);
-    }
-    50% { 
-        box-shadow: 0 0 25px rgba(241, 196, 15, 0.7);
-        transform: scale(1.02);
-    }
-}
-
-/* Adiciona classe para animação aleatória */
-.random-glow {
-    animation: randomHighlight 3s infinite;
-}
 
 
 /* ============ BANNER SECTION ============ */
@@ -4244,17 +3833,7 @@ section.banner .btn:hover::before {
     margin-top: 1rem;
     cursor: pointer;
 }
-.highlight-empty {
-    text-align: center;
-    padding: 2rem;
-    color: var(--text-medium);
-}
 
-.highlight-empty i {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    color: var(--color-primary);
-}
 
 .suggestion-buttons {
     display: flex;
@@ -4278,16 +3857,7 @@ section.banner .btn:hover::before {
     transform: translateY(-2px);
 }
 
-.highlight-error {
-    text-align: center;
-    padding: 2rem;
-    color: var(--color-accent);
-}
 
-.highlight-error i {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-}
 
 .retry-btn {
     background: var(--color-accent);
