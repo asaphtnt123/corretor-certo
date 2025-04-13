@@ -299,9 +299,7 @@ body {
         position: static;
     }
     
-    .carousel-inner {
-        height: 50vh;
-    }
+    
     
     .features-grid {
         grid-template-columns: 1fr;
