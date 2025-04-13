@@ -1921,7 +1921,9 @@ function atualizarPreferencias() {
 
 
 
-// Função principal para carregar o CTA dinâmico
+import { auth, db } from './firebase-config.js';
+import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
 export async function loadDynamicCTA() {
     const user = auth.currentUser;
     const ctaContainer = document.getElementById('dynamic-cta');
@@ -1934,12 +1936,12 @@ export async function loadDynamicCTA() {
             
             if (userDoc.exists()) {
                 const userData = userDoc.data();
-                renderCTA(userData);
+                renderMainPreferenceCTA(userData);
             } else {
                 renderDefaultCTA();
             }
         } catch (error) {
-            console.error("Erro ao carregar dados do usuário:", error);
+            console.error("Erro ao carregar dados:", error);
             renderDefaultCTA();
         }
     } else {
@@ -1947,113 +1949,99 @@ export async function loadDynamicCTA() {
     }
 }
 
-// Função para renderizar o CTA baseado nos dados do usuário
-function renderCTA(userData) {
+function renderMainPreferenceCTA(userData) {
     const ctaContent = document.querySelector('.cta-content');
     
     if (userData.userRole === 'seller') {
-        renderSellerCTA(userData);
+        renderSellerCTA();
     } else {
-        renderBuyerCTA(userData);
+        const mainPreference = getMainPreference(userData.buyerProfile);
+        renderBuyerCTA(mainPreference);
     }
 }
 
-// CTA para Vendedores
-function renderSellerCTA(userData) {
+function getMainPreference(buyerProfile) {
+    if (!buyerProfile) return null;
+    
+    // Pega o primeiro interesse (mais relevante) ou usa valores padrão
+    const mainInterest = buyerProfile.interests?.[0] || 'imoveis-comprar';
+    const [propertyType, actionType] = mainInterest.split('-');
+    
+    return {
+        propertyType,
+        actionType,
+        location: buyerProfile.preferenceLocation || 'sua região',
+        budget: buyerProfile.budgetRange || null
+    };
+}
+
+function renderSellerCTA() {
     const ctaContent = document.querySelector('.cta-content');
-    const isProfessional = userData.sellerProfile?.sellerType === 'professional';
     
     ctaContent.innerHTML = `
-        <h2 class="cta-title">${isProfessional ? 'Maximize Seu Potencial de Vendas!' : 'Anuncie com a Gente!'}</h2>
+        <h2 class="cta-title">Destaque Seus Anúncios!</h2>
         <p class="cta-description">
-            ${isProfessional 
-                ? 'Nossa plataforma conecta você aos melhores clientes. Comece agora!' 
-                : 'Coloque seu imóvel ou veículo em destaque para milhares de compradores.'}
+            Alcance compradores qualificados e feche negócios mais rápido.
         </p>
         <a href="anunciar.html" class="cta-button pulse">
             <i class="fas fa-plus-circle"></i> Criar Anúncio
         </a>
-        ${isProfessional ? `
-        <div class="cta-stats">
-            <div class="stat-item">
-                <div class="stat-number">+85%</div>
-                <div class="stat-label">Conversão</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">3x</div>
-                <div class="stat-label">Mais Visibilidade</div>
-            </div>
-        </div>
-        ` : ''}
     `;
 }
 
-// CTA para Compradores
-function renderBuyerCTA(userData) {
-    const ctaContent = document.querySelector('.cta-content');
-    const buyerProfile = userData.buyerProfile || {};
-    const mainInterest = buyerProfile.interests?.[0] || 'imoveis-comprar';
-    const [propertyType, actionType] = mainInterest.split('-');
+function renderBuyerCTA(preference) {
+    if (!preference) return renderDefaultCTA();
     
+    const ctaContent = document.querySelector('.cta-content');
     const propertyNames = {
         'imoveis': 'Imóvel',
-        'automoveis': 'Veículo'
+        'automoveis': 'Carro'
     };
     
     const actionNames = {
-        'comprar': 'Comprar',
-        'alugar': 'Alugar'
+        'comprar': 'Compre',
+        'alugar': 'Alugue'
     };
     
-    const propertyIcon = propertyType === 'imoveis' ? 'fa-home' : 'fa-car';
-    const location = buyerProfile.preferenceLocation ? `em ${buyerProfile.preferenceLocation}` : 'na sua região';
+    const icons = {
+        'imoveis': 'fa-home',
+        'automoveis': 'fa-car'
+    };
     
     ctaContent.innerHTML = `
         <div class="cta-buyer">
-            <h2 class="cta-title">${actionNames[actionType]} o ${propertyNames[propertyType]} Perfeito ${location}</h2>
+            <h2 class="cta-title">${actionNames[preference.actionType]} o ${propertyNames[preference.propertyType]} Ideal</h2>
             <p class="cta-description">
-                Encontre as melhores opções para ${actionNames[actionType].toLowerCase()} 
-                ${propertyType === 'imoveis' ? 'imóveis' : 'veículos'} 
-                com até R$ ${(buyerProfile.budgetRange || '0').toLocaleString('pt-BR')}.
+                ${preference.budget ? `Até R$ ${preference.budget.toLocaleString('pt-BR')}` : 'Melhores ofertas'} 
+                ${preference.location ? `em ${preference.location}` : 'para você'}
             </p>
-            <a href="buscar.html?type=${propertyType}&interest=${actionType}" class="cta-button pulse">
-                <i class="fas ${propertyIcon}"></i> ${actionNames[actionType]} Agora
+            <a href="buscar.html?type=${preference.propertyType}&interest=${preference.actionType}" 
+               class="cta-button pulse">
+                <i class="fas ${icons[preference.propertyType]}"></i> 
+                ${actionNames[preference.actionType]} Agora
             </a>
-            <div class="cta-tip">
-                <i class="fas fa-lightbulb"></i> Dica: Atualize suas preferências para receber recomendações melhores!
-            </div>
         </div>
     `;
 }
 
-// CTA padrão para não logados
 function renderDefaultCTA() {
     const ctaContent = document.querySelector('.cta-content');
     
     ctaContent.innerHTML = `
-        <h2 class="cta-title">Encontre o Imóvel ou Veículo Ideal</h2>
+        <h2 class="cta-title">Encontre o Imóvel Perfeito</h2>
         <p class="cta-description">
-            Cadastre-se gratuitamente e tenha acesso às melhores oportunidades do mercado.
+            Cadastre-se para ver oportunidades exclusivas.
         </p>
-        <div class="cta-buttons">
-            <a href="registro.html?role=buyer" class="cta-button pulse">
-                <i class="fas fa-search"></i> Quero Comprar/Alugar
-            </a>
-            <a href="registro.html?role=seller" class="cta-button secondary">
-                <i class="fas fa-plus"></i> Quero Anunciar
-            </a>
-        </div>
+        <a href="registro.html" class="cta-button pulse">
+            <i class="fas fa-user-plus"></i> Criar Conta
+        </a>
     `;
 }
 
-// Inicializar quando o DOM estiver pronto
+// Inicializar
 document.addEventListener('DOMContentLoaded', () => {
-    // Observar mudanças no estado de autenticação
-    auth.onAuthStateChanged(() => {
-        loadDynamicCTA();
-    });
+    auth.onAuthStateChanged(loadDynamicCTA);
 });
-
 
 
 // ============== EXPORTAÇÕES GLOBAIS ==============
