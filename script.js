@@ -2037,10 +2037,7 @@ function renderDefaultCTA() {
     `;
 }
 
-// Inicializar
-document.addEventListener('DOMContentLoaded', () => {
-    auth.onAuthStateChanged(loadDynamicCTA);
-});
+
 // Em seu main.js ou arquivo principal
 import { loadDynamicCTA } from './cta-loader.js';
 
