@@ -499,7 +499,6 @@ main {
     margin-bottom: 20px;
 }
 
-/* Chamada para Anunciar */
 .call-to-action {
     background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
     color: white;
@@ -507,9 +506,10 @@ main {
     text-align: center;
     position: relative;
     overflow: hidden;
+    transition: all 0.5s ease;
 }
 
-/* Efeito de partículas ou textura sutil */
+/* Efeitos visuais (mantidos do anterior) */
 .call-to-action::before {
     content: '';
     position: absolute;
@@ -521,6 +521,80 @@ main {
         radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.05) 0%, transparent 20%),
         radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.05) 0%, transparent 20%);
     z-index: 1;
+}
+
+/* Container principal */
+.cta-content {
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+/* Estilos para os diferentes tipos de CTA */
+.cta-title {
+    font-size: 2.8rem;
+    margin-bottom: 25px;
+    font-weight: 800;
+    line-height: 1.2;
+    background: linear-gradient(to right, #f1c40f, #f39c12);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.cta-description {
+    font-size: 1.25rem;
+    margin-bottom: 40px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.cta-button {
+    background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%);
+    color: #1a1a1a;
+    padding: 18px 36px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+
+.cta-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(241, 196, 15, 0.6);
+}
+
+/* Versão para comprador */
+.cta-buyer {
+    background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+}
+
+.cta-buyer .cta-title {
+    background: linear-gradient(to right, #3498db, #2ecc71);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+.cta-buyer .cta-button {
+    background: linear-gradient(135deg, #2ecc71 0%, #3498db 100%);
+    color: white;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .cta-title {
+        font-size: 2rem;
+    }
+    .cta-description {
+        font-size: 1rem;
+    }
 }
 
 .call-to-action .container {
@@ -571,6 +645,8 @@ main {
     align-items: center;
     justify-content: center;
     gap: 10px;
+	 width: 200px;
+
 }
 
 .call-to-action .btn-anunciar::before {
