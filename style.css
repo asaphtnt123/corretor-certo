@@ -572,8 +572,76 @@ main {
 }
 
 /* Versão para comprador */
+/* Estilos para os elementos específicos do CTA dinâmico */
 .cta-buyer {
     background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+    padding: 40px;
+    border-radius: 15px;
+    margin: 0 auto;
+    max-width: 800px;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.cta-button.secondary {
+    background: linear-gradient(135deg, #7f8c8d 0%, #34495e 100%);
+    color: white;
+}
+
+.cta-stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #f1c40f;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.cta-tip {
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.cta-tip i {
+    color: #f1c40f;
+}
+
+/* Efeito de destaque para o CTA */
+@keyframes subtlePulse {
+    0%, 100% {
+        box-shadow: 0 0 0 rgba(52, 152, 219, 0);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(52, 152, 219, 0.4);
+    }
+}
+
+.cta-buyer {
+    animation: subtlePulse 6s infinite;
 }
 
 .cta-buyer .cta-title {
