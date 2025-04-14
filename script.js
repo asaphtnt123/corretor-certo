@@ -1923,7 +1923,8 @@ function atualizarPreferencias() {
 
 
 
-export async function loadDynamicCTA() {
+// Adicione esta função ao seu script.js
+async function loadDynamicCTA() {
     const user = auth.currentUser;
     const ctaContainer = document.getElementById('dynamic-cta');
     
@@ -1944,7 +1945,7 @@ export async function loadDynamicCTA() {
             renderDefaultCTA();
         }
     } else {
-        renderDefaultCTA();
+        renderGuestCTA();
     }
 }
 
@@ -2023,6 +2024,27 @@ function renderBuyerCTA(preference) {
     `;
 }
 
+function renderGuestCTA() {
+    const ctaContent = document.querySelector('.cta-content');
+    
+    ctaContent.innerHTML = `
+        <div class="cta-guest">
+            <h2 class="cta-title">Encontre o que você procura ou anuncie!</h2>
+            <p class="cta-description">
+                Cadastre-se gratuitamente para acessar os melhores imóveis e veículos.
+            </p>
+            <div class="cta-buttons">
+                <a href="registro.html?action=buscar" class="cta-button">
+                    <i class="fas fa-search"></i> Buscar Anúncios
+                </a>
+                <a href="registro.html?action=anunciar" class="cta-button">
+                    <i class="fas fa-plus"></i> Anunciar Agora
+                </a>
+            </div>
+        </div>
+    `;
+}
+
 function renderDefaultCTA() {
     const ctaContent = document.querySelector('.cta-content');
     
@@ -2037,13 +2059,14 @@ function renderDefaultCTA() {
     `;
 }
 
-
-
-
+// Chame esta função quando a página carregar e quando o estado de autenticação mudar
 document.addEventListener('DOMContentLoaded', () => {
     loadDynamicCTA();
 });
 
+onAuthStateChanged(auth, (user) => {
+    loadDynamicCTA();
+});
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
 window.openDetailsModal = openDetailsModal;
