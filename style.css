@@ -499,112 +499,220 @@ main {
     margin-bottom: 20px;
 }
 
-.call-to-action {
-    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+/* Estilos Premium para CTA Dinâmico */
+.dynamic-cta {
+    padding: 3rem 0;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     color: white;
-    padding: 80px 0;
-    text-align: center;
     position: relative;
     overflow: hidden;
-    transition: all 0.5s ease;
 }
 
-/* Efeitos visuais (mantidos do anterior) */
-.call-to-action::before {
+.dynamic-cta::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: 
-        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.05) 0%, transparent 20%),
-        radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.05) 0%, transparent 20%);
-    z-index: 1;
+    background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3QgZmlsbD0idXJsKCNwYXR0ZXJuKSIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIvPjwvc3ZnPg==');
 }
 
-/* Estilos para a CTA dinâmica */
-.call-to-action {
-    padding: 2rem 0;
-    background: linear-gradient(135deg, #2c3e50, #3498db);
-    color: white;
-    text-align: center;
-    transition: all 0.3s ease;
+.cta-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+    z-index: 2;
+}
+
+.cta-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.4s ease;
+}
+
+.cta-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
 .cta-content {
-    max-width: 800px;
-    margin: 0 auto;
+    text-align: center;
 }
 
+/* Tipografia Premium */
 .cta-title {
-    font-size: 2rem;
-    margin-bottom: 1rem;
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
     font-weight: 700;
+    line-height: 1.2;
+    background: linear-gradient(to right, #fff, #e0e0e0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+    display: inline-block;
 }
 
-.cta-description {
-    font-size: 1.2rem;
+.cta-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(to right, #ff7e5f, #feb47b);
+}
+
+.cta-subtitle {
+    font-size: 1.3rem;
     margin-bottom: 1.5rem;
     opacity: 0.9;
+    font-weight: 300;
+}
+
+.cta-highlight {
+    color: #feb47b;
+    font-weight: 500;
+}
+
+.cta-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 2rem 0;
+}
+
+.cta-stat {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    min-width: 150px;
+}
+
+.cta-stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ff7e5f;
+    margin-bottom: 0.3rem;
+}
+
+.cta-stat-label {
+    font-size: 0.9rem;
+    opacity: 0.8;
 }
 
 .cta-button {
-    display: inline-block;
-    padding: 12px 30px;
-    background-color: #e74c3c;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px 35px;
+    background: linear-gradient(45deg, #ff7e5f, #feb47b);
     color: white;
     border-radius: 50px;
     text-decoration: none;
     font-weight: 600;
     font-size: 1.1rem;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 20px rgba(254, 180, 123, 0.3);
+    border: none;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    margin: 0 10px;
+}
+
+.cta-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: 0.5s;
 }
 
 .cta-button:hover {
-    background-color: #c0392b;
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 15px 30px rgba(254, 180, 123, 0.4);
+}
+
+.cta-button:hover::before {
+    left: 100%;
 }
 
 .cta-button i {
-    margin-right: 8px;
+    margin-right: 10px;
+    font-size: 1.2rem;
 }
 
-/* Efeito de pulso para chamar atenção */
-.pulse {
-    animation: pulse 2s infinite;
+.cta-button-secondary {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: none;
 }
 
-@keyframes pulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
-    }
-    70% {
-        box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
-    }
+.cta-button-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: none;
 }
 
-/* Estilo específico para compradores */
+.cta-buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 2rem;
+}
+
+/* Variações específicas */
+.cta-seller .cta-button {
+    background: linear-gradient(45deg, #4e54c8, #8f94fb);
+    box-shadow: 0 10px 20px rgba(79, 84, 200, 0.3);
+}
+
 .cta-buyer .cta-button {
-    background-color: #27ae60;
+    background: linear-gradient(45deg, #11998e, #38ef7d);
+    box-shadow: 0 10px 20px rgba(17, 153, 142, 0.3);
 }
 
-.cta-buyer .cta-button:hover {
-    background-color: #219653;
-}
-
-/* Estilo para quando não há usuário logado */
 .cta-guest .cta-button {
-    background-color: #9b59b6;
+    background: linear-gradient(45deg, #8e2de2, #4a00e0);
+    box-shadow: 0 10px 20px rgba(142, 45, 226, 0.3);
 }
 
-.cta-guest .cta-button:hover {
-    background-color: #8e44ad;
+/* Responsividade */
+@media (max-width: 768px) {
+    .cta-card {
+        padding: 1.5rem;
+    }
+    
+    .cta-title {
+        font-size: 2rem;
+    }
+    
+    .cta-stats {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .cta-button {
+        width: 100%;
+        max-width: 300px;
+        margin: 5px 0;
+    }
 }
 
 /* Sobre */
