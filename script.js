@@ -1923,143 +1923,207 @@ function atualizarPreferencias() {
 
 
 
-// Adicione esta função ao seu script.js
 async function loadDynamicCTA() {
     const user = auth.currentUser;
-    const ctaContainer = document.getElementById('dynamic-cta');
+    const ctaContent = document.querySelector('.cta-content');
     
-    if (!ctaContainer) return;
+    if (!ctaContent) return;
 
-    if (user) {
-        try {
+    // Mostrar estado de carregamento
+    ctaContent.innerHTML = `
+        <div class="loading-cta">
+            <div class="spinner"></div>
+        </div>
+    `;
+
+    try {
+        if (user) {
             const userDoc = await getDoc(doc(db, 'users', user.uid));
             
             if (userDoc.exists()) {
                 const userData = userDoc.data();
-                renderMainPreferenceCTA(userData);
+                renderPersonalizedCTA(userData);
             } else {
                 renderDefaultCTA();
             }
-        } catch (error) {
-            console.error("Erro ao carregar dados:", error);
-            renderDefaultCTA();
+        } else {
+            renderGuestCTA();
         }
-    } else {
-        renderGuestCTA();
+    } catch (error) {
+        console.error("Erro ao carregar CTA:", error);
+        renderDefaultCTA();
     }
 }
 
-function renderMainPreferenceCTA(userData) {
+function renderPersonalizedCTA(userData) {
     const ctaContent = document.querySelector('.cta-content');
     
     if (userData.userRole === 'seller') {
-        renderSellerCTA();
+        renderSellerCTA(userData);
     } else {
-        const mainPreference = getMainPreference(userData.buyerProfile);
-        renderBuyerCTA(mainPreference);
+        const preferences = getUserPreferences(userData);
+        renderBuyerCTA(preferences);
     }
 }
 
-function getMainPreference(buyerProfile) {
-    if (!buyerProfile) return null;
-    
-    // Pega o primeiro interesse (mais relevante) ou usa valores padrão
+function getUserPreferences(userData) {
+    const buyerProfile = userData.buyerProfile || {};
     const mainInterest = buyerProfile.interests?.[0] || 'imoveis-comprar';
     const [propertyType, actionType] = mainInterest.split('-');
     
     return {
-        propertyType,
-        actionType,
+        propertyType: propertyType || 'imoveis',
+        actionType: actionType || 'comprar',
         location: buyerProfile.preferenceLocation || 'sua região',
-        budget: buyerProfile.budgetRange || null
+        budget: buyerProfile.budgetRange,
+        lastSearch: buyerProfile.lastSearch || null
     };
 }
 
-function renderSellerCTA() {
+function renderSellerCTA(userData) {
+    const stats = userData.sellerStats || { views: 0, contacts: 0, listings: 0 };
     const ctaContent = document.querySelector('.cta-content');
     
+    ctaContent.className = 'cta-content cta-seller';
     ctaContent.innerHTML = `
-        <h2 class="cta-title">Destaque Seus Anúncios!</h2>
-        <p class="cta-description">
-            Alcance compradores qualificados e feche negócios mais rápido.
-        </p>
-        <a href="anunciar.html" class="cta-button pulse">
-            <i class="fas fa-plus-circle"></i> Criar Anúncio
-        </a>
+        <h2 class="cta-title">Potencialize Seus Negócios</h2>
+        <p class="cta-subtitle">Como <span class="cta-highlight">profissional certificado</span>, você tem acesso a ferramentas exclusivas para maximizar seus resultados</p>
+        
+        <div class="cta-stats">
+            <div class="cta-stat">
+                <div class="cta-stat-number">${stats.listings}+</div>
+                <div class="cta-stat-label">Anúncios Ativos</div>
+            </div>
+            <div class="cta-stat">
+                <div class="cta-stat-number">${stats.views}</div>
+                <div class="cta-stat-label">Visualizações</div>
+            </div>
+            <div class="cta-stat">
+                <div class="cta-stat-number">${stats.contacts}</div>
+                <div class="cta-stat-label">Contatos Recebidos</div>
+            </div>
+        </div>
+        
+        <p>Nossos corretores premium conseguem <span class="cta-highlight">3x mais negócios fechados</span> que a média do mercado</p>
+        
+        <div class="cta-buttons">
+            <a href="anunciar.html" class="cta-button">
+                <i class="fas fa-plus-circle"></i> Criar Novo Anúncio
+            </a>
+            <a href="dashboard.html" class="cta-button cta-button-secondary">
+                <i class="fas fa-chart-line"></i> Ver Dashboard
+            </a>
+        </div>
+        
+        <p class="cta-note"><i class="fas fa-bolt"></i> Dica profissional: Anúncios com fotos profissionais recebem 70% mais contatos</p>
     `;
 }
 
-function renderBuyerCTA(preference) {
-    if (!preference) return renderDefaultCTA();
-    
-    const ctaContent = document.querySelector('.cta-content');
+function renderBuyerCTA(prefs) {
     const propertyNames = {
-        'imoveis': 'Imóvel',
-        'automoveis': 'Carro'
+        'imoveis': { name: 'Imóvel', icon: 'fa-home' },
+        'automoveis': { name: 'Veículo', icon: 'fa-car' }
     };
     
     const actionNames = {
-        'comprar': 'Compre',
-        'alugar': 'Alugue'
+        'comprar': { verb: 'Comprar', action: 'encontre para compra' },
+        'alugar': { verb: 'Alugar', action: 'descubra para locação' }
     };
     
-    const icons = {
-        'imoveis': 'fa-home',
-        'automoveis': 'fa-car'
-    };
+    const property = propertyNames[prefs.propertyType] || propertyNames['imoveis'];
+    const action = actionNames[prefs.actionType] || actionNames['comprar'];
     
+    const ctaContent = document.querySelector('.cta-content');
+    ctaContent.className = 'cta-content cta-buyer';
     ctaContent.innerHTML = `
-        <div class="cta-buyer">
-            <h2 class="cta-title">${actionNames[preference.actionType]} o ${propertyNames[preference.propertyType]} Ideal</h2>
-            <p class="cta-description">
-                ${preference.budget ? `Até R$ ${preference.budget.toLocaleString('pt-BR')}` : 'Melhores ofertas'} 
-                ${preference.location ? `em ${preference.location}` : 'para você'}
-            </p>
-            <a href="buscar.html?type=${preference.propertyType}&interest=${preference.actionType}" 
-               class="cta-button pulse">
-                <i class="fas ${icons[preference.propertyType]}"></i> 
-                ${actionNames[preference.actionType]} Agora
+        <h2 class="cta-title">${action.verb} o ${property.name} Perfeito</h2>
+        <p class="cta-subtitle">${prefs.lastSearch ? 'Baseado em sua última busca' : 'Nós podemos ajudar você a'} <span class="cta-highlight">${action.action}</span> ${prefs.location ? `em ${prefs.location}` : 'nas melhores condições'}</p>
+        
+        <div class="cta-stats">
+            <div class="cta-stat">
+                <div class="cta-stat-number">${prefs.budget ? 'R$ ' + prefs.budget.toLocaleString('pt-BR') : 'Melhor'}</div>
+                <div class="cta-stat-label">${prefs.budget ? 'Seu orçamento' : 'Preço'}</div>
+            </div>
+            <div class="cta-stat">
+                <div class="cta-stat-number">24h</div>
+                <div class="cta-stat-label">Atualizações</div>
+            </div>
+            <div class="cta-stat">
+                <div class="cta-stat-number">100%</div>
+                <div class="cta-stat-label">Verificados</div>
+            </div>
+        </div>
+        
+        <p>Os usuários que utilizam nossos filtros inteligentes encontram o ${property.name.toLowerCase()} ideal <span class="cta-highlight">47% mais rápido</span></p>
+        
+        <div class="cta-buttons">
+            <a href="buscar.html?type=${prefs.propertyType}&action=${prefs.actionType}${prefs.location ? '&location=' + encodeURIComponent(prefs.location) : ''}${prefs.budget ? '&max_price=' + prefs.budget : ''}" class="cta-button">
+                <i class="fas ${property.icon}"></i> ${action.verb} Agora
+            </a>
+            <a href="perfil.html#preferences" class="cta-button cta-button-secondary">
+                <i class="fas fa-sliders-h"></i> Ajustar Preferências
             </a>
         </div>
+        
+        <p class="cta-note"><i class="fas fa-bell"></i> Ative notificações para ser avisado sobre novos anúncios</p>
     `;
 }
 
 function renderGuestCTA() {
     const ctaContent = document.querySelector('.cta-content');
-    
+    ctaContent.className = 'cta-content cta-guest';
     ctaContent.innerHTML = `
-        <div class="cta-guest">
-            <h2 class="cta-title">Encontre o que você procura ou anuncie!</h2>
-            <p class="cta-description">
-                Cadastre-se gratuitamente para acessar os melhores imóveis e veículos.
-            </p>
-            <div class="cta-buttons">
-                <a href="registro.html?action=buscar" class="cta-button">
-                    <i class="fas fa-search"></i> Buscar Anúncios
-                </a>
-                <a href="registro.html?action=anunciar" class="cta-button">
-                    <i class="fas fa-plus"></i> Anunciar Agora
-                </a>
+        <h2 class="cta-title">Sua Jornada Começa Aqui</h2>
+        <p class="cta-subtitle">Junte-se a <span class="cta-highlight">50.000+ usuários</span> que já encontraram ou anunciaram com sucesso em nossa plataforma</p>
+        
+        <div class="cta-stats">
+            <div class="cta-stat">
+                <div class="cta-stat-number">5.000+</div>
+                <div class="cta-stat-label">Anúncios Ativos</div>
+            </div>
+            <div class="cta-stat">
+                <div class="cta-stat-number">98%</div>
+                <div class="cta-stat-label">Satisfação</div>
+            </div>
+            <div class="cta-stat">
+                <div class="cta-stat-number">0</div>
+                <div class="cta-stat-label">Taxa de Cadastro</div>
             </div>
         </div>
+        
+        <p>Cadastre-se em <span class="cta-highlight">menos de 1 minuto</span> e tenha acesso completo às melhores oportunidades</p>
+        
+        <div class="cta-buttons">
+            <a href="registro.html?action=buscar" class="cta-button">
+                <i class="fas fa-search"></i> Buscar Imóveis/Veículos
+            </a>
+            <a href="registro.html?action=anunciar" class="cta-button">
+                <i class="fas fa-plus"></i> Anunciar Propriedade
+            </a>
+        </div>
+        
+        <p class="cta-note"><i class="fas fa-shield-alt"></i> Ambiente 100% seguro e verificado</p>
     `;
 }
 
 function renderDefaultCTA() {
     const ctaContent = document.querySelector('.cta-content');
-    
+    ctaContent.className = 'cta-content cta-default';
     ctaContent.innerHTML = `
-        <h2 class="cta-title">Encontre o Imóvel Perfeito</h2>
-        <p class="cta-description">
-            Cadastre-se para ver oportunidades exclusivas.
-        </p>
-        <a href="registro.html" class="cta-button pulse">
-            <i class="fas fa-user-plus"></i> Criar Conta
-        </a>
+        <h2 class="cta-title">Encontre o que Você Precisa</h2>
+        <p class="cta-subtitle">Acesso a <span class="cta-highlight">milhares de oportunidades</span> em imóveis e veículos em um só lugar</p>
+        
+        <div class="cta-buttons">
+            <a href="registro.html" class="cta-button">
+                <i class="fas fa-user-plus"></i> Criar Conta Gratuita
+            </a>
+        </div>
+        
+        <p class="cta-note"><i class="fas fa-clock"></i> Leva menos de 1 minuto para se cadastrar</p>
     `;
 }
 
-// Chame esta função quando a página carregar e quando o estado de autenticação mudar
+// Inicialização
 document.addEventListener('DOMContentLoaded', () => {
     loadDynamicCTA();
 });
