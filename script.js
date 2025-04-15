@@ -181,40 +181,58 @@ async function verificarFavorito(adId) {
     }
 }
 
-async function toggleFavorito(anuncio, buttonElement) {
+async function toggleFavorito(adData, buttonElement = null) {
+    const user = auth.currentUser;
+    if (!user) {
+        showAlert("Você precisa estar logado para adicionar favoritos", "error");
+        return false; // Retorna false quando não está logado
+    }
+    
     try {
-        const user = auth.currentUser;
-        if (!user) {
-            showAlert('Você precisa estar logado para favoritar anúncios', 'error');
-            return;
-        }
-
-        const favoritoRef = doc(db, "favoritos", `${user.uid}_${anuncio.id}`);
-        const isFavorito = buttonElement.classList.contains('favorited');
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        const favoritos = userDoc.data()?.favoritos || [];
+        const adId = adData.id;
         
-        if (isFavorito) {
+        let novosFavoritos;
+        let isFavorito;
+        let message;
+        
+        if (favoritos.includes(adId)) {
             // Remove dos favoritos
-            await deleteDoc(favoritoRef);
-            buttonElement.classList.remove('favorited');
-            showAlert('Anúncio removido dos favoritos', 'success');
+            novosFavoritos = favoritos.filter(id => id !== adId);
+            isFavorito = false;
+            message = "Anúncio removido dos favoritos";
         } else {
             // Adiciona aos favoritos
-            await setDoc(favoritoRef, {
-                userId: user.uid,
-                anuncioId: anuncio.id,
-                tipo: isAutomovel ? 'automovel' : 'imovel',
-                titulo: anuncio.titulo,
-                preco: anuncio.preco,
-                imagem: anuncio.imagens?.[0] || '',
-                dataAdicionado: new Date()
-            });
-            buttonElement.classList.add('favorited');
-            showAlert('Anúncio adicionado aos favoritos!', 'success');
+            novosFavoritos = [...favoritos, adId];
+            isFavorito = true;
+            message = "Anúncio adicionado aos favoritos";
         }
         
+        // Atualiza no Firestore
+        await updateDoc(userDocRef, {
+            favoritos: novosFavoritos,
+            lastUpdated: new Date()
+        });
+        
+        // Atualiza a UI apenas se o botão foi fornecido
+        if (buttonElement) {
+            buttonElement.classList.toggle('favorited', isFavorito);
+        } else {
+            // Alternativa: atualiza todos os botões correspondentes
+            document.querySelectorAll(`.favorite-btn[data-ad-id="${adId}"]`).forEach(btn => {
+                btn.classList.toggle('favorited', isFavorito);
+            });
+        }
+        
+        showAlert(message, "success");
+        return isFavorito;
+        
     } catch (error) {
-        console.error('Erro ao atualizar favoritos:', error);
-        showAlert('Erro ao atualizar favoritos', 'error');
+        console.error("Erro ao atualizar favoritos:", error);
+        showAlert("Ocorreu um erro ao atualizar seus favoritos", "error");
+        return false;
     }
 }
 
@@ -722,25 +740,24 @@ function criarCardDestaque(dados, isAutomovel = false) {
         </div>
     `;
     
-    // Configura o evento de favorito
+     // Configura o evento de favorito
     const favoriteBtn = card.querySelector('.favorite-btn');
+    
+    // Verifica o estado inicial do favorito
+    verificarFavorito(dados.id).then(isFavorito => {
+        if (isFavorito) {
+            favoriteBtn.classList.add('favorited');
+        }
+    });
+    
     favoriteBtn.addEventListener('click', async function(e) {
         e.preventDefault();
         e.stopPropagation();
-        await toggleFavorito(dados);
-        
-        // Atualiza visualmente o botão após a operação
-        const user = auth.currentUser;
-        if (user) {
-            const userDoc = await getDoc(doc(db, "users", user.uid));
-            const favoritos = userDoc.data()?.favoritos || [];
-            this.classList.toggle('favorited', favoritos.includes(dados.id));
-        }
+        await toggleFavorito(dados, this); // Passa o botão como argumento
     });
     
     return card;
 }
-
 async function verificarFavoritos() {
     const user = auth.currentUser;
     if (!user) return [];
