@@ -688,68 +688,59 @@ function toggleFields(tipo) {
         formPesquisa.reset();
     }
 }
-// Função para criar cards de destaque
 function criarCardDestaque(dados, isAutomovel = false) {
     const card = document.createElement('div');
-    card.className = 'highlight-card';
-    
-    // Adiciona classe aleatória para efeito de brilho (1 em cada 3 cards)
-    if (Math.random() < 0.33) {
-        card.classList.add('random-glow');
-    }
+    card.className = 'destaque-card';
     
     const imagens = dados.imagens || ["images/default.jpg"];
-    const isFavorito = verificarFavorito(dados.id);
+    const isAluguel = dados.negociacao === 'aluguel';
+    const visualizacoes = dados.visualizacoes || 0;
     
     card.innerHTML = `
-        <div class="card-image-container">
-            <img src="${imagens[0]}" alt="${dados.titulo}" class="card-image" loading="lazy">
-            <div class="card-badge">Destaque</div>
-            <button class="favorite-btn ${isFavorito ? 'favorited' : ''}" data-ad-id="${dados.id}">
-                <i class="fas fa-heart"></i>
-            </button>
-        </div>
-        <div class="card-content">
-            <h3 class="card-title">${dados.titulo || 'Sem título'}</h3>
-            <p class="card-price">R$ ${dados.preco?.toLocaleString('pt-BR') || 'Sob consulta'}</p>
-            <div class="card-details">
-                ${isAutomovel ? `
-                    <span><i class="fas fa-car"></i> ${dados.marca || 'Marca não informada'}</span>
-                    <span><i class="fas fa-tag"></i> ${dados.modelo || 'Modelo não informado'}</span>
-                    <span><i class="fas fa-calendar-alt"></i> ${dados.ano || 'Ano não informado'}</span>
-                ` : `
-                    <span><i class="fas fa-map-marker-alt"></i> ${dados.bairro || 'Local não informado'}</span>
-                    <span><i class="fas fa-expand"></i> ${dados.area ? dados.area + 'm²' : 'Área não informada'}</span>
-                    <span><i class="fas fa-bed"></i> ${dados.quartos || 0} quarto(s)</span>
-                `}
+        <div class="destaque-imagem-container">
+            <img src="${imagens[0]}" alt="${dados.titulo}" class="destaque-imagem" loading="lazy">
+            <div class="destaque-badge">
+                <span class="destaque-tag">Destaque</span>
+                <span class="visualizacoes-badge">
+                    <i class="fas fa-eye"></i> ${visualizacoes.toLocaleString()}
+                </span>
             </div>
         </div>
-        <div class="card-hover-effect">
-            <button class="btn-view-more">Ver Detalhes</button>
+        <div class="destaque-info">
+            <h3>${dados.titulo || 'Sem título'}</h3>
+            <p class="negociacao-tipo ${isAluguel ? 'aluguel' : 'venda'}">
+                ${isAluguel ? 'Aluguel' : 'Venda'}
+            </p>
+            
+            ${isAutomovel ? `
+                <p><i class="fas fa-car"></i> ${dados.marca || 'Não informada'} ${dados.modelo || ''}</p>
+                <p><i class="fas fa-calendar-alt"></i> ${dados.ano || 'Não informado'}</p>
+            ` : `
+                <p><i class="fas fa-map-marker-alt"></i> ${dados.bairro || 'Não informado'}</p>
+                <p><i class="fas fa-expand"></i> ${dados.area || '0'} m²</p>
+                
+                ${isAluguel ? `
+                    <div class="aluguel-info">
+                        <p><i class="fas fa-user-shield"></i> ${dados.fiador || 'Fiador não informado'}</p>
+                        ${dados.calcao ? `<p><i class="fas fa-money-bill-wave"></i> Caução: R$ ${dados.calcao.toLocaleString('pt-BR')}</p>` : ''}
+                    </div>
+                ` : ''}
+            `}
+            
+            <div class="destaque-preco">
+                <span>R$ ${dados.preco?.toLocaleString('pt-BR') || 'Não informado'}</span>
+                <a href="detalhes.html?id=${dados.id}&tipo=${isAutomovel ? 'carro' : 'imovel'}" class="destaque-btn">
+                    Ver detalhes <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
         </div>
     `;
     
-    // Animação de entrada
-    setTimeout(() => {
-        card.classList.add('metal-in');
-    }, 100);
-    
-    // Evento do botão de favoritos
-    card.querySelector('.favorite-btn').addEventListener('click', (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        toggleFavorito(dados);
-    });
-    
-    // Evento de clique no card
-    card.addEventListener('click', (e) => {
-        if (!e.target.closest('button')) {
-            window.location.href = `detalhes.html?id=${dados.id}&tipo=${isAutomovel ? 'carro' : 'imovel'}`;
-        }
-    });
-    
     return card;
 }
+
+
+
 
 // Função principal para carregar anúncios recomendados
 async function carregarAnunciosRecomendados() {
@@ -1852,6 +1843,14 @@ async function carregarDestaquesGerais() {
             imoveisSnapshot.forEach(doc => {
                 const data = doc.data();
                 data.id = doc.id;
+                // Adiciona visualizações se não existir
+                data.visualizacoes = data.visualizacoes || 0;
+                // Adiciona campos de aluguel se não existirem
+                if (data.negociacao === 'aluguel') {
+                    data.fiador = data.fiador || 'Não informado';
+                    data.calcao = data.calcao || 0;
+                    data.tipoCaucao = data.tipoCaucao || '';
+                }
                 scrollContainer.appendChild(criarCardDestaque(data, false));
             });
             
@@ -1875,6 +1874,8 @@ async function carregarDestaquesGerais() {
             automoveisSnapshot.forEach(doc => {
                 const data = doc.data();
                 data.id = doc.id;
+                // Adiciona visualizações se não existir
+                data.visualizacoes = data.visualizacoes || 0;
                 scrollContainer.appendChild(criarCardDestaque(data, true));
             });
             
