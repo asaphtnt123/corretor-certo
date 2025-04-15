@@ -441,12 +441,6 @@ async function registrarContatoWhatsApp(anuncioId, tipo) {
     }
 }
 
-// Função auxiliar para evitar erros com elementos nulos
-function getElementSafe(id) {
-    const element = document.getElementById(id);
-    if (!element) console.warn(`Elemento com ID ${id} não encontrado`);
-    return element || null;
-}
 
 async function checkIfFavorite(userId, adId) {
     try {
