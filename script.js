@@ -1980,44 +1980,6 @@ function getUserPreferences(userData) {
     };
 }
 
-function renderSellerCTA(userData) {
-    const stats = userData.sellerStats || { views: 0, contacts: 0, listings: 0 };
-    const ctaContent = document.querySelector('.cta-content');
-    
-    ctaContent.className = 'cta-content cta-seller';
-    ctaContent.innerHTML = `
-        <h2 class="cta-title">Potencialize Seus Negócios</h2>
-        <p class="cta-subtitle">Como <span class="cta-highlight">profissional certificado</span>, você tem acesso a ferramentas exclusivas para maximizar seus resultados</p>
-        
-        <div class="cta-stats">
-            <div class="cta-stat">
-                <div class="cta-stat-number">${stats.listings}+</div>
-                <div class="cta-stat-label">Anúncios Ativos</div>
-            </div>
-            <div class="cta-stat">
-                <div class="cta-stat-number">${stats.views}</div>
-                <div class="cta-stat-label">Visualizações</div>
-            </div>
-            <div class="cta-stat">
-                <div class="cta-stat-number">${stats.contacts}</div>
-                <div class="cta-stat-label">Contatos Recebidos</div>
-            </div>
-        </div>
-        
-        <p>Nossos corretores premium conseguem <span class="cta-highlight">3x mais negócios fechados</span> que a média do mercado</p>
-        
-        <div class="cta-buttons">
-            <a href="anunciar.html" class="cta-button">
-                <i class="fas fa-plus-circle"></i> Criar Novo Anúncio
-            </a>
-            <a href="dashboard.html" class="cta-button cta-button-secondary">
-                <i class="fas fa-chart-line"></i> Ver Dashboard
-            </a>
-        </div>
-        
-        <p class="cta-note"><i class="fas fa-bolt"></i> Dica profissional: Anúncios com fotos profissionais recebem 70% mais contatos</p>
-    `;
-}
 
 function renderBuyerCTA(prefs) {
     const propertyNames = {
@@ -2131,6 +2093,111 @@ document.addEventListener('DOMContentLoaded', () => {
 onAuthStateChanged(auth, (user) => {
     loadDynamicCTA();
 });
+
+// Adicione esta função para contar anúncios ativos
+async function contarAnunciosAtivos(userId) {
+    try {
+        // Contar imóveis ativos
+        const imoveisQuery = query(
+            collection(db, "imoveis"),
+            where("userId", "==", userId),
+            where("status", "==", "ativo")
+        );
+        
+        // Contar automóveis ativos
+        const automoveisQuery = query(
+            collection(db, "automoveis"),
+            where("userId", "==", userId),
+            where("status", "==", "ativo")
+        );
+
+        const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
+            getDocs(imoveisQuery),
+            getDocs(automoveisQuery)
+        ]);
+
+        return imoveisSnapshot.size + automoveisSnapshot.size;
+    } catch (error) {
+        console.error("Erro ao contar anúncios:", error);
+        return 0; // Retorna 0 em caso de erro
+    }
+}
+
+// Atualize a função renderSellerCTA para incluir a contagem real
+async function renderSellerCTA(userData) {
+    const ctaContent = document.querySelector('.cta-content');
+    const userId = auth.currentUser?.uid;
+    
+    if (!userId) return;
+    
+    // Mostrar estado de carregamento
+    ctaContent.innerHTML = `
+        <div class="loading-cta">
+            <div class="spinner"></div>
+            <p>Carregando seus dados...</p>
+        </div>
+    `;
+
+    try {
+        const [activeListings, stats] = await Promise.all([
+            contarAnunciosAtivos(userId),
+            userData.sellerStats || { views: 0, contacts: 0 }
+        ]);
+
+        ctaContent.className = 'cta-content cta-seller';
+        ctaContent.innerHTML = `
+            <h2 class="cta-title">Potencialize Seus Negócios</h2>
+            <p class="cta-subtitle">Você tem <span class="cta-highlight">${activeListings} anúncio(s) ativo(s)</span> gerando oportunidades</p>
+            
+            <div class="cta-stats">
+                <div class="cta-stat">
+                    <div class="cta-stat-number">${activeListings}</div>
+                    <div class="cta-stat-label">Anúncios Ativos</div>
+                </div>
+                <div class="cta-stat">
+                    <div class="cta-stat-number">${stats.views || 0}</div>
+                    <div class="cta-stat-label">Visualizações</div>
+                </div>
+                <div class="cta-stat">
+                    <div class="cta-stat-number">${stats.contacts || 0}</div>
+                    <div class="cta-stat-label">Contatos</div>
+                </div>
+            </div>
+            
+            <p>Nossos corretores premium conseguem <span class="cta-highlight">3x mais negócios</span> que a média do mercado</p>
+            
+            <div class="cta-buttons">
+                <a href="anunciar.html" class="cta-button">
+                    <i class="fas fa-plus-circle"></i> Novo Anúncio
+                </a>
+                ${activeListings > 0 ? `
+                <a href="meus-anuncios.html" class="cta-button cta-button-secondary">
+                    <i class="fas fa-list"></i> Gerenciar Anúncios
+                </a>
+                ` : ''}
+            </div>
+            
+            ${activeListings === 0 ? `
+            <div class="cta-alert">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Você não tem anúncios ativos no momento. Crie seu primeiro anúncio para começar!</p>
+            </div>
+            ` : ''}
+            
+            <p class="cta-note"><i class="fas fa-bolt"></i> Anúncios completos recebem até 70% mais contatos</p>
+        `;
+    } catch (error) {
+        console.error("Erro ao renderizar CTA:", error);
+        ctaContent.innerHTML = `
+            <div class="cta-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Não foi possível carregar seus dados de anúncios</p>
+                <button class="cta-retry" onclick="loadDynamicCTA()">Tentar novamente</button>
+            </div>
+        `;
+    }
+}
+
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
 window.openDetailsModal = openDetailsModal;
