@@ -679,6 +679,7 @@ function criarCardDestaque(dados, isAutomovel = false) {
     const imagens = dados.imagens || ["images/default.jpg"];
     const isAluguel = dados.negociacao === 'aluguel';
     const visualizacoes = dados.visualizacoes || 0;
+    const isFavorito = verificarFavorito(dados.id); // Você precisa implementar esta função
     
     card.innerHTML = `
         <div class="destaque-imagem-container">
@@ -689,6 +690,9 @@ function criarCardDestaque(dados, isAutomovel = false) {
                     <i class="fas fa-eye"></i> ${visualizacoes.toLocaleString()}
                 </span>
             </div>
+            <button class="favorite-btn ${isFavorito ? 'favorited' : ''}" data-ad-id="${dados.id}">
+                <i class="fas fa-heart"></i>
+            </button>
         </div>
         <div class="destaque-info">
             <h3>${dados.titulo || 'Sem título'}</h3>
@@ -720,11 +724,16 @@ function criarCardDestaque(dados, isAutomovel = false) {
         </div>
     `;
     
+    // Adiciona evento de clique ao botão de favoritos
+    const favoriteBtn = card.querySelector('.favorite-btn');
+    favoriteBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleFavorito(dados, this); // Você precisa implementar esta função
+    });
+    
     return card;
 }
-
-
-
 
 // Função principal para carregar anúncios recomendados
 async function carregarAnunciosRecomendados() {
