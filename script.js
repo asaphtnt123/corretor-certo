@@ -71,7 +71,19 @@ function mudarImagem(carrosselId, direcao) {
         imagens[novoIndex].style.display = 'block';
     }
 }
-
+// Função para verificar todos os favoritos do usuário
+async function verificarFavoritos() {
+    const user = auth.currentUser;
+    if (!user) return [];
+    
+    try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        return userDoc.data()?.favoritos || [];
+    } catch (error) {
+        console.error("Erro ao verificar favoritos:", error);
+        return [];
+    }
+}
 function criarCardComEvento(dados, isAutomovel = false) {
     const card = document.createElement('div');
     card.className = 'card';
@@ -1836,31 +1848,37 @@ async function carregarDestaquesGerais() {
         
         destaqueContainer.innerHTML = '<div class="highlight-loading">Carregando destaques...</div>';
         
-        const [imoveisSnapshot, automoveisSnapshot, favoritos] = await Promise.all([
+        // Carrega os dados em paralelo
+        const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
             getDocs(query(collection(db, "imoveis"), where("destaque", "==", true), limit(5))),
-            getDocs(query(collection(db, "automoveis"), where("destaque", "==", true), limit(5))),
-            verificarFavoritos()
+            getDocs(query(collection(db, "automoveis"), where("destaque", "==", true), limit(5)))
         ]);
+        
+        // Verifica favoritos apenas se o usuário estiver logado
+        let favoritos = [];
+        if (auth.currentUser) {
+            favoritos = await verificarFavoritos();
+        }
         
         destaqueContainer.innerHTML = '';
         
-        // Função para processar os anúncios
-        const processarAnuncios = (snapshot, isAutomovel) => {
+        // Processa imóveis em destaque
+        if (!imoveisSnapshot.empty) {
             const sectionContainer = document.createElement('div');
             sectionContainer.className = 'destaque-container';
             
             const sectionTitle = document.createElement('h2');
             sectionTitle.className = 'section-title';
-            sectionTitle.innerHTML = `<i class="fas ${isAutomovel ? 'fa-car' : 'fa-home'}"></i> ${isAutomovel ? 'Veículos' : 'Imóveis'} em destaque`;
+            sectionTitle.innerHTML = '<i class="fas fa-home"></i> Imóveis em destaque';
             sectionContainer.appendChild(sectionTitle);
             
             const scrollContainer = document.createElement('div');
             scrollContainer.className = 'highlight-scroll';
             
-            snapshot.forEach(doc => {
+            imoveisSnapshot.forEach(doc => {
                 const data = doc.data();
                 data.id = doc.id;
-                const card = criarCardDestaque(data, isAutomovel);
+                const card = criarCardDestaque(data, false);
                 
                 // Marca como favorito se estiver na lista
                 if (favoritos.includes(data.id)) {
@@ -1873,11 +1891,40 @@ async function carregarDestaquesGerais() {
             
             sectionContainer.appendChild(scrollContainer);
             destaqueContainer.appendChild(sectionContainer);
-        };
+        }
         
-        if (!imoveisSnapshot.empty) processarAnuncios(imoveisSnapshot, false);
-        if (!automoveisSnapshot.empty) processarAnuncios(automoveisSnapshot, true);
+        // Processa automóveis em destaque
+        if (!automoveisSnapshot.empty) {
+            const sectionContainer = document.createElement('div');
+            sectionContainer.className = 'destaque-container';
+            
+            const sectionTitle = document.createElement('h2');
+            sectionTitle.className = 'section-title';
+            sectionTitle.innerHTML = '<i class="fas fa-car"></i> Veículos em destaque';
+            sectionContainer.appendChild(sectionTitle);
+            
+            const scrollContainer = document.createElement('div');
+            scrollContainer.className = 'highlight-scroll';
+            
+            automoveisSnapshot.forEach(doc => {
+                const data = doc.data();
+                data.id = doc.id;
+                const card = criarCardDestaque(data, true);
+                
+                // Marca como favorito se estiver na lista
+                if (favoritos.includes(data.id)) {
+                    const btn = card.querySelector('.favorite-btn');
+                    if (btn) btn.classList.add('favorited');
+                }
+                
+                scrollContainer.appendChild(card);
+            });
+            
+            sectionContainer.appendChild(scrollContainer);
+            destaqueContainer.appendChild(sectionContainer);
+        }
         
+        // Mensagem se não houver destaques
         if (imoveisSnapshot.empty && automoveisSnapshot.empty) {
             destaqueContainer.innerHTML = `
                 <div class="highlight-empty">
