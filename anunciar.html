@@ -238,6 +238,35 @@
                                         <input type="text" class="form-control" id="proximo-a" name="proximo-a" 
                                                placeholder="Ex: Shopping, metrô, escola">
                                     </div>
+
+                                    <!-- Adicione esta seção após o campo "Próximo a" no formulário de imóveis -->
+<div class="row" id="aluguel-fields" style="display: none;">
+    <div class="col-md-4 mb-4">
+        <label for="fiador" class="form-label">Fiador Necessário*</label>
+        <select class="form-select" id="fiador" name="fiador" required>
+            <option value="" selected disabled>Selecione...</option>
+            <option value="sim">Sim</option>
+            <option value="nao">Não</option>
+            <option value="opcional">Opcional</option>
+        </select>
+        <div class="invalid-feedback">Por favor, informe se é necessário fiador</div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <label for="calcao" class="form-label">Caução (R$)</label>
+        <input type="number" class="form-control" id="calcao" name="calcao" min="0" step="0.01">
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <label for="tipo-caucao" class="form-label">Tipo de Caução</label>
+        <select class="form-select" id="tipo-caucao" name="tipo-caucao">
+            <option value="" selected>Nenhuma</option>
+            <option value="dinheiro">Dinheiro</option>
+            <option value="titulo">Título de Capitalização</option>
+            <option value="seguro">Seguro Fiança</option>
+        </select>
+    </div>
+</div>
                                 </div>
 
                                 <!-- Automóvel Fields -->
@@ -578,6 +607,22 @@
             // Iniciar com imóvel selecionado
             toggleFormularios(true);
         });
+
+        // Mostrar/ocultar campos de aluguel quando o tipo de negociação mudar
+document.querySelectorAll('input[name="negociacao"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const aluguelFields = document.getElementById('aluguel-fields');
+        if (this.value === 'aluguel') {
+            aluguelFields.style.display = 'flex';
+            // Tornar os campos obrigatórios
+            document.getElementById('fiador').required = true;
+        } else {
+            aluguelFields.style.display = 'none';
+            // Remover a obrigatoriedade
+            document.getElementById('fiador').required = false;
+        }
+    });
+});
     </script>
 
 
