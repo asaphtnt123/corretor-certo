@@ -78,6 +78,8 @@ function criarCardComEvento(dados, isAutomovel = false) {
     const imagens = dados.imagens || ["images/default.jpg"];
     const carrosselId = `carrossel-${dados.id}`;
     const isFavorito = verificarFavorito(dados.id);
+    const isAluguel = dados.negociacao === 'aluguel';
+    const visualizacoes = dados.visualizacoes || 0;
     
     card.innerHTML = `
         <div class="carrossel" id="${carrosselId}">
@@ -92,9 +94,16 @@ function criarCardComEvento(dados, isAutomovel = false) {
             <button class="favorite-btn ${isFavorito ? 'favorited' : ''}" data-ad-id="${dados.id}">
                 <i class="fas fa-heart"></i>
             </button>
+            <div class="visualizacoes-badge">
+                <i class="fas fa-eye"></i> ${visualizacoes.toLocaleString()}
+            </div>
         </div>
         <div class="card-content">
             <h4>${dados.titulo || 'Sem título'}</h4>
+            <p class="negociacao-tipo ${isAluguel ? 'aluguel' : 'venda'}">
+                <strong>${isAluguel ? 'Aluguel' : 'Venda'}</strong>
+            </p>
+            
             ${isAutomovel ? `
                 <p><strong>Marca:</strong> ${dados.marca || 'Não informada'}</p>
                 <p><strong>Modelo:</strong> ${dados.modelo || 'Não informado'}</p>
@@ -102,8 +111,19 @@ function criarCardComEvento(dados, isAutomovel = false) {
             ` : `
                 <p><strong>Bairro:</strong> ${dados.bairro || 'Não informado'}</p>
                 <p><strong>Tipo:</strong> ${dados.tipo || 'Não informado'}</p>
+                <p><strong>Quartos:</strong> ${dados.quartos || '0'}</p>
+                <p><strong>Área:</strong> ${dados.area || '0'} m²</p>
+                
+                ${isAluguel ? `
+                    <div class="aluguel-detalhes">
+                        <p><strong>Fiador:</strong> ${dados.fiador || 'Não informado'}</p>
+                        ${dados.calcao ? `<p><strong>Caução:</strong> R$ ${dados.calcao.toLocaleString('pt-BR')}</p>` : ''}
+                        ${dados.tipoCaucao ? `<p><strong>Tipo Caução:</strong> ${formatarTipoCaucao(dados.tipoCaucao)}</p>` : ''}
+                    </div>
+                ` : ''}
             `}
-            <p><strong>Preço:</strong> R$ ${dados.preco?.toLocaleString('pt-BR') || 'Não informado'}</p>
+            
+            <p class="preco-destaque"><strong>Preço:</strong> R$ ${dados.preco?.toLocaleString('pt-BR') || 'Não informado'}</p>
             <a href="detalhes.html?id=${dados.id}&tipo=${isAutomovel ? 'carro' : 'imovel'}" class="btn-view-more">Ver Mais</a>
         </div>
     `;
@@ -134,6 +154,16 @@ function criarCardComEvento(dados, isAutomovel = false) {
     });
     
     return card;
+}
+
+// Função auxiliar para formatar o tipo de caução
+function formatarTipoCaucao(tipo) {
+    const tipos = {
+        'dinheiro': 'Dinheiro',
+        'titulo': 'Título de Capitalização',
+        'seguro': 'Seguro Fiança'
+    };
+    return tipos[tipo] || tipo;
 }
 // Verifica se um anúncio já está nos favoritos do usuário
 async function verificarFavorito(adId) {
