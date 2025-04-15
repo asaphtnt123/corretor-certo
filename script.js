@@ -2123,7 +2123,7 @@ async function contarAnunciosAtivos(userId) {
     }
 }
 
-// Atualize a função renderSellerCTA para incluir a contagem real
+// Atualize a função renderSellerCTA para redirecionar para a aba de anúncios no perfil
 async function renderSellerCTA(userData) {
     const ctaContent = document.querySelector('.cta-content');
     const userId = auth.currentUser?.uid;
@@ -2171,7 +2171,7 @@ async function renderSellerCTA(userData) {
                     <i class="fas fa-plus-circle"></i> Novo Anúncio
                 </a>
                 ${activeListings > 0 ? `
-                <a href="meus-anuncios.html" class="cta-button cta-button-secondary">
+                <a href="perfil.html#meus-anuncios" class="cta-button cta-button-secondary" id="btn-meus-anuncios">
                     <i class="fas fa-list"></i> Gerenciar Anúncios
                 </a>
                 ` : ''}
@@ -2186,6 +2186,13 @@ async function renderSellerCTA(userData) {
             
             <p class="cta-note"><i class="fas fa-bolt"></i> Anúncios completos recebem até 70% mais contatos</p>
         `;
+
+        // Adiciona evento para garantir que a aba seja ativada ao navegar
+        document.getElementById('btn-meus-anuncios')?.addEventListener('click', function(e) {
+            // Armazena no sessionStorage que queremos abrir a aba
+            sessionStorage.setItem('openAnunciosTab', 'true');
+        });
+
     } catch (error) {
         console.error("Erro ao renderizar CTA:", error);
         ctaContent.innerHTML = `
