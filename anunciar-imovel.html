@@ -46,6 +46,30 @@
                         <label for="bairro" class="form-label">Bairro</label>
                         <input type="text" class="form-control" id="bairro" required>
                     </div>
+
+                    <div class="form-group">
+    <label for="fiador">Requer Fiador?</label>
+    <select id="fiador" name="fiador" class="form-control">
+        <option value="sim">Sim</option>
+        <option value="nao" selected>Não</option>
+        <option value="flexivel">Flexível (pode negociar)</option>
+    </select>
+</div>
+
+<div class="form-group">
+    <label for="calcao">Valor do Caução (R$)</label>
+    <input type="number" id="calcao" name="calcao" class="form-control" placeholder="Ex: 1000" min="0">
+</div>
+
+<div class="form-group">
+    <label for="tipo-caucao">Tipo de Caução</label>
+    <select id="tipo-caucao" name="tipo-caucao" class="form-control">
+        <option value="dinheiro">Dinheiro</option>
+        <option value="titulo">Título de Capitalização</option>
+        <option value="seguro">Seguro Fiança</option>
+        <option value="outro">Outro</option>
+    </select>
+</div>
                     <div class="mb-3">
                         <label for="imagens" class="form-label">Imagens do Imóvel</label>
                         <input type="file" class="form-control" id="imagens" multiple accept="image/*">
