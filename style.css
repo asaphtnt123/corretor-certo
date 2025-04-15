@@ -4439,3 +4439,24 @@ section.banner .btn:hover::before {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+.visualizacoes-badge {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.visualizacoes-badge i {
+    font-size: 0.9em;
+}
+
+.carrossel {
+    position: relative;
+}
