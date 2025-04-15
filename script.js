@@ -180,62 +180,46 @@ async function verificarFavorito(adId) {
     }
 }
 
-async function toggleFavorito(adData) {
-    const user = auth.currentUser;
-    if (!user) {
-        showAlert("Você precisa estar logado para adicionar favoritos", "error");
-        return;
-    }
-    
+async function toggleFavorito(anuncio) {
     try {
-        const userDocRef = doc(db, "users", user.uid);
-        const userDoc = await getDoc(userDocRef);
-        const favoritos = userDoc.data()?.favoritos || [];
-        const adId = adData.id;
-        
-        let novosFavoritos;
-        let isFavorito;
-        let message;
-        
-        if (favoritos.includes(adId)) {
+        const user = auth.currentUser;
+        if (!user) {
+            showAlert('Você precisa estar logado para favoritar anúncios', 'error');
+            return;
+        }
+
+        const favoritoRef = doc(db, "favoritos", `${user.uid}_${anuncio.id}`);
+        const docSnap = await getDoc(favoritoRef);
+
+        if (docSnap.exists()) {
             // Remove dos favoritos
-            novosFavoritos = favoritos.filter(id => id !== adId);
-            isFavorito = false;
-            message = "Anúncio removido dos favoritos";
+            await deleteDoc(favoritoRef);
+            showAlert('Anúncio removido dos favoritos', 'success');
         } else {
             // Adiciona aos favoritos
-            novosFavoritos = [...favoritos, adId];
-            isFavorito = true;
-            message = "Anúncio adicionado aos favoritos";
+            await setDoc(favoritoRef, {
+                userId: user.uid,
+                anuncioId: anuncio.id,
+                tipo: anuncio.tipo || (anuncio.marca ? 'automovel' : 'imovel'),
+                titulo: anuncio.titulo,
+                preco: anuncio.preco,
+                imagem: anuncio.imagens?.[0] || '',
+                dataAdicionado: new Date()
+            });
+            showAlert('Anúncio adicionado aos favoritos!', 'success');
         }
-        
-        // Atualiza no Firestore
-        await updateDoc(userDocRef, {
-            favoritos: novosFavoritos,
-            lastUpdated: new Date()  // Adiciona timestamp de atualização
-        });
-        
+
         // Atualiza a UI
-        const favoriteBtns = document.querySelectorAll(`.favorite-btn[data-ad-id="${adId}"]`);
-        favoriteBtns.forEach(btn => {
-            btn.classList.toggle('favorited', isFavorito);
-            btn.innerHTML = `<i class="fas fa-heart"></i>`;
-        });
-        
-        showAlert(message, "success");
+        const btn = document.querySelector(`.favorite-btn[data-ad-id="${anuncio.id}"]`);
+        if (btn) {
+            btn.classList.toggle('favorited');
+        }
         
     } catch (error) {
-        console.error("Erro ao atualizar favoritos:", error);
-        showAlert("Ocorreu um erro ao atualizar seus favoritos", "error");
-        
-        // Log adicional para depuração
-        if (error instanceof FirebaseError) {
-            console.error("Código de erro Firebase:", error.code);
-            console.error("Mensagem detalhada:", error.message);
-        }
+        console.error('Erro ao atualizar favoritos:', error);
+        showAlert('Erro ao atualizar favoritos', 'error');
     }
 }
-
 function openDetailsModal(adData, isAutomovel = false) {
     currentAdData = adData;
     const modal = document.getElementById('detalhesModal');
