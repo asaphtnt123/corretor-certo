@@ -320,4 +320,56 @@ body {
     }
 }
 
+/* Adicione feedback visual durante o redirecionamento */
+#btnWhatsApp {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
 
+#btnWhatsApp.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.5);
+    z-index: 1;
+}
+
+#btnWhatsApp.loading i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Adicione feedback visual durante o redirecionamento */
+#btnWhatsApp {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#btnWhatsApp.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.5);
+    z-index: 1;
+}
+
+#btnWhatsApp.loading i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
