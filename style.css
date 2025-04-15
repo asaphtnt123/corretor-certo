@@ -3183,7 +3183,19 @@ main {
     100% { transform: scale(1); }
 }
 
+/* Estilo específico para os cards de destaque */
+.destaque-card .favorite-btn {
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-left: auto;
+    background: transparent;
+    color: #ccc;
+}
 
+.destaque-card .favorite-btn.favorited {
+    color: #ff4757;
+}
 /* Estilo do botão flutuante */
 .btn-busca-flutuante {
     position: fixed;
