@@ -4399,3 +4399,43 @@ section.banner .btn:hover::before {
     margin-top: 1rem;
     cursor: pointer;
 }
+/* Animação para estatísticas */
+.cta-stat-number {
+    transition: all 0.3s ease;
+}
+
+.stat-updating {
+    opacity: 0.5;
+    transform: scale(0.9);
+}
+
+.stat-pulse {
+    animation: statPulse 0.5s ease;
+    color: #4e54c8; /* Cor de destaque */
+}
+
+@keyframes statPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.loading-cta {
+    text-align: center;
+    padding: 20px;
+}
+
+.loading-cta .spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top: 4px solid #4e54c8;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
