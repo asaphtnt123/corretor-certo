@@ -462,7 +462,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Preview de imagens
     imageInput.addEventListener('change', previewImages);
 
-// Form Submission
+// Atualização do código JavaScript para criar anúncio
 form.addEventListener('submit', async function(e) {
     e.preventDefault();
     
@@ -511,11 +511,15 @@ form.addEventListener('submit', async function(e) {
             negociacao: document.querySelector('input[name="negociacao"]:checked').value,
             userId: user.uid,
             data: new Date(),
-            status: 'ativo'
+            status: 'ativo',
+            visualizacoes: 0, // Inicializa contador de visualizações
+            contatos: [], // Array para armazenar contatos
+            ultimaAtualizacao: new Date()
         };
         
         // Adicionar campos específicos
         if (btnImovel.checked) {
+            // Campos básicos
             formData.tipo = document.getElementById('tipo-imovel').value;
             formData.bairro = document.getElementById('bairro').value;
             formData.quartos = parseInt(document.getElementById('quartos').value) || 0;
@@ -527,12 +531,18 @@ form.addEventListener('submit', async function(e) {
             formData.endereco = document.getElementById('endereco').value;
             formData.proximoA = document.getElementById('proximo-a').value;
             
+            // Novos campos para imóveis
+            formData.fiador = document.getElementById('fiador').value;
+            formData.calcao = parseFloat(document.getElementById('calcao').value) || 0;
+            formData.tipoCaucao = document.getElementById('tipo-caucao').value;
+            
             // Upload de imagens e salvar no Firestore
             const imageUrls = await uploadImages(selectedFiles, 'imoveis', user.uid);
             formData.imagens = imageUrls;
             
             await addDoc(collection(db, 'imoveis'), formData);
         } else {
+            // Campos para automóveis
             formData.tipo = document.getElementById('tipo-automovel').value;
             formData.marca = document.getElementById('marca').value;
             formData.modelo = document.getElementById('modelo').value;
@@ -550,7 +560,7 @@ form.addEventListener('submit', async function(e) {
         }
         
         alert('Anúncio criado com sucesso!');
-        window.location.href = 'perfil.html';
+        window.location.href = 'perfil.html#meus-anuncios';
         
     } catch (error) {
         console.error('Erro ao criar anúncio:', error);
@@ -565,6 +575,37 @@ form.addEventListener('submit', async function(e) {
         }, 300);
     }
 });
+
+// Função para registrar visualizações
+async function registrarVisualizacao(anuncioId, tipo) {
+    try {
+        const docRef = doc(db, tipo, anuncioId);
+        await updateDoc(docRef, {
+            visualizacoes: increment(1),
+            ultimaVisualizacao: new Date()
+        });
+    } catch (error) {
+        console.error("Erro ao registrar visualização:", error);
+    }
+}
+
+// Função para registrar contato
+async function registrarContato(anuncioId, tipo, contatoData) {
+    try {
+        const docRef = doc(db, tipo, anuncioId);
+        await updateDoc(docRef, {
+            contatos: arrayUnion({
+                ...contatoData,
+                data: new Date(),
+                status: 'novo'
+            }),
+            ultimoContato: new Date()
+        });
+    } catch (error) {
+        console.error("Erro ao registrar contato:", error);
+    }
+}
+
 
 // Inicialização
 showStep(0);
