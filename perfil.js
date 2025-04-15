@@ -451,19 +451,26 @@ async function handleDestaqueToggle(btn, id, collectionName) {
 }
 
 
-// Função para criar o card do anúncio
 function criarCardAnuncio(data, tipo, id) {
     const status = data.status || 'ativo';
     const destaque = data.destaque || false;
     const dataFormatada = data.data?.toDate ? data.data.toDate().toLocaleDateString('pt-BR') : 'Data não disponível';
     const precoFormatado = data.preco?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) || 'Preço não informado';
 
+    // Determina o badge color com base no tipo
+    const badgeColor = tipo === "imovel" ? "primary" : "success";
+    
+    // Determina os detalhes específicos
+    const detalhesEspecificos = tipo === "imovel" 
+        ? gerarDetalhesImovel(data) 
+        : gerarDetalhesAutomovel(data);
+
     return `
         <div class="col-md-6 col-lg-4 mb-4">
             <div class="anuncio-card" data-id="${id}" data-tipo="${tipo.toLowerCase()}">
                 <div class="anuncio-header">
                     <img src="${data.imagens?.[0] || 'img/sem-imagem.jpg'}" alt="${data.titulo}" class="anuncio-imagem-principal">
-                    <span class="anuncio-badge">${tipo}</span>
+                    <span class="anuncio-badge bg-${badgeColor}">${tipo === "imovel" ? "Imóvel" : "Automóvel"}</span>
                     
                     <div class="anuncio-controls">
                         <!-- Botão Status -->
@@ -485,7 +492,7 @@ function criarCardAnuncio(data, tipo, id) {
                     <div class="anuncio-preco">${precoFormatado}</div>
                     
                     <div class="anuncio-detalhes">
-                        ${tipo === 'Imóvel' ? gerarDetalhesImovel(data) : gerarDetalhesAutomovel(data)}
+                        ${detalhesEspecificos}
                     </div>
                     
                     <p class="anuncio-descricao">${data.descricao || 'Nenhuma descrição fornecida'}</p>
@@ -592,6 +599,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
+// Função para gerar detalhes de imóvel
 // Função para gerar detalhes de imóvel
 function gerarDetalhesImovel(data) {
     return `
