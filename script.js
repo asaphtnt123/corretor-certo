@@ -12,7 +12,8 @@ import {
     orderBy,
     limit, 
     addDoc,
-    onSnapshot 
+    onSnapshot ,
+    deleteDoc
 
 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -180,7 +181,7 @@ async function verificarFavorito(adId) {
     }
 }
 
-async function toggleFavorito(anuncio) {
+async function toggleFavorito(anuncio, buttonElement) {
     try {
         const user = auth.currentUser;
         if (!user) {
@@ -189,30 +190,26 @@ async function toggleFavorito(anuncio) {
         }
 
         const favoritoRef = doc(db, "favoritos", `${user.uid}_${anuncio.id}`);
-        const docSnap = await getDoc(favoritoRef);
-
-        if (docSnap.exists()) {
+        const isFavorito = buttonElement.classList.contains('favorited');
+        
+        if (isFavorito) {
             // Remove dos favoritos
             await deleteDoc(favoritoRef);
+            buttonElement.classList.remove('favorited');
             showAlert('Anúncio removido dos favoritos', 'success');
         } else {
             // Adiciona aos favoritos
             await setDoc(favoritoRef, {
                 userId: user.uid,
                 anuncioId: anuncio.id,
-                tipo: anuncio.tipo || (anuncio.marca ? 'automovel' : 'imovel'),
+                tipo: isAutomovel ? 'automovel' : 'imovel',
                 titulo: anuncio.titulo,
                 preco: anuncio.preco,
                 imagem: anuncio.imagens?.[0] || '',
                 dataAdicionado: new Date()
             });
+            buttonElement.classList.add('favorited');
             showAlert('Anúncio adicionado aos favoritos!', 'success');
-        }
-
-        // Atualiza a UI
-        const btn = document.querySelector(`.favorite-btn[data-ad-id="${anuncio.id}"]`);
-        if (btn) {
-            btn.classList.toggle('favorited');
         }
         
     } catch (error) {
@@ -220,6 +217,8 @@ async function toggleFavorito(anuncio) {
         showAlert('Erro ao atualizar favoritos', 'error');
     }
 }
+
+
 function openDetailsModal(adData, isAutomovel = false) {
     currentAdData = adData;
     const modal = document.getElementById('detalhesModal');
@@ -679,7 +678,6 @@ function criarCardDestaque(dados, isAutomovel = false) {
     const imagens = dados.imagens || ["images/default.jpg"];
     const isAluguel = dados.negociacao === 'aluguel';
     const visualizacoes = dados.visualizacoes || 0;
-    const isFavorito = verificarFavorito(dados.id); // Você precisa implementar esta função
     
     card.innerHTML = `
         <div class="destaque-imagem-container">
@@ -690,7 +688,7 @@ function criarCardDestaque(dados, isAutomovel = false) {
                     <i class="fas fa-eye"></i> ${visualizacoes.toLocaleString()}
                 </span>
             </div>
-            <button class="favorite-btn ${isFavorito ? 'favorited' : ''}" data-ad-id="${dados.id}">
+            <button class="favorite-btn" data-ad-id="${dados.id}">
                 <i class="fas fa-heart"></i>
             </button>
         </div>
@@ -724,17 +722,37 @@ function criarCardDestaque(dados, isAutomovel = false) {
         </div>
     `;
     
-    // Adiciona evento de clique ao botão de favoritos
+    // Configura o evento de favorito
     const favoriteBtn = card.querySelector('.favorite-btn');
-    favoriteBtn.addEventListener('click', function(e) {
+    favoriteBtn.addEventListener('click', async function(e) {
         e.preventDefault();
         e.stopPropagation();
-        toggleFavorito(dados, this); // Você precisa implementar esta função
+        await toggleFavorito(dados);
+        
+        // Atualiza visualmente o botão após a operação
+        const user = auth.currentUser;
+        if (user) {
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            const favoritos = userDoc.data()?.favoritos || [];
+            this.classList.toggle('favorited', favoritos.includes(dados.id));
+        }
     });
     
     return card;
 }
 
+async function verificarFavoritos() {
+    const user = auth.currentUser;
+    if (!user) return [];
+    
+    try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        return userDoc.data()?.favoritos || [];
+    } catch (error) {
+        console.error("Erro ao verificar favoritos:", error);
+        return [];
+    }
+}
 // Função principal para carregar anúncios recomendados
 async function carregarAnunciosRecomendados() {
     const user = auth.currentUser;
@@ -1813,70 +1831,48 @@ async function carregarDestaquesGerais() {
         
         destaqueContainer.innerHTML = '<div class="highlight-loading">Carregando destaques...</div>';
         
-        const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
+        const [imoveisSnapshot, automoveisSnapshot, favoritos] = await Promise.all([
             getDocs(query(collection(db, "imoveis"), where("destaque", "==", true), limit(5))),
-            getDocs(query(collection(db, "automoveis"), where("destaque", "==", true), limit(5)))
+            getDocs(query(collection(db, "automoveis"), where("destaque", "==", true), limit(5))),
+            verificarFavoritos()
         ]);
         
         destaqueContainer.innerHTML = '';
         
-        // Adicionar imóveis se existirem
-        if (!imoveisSnapshot.empty) {
+        // Função para processar os anúncios
+        const processarAnuncios = (snapshot, isAutomovel) => {
             const sectionContainer = document.createElement('div');
             sectionContainer.className = 'destaque-container';
             
             const sectionTitle = document.createElement('h2');
             sectionTitle.className = 'section-title';
-            sectionTitle.innerHTML = '<i class="fas fa-home"></i> Imóveis em destaque';
+            sectionTitle.innerHTML = `<i class="fas ${isAutomovel ? 'fa-car' : 'fa-home'}"></i> ${isAutomovel ? 'Veículos' : 'Imóveis'} em destaque`;
             sectionContainer.appendChild(sectionTitle);
             
             const scrollContainer = document.createElement('div');
             scrollContainer.className = 'highlight-scroll';
             
-            imoveisSnapshot.forEach(doc => {
+            snapshot.forEach(doc => {
                 const data = doc.data();
                 data.id = doc.id;
-                // Adiciona visualizações se não existir
-                data.visualizacoes = data.visualizacoes || 0;
-                // Adiciona campos de aluguel se não existirem
-                if (data.negociacao === 'aluguel') {
-                    data.fiador = data.fiador || 'Não informado';
-                    data.calcao = data.calcao || 0;
-                    data.tipoCaucao = data.tipoCaucao || '';
+                const card = criarCardDestaque(data, isAutomovel);
+                
+                // Marca como favorito se estiver na lista
+                if (favoritos.includes(data.id)) {
+                    const btn = card.querySelector('.favorite-btn');
+                    if (btn) btn.classList.add('favorited');
                 }
-                scrollContainer.appendChild(criarCardDestaque(data, false));
+                
+                scrollContainer.appendChild(card);
             });
             
             sectionContainer.appendChild(scrollContainer);
             destaqueContainer.appendChild(sectionContainer);
-        }
+        };
         
-        // Adicionar automóveis se existirem
-        if (!automoveisSnapshot.empty) {
-            const sectionContainer = document.createElement('div');
-            sectionContainer.className = 'destaque-container';
-            
-            const sectionTitle = document.createElement('h2');
-            sectionTitle.className = 'section-title';
-            sectionTitle.innerHTML = '<i class="fas fa-car"></i> Veículos em destaque';
-            sectionContainer.appendChild(sectionTitle);
-            
-            const scrollContainer = document.createElement('div');
-            scrollContainer.className = 'highlight-scroll';
-            
-            automoveisSnapshot.forEach(doc => {
-                const data = doc.data();
-                data.id = doc.id;
-                // Adiciona visualizações se não existir
-                data.visualizacoes = data.visualizacoes || 0;
-                scrollContainer.appendChild(criarCardDestaque(data, true));
-            });
-            
-            sectionContainer.appendChild(scrollContainer);
-            destaqueContainer.appendChild(sectionContainer);
-        }
+        if (!imoveisSnapshot.empty) processarAnuncios(imoveisSnapshot, false);
+        if (!automoveisSnapshot.empty) processarAnuncios(automoveisSnapshot, true);
         
-        // Se não houver resultados
         if (imoveisSnapshot.empty && automoveisSnapshot.empty) {
             destaqueContainer.innerHTML = `
                 <div class="highlight-empty">
