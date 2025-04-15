@@ -442,6 +442,19 @@ async function registrarContatoWhatsApp(anuncioId, tipo) {
 }
 
 
+// Função para registrar visualizações
+async function registrarVisualizacao(anuncioId, tipo) {
+    try {
+        const docRef = doc(db, tipo, anuncioId);
+        await updateDoc(docRef, {
+            visualizacoes: increment(1),
+            ultimaVisualizacao: new Date()
+        });
+    } catch (error) {
+        console.error("Erro ao registrar visualização:", error);
+    }
+}
+
 async function checkIfFavorite(userId, adId) {
     try {
         const userDoc = await getDoc(doc(db, "users", userId));
