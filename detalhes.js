@@ -6,7 +6,9 @@ import {
     getDoc,
     updateDoc,
     arrayUnion,
-    arrayRemove
+    arrayRemove,
+     increment,
+    arrayUnion 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
@@ -442,18 +444,31 @@ async function registrarContatoWhatsApp(anuncioId, tipo) {
 }
 
 
-// Função para registrar visualizações
 async function registrarVisualizacao(anuncioId, tipo) {
     try {
         const docRef = doc(db, tipo, anuncioId);
+        
         await updateDoc(docRef, {
-            visualizacoes: increment(1),
+            visualizacoes: increment(1), // Agora usando a função importada
             ultimaVisualizacao: new Date()
         });
+        
+        console.log("Visualização registrada com sucesso!");
     } catch (error) {
         console.error("Erro ao registrar visualização:", error);
+        
+        // Fallback para documentos que não existem ou não têm o campo
+        try {
+            await setDoc(docRef, {
+                visualizacoes: 1,
+                ultimaVisualizacao: new Date()
+            }, { merge: true });
+        } catch (fallbackError) {
+            console.error("Erro no fallback de visualização:", fallbackError);
+        }
     }
 }
+
 
 async function checkIfFavorite(userId, adId) {
     try {
@@ -578,6 +593,7 @@ function showAlert(message, type = 'success') {
 }
 
 
+// Chamada quando a página carrega
 window.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const anuncioId = urlParams.get('id');
