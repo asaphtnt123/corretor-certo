@@ -790,43 +790,202 @@ function showAlert(message, type) {
 
 
 
-function fillEditForm(userData) {
-    // Campos básicos
-    document.getElementById("nome").value = userData.name || "";
-    document.getElementById("telefone").value = userData.phone || "";
-    document.getElementById("email").value = userData.email || "";
-    
-    // Verifica se é um vendedor profissional
-    const isProfessional = userData.sellerProfile?.professional?.sellerType === "professional";
-    
-    if (isProfessional) {
-        // Configura para perfil profissional
-        document.querySelector('input[name="tipo-usuario"][value="comercial"]').checked = true;
-        toggleUserTypeFields("comercial");
+async function fillEditForm(anuncioData, tipoAnuncio) {
+    try {
+        // Campos básicos comuns a todos os anúncios
+        document.getElementById("titulo").value = anuncioData.titulo || "";
+        document.getElementById("descricao").value = anuncioData.descricao || "";
+        document.getElementById("preco").value = anuncioData.preco || "";
         
-        // Preenche os dados profissionais
-        const profData = userData.sellerProfile.professional;
-        document.getElementById("cnpj").value = profData.cnpj || "";
-        document.getElementById("area-atuacao").value = profData.area || "";
-        document.getElementById("descricao-empresa").value = userData.sellerProfile.aboutBusiness || "";
-        
-        // Se você tiver campo CRECI no seu formulário
-        if (document.getElementById("creci")) {
-            document.getElementById("creci").value = profData.creci || "";
+        // Tipo de negociação
+        if (anuncioData.negociacao) {
+            document.querySelector(`input[name="negociacao"][value="${anuncioData.negociacao}"]`).checked = true;
+            
+            // Mostrar campos específicos para aluguel se aplicável
+            if (anuncioData.negociacao === 'aluguel') {
+                document.getElementById('aluguel-fields').style.display = 'flex';
+                document.getElementById("fiador").value = anuncioData.fiador || "";
+                document.getElementById("calcao").value = anuncioData.calcao || "";
+                document.getElementById("tipo-caucao").value = anuncioData.tipoCaucao || "";
+            }
         }
-    } else {
-        // Configura para perfil comum (caso tenha essa opção)
-        document.querySelector('input[name="tipo-usuario"][value="comum"]').checked = true;
-        toggleUserTypeFields("comum");
-        
-        // Você pode adicionar aqui os campos para usuário comum se necessário
-        if (document.getElementById("tipo-interesse")) {
-            document.getElementById("tipo-interesse").value = "";
-            toggleInterestFields("");
+
+        if (tipoAnuncio === "imovel") {
+            // Preencher campos específicos de imóveis
+            document.getElementById("tipo-imovel").value = anuncioData.tipo || "";
+            document.getElementById("bairro").value = anuncioData.bairro || "";
+            document.getElementById("quartos").value = anuncioData.quartos || "";
+            document.getElementById("banheiros").value = anuncioData.banheiros || "";
+            document.getElementById("garagem").value = anuncioData.garagem || "";
+            document.getElementById("area").value = anuncioData.area || "";
+            document.getElementById("mobiliado").checked = anuncioData.mobiliado || false;
+            document.getElementById("aceita-animais").checked = anuncioData.aceitaAnimais || false;
+            document.getElementById("endereco").value = anuncioData.endereco || "";
+            document.getElementById("proximo-a").value = anuncioData.proximoA || "";
+            
+            // Preencher checkboxes de características
+            const caracteristicas = ['condominio', 'piscina', 'elevador', 'portaria'];
+            caracteristicas.forEach(caracteristica => {
+                if (anuncioData[caracteristica]) {
+                    document.getElementById(caracteristica).checked = true;
+                }
+            });
+            
+        } else if (tipoAnuncio === "automovel") {
+            // Preencher campos específicos de automóveis
+            document.getElementById("tipo-automovel").value = anuncioData.tipo || "";
+            document.getElementById("marca").value = anuncioData.marca || "";
+            document.getElementById("modelo").value = anuncioData.modelo || "";
+            document.getElementById("ano").value = anuncioData.ano || "";
+            document.getElementById("km").value = anuncioData.km || "";
+            document.getElementById("cor").value = anuncioData.cor || "";
+            document.getElementById("combustivel").value = anuncioData.combustivel || "";
+            document.getElementById("cambio").value = anuncioData.cambio || "";
         }
+
+        // Carregar imagens existentes (se houver)
+        if (anuncioData.imagens && anuncioData.imagens.length > 0) {
+            const previewContainer = document.getElementById("imagens-preview");
+            previewContainer.innerHTML = "";
+            
+            anuncioData.imagens.forEach((imagemUrl, index) => {
+                const imgWrapper = document.createElement("div");
+                imgWrapper.className = "imagem-preview-wrapper";
+                imgWrapper.innerHTML = `
+                    <img src="${imagemUrl}" class="img-thumbnail">
+                    <button type="button" class="btn-remover-imagem" data-index="${index}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                previewContainer.appendChild(imgWrapper);
+            });
+            
+            // Adicionar eventos para remoção de imagens
+            document.querySelectorAll(".btn-remover-imagem").forEach(btn => {
+                btn.addEventListener("click", function() {
+                    const index = parseInt(this.getAttribute("data-index"));
+                    removerImagem(index);
+                });
+            });
+        }
+
+        console.log("Formulário de edição preenchido com sucesso");
+    } catch (error) {
+        console.error("Erro ao preencher formulário de edição:", error);
+        showAlert("Erro ao carregar dados do anúncio para edição", "error");
     }
 }
 
+// Método para salvar as alterações do anúncio
+async function salvarEdicaoAnuncio(anuncioId, tipoAnuncio) {
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            showAlert('Você precisa estar logado para editar anúncios', 'error');
+            return;
+        }
+
+        // Obter dados do formulário
+        const formData = {
+            titulo: document.getElementById('titulo').value,
+            descricao: document.getElementById('descricao').value,
+            preco: parseFloat(document.getElementById('preco').value),
+            negociacao: document.querySelector('input[name="negociacao"]:checked').value,
+            userId: user.uid,
+            ultimaAtualizacao: new Date()
+        };
+
+        // Adicionar campos específicos
+        if (tipoAnuncio === "imovel") {
+            formData.tipo = document.getElementById('tipo-imovel').value;
+            formData.bairro = document.getElementById('bairro').value;
+            formData.quartos = parseInt(document.getElementById('quartos').value) || 0;
+            formData.banheiros = parseInt(document.getElementById('banheiros').value) || 0;
+            formData.garagem = parseInt(document.getElementById('garagem').value) || 0;
+            formData.area = parseFloat(document.getElementById('area').value);
+            formData.mobiliado = document.getElementById('mobiliado').checked;
+            formData.aceitaAnimais = document.getElementById('aceita-animais').checked;
+            formData.endereco = document.getElementById('endereco').value;
+            formData.proximoA = document.getElementById('proximo-a').value;
+            
+            // Campos específicos para aluguel
+            if (formData.negociacao === 'aluguel') {
+                formData.fiador = document.getElementById('fiador').value;
+                formData.calcao = parseFloat(document.getElementById('calcao').value) || 0;
+                formData.tipoCaucao = document.getElementById('tipo-caucao').value;
+            }
+            
+            // Características do imóvel
+            formData.condominio = document.getElementById('condominio').checked;
+            formData.piscina = document.getElementById('piscina').checked;
+            formData.elevador = document.getElementById('elevador').checked;
+            formData.portaria = document.getElementById('portaria').checked;
+            
+        } else {
+            // Campos para automóveis
+            formData.tipo = document.getElementById('tipo-automovel').value;
+            formData.marca = document.getElementById('marca').value;
+            formData.modelo = document.getElementById('modelo').value;
+            formData.ano = parseInt(document.getElementById('ano').value);
+            formData.km = parseInt(document.getElementById('km').value) || 0;
+            formData.cor = document.getElementById('cor').value;
+            formData.combustivel = document.getElementById('combustivel').value;
+            formData.cambio = document.getElementById('cambio').value;
+        }
+
+        // Atualizar no Firestore
+        const collectionName = tipoAnuncio === "imovel" ? "imoveis" : "automoveis";
+        await updateDoc(doc(db, collectionName, anuncioId), formData);
+        
+        showAlert('Anúncio atualizado com sucesso!', 'success');
+        setTimeout(() => {
+            window.location.href = 'perfil.html#meus-anuncios';
+        }, 1500);
+        
+    } catch (error) {
+        console.error('Erro ao atualizar anúncio:', error);
+        showAlert('Erro ao atualizar anúncio. Tente novamente.', 'error');
+    }
+}
+
+// Função para inicializar a edição
+async function iniciarEdicaoAnuncio() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const anuncioId = urlParams.get('id');
+    const tipoAnuncio = urlParams.get('tipo');
+    
+    if (!anuncioId || !tipoAnuncio) {
+        showAlert('Anúncio não encontrado', 'error');
+        window.location.href = 'perfil.html#meus-anuncios';
+        return;
+    }
+
+    try {
+        const collectionName = tipoAnuncio === "imovel" ? "imoveis" : "automoveis";
+        const docRef = doc(db, collectionName, anuncioId);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+            await fillEditForm(docSnap.data(), tipoAnuncio);
+            
+            // Configurar evento de submit do formulário
+            document.getElementById('anuncio-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                salvarEdicaoAnuncio(anuncioId, tipoAnuncio);
+            });
+        } else {
+            showAlert('Anúncio não encontrado', 'error');
+            window.location.href = 'perfil.html#meus-anuncios';
+        }
+    } catch (error) {
+        console.error('Erro ao carregar anúncio:', error);
+        showAlert('Erro ao carregar anúncio para edição', 'error');
+        window.location.href = 'perfil.html#meus-anuncios';
+    }
+}
+
+// Inicializar quando a página carregar
+document.addEventListener('DOMContentLoaded', iniciarEdicaoAnuncio);
 function toggleUserTypeFields(tipoUsuario) {
     if (tipoUsuario === "comum") {
         // Mostra campos de usuário comum e esconde os profissionais
