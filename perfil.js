@@ -1084,3 +1084,33 @@ async function updateCounters(userId) {
         console.error("Erro ao atualizar contadores:", error);
     }
 }
+// No arquivo perfil.html ou no script que controla o perfil
+document.addEventListener('DOMContentLoaded', function() {
+    // Verifica se devemos abrir a aba de anúncios
+    const shouldOpenAnunciosTab = sessionStorage.getItem('openAnunciosTab') === 'true';
+    
+    if (shouldOpenAnunciosTab) {
+        // Remove o flag para não abrir novamente em outras navegações
+        sessionStorage.removeItem('openAnunciosTab');
+        
+        // Encontra e ativa a aba de Meus Anúncios
+        const tabAnuncios = document.querySelector('[href="#meus-anuncios"]');
+        if (tabAnuncios) {
+            // Simula o clique na aba
+            tabAnuncios.click();
+            
+            // Rola a página para a seção de anúncios
+            setTimeout(() => {
+                const section = document.getElementById('meus-anuncios');
+                if (section) {
+                    section.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 100);
+        }
+        
+        // Carrega os anúncios (assumindo que você tem essa função)
+        if (typeof carregarMeusAnuncios === 'function') {
+            carregarMeusAnuncios();
+        }
+    }
+});
