@@ -2123,7 +2123,6 @@ async function contarAnunciosAtivos(userId) {
     }
 }
 
-// Atualize a função renderSellerCTA para redirecionar para a aba de anúncios no perfil
 async function renderSellerCTA(userData) {
     const ctaContent = document.querySelector('.cta-content');
     const userId = auth.currentUser?.uid;
@@ -2139,9 +2138,10 @@ async function renderSellerCTA(userData) {
     `;
 
     try {
+        // Busca dados em paralelo para melhor performance
         const [activeListings, stats] = await Promise.all([
             contarAnunciosAtivos(userId),
-            userData.sellerStats || { views: 0, contacts: 0 }
+            calcularEstatisticasAnuncios(userId) // Nova função para calcular stats
         ]);
 
         ctaContent.className = 'cta-content cta-seller';
@@ -2151,15 +2151,15 @@ async function renderSellerCTA(userData) {
             
             <div class="cta-stats">
                 <div class="cta-stat">
-                    <div class="cta-stat-number">${activeListings}</div>
+                    <div class="cta-stat-number" id="stat-active">${activeListings}</div>
                     <div class="cta-stat-label">Anúncios Ativos</div>
                 </div>
                 <div class="cta-stat">
-                    <div class="cta-stat-number">${stats.views || 0}</div>
+                    <div class="cta-stat-number" id="stat-views">${stats.views}</div>
                     <div class="cta-stat-label">Visualizações</div>
                 </div>
                 <div class="cta-stat">
-                    <div class="cta-stat-number">${stats.contacts || 0}</div>
+                    <div class="cta-stat-number" id="stat-contacts">${stats.contacts}</div>
                     <div class="cta-stat-label">Contatos</div>
                 </div>
             </div>
@@ -2187,9 +2187,11 @@ async function renderSellerCTA(userData) {
             <p class="cta-note"><i class="fas fa-bolt"></i> Anúncios completos recebem até 70% mais contatos</p>
         `;
 
-        // Adiciona evento para garantir que a aba seja ativada ao navegar
+        // Configura listeners em tempo real
+        configurarAtualizacaoTempoReal(userId);
+
+        // Evento para abrir a aba de anúncios
         document.getElementById('btn-meus-anuncios')?.addEventListener('click', function(e) {
-            // Armazena no sessionStorage que queremos abrir a aba
             sessionStorage.setItem('openAnunciosTab', 'true');
         });
 
@@ -2199,9 +2201,125 @@ async function renderSellerCTA(userData) {
             <div class="cta-error">
                 <i class="fas fa-exclamation-triangle"></i>
                 <p>Não foi possível carregar seus dados de anúncios</p>
-                <button class="cta-retry" onclick="loadDynamicCTA()">Tentar novamente</button>
+                <button class="cta-retry" onclick="renderSellerCTA()">Tentar novamente</button>
             </div>
         `;
+    }
+}
+
+// Nova função para calcular estatísticas dos anúncios
+async function calcularEstatisticasAnuncios(userId) {
+    try {
+        const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
+            getDocs(query(collection(db, "imoveis"), where("userId", "==", userId), where("status", "==", "ativo")),
+            getDocs(query(collection(db, "automoveis"), where("userId", "==", userId), where("status", "==", "ativo"))
+        ]);
+
+        let totalViews = 0;
+        let totalContacts = 0;
+
+        // Processa imóveis
+        imoveisSnapshot.forEach(doc => {
+            const data = doc.data();
+            totalViews += data.visualizacoes || 0;
+            totalContacts += data.contatos?.length || 0;
+        });
+
+        // Processa automóveis
+        automoveisSnapshot.forEach(doc => {
+            const data = doc.data();
+            totalViews += data.visualizacoes || 0;
+            totalContacts += data.contatos?.length || 0;
+        });
+
+        return {
+            views: totalViews,
+            contacts: totalContacts
+        };
+
+    } catch (error) {
+        console.error("Erro ao calcular estatísticas:", error);
+        return { views: 0, contacts: 0 };
+    }
+}
+
+// Configura atualização em tempo real
+function configurarAtualizacaoTempoReal(userId) {
+    const queries = [
+        query(collection(db, "imoveis"), where("userId", "==", userId)),
+        query(collection(db, "automoveis"), where("userId", "==", userId))
+    ];
+
+    const unsubscribeFunctions = queries.map(q => 
+        onSnapshot(q, async () => {
+            const stats = await calcularEstatisticasAnuncios(userId);
+            atualizarDisplayStats(stats);
+        })
+    );
+
+    // Retorna função para limpar listeners
+    return () => unsubscribeFunctions.forEach(fn => fn());
+}
+
+// Atualiza os números na tela com animação
+function atualizarDisplayStats(stats) {
+    const elements = {
+        active: document.getElementById('stat-active'),
+        views: document.getElementById('stat-views'),
+        contacts: document.getElementById('stat-contacts')
+    };
+
+    // Animação de atualização
+    for (const [key, element] of Object.entries(elements)) {
+        if (element) {
+            element.classList.add('stat-updating');
+            setTimeout(() => {
+                element.textContent = stats[key] || 0;
+                element.classList.remove('stat-updating');
+                element.classList.add('stat-pulse');
+                setTimeout(() => element.classList.remove('stat-pulse'), 500);
+            }, 300);
+        }
+    }
+}
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        renderSellerCTA(user);
+    }
+});
+async function getSellerStats(userId) {
+    try {
+        // Busca todos os anúncios do usuário
+        const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
+            getDocs(query(collection(db, "imoveis"), where("userId", "==", userId))),
+            getDocs(query(collection(db, "automoveis"), where("userId", "==", userId)))
+        ]);
+
+        let totalViews = 0;
+        let totalContacts = 0;
+
+        // Processa imóveis
+        imoveisSnapshot.forEach(doc => {
+            const data = doc.data();
+            totalViews += data.visualizacoes || 0;
+            totalContacts += data.contatos?.length || 0;
+        });
+
+        // Processa automóveis
+        automoveisSnapshot.forEach(doc => {
+            const data = doc.data();
+            totalViews += data.visualizacoes || 0;
+            totalContacts += data.contatos?.length || 0;
+        });
+
+        return {
+            views: totalViews,
+            contacts: totalContacts
+        };
+
+    } catch (error) {
+        console.error("Erro ao buscar estatísticas:", error);
+        return { views: 0, contacts: 0 };
     }
 }
 
