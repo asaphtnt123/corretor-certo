@@ -356,6 +356,7 @@ function renderFeatures() {
     `).join('');
 }
 
+// Função loadAgentInfo atualizada
 async function loadAgentInfo() {
     if (!currentAd?.userId) return;
 
@@ -364,19 +365,87 @@ async function loadAgentInfo() {
         if (userDoc.exists()) {
             const userData = userDoc.data();
             
-            const agentName = getElementSafe('agentName');
-            const agentType = getElementSafe('agentType');
-            const btnWhatsApp = getElementSafe('btnWhatsApp');
-            
-            if (agentName) agentName.textContent = userData.name || "Anunciante";
-            if (agentType) agentType.textContent = userData.userType === 'comercial' ? 'Profissional' : 'Particular';
+            const btnWhatsApp = document.getElementById('btnWhatsApp');
             if (btnWhatsApp && userData.phone) {
-                btnWhatsApp.href = `https://wa.me/55${userData.phone.replace(/\D/g, '')}?text=Olá, vi seu anúncio e gostaria de mais informações`;
+                const phone = userData.phone.replace(/\D/g, '');
+                const message = `Olá, vi seu anúncio "${currentAd.titulo}" e gostaria de mais informações`;
+                const whatsappUrl = `https://wa.me/55${phone}?text=${encodeURIComponent(message)}`;
+                
+                btnWhatsApp.href = whatsappUrl;
+                
+                btnWhatsApp.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    
+                    // Adiciona efeito visual de loading
+                    const originalHtml = btnWhatsApp.innerHTML;
+                    btnWhatsApp.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Preparando...';
+                    btnWhatsApp.disabled = true;
+                    
+                    try {
+                        await registrarContatoWhatsApp(currentAd.id, currentAd.tipo === 'carro' ? 'automoveis' : 'imoveis');
+                        
+                        // Redireciona após breve delay
+                        setTimeout(() => {
+                            window.location.href = whatsappUrl;
+                        }, 500);
+                        
+                    } catch (error) {
+                        console.error("Erro ao registrar contato:", error);
+                        btnWhatsApp.innerHTML = originalHtml;
+                        btnWhatsApp.disabled = false;
+                        // Redireciona mesmo com erro, mas sem registro
+                        window.location.href = whatsappUrl;
+                    }
+                });
             }
         }
     } catch (error) {
         console.error("Erro ao carregar informações do anunciante:", error);
     }
+}
+// Função para registrar contato via WhatsApp
+async function registrarContatoWhatsApp(anuncioId, tipo) {
+    const user = auth.currentUser;
+    
+    const contatoData = {
+        nome: user?.displayName || 'Anônimo',
+        email: user?.email || '',
+        telefone: user?.phoneNumber || '',
+        meio: 'whatsapp',
+        data: new Date(),
+        status: 'novo',
+        userId: user?.uid || 'anonimo'
+    };
+
+    try {
+        const docRef = doc(db, tipo, anuncioId);
+        
+        // Atualização sem o campo ultimoContato
+        await updateDoc(docRef, {
+            contatos: arrayUnion(contatoData),
+            // Mantemos apenas o incremento de visualizações
+            visualizacoes: increment(1)
+        });
+        
+        console.log("Contato via WhatsApp registrado com sucesso!");
+    } catch (error) {
+        console.error("Erro ao registrar contato do WhatsApp:", error);
+        
+        // Fallback: cria o array de contatos se não existir
+        if (error.code === 'not-found') {
+            await setDoc(docRef, {
+                contatos: [contatoData],
+                visualizacoes: 1
+            }, { merge: true });
+        }
+    }
+}
+
+// Função auxiliar para evitar erros com elementos nulos
+function getElementSafe(id) {
+    const element = document.getElementById(id);
+    if (!element) console.warn(`Elemento com ID ${id} não encontrado`);
+    return element || null;
 }
 
 async function checkIfFavorite(userId, adId) {
@@ -500,3 +569,14 @@ function showAlert(message, type = 'success') {
         alert(`${type.toUpperCase()}: ${message}`);
     }
 }
+
+
+window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const anuncioId = urlParams.get('id');
+    const tipo = urlParams.get('tipo') === 'carro' ? 'automoveis' : 'imoveis';
+    
+    if (anuncioId && tipo) {
+        registrarVisualizacao(anuncioId, tipo);
+    }
+});
