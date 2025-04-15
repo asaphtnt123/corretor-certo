@@ -166,7 +166,6 @@ function formatarTipoCaucao(tipo) {
     };
     return tipos[tipo] || tipo;
 }
-// Verifica se um anúncio já está nos favoritos do usuário
 async function verificarFavorito(adId) {
     const user = auth.currentUser;
     if (!user) return false;
@@ -758,18 +757,7 @@ function criarCardDestaque(dados, isAutomovel = false) {
     
     return card;
 }
-async function verificarFavoritos() {
-    const user = auth.currentUser;
-    if (!user) return [];
-    
-    try {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        return userDoc.data()?.favoritos || [];
-    } catch (error) {
-        console.error("Erro ao verificar favoritos:", error);
-        return [];
-    }
-}
+
 // Função principal para carregar anúncios recomendados
 async function carregarAnunciosRecomendados() {
     const user = auth.currentUser;
