@@ -2124,7 +2124,39 @@ async function contarAnunciosAtivos(userId) {
     }
 }
 
+// Nova função para buscar estatísticas reais
+async function calcularEstatisticasReais(userId) {
+    try {
+        const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
+            getDocs(query(collection(db, "imoveis"), where("userId", "==", userId), where("status", "==", "ativo"))),
+            getDocs(query(collection(db, "automoveis"), where("userId", "==", userId), where("status", "==", "ativo")))
+        ]);
 
+        let totalViews = 0;
+        let totalContacts = 0;
+
+        imoveisSnapshot.forEach(doc => {
+            const data = doc.data();
+            totalViews += data.visualizacoes || 0;
+            totalContacts += data.contatos?.length || 0;
+        });
+
+        automoveisSnapshot.forEach(doc => {
+            const data = doc.data();
+            totalViews += data.visualizacoes || 0;
+            totalContacts += data.contatos?.length || 0;
+        });
+
+        return {
+            views: totalViews,
+            contacts: totalContacts
+        };
+
+    } catch (error) {
+        console.error("Erro ao calcular estatísticas:", error);
+        return { views: 0, contacts: 0 };
+    }
+}
 
 async function calcularEstatisticasAnuncios(userId) {
     try {
@@ -2161,13 +2193,13 @@ async function calcularEstatisticasAnuncios(userId) {
     }
 }
 
-// Função principal corrigida
 async function renderSellerCTA(userData) {
     const ctaContent = document.querySelector('.cta-content');
     const userId = auth.currentUser?.uid;
     
     if (!userId) return;
     
+    // Mostrar estado de carregamento
     ctaContent.innerHTML = `
         <div class="loading-cta">
             <div class="spinner"></div>
@@ -2178,46 +2210,94 @@ async function renderSellerCTA(userData) {
     try {
         const [activeListings, stats] = await Promise.all([
             contarAnunciosAtivos(userId),
-            calcularEstatisticasAnuncios(userId)
+            calcularEstatisticasReais(userId) // Nova função para buscar dados reais
         ]);
 
         ctaContent.className = 'cta-content cta-seller';
         ctaContent.innerHTML = `
-            <!-- Seu HTML existente -->
+            <h2 class="cta-title">Potencialize Seus Negócios</h2>
+            <p class="cta-subtitle">Você tem <span class="cta-highlight">${activeListings} anúncio(s) ativo(s)</span> gerando oportunidades</p>
+            
             <div class="cta-stats">
                 <div class="cta-stat">
-                    <div class="cta-stat-number" id="stat-active">${activeListings}</div>
+                    <div class="cta-stat-number">${activeListings}</div>
                     <div class="cta-stat-label">Anúncios Ativos</div>
                 </div>
                 <div class="cta-stat">
-                    <div class="cta-stat-number" id="stat-views">${stats.views}</div>
+                    <div class="cta-stat-number">${stats.views || 0}</div>
                     <div class="cta-stat-label">Visualizações</div>
                 </div>
                 <div class="cta-stat">
-                    <div class="cta-stat-number" id="stat-contacts">${stats.contacts}</div>
+                    <div class="cta-stat-number">${stats.contacts || 0}</div>
                     <div class="cta-stat-label">Contatos</div>
                 </div>
             </div>
-            <!-- Restante do seu HTML -->
+            
+            <p>Nossos corretores premium conseguem <span class="cta-highlight">3x mais negócios</span> que a média do mercado</p>
+            
+            <div class="cta-buttons">
+                <a href="anunciar.html" class="cta-button">
+                    <i class="fas fa-plus-circle"></i> Novo Anúncio
+                </a>
+                ${activeListings > 0 ? `
+                <a href="perfil.html#meus-anuncios" class="cta-button cta-button-secondary" id="btn-meus-anuncios">
+                    <i class="fas fa-list"></i> Gerenciar Anúncios
+                </a>
+                ` : ''}
+            </div>
+            
+            ${activeListings === 0 ? `
+            <div class="cta-alert">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Você não tem anúncios ativos no momento. Crie seu primeiro anúncio para começar!</p>
+            </div>
+            ` : ''}
+            
+            <p class="cta-note"><i class="fas fa-bolt"></i> Anúncios completos recebem até 70% mais contatos</p>
         `;
 
-        // Configura listeners em tempo real
-        const unsubscribe = configurarAtualizacaoTempoReal(userId);
+        // Configura atualização em tempo real (sem alterar o layout)
+        configurarAtualizacaoEmTempoReal(userId);
 
-        // Limpeza quando necessário (em um useEffect ou similar)
-        // unsubscribe();
+        // Mantém o evento original para abrir a aba
+        document.getElementById('btn-meus-anuncios')?.addEventListener('click', function(e) {
+            sessionStorage.setItem('openAnunciosTab', 'true');
+        });
 
     } catch (error) {
         console.error("Erro ao renderizar CTA:", error);
         ctaContent.innerHTML = `
             <div class="cta-error">
                 <i class="fas fa-exclamation-triangle"></i>
-                <p>Não foi possível carregar seus dados</p>
-                <button class="cta-retry" onclick="renderSellerCTA()">Tentar novamente</button>
+                <p>Não foi possível carregar seus dados de anúncios</p>
+                <button class="cta-retry" onclick="loadDynamicCTA()">Tentar novamente</button>
             </div>
         `;
     }
 }
+
+// Função para atualização em tempo real (mantendo o layout)
+function configurarAtualizacaoEmTempoReal(userId) {
+    const queries = [
+        query(collection(db, "imoveis"), where("userId", "==", userId)),
+        query(collection(db, "automoveis"), where("userId", "==", userId))
+    ];
+
+    const unsubscribeFunctions = queries.map(q => 
+        onSnapshot(q, () => {
+            calcularEstatisticasReais(userId).then(stats => {
+                const viewsElement = document.querySelector('.cta-stat:nth-child(2) .cta-stat-number');
+                const contactsElement = document.querySelector('.cta-stat:nth-child(3) .cta-stat-number');
+                
+                if (viewsElement) viewsElement.textContent = stats.views || 0;
+                if (contactsElement) contactsElement.textContent = stats.contacts || 0;
+            });
+        })
+    );
+
+    return () => unsubscribeFunctions.forEach(fn => fn());
+}
+
 
 // Função de atualização em tempo real corrigida
 function configurarAtualizacaoTempoReal(userId) {
