@@ -3146,14 +3146,15 @@ main {
         grid-template-columns: repeat(2, 1fr);
     }
 }
+/* Botão de favoritos */
 .favorite-btn {
     position: absolute;
     top: 10px;
     right: 10px;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.9);
     border: none;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -3161,20 +3162,27 @@ main {
     cursor: pointer;
     color: #ccc;
     transition: all 0.3s ease;
-    z-index: 2;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 .favorite-btn:hover {
-    background: rgba(255, 255, 255, 0.9);
+    transform: scale(1.1);
     color: #ff6b6b;
 }
 
 .favorite-btn.favorited {
     color: #ff4757;
+    background: rgba(255, 255, 255, 0.95);
 }
 
 .favorite-btn i {
-    font-size: 16px;
+    font-size: 18px;
+}
+
+/* Efeito de clique */
+.favorite-btn:active {
+    transform: scale(0.95);
 }
 
 @keyframes pulse {
