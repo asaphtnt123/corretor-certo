@@ -412,7 +412,7 @@ async function registrarContatoWhatsApp(anuncioId, tipo) {
     const contatoData = {
         nome: user?.displayName || 'Anônimo',
         email: user?.email || '',
-        telefone: user?.phoneNumber || '',
+        telefone: user?.phone || '',
         meio: 'whatsapp',
         data: new Date(),
         status: 'novo',
