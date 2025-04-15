@@ -11,7 +11,8 @@ import {
     getDocs,
     orderBy,
     limit, 
-    addDoc
+    addDoc,
+    onSnapshot 
 
 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -2123,96 +2124,13 @@ async function contarAnunciosAtivos(userId) {
     }
 }
 
-async function renderSellerCTA(userData) {
-    const ctaContent = document.querySelector('.cta-content');
-    const userId = auth.currentUser?.uid;
-    
-    if (!userId) return;
-    
-    // Mostrar estado de carregamento
-    ctaContent.innerHTML = `
-        <div class="loading-cta">
-            <div class="spinner"></div>
-            <p>Carregando seus dados...</p>
-        </div>
-    `;
 
-    try {
-        // Busca dados em paralelo para melhor performance
-        const [activeListings, stats] = await Promise.all([
-            contarAnunciosAtivos(userId),
-            calcularEstatisticasAnuncios(userId) // Nova função para calcular stats
-        ]);
 
-        ctaContent.className = 'cta-content cta-seller';
-        ctaContent.innerHTML = `
-            <h2 class="cta-title">Potencialize Seus Negócios</h2>
-            <p class="cta-subtitle">Você tem <span class="cta-highlight">${activeListings} anúncio(s) ativo(s)</span> gerando oportunidades</p>
-            
-            <div class="cta-stats">
-                <div class="cta-stat">
-                    <div class="cta-stat-number" id="stat-active">${activeListings}</div>
-                    <div class="cta-stat-label">Anúncios Ativos</div>
-                </div>
-                <div class="cta-stat">
-                    <div class="cta-stat-number" id="stat-views">${stats.views}</div>
-                    <div class="cta-stat-label">Visualizações</div>
-                </div>
-                <div class="cta-stat">
-                    <div class="cta-stat-number" id="stat-contacts">${stats.contacts}</div>
-                    <div class="cta-stat-label">Contatos</div>
-                </div>
-            </div>
-            
-            <p>Nossos corretores premium conseguem <span class="cta-highlight">3x mais negócios</span> que a média do mercado</p>
-            
-            <div class="cta-buttons">
-                <a href="anunciar.html" class="cta-button">
-                    <i class="fas fa-plus-circle"></i> Novo Anúncio
-                </a>
-                ${activeListings > 0 ? `
-                <a href="perfil.html#meus-anuncios" class="cta-button cta-button-secondary" id="btn-meus-anuncios">
-                    <i class="fas fa-list"></i> Gerenciar Anúncios
-                </a>
-                ` : ''}
-            </div>
-            
-            ${activeListings === 0 ? `
-            <div class="cta-alert">
-                <i class="fas fa-exclamation-circle"></i>
-                <p>Você não tem anúncios ativos no momento. Crie seu primeiro anúncio para começar!</p>
-            </div>
-            ` : ''}
-            
-            <p class="cta-note"><i class="fas fa-bolt"></i> Anúncios completos recebem até 70% mais contatos</p>
-        `;
-
-        // Configura listeners em tempo real
-        configurarAtualizacaoTempoReal(userId);
-
-        // Evento para abrir a aba de anúncios
-        document.getElementById('btn-meus-anuncios')?.addEventListener('click', function(e) {
-            sessionStorage.setItem('openAnunciosTab', 'true');
-        });
-
-    } catch (error) {
-        console.error("Erro ao renderizar CTA:", error);
-        ctaContent.innerHTML = `
-            <div class="cta-error">
-                <i class="fas fa-exclamation-triangle"></i>
-                <p>Não foi possível carregar seus dados de anúncios</p>
-                <button class="cta-retry" onclick="renderSellerCTA()">Tentar novamente</button>
-            </div>
-        `;
-    }
-}
-
-// Nova função para calcular estatísticas dos anúncios
 async function calcularEstatisticasAnuncios(userId) {
     try {
         const [imoveisSnapshot, automoveisSnapshot] = await Promise.all([
-            getDocs(query(collection(db, "imoveis"), where("userId", "==", userId), where("status", "==", "ativo")),
-            getDocs(query(collection(db, "automoveis"), where("userId", "==", userId), where("status", "==", "ativo"))
+            getDocs(query(collection(db, "imoveis"), where("userId", "==", userId), where("status", "==", "ativo"))),
+            getDocs(query(collection(db, "automoveis"), where("userId", "==", userId), where("status", "==", "ativo")))
         ]);
 
         let totalViews = 0;
@@ -2243,22 +2161,97 @@ async function calcularEstatisticasAnuncios(userId) {
     }
 }
 
-// Configura atualização em tempo real
-function configurarAtualizacaoTempoReal(userId) {
-    const queries = [
-        query(collection(db, "imoveis"), where("userId", "==", userId)),
-        query(collection(db, "automoveis"), where("userId", "==", userId))
-    ];
+// Função principal corrigida
+async function renderSellerCTA(userData) {
+    const ctaContent = document.querySelector('.cta-content');
+    const userId = auth.currentUser?.uid;
+    
+    if (!userId) return;
+    
+    ctaContent.innerHTML = `
+        <div class="loading-cta">
+            <div class="spinner"></div>
+            <p>Carregando seus dados...</p>
+        </div>
+    `;
 
-    const unsubscribeFunctions = queries.map(q => 
-        onSnapshot(q, async () => {
-            const stats = await calcularEstatisticasAnuncios(userId);
-            atualizarDisplayStats(stats);
-        })
+    try {
+        const [activeListings, stats] = await Promise.all([
+            contarAnunciosAtivos(userId),
+            calcularEstatisticasAnuncios(userId)
+        ]);
+
+        ctaContent.className = 'cta-content cta-seller';
+        ctaContent.innerHTML = `
+            <!-- Seu HTML existente -->
+            <div class="cta-stats">
+                <div class="cta-stat">
+                    <div class="cta-stat-number" id="stat-active">${activeListings}</div>
+                    <div class="cta-stat-label">Anúncios Ativos</div>
+                </div>
+                <div class="cta-stat">
+                    <div class="cta-stat-number" id="stat-views">${stats.views}</div>
+                    <div class="cta-stat-label">Visualizações</div>
+                </div>
+                <div class="cta-stat">
+                    <div class="cta-stat-number" id="stat-contacts">${stats.contacts}</div>
+                    <div class="cta-stat-label">Contatos</div>
+                </div>
+            </div>
+            <!-- Restante do seu HTML -->
+        `;
+
+        // Configura listeners em tempo real
+        const unsubscribe = configurarAtualizacaoTempoReal(userId);
+
+        // Limpeza quando necessário (em um useEffect ou similar)
+        // unsubscribe();
+
+    } catch (error) {
+        console.error("Erro ao renderizar CTA:", error);
+        ctaContent.innerHTML = `
+            <div class="cta-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Não foi possível carregar seus dados</p>
+                <button class="cta-retry" onclick="renderSellerCTA()">Tentar novamente</button>
+            </div>
+        `;
+    }
+}
+
+// Função de atualização em tempo real corrigida
+function configurarAtualizacaoTempoReal(userId) {
+    const imoveisQuery = query(
+        collection(db, "imoveis"), 
+        where("userId", "==", userId),
+        where("status", "==", "ativo")
+    );
+    
+    const automoveisQuery = query(
+        collection(db, "automoveis"), 
+        where("userId", "==", userId),
+        where("status", "==", "ativo")
     );
 
-    // Retorna função para limpar listeners
-    return () => unsubscribeFunctions.forEach(fn => fn());
+    const unsubscribeImoveis = onSnapshot(imoveisQuery, () => {
+        atualizarEstatisticas(userId);
+    });
+
+    const unsubscribeAutomoveis = onSnapshot(automoveisQuery, () => {
+        atualizarEstatisticas(userId);
+    });
+
+    return () => {
+        unsubscribeImoveis();
+        unsubscribeAutomoveis();
+    };
+}
+
+// Função auxiliar para atualizar estatísticas
+async function atualizarEstatisticas(userId) {
+    const stats = await calcularEstatisticasAnuncios(userId);
+    document.getElementById('stat-views').textContent = stats.views;
+    document.getElementById('stat-contacts').textContent = stats.contacts;
 }
 
 // Atualiza os números na tela com animação
