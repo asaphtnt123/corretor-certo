@@ -7,8 +7,8 @@ import {
     updateDoc,
     arrayUnion,
     arrayRemove,
-     increment,
-    arrayUnion 
+     increment
+     
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
