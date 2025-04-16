@@ -202,6 +202,20 @@ function renderAdDetails() {
         </div>
     ` : '';
 
+    // Formata o telefone para o link do WhatsApp
+    const formatPhoneForWhatsApp = (phone) => {
+        if (!phone) return null;
+        // Remove todos os caracteres não numéricos
+        const cleaned = phone.replace(/\D/g, '');
+        // Verifica se já tem código do país (se não tiver, adiciona 55)
+        return cleaned.length === 11 ? `55${cleaned}` : cleaned;
+    };
+
+    // Prepara o link do WhatsApp
+    const whatsappNumber = formatPhoneForWhatsApp(currentAd.userPhone) || '5564679464949'; // Número padrão
+    const whatsappMessage = `Olá ${currentAd.userName || ''}, vi seu anúncio "${currentAd.titulo || ''}" e gostaria de mais informações.`;
+    const whatsappLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
+
     // Criar o HTML dos detalhes
     let html = `
         <div class="container py-4">
@@ -272,7 +286,7 @@ function renderAdDetails() {
                 </div>
                 
                 <div class="col-lg-4">
-                    <!-- Seção do Anunciante - Modificada para carregar corretamente -->
+                    <!-- Anunciante -->
                     <div class="card mb-4">
                         <div class="card-body text-center">
                             <div class="mb-3">
@@ -280,8 +294,9 @@ function renderAdDetails() {
                             </div>
                             <h5 id="agentName">${currentAd.userName || 'Anunciante'}</h5>
                             <p class="text-muted" id="agentType">${currentAd.userType || 'Usuário'}</p>
+                            ${currentAd.userPhone ? `<p class="text-muted mb-3"><i class="fas fa-phone"></i> ${currentAd.userPhone}</p>` : ''}
                             <div class="d-grid gap-2">
-                                <a href="#" class="btn btn-success" id="btnWhatsApp">
+                                <a href="${whatsappLink}" class="btn btn-success" id="btnWhatsApp" target="_blank">
                                     <i class="fab fa-whatsapp me-2"></i> Contatar via WhatsApp
                                 </a>
                                 <button class="btn ${isFavorite ? 'btn-danger' : 'btn-outline-primary'}" id="btnFavorite">
@@ -309,7 +324,6 @@ function renderAdDetails() {
         loadAgentInfo();
     }
 }
-
 // Função auxiliar para formatar o tipo de caução
 function formatTipoCaucao(tipo) {
     const tipos = {
@@ -319,6 +333,8 @@ function formatTipoCaucao(tipo) {
     };
     return tipos[tipo] || tipo;
 }
+
+
 
 
 function renderCarouselControls() {
@@ -408,25 +424,70 @@ async function loadAgentInfo() {
         if (userDoc.exists()) {
             const userData = userDoc.data();
             
-            // Atualiza o DOM diretamente
-            const agentNameElement = document.getElementById('agentName');
-            const agentTypeElement = document.getElementById('agentType');
+            // Atualiza o objeto currentAd com os novos dados
+            currentAd.userName = userData.name || 'Anunciante';
+            currentAd.userType = userData.userType || 'Usuário';
+            currentAd.userPhone = userData.phone || null;
             
-            if (agentNameElement) {
-                agentNameElement.textContent = userData.name || 'Anunciante';
-                // Atualiza também no objeto currentAd para referência futura
-                currentAd.userName = userData.name;
-            }
-            if (agentTypeElement) {
-                agentTypeElement.textContent = userData.userType || 'Usuário';
-                currentAd.userType = userData.userType;
+            // Atualiza o DOM
+            updateAgentInfo();
+            
+            // Atualiza o link do WhatsApp se houver telefone
+            if (userData.phone) {
+                updateWhatsAppLink(userData.phone);
             }
         }
     } catch (error) {
         console.error("Erro ao carregar informações do anunciante:", error);
-        // Não é necessário fazer nada aqui, pois já exibimos valores padrão
     }
 }
+
+// Função auxiliar para atualizar as informações do anunciante no DOM
+function updateAgentInfo() {
+    const agentNameElement = document.getElementById('agentName');
+    const agentTypeElement = document.getElementById('agentType');
+    
+    if (agentNameElement) agentNameElement.textContent = currentAd.userName;
+    if (agentTypeElement) agentTypeElement.textContent = currentAd.userType;
+    
+    // Adiciona ou atualiza o telefone
+    const phoneContainer = document.querySelector('.card-body .text-muted.mb-3');
+    if (currentAd.userPhone) {
+        if (!phoneContainer) {
+            const agentTypeElement = document.getElementById('agentType');
+            if (agentTypeElement) {
+                const phoneElement = document.createElement('p');
+                phoneElement.className = 'text-muted mb-3';
+                phoneElement.innerHTML = `<i class="fas fa-phone"></i> ${currentAd.userPhone}`;
+                agentTypeElement.after(phoneElement);
+            }
+        } else {
+            phoneContainer.innerHTML = `<i class="fas fa-phone"></i> ${currentAd.userPhone}`;
+        }
+    }
+}
+
+// Função para atualizar o link do WhatsApp
+function updateWhatsAppLink(phone) {
+    const formattedPhone = formatPhoneForWhatsApp(phone);
+    if (!formattedPhone) return;
+    
+    const whatsappBtn = document.getElementById('btnWhatsApp');
+    if (whatsappBtn) {
+        const message = `Olá ${currentAd.userName || ''}, vi seu anúncio "${currentAd.titulo || ''}" e gostaria de mais informações.`;
+        whatsappBtn.href = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+    }
+}
+
+// Função para formatar telefone para o WhatsApp
+function formatPhoneForWhatsApp(phone) {
+    if (!phone) return null;
+    // Remove todos os caracteres não numéricos
+    const cleaned = phone.replace(/\D/g, '');
+    // Verifica se já tem código do país (se não tiver, adiciona 55)
+    return cleaned.length === 11 ? `55${cleaned}` : cleaned;
+}
+
 // Função para registrar contato via WhatsApp
 async function registrarContatoWhatsApp(anuncioId, tipo) {
     const user = auth.currentUser;
