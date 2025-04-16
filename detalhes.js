@@ -294,16 +294,7 @@ function renderAdDetails() {
                         </div>
                     </div>
                     
-                    <!-- Mapa -->
-                    ${currentAd.endereco ? `
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">Localização</h5>
-                            <div id="map" style="height: 250px;"></div>
-                            <p class="mt-2"><small><i class="fas fa-map-marker-alt"></i> ${currentAd.endereco}</small></p>
-                        </div>
-                    </div>
-                    ` : ''}
+                 
                 </div>
             </div>
         </div>
