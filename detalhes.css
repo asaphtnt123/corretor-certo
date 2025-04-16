@@ -373,3 +373,39 @@ body {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+/* Estilo para o badge de visualizações */
+.visualizacoes-badge {
+    background-color: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: #6c757d;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.visualizacoes-badge i {
+    color: #17a2b8;
+}
+
+/* Estilo para os campos de aluguel */
+.aluguel-info {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.aluguel-info p {
+    margin-bottom: 5px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .d-flex.justify-content-between.align-items-center.mb-4 {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}
