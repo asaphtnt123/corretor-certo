@@ -307,10 +307,7 @@ function renderAdDetails() {
     setupElementsAfterRender();
     loadAgentInfo();
     
-    // Inicializar mapa se houver endereço
-    if (currentAd.endereco) {
-        initMap();
-    }
+    
 }
 
 // Função auxiliar para formatar o tipo de caução
