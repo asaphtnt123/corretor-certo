@@ -186,11 +186,40 @@ function showLoading() {
 function renderAdDetails() {
     if (!elements.conteudoDetalhes) return;
 
+    // Verifica se é aluguel e prepara os campos específicos
+    const isAluguel = currentAd.negociacao === 'aluguel';
+    const aluguelFields = isAluguel ? `
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <p><strong>Fiador:</strong> <span>${currentAd.fiador || 'Não informado'}</span></p>
+            </div>
+            <div class="col-md-4">
+                <p><strong>Calção:</strong> <span>${currentAd.calcao ? 'R$ ' + currentAd.calcao.toLocaleString('pt-BR') : 'Não informado'}</span></p>
+            </div>
+            <div class="col-md-4">
+                <p><strong>Tipo Caução:</strong> <span>${formatTipoCaucao(currentAd.tipoCaucao) || 'Não informado'}</span></p>
+            </div>
+        </div>
+    ` : '';
+
     // Criar o HTML dos detalhes
     let html = `
         <div class="container py-4">
             <div class="row">
                 <div class="col-lg-8">
+                    <!-- Cabeçalho com título, preço e visualizações -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 id="detailTitle">${currentAd.titulo || 'Sem título'}</h2>
+                            <h4 class="text-primary my-3" id="detailPrice">
+                                R$ ${currentAd.preco?.toLocaleString('pt-BR') || 'Preço não informado'}
+                            </h4>
+                        </div>
+                        <div class="visualizacoes-badge">
+                            <i class="fas fa-eye"></i> ${currentAd.visualizacoes || 0} visualizações
+                        </div>
+                    </div>
+                    
                     <!-- Carrossel de Imagens -->
                     <div id="mainCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
                         <div class="carousel-inner" id="carousel-inner">
@@ -209,10 +238,6 @@ function renderAdDetails() {
                     <!-- Descrição -->
                     <div class="card mb-4">
                         <div class="card-body">
-                            <h2 id="detailTitle">${currentAd.titulo || 'Sem título'}</h2>
-                            <h4 class="text-primary my-3" id="detailPrice">
-                                R$ ${currentAd.preco?.toLocaleString('pt-BR') || 'Preço não informado'}
-                            </h4>
                             <div class="row mb-3">
                                 <div class="col-md-4">
                                     <p><strong>Localização:</strong> <span id="detailLocation">${getLocationText()}</span></p>
@@ -224,6 +249,10 @@ function renderAdDetails() {
                                     <p><strong>${currentAdType === 'imovel' ? 'Quartos' : 'KM'}:</strong> <span id="detailBedrooms">${getBedroomsOrKmText()}</span></p>
                                 </div>
                             </div>
+                            
+                            <!-- Campos específicos de aluguel -->
+                            ${aluguelFields}
+                            
                             <div class="description" id="detailDescription">
                                 <h5>Descrição</h5>
                                 <p>${currentAd.descricao || 'Nenhuma descrição fornecida.'}</p>
@@ -255,8 +284,8 @@ function renderAdDetails() {
                                 <a href="#" class="btn btn-success" id="btnWhatsApp">
                                     <i class="fab fa-whatsapp me-2"></i> Contatar via WhatsApp
                                 </a>
-                                <button class="btn btn-outline-primary" id="btnFavorite">
-                                    <i class="far fa-heart me-2"></i> Adicionar aos Favoritos
+                                <button class="btn ${isFavorite ? 'btn-danger' : 'btn-outline-primary'}" id="btnFavorite">
+                                    <i class="${isFavorite ? 'fas' : 'far'} fa-heart me-2"></i> ${isFavorite ? 'Remover dos' : 'Adicionar aos'} Favoritos
                                 </button>
                                 <button class="btn btn-outline-secondary" id="btnReport">
                                     <i class="fas fa-flag me-2"></i> Denunciar anúncio
@@ -264,6 +293,17 @@ function renderAdDetails() {
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Mapa -->
+                    ${currentAd.endereco ? `
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Localização</h5>
+                            <div id="map" style="height: 250px;"></div>
+                            <p class="mt-2"><small><i class="fas fa-map-marker-alt"></i> ${currentAd.endereco}</small></p>
+                        </div>
+                    </div>
+                    ` : ''}
                 </div>
             </div>
         </div>
@@ -275,8 +315,22 @@ function renderAdDetails() {
     // Configurar os elementos após renderização
     setupElementsAfterRender();
     loadAgentInfo();
+    
+    // Inicializar mapa se houver endereço
+    if (currentAd.endereco) {
+        initMap();
+    }
 }
 
+// Função auxiliar para formatar o tipo de caução
+function formatTipoCaucao(tipo) {
+    const tipos = {
+        'dinheiro': 'Dinheiro',
+        'titulo': 'Título de Capitalização',
+        'seguro': 'Seguro Fiança'
+    };
+    return tipos[tipo] || tipo;
+}
 
 
 function renderCarouselControls() {
@@ -325,37 +379,38 @@ function getBedroomsOrKmText() {
     }
 }
 
+// Função auxiliar para renderizar características
 function renderFeatures() {
-    const features = currentAdType === 'imovel' ? [
-        { icon: 'fa-home', title: 'Tipo', value: currentAd.tipo || 'Não informado' },
-        { icon: 'fa-ruler-combined', title: 'Área', value: currentAd.area ? `${currentAd.area} m²` : 'Não informada' },
-        { icon: 'fa-bed', title: 'Quartos', value: currentAd.quartos || 'Não informado' },
-        { icon: 'fa-bath', title: 'Banheiros', value: currentAd.banheiros || 'Não informado' },
-        { icon: 'fa-car', title: 'Vagas', value: currentAd.garagem || 'Não informado' },
-        { icon: 'fa-couch', title: 'Mobiliado', value: currentAd.mobiliado ? 'Sim' : 'Não' },
-        { icon: 'fa-building', title: 'Condomínio', value: currentAd.condominio ? `R$ ${currentAd.condominio.toLocaleString('pt-BR')}` : 'Não informado' },
-        { icon: 'fa-file-invoice-dollar', title: 'IPTU', value: currentAd.iptu ? `R$ ${currentAd.iptu.toLocaleString('pt-BR')}` : 'Não informado' }
-    ] : [
-        { icon: 'fa-car', title: 'Marca', value: currentAd.marca || 'Não informada' },
-        { icon: 'fa-tag', title: 'Modelo', value: currentAd.modelo || 'Não informado' },
-        { icon: 'fa-calendar-alt', title: 'Ano', value: currentAd.ano || 'Não informado' },
-        { icon: 'fa-tachometer-alt', title: 'Quilometragem', value: currentAd.km ? `${currentAd.km.toLocaleString('pt-BR')} km` : 'Não informada' },
-        { icon: 'fa-palette', title: 'Cor', value: currentAd.cor || 'Não informada' },
-        { icon: 'fa-cogs', title: 'Câmbio', value: currentAd.cambio || 'Não informado' },
-        { icon: 'fa-gas-pump', title: 'Combustível', value: currentAd.combustivel || 'Não informado' }
-    ];
-
-    return features.map(feat => `
-        <div class="col-md-6 mb-3">
-            <div class="d-flex align-items-center">
-                <i class="fas ${feat.icon} me-3 text-primary"></i>
-                <div>
-                    <small class="text-muted">${feat.title}</small>
-                    <div class="fw-bold">${feat.value}</div>
-                </div>
+    let features = '';
+    
+    if (currentAdType === 'imovel') {
+        features = `
+            <div class="col-md-6">
+                <p><i class="fas fa-bed"></i> ${currentAd.quartos || 0} Quartos</p>
+                <p><i class="fas fa-bath"></i> ${currentAd.banheiros || 0} Banheiros</p>
+                <p><i class="fas fa-car"></i> ${currentAd.garagem || 0} Vagas</p>
             </div>
-        </div>
-    `).join('');
+            <div class="col-md-6">
+                ${currentAd.mobiliado ? '<p><i class="fas fa-couch"></i> Mobiliado</p>' : ''}
+                ${currentAd.aceitaAnimais ? '<p><i class="fas fa-paw"></i> Aceita animais</p>' : ''}
+                ${currentAd.condominio ? '<p><i class="fas fa-building"></i> Condomínio</p>' : ''}
+            </div>
+        `;
+    } else {
+        features = `
+            <div class="col-md-6">
+                <p><i class="fas fa-car"></i> ${currentAd.marca || 'Não informada'}</p>
+                <p><i class="fas fa-tag"></i> ${currentAd.modelo || 'Não informado'}</p>
+                <p><i class="fas fa-palette"></i> ${currentAd.cor || 'Não informada'}</p>
+            </div>
+            <div class="col-md-6">
+                <p><i class="fas fa-gas-pump"></i> ${currentAd.combustivel || 'Não informado'}</p>
+                <p><i class="fas fa-cog"></i> ${currentAd.cambio || 'Não informado'}</p>
+            </div>
+        `;
+    }
+    
+    return features;
 }
 
 // Função loadAgentInfo atualizada
