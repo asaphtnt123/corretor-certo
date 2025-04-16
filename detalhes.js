@@ -205,16 +205,30 @@ function renderAdDetails() {
     // Formata o telefone para o link do WhatsApp
     const formatPhoneForWhatsApp = (phone) => {
         if (!phone) return null;
-        // Remove todos os caracteres não numéricos
         const cleaned = phone.replace(/\D/g, '');
-        // Verifica se já tem código do país (se não tiver, adiciona 55)
         return cleaned.length === 11 ? `55${cleaned}` : cleaned;
     };
 
     // Prepara o link do WhatsApp
-    const whatsappNumber = formatPhoneForWhatsApp(currentAd.userPhone) || '5564679464949'; // Número padrão
+    const whatsappNumber = formatPhoneForWhatsApp(currentAd.userPhone) || '5564679464949';
     const whatsappMessage = `Olá ${currentAd.userName || ''}, vi seu anúncio "${currentAd.titulo || ''}" e gostaria de mais informações.`;
     const whatsappLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
+
+    // Função para obter o texto de localização corretamente
+    const getLocationText = () => {
+        if (currentAdType === 'imovel') {
+            return `
+                ${currentAd.bairro || 'Bairro não informado'}, 
+                ${currentAd.cidade || 'Cidade não informada'} - 
+                ${currentAd.estado || 'Estado não informado'}
+            `;
+        } else {
+            // Para automóveis, mostra apenas cidade/estado se existir
+            return currentAd.cidade ? 
+                `${currentAd.cidade}${currentAd.estado ? ' - ' + currentAd.estado : ''}` : 
+                'Localização não informada';
+        }
+    };
 
     // Criar o HTML dos detalhes
     let html = `
@@ -264,7 +278,6 @@ function renderAdDetails() {
                                 </div>
                             </div>
                             
-                            <!-- Campos específicos de aluguel -->
                             ${aluguelFields}
                             
                             <div class="description" id="detailDescription">
