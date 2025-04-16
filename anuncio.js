@@ -311,6 +311,7 @@ function updateReview() {
     document.getElementById('review-descricao').textContent = document.getElementById('descricao').value;
     document.getElementById('review-preco').textContent = parseFloat(document.getElementById('preco').value).toLocaleString('pt-BR');
     
+    
     // Tipo de negociação
     const negociacao = document.querySelector('input[name="negociacao"]:checked').value;
     document.getElementById('review-negociacao').textContent = negociacao === 'venda' ? 'Venda' : 'Aluguel';
@@ -378,6 +379,8 @@ document.getElementById('review-tipo-veiculo').textContent =
             document.getElementById('tipo-automovel').value;
         document.getElementById('review-marca-modelo').textContent = 
             `${document.getElementById('marca').value} ${document.getElementById('modelo').value}`;
+        // Na função que preenche os dados de revisão, adicione:
+document.getElementById('review-cidade').textContent = document.getElementById('cidade').value;
         document.getElementById('review-ano').textContent = document.getElementById('ano').value;
         document.getElementById('review-km').textContent = document.getElementById('km').value || 'Não informada';
         document.getElementById('review-cor').textContent = document.getElementById('cor').value || 'Não informada';
@@ -544,6 +547,8 @@ form.addEventListener('submit', async function(e) {
         } else {
             // Campos para automóveis
             formData.tipo = document.getElementById('tipo-automovel').value;
+            formData.cidade = document.getElementById('cidade').value; // Novo campo
+
             formData.marca = document.getElementById('marca').value;
             formData.modelo = document.getElementById('modelo').value;
             formData.ano = parseInt(document.getElementById('ano').value);
