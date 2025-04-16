@@ -272,14 +272,14 @@ function renderAdDetails() {
                 </div>
                 
                 <div class="col-lg-4">
-                    <!-- Anunciante -->
+                    <!-- Seção do Anunciante - Modificada para carregar corretamente -->
                     <div class="card mb-4">
                         <div class="card-body text-center">
                             <div class="mb-3">
                                 <i class="fas fa-user-circle fa-4x text-secondary"></i>
                             </div>
-                            <h5 id="agentName">Carregando...</h5>
-                            <p class="text-muted" id="agentType"></p>
+                            <h5 id="agentName">${currentAd.userName || 'Anunciante'}</h5>
+                            <p class="text-muted" id="agentType">${currentAd.userType || 'Usuário'}</p>
                             <div class="d-grid gap-2">
                                 <a href="#" class="btn btn-success" id="btnWhatsApp">
                                     <i class="fab fa-whatsapp me-2"></i> Contatar via WhatsApp
@@ -293,8 +293,6 @@ function renderAdDetails() {
                             </div>
                         </div>
                     </div>
-                    
-                 
                 </div>
             </div>
         </div>
@@ -305,9 +303,11 @@ function renderAdDetails() {
 
     // Configurar os elementos após renderização
     setupElementsAfterRender();
-    loadAgentInfo();
     
-    
+    // Carrega as informações do usuário se não estiverem disponíveis
+    if (!currentAd.userName && currentAd.userId) {
+        loadAgentInfo();
+    }
 }
 
 // Função auxiliar para formatar o tipo de caução
@@ -401,51 +401,30 @@ function renderFeatures() {
     return features;
 }
 
-// Função loadAgentInfo atualizada
+// Função para carregar informações do anunciante
 async function loadAgentInfo() {
-    if (!currentAd?.userId) return;
-
     try {
         const userDoc = await getDoc(doc(db, "users", currentAd.userId));
         if (userDoc.exists()) {
             const userData = userDoc.data();
             
-            const btnWhatsApp = document.getElementById('btnWhatsApp');
-            if (btnWhatsApp && userData.phone) {
-                const phone = userData.phone.replace(/\D/g, '');
-                const message = `Olá, vi seu anúncio "${currentAd.titulo}" e gostaria de mais informações`;
-                const whatsappUrl = `https://wa.me/55${phone}?text=${encodeURIComponent(message)}`;
-                
-                btnWhatsApp.href = whatsappUrl;
-                
-                btnWhatsApp.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    
-                    // Adiciona efeito visual de loading
-                    const originalHtml = btnWhatsApp.innerHTML;
-                    btnWhatsApp.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Preparando...';
-                    btnWhatsApp.disabled = true;
-                    
-                    try {
-                        await registrarContatoWhatsApp(currentAd.id, currentAd.tipo === 'carro' ? 'automoveis' : 'imoveis');
-                        
-                        // Redireciona após breve delay
-                        setTimeout(() => {
-                            window.location.href = whatsappUrl;
-                        }, 500);
-                        
-                    } catch (error) {
-                        console.error("Erro ao registrar contato:", error);
-                        btnWhatsApp.innerHTML = originalHtml;
-                        btnWhatsApp.disabled = false;
-                        // Redireciona mesmo com erro, mas sem registro
-                        window.location.href = whatsappUrl;
-                    }
-                });
+            // Atualiza o DOM diretamente
+            const agentNameElement = document.getElementById('agentName');
+            const agentTypeElement = document.getElementById('agentType');
+            
+            if (agentNameElement) {
+                agentNameElement.textContent = userData.name || 'Anunciante';
+                // Atualiza também no objeto currentAd para referência futura
+                currentAd.userName = userData.name;
+            }
+            if (agentTypeElement) {
+                agentTypeElement.textContent = userData.userType || 'Usuário';
+                currentAd.userType = userData.userType;
             }
         }
     } catch (error) {
         console.error("Erro ao carregar informações do anunciante:", error);
+        // Não é necessário fazer nada aqui, pois já exibimos valores padrão
     }
 }
 // Função para registrar contato via WhatsApp
