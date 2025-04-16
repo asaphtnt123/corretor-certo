@@ -4588,10 +4588,9 @@ section.banner .btn:hover::before {
 
 .footer-bottom {
     text-align: center;
-    padding: 20px;
     background-color: #111;
     color: #ccc;
-    font-size: 14px;
+    font-size: 18px;
     border-top: 1px solid #444;
 }
 
