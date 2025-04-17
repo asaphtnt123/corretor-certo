@@ -667,6 +667,8 @@ main {
 
 /* Variações específicas */
 .cta-seller .cta-button {
+	    max-width: 200px;
+
     background: linear-gradient(45deg, #4e54c8, #8f94fb);
     box-shadow: 0 10px 20px rgba(79, 84, 200, 0.3);
 }
