@@ -329,13 +329,7 @@ body {
     overflow-y: auto;
 }
 
-footer {
-    background-color: #333;
-    color: white;
-    text-align: center;
-    padding: 10px 0;
-    margin-top: 20px;
-}
+
 
 
 
@@ -1614,108 +1608,13 @@ body.search-ativo::before {
     100% { transform: rotate(360deg); }
 }
 
-/* Mini Cards Metalizados */
-.mini-card {
-    position: relative;
-    width: 85px;
-    height: 85px;
-    border-radius: 8px;
-    overflow: hidden;
-    background: linear-gradient(135deg, #2c3e50 0%, #4a6491 100%);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
-    flex-shrink: 0;
-    border: 2px solid #555;
-    opacity: 0;
-    transform: scale(0.8);
-    animation: cardEntrance 0.5s forwards;
-}
 
-@keyframes cardEntrance {
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
 
-.mini-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.1) 0%,
-        rgba(255, 255, 255, 0) 50%,
-        rgba(255, 255, 255, 0.1) 100%
-    );
-    z-index: 1;
-}
 
-.mini-card:hover {
-    border-color: #f1c40f;
-    box-shadow: 0 0 15px rgba(241, 196, 15, 0.7);
-    transform: scale(1.1);
-    z-index: 10;
-}
 
-.mini-card .mini-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.mini-card .mini-badge {
-    position: absolute;
-    bottom: 2px;
-    right: 2px;
-    background: rgba(231, 76, 60, 0.9);
-    color: white;
-    font-size: 8px;
-    padding: 2px 5px;
-    border-radius: 10px;
-    font-weight: bold;
-}
-
-/* Efeito de luz aleatório */
-@keyframes randomGlow {
-    0%, 100% { box-shadow: 0 0 0 rgba(241, 196, 15, 0); }
-    50% { box-shadow: 0 0 15px rgba(241, 196, 15, 0.7); }
-}
 
 /* Mensagens de erro e vazio */
-.error-message, .no-results {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-width: 100%;
-    padding: 40px 0;
-    color: #e74c3c;
-}
 
-.error-message i, .no-results i {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-}
-
-.retry-btn {
-    margin-top: 15px;
-    padding: 5px 15px;
-    background: #3498db;
-    color: white;
-    border: none;
-    border-radius: 15px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    font-size: 0.8rem;
-}
-
-.retry-btn:hover {
-    background: #2980b9;
-}
 
 
 
@@ -2087,25 +1986,7 @@ body.search-ativo::before {
 
 /* Botões de ação */
 .btn-suggestion,
-.retry-btn {
-    margin-top: 20px;
-    padding: 12px 25px;
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-    color: white;
-    border: none;
-    border-radius: 30px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 600;
-    display: inline-block;
-    box-shadow: 0 4px 15px rgba(41, 128, 185, 0.4);
-}
 
-.btn-suggestion:hover,
-.retry-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(41, 128, 185, 0.6);
-}
 
 /* Responsividade */
 @media (max-width: 768px) {
@@ -3726,8 +3607,8 @@ body.search-ativo::before {
 /* Mini Cards Metalizados */
 .mini-card {
     position: relative;
-    width: 70px;
-    height: 70px;
+    width: 90px;
+    height: 90px;
     border-radius: 8px;
     overflow: hidden;
     background: linear-gradient(135deg, #2c3e50 0%, #4a6491 100%);
@@ -4241,9 +4122,12 @@ section.banner .btn:hover::before {
 /* Responsividade */
 @media (max-width: 768px) {
     .footer-content {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-    }
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 3rem;
+    margin-bottom: 3rem;
+}
+
     
     .footer-brand {
         align-items: center;
@@ -4382,15 +4266,7 @@ section.banner .btn:hover::before {
 
 
 
-.retry-btn {
-    background: var(--color-accent);
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    margin-top: 1rem;
-    cursor: pointer;
-}
+
 /* Animação para estatísticas */
 .cta-stat-number {
     transition: all 0.3s ease;
