@@ -343,100 +343,60 @@ function closeDetailsModal() {
 
 async function buscarImoveis(filtros = {}) {
     const carregando = document.querySelector(".carregando");
-    const resultadosContainer = document.getElementById("resultados");
-    const listaResultados = document.getElementById("lista-resultados");
-    
     if (carregando) carregando.style.display = "block";
-    if (listaResultados) listaResultados.innerHTML = "";
-    if (resultadosContainer) resultadosContainer.innerHTML = "";
 
     try {
-        // Limpar filtros vazios ou undefined
+        // Limpar filtros vazios
         Object.keys(filtros).forEach(key => {
             if (filtros[key] === undefined || filtros[key] === "") {
                 delete filtros[key];
             }
         });
 
-        const imoveisRef = collection(db, "imoveis");
-        let q = query(imoveisRef);
-        
-        // Aplicar filtros dinamicamente
-        for (const [key, value] of Object.entries(filtros)) {
-            if (value !== undefined && value !== "") {
-                if (key === "precoMin" || key === "precoMax" || 
-                    key === "quartos" || key === "banheiros" || 
-                    key === "garagem" || key === "areaMin") {
-                    // Para campos numéricos
-                    const op = key === "precoMin" ? ">=" : 
-                              key === "precoMax" ? "<=" : "==";
-                    const fieldName = key === "precoMin" || key === "precoMax" ? "preco" : key;
-                    q = query(q, where(fieldName, op, value));
-                } else if (key === "cidade") {
-                    // Filtro de cidade (case-insensitive)
-                    q = query(q, where("cidadeNormalizada", "==", value.toLowerCase()));
-                } else if (key === "bairro") {
-                    // Filtro de bairro (case-insensitive)
-                    q = query(q, where("bairroNormalizado", "==", value.toLowerCase()));
-                } else {
-                    // Para campos textuais/booleanos exatos
-                    q = query(q, where(key, "==", value));
-                }
-            }
+        let q = query(collection(db, "imoveis"), where("status", "==", "ativo"));
+
+        // Filtro por cidade (case-insensitive)
+        if (filtros.cidade) {
+            q = query(q, where("cidadeNormalizada", "==", filtros.cidade.toLowerCase().trim()));
+            console.log("Filtrando por cidade:", filtros.cidade.toLowerCase().trim());
         }
-        
-        // Executar a consulta
+
+        // Outros filtros (mantenha os existentes)
+        if (filtros.bairro) {
+            q = query(q, where("bairroNormalizado", "==", filtros.bairro.toLowerCase().trim()));
+        }
+        // ... (seus outros filtros aqui)
+
         const querySnapshot = await getDocs(q);
-        
-        // Verificar se há resultados
+        const listaResultados = document.getElementById("lista-resultados");
+        listaResultados.innerHTML = "";
+
         if (querySnapshot.empty) {
-            if (listaResultados) {
-                listaResultados.innerHTML = `
-                    <div class="alert alert-info">
-                        <p>Nenhum imóvel encontrado com os filtros selecionados.</p>
-                        <small>Tente ajustar os critérios de busca.</small>
-                    </div>
-                `;
-            }
-            return;
-        }
-        
-        // Criar container para os cards
-        const cardsContainer = document.createElement("div");
-        cardsContainer.className = "row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4";
-        
-        // Processar cada documento
-        querySnapshot.forEach((doc) => {
-            const imovelData = doc.data();
-            imovelData.id = doc.id;
-            cardsContainer.appendChild(criarCardImovel(imovelData));
-        });
-        
-        // Montar estrutura de resultados
-        if (resultadosContainer) {
-            resultadosContainer.innerHTML = "<h3 class='resultados-titulo'>Imóveis encontrados:</h3>";
-            resultadosContainer.appendChild(cardsContainer);
-            
-            // Adicionar contador de resultados
-            const contador = document.createElement("p");
-            contador.className = "text-muted mt-3";
-            contador.textContent = `${querySnapshot.size} imóvel(s) encontrado(s)`;
-            resultadosContainer.appendChild(contador);
-        } else if (listaResultados) {
-            listaResultados.appendChild(cardsContainer);
-        }
-        
-    } catch (error) {
-        console.error("Erro ao buscar imóveis:", error);
-        const errorContainer = resultadosContainer || listaResultados;
-        if (errorContainer) {
-            errorContainer.innerHTML = `
-                <div class="alert alert-danger">
-                    <p>Erro ao buscar imóveis. Por favor, tente novamente.</p>
-                    ${error.message ? `<small>${error.message}</small>` : ''}
+            listaResultados.innerHTML = `
+                <div class="alert alert-info">
+                    <p>Nenhum imóvel encontrado em ${filtros.cidade || 'todas as cidades'}.</p>
+                    <small>Experimente ajustar os critérios de busca.</small>
                 </div>
             `;
+            return;
         }
+
+        // Processar resultados
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            data.id = doc.id;
+            console.log("Documento encontrado:", data); // Log para depuração
+            listaResultados.appendChild(criarCardImovel(data));
+        });
+
+    } catch (error) {
+        console.error("Erro na busca:", error);
+        document.getElementById("lista-resultados").innerHTML = `
+            <div class="alert alert-danger">
+                <p>Erro ao buscar imóveis.</p>
+                <small>${error.message}</small>
+            </div>
+        `;
     } finally {
         if (carregando) carregando.style.display = "none";
     }
@@ -1235,7 +1195,7 @@ document.getElementById("form-pesquisa")?.addEventListener("submit", function(e)
             console.log("[DEBUG] Iniciando busca por imóveis");
             
             const filtros = {
-                cidade: cidade || undefined,
+                  cidade: cidade,
                 bairro: document.getElementById("bairro")?.value.trim() || undefined,
                 tipo: document.getElementById("tipo-imovel")?.value || undefined,
                 negociacao: document.querySelector('input[name="negociacao"]:checked')?.value || undefined,
