@@ -404,6 +404,10 @@ async function buscarCarros(params = {}) {
 }
 
 async function buscarImoveis(filtros = {}) {
+     const carregando = document.querySelector(".carregando");
+    if (carregando) carregando.style.display = "block";
+
+    
     try {
         // Limpar filtros vazios ou undefined
         Object.keys(filtros).forEach(key => {
@@ -486,6 +490,8 @@ async function buscarImoveis(filtros = {}) {
                 ${error.message ? `<small>${error.message}</small>` : ''}
             </div>
         `;
+    } finally {
+        if (carregando) carregando.style.display = "none";
     }
 }
 // Adicione esta função em algum lugar do seu arquivo JS (de preferência perto de outras funções utilitárias)
