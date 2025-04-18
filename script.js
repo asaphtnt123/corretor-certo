@@ -396,32 +396,60 @@ async function buscarImoveis(filtros = {}) {
                     key === "garagem" || key === "areaMin") {
                     // Para campos numéricos
                     const op = key === "precoMin" ? ">=" : 
-                              key === "precoMax" ? "<=" : ">=";
-                    q = query(q, where(
-                        key === "precoMin" || key === "precoMax" ? "preco" : key,
-                        op, 
-                        value
-                    ));
+                              key === "precoMax" ? "<=" : "==";
+                    const fieldName = key === "precoMin" || key === "precoMax" ? "preco" : key;
+                    q = query(q, where(fieldName, op, value));
+                } else if (key === "cidade") {
+                    // Filtro de cidade com busca case-insensitive
+                    q = query(q, where("cidadeNormalizada", "==", value.toLowerCase()));
+                } else if (key === "bairro") {
+                    // Filtro de bairro com busca case-insensitive
+                    q = query(q, where("bairroNormalizado", "==", value.toLowerCase()));
                 } else {
-                    // Para campos textuais/booleanos
+                    // Para campos textuais/booleanos exatos
                     q = query(q, where(key, "==", value));
                 }
             }
         }
         
-        // Restante da função permanece igual...
+        // Executar a consulta
         const querySnapshot = await getDocs(q);
         const resultadosContainer = document.getElementById("resultados");
         
-        resultadosContainer.innerHTML = querySnapshot.empty 
-            ? "<p>Nenhum imóvel encontrado com os filtros selecionados.</p>" 
-            : "<h3>Resultados da Busca:</h3>";
+        // Limpar resultados anteriores
+        resultadosContainer.innerHTML = "";
         
+        // Verificar se há resultados
+        if (querySnapshot.empty) {
+            resultadosContainer.innerHTML = `
+                <div class="alert alert-info">
+                    <p>Nenhum imóvel encontrado com os filtros selecionados.</p>
+                    <small>Tente ajustar os critérios de busca.</small>
+                </div>
+            `;
+            return;
+        }
+        
+        // Adicionar título dos resultados
+        resultadosContainer.innerHTML = "<h3 class='resultados-titulo'>Imóveis encontrados:</h3>";
+        
+        // Criar container para os cards
+        const cardsContainer = document.createElement("div");
+        cardsContainer.className = "row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4";
+        resultadosContainer.appendChild(cardsContainer);
+        
+        // Processar cada documento
         querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            data.id = doc.id;
-            resultadosContainer.appendChild(criarCardImovel(data));
+            const imovelData = doc.data();
+            imovelData.id = doc.id;
+            cardsContainer.appendChild(criarCardImovel(imovelData));
         });
+        
+        // Adicionar contador de resultados
+        const contador = document.createElement("p");
+        contador.className = "text-muted mt-3";
+        contador.textContent = `${querySnapshot.size} imóvel(s) encontrado(s)`;
+        resultadosContainer.appendChild(contador);
         
     } catch (error) {
         console.error("Erro ao buscar imóveis:", error);
@@ -1122,18 +1150,21 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-  document.getElementById("form-pesquisa")?.addEventListener("submit", function(e) {
+document.getElementById("form-pesquisa")?.addEventListener("submit", function(e) {
     e.preventDefault();
     
     // Verifica se o elemento tipo existe
     const tipoInput = document.getElementById("tipo");
-    if (!tipoInput) {
-        console.error("Elemento 'tipo' não encontrado");
+    const cidadeInput = document.getElementById("cidade"); // Novo campo de cidade
+    
+    if (!tipoInput || !cidadeInput) {
+        console.error("Elementos do formulário não encontrados");
         showAlert("Erro no formulário. Recarregue a página e tente novamente.", "error");
         return;
     }
     
     const tipo = tipoInput.value;
+    const cidade = cidadeInput.value; // Valor da cidade selecionada
     
     if (!tipo) {
         showAlert("Selecione o tipo de anúncio (imóvel ou automóvel)", "error");
@@ -1163,6 +1194,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // Prepara os filtros
         const filtros = {
+            cidade: cidade || undefined, // Adicionado filtro de cidade
             bairro: bairroInput.value.trim(),
             precoMin: parseFloat(precoMinInput.value) || undefined,
             precoMax: parseFloat(precoMaxInput.value) || undefined,
@@ -1196,19 +1228,22 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         // Prepara os parâmetros
-        const marca = marcaInput.value.trim();
-        const modelo = modeloInput.value.trim();
-        const ano = anoInput.value.trim();
-        const precoMin = parseFloat(precoMinInput.value) || 0;
-        const precoMax = parseFloat(precoMaxInput.value) || 0;
+        const params = {
+            cidade: cidade || undefined, // Adicionado filtro de cidade
+            marca: marcaInput.value.trim(),
+            modelo: modeloInput.value.trim(),
+            ano: anoInput.value.trim(),
+            precoMin: parseFloat(precoMinInput.value) || 0,
+            precoMax: parseFloat(precoMaxInput.value) || 0
+        };
 
         // Validação básica para carros
-        if (!marca && !modelo && !ano) {
+        if (!params.marca && !params.modelo && !params.ano) {
             showAlert("Preencha pelo menos um filtro para buscar automóveis", "error");
             return;
         }
 
-        buscarCarros(precoMin, precoMax, marca, modelo, ano);
+        buscarCarros(params); // Atualizado para receber objeto com cidade
     }
 });
     // Configuração dos botões de tipo
