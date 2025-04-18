@@ -1452,7 +1452,7 @@ function criarMiniCard(anuncio, isAutomovel) {
     
     // Evento de clique
     miniCard.addEventListener('click', () => {
-        window.location.href = `detalhes.html?id=${anuncio.id}&tipo=${isAutomovel ? 'carro' : 'imovel'}`;
+        window.location.href = `detalhes.html?id=${anuncio.id}&tipo=${isAutomovel ? 'automovel' : 'imovel'}`;
     });
     
     return miniCard;
