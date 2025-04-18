@@ -4507,3 +4507,24 @@ select.form-control {
     background-position: right 0.75rem center;
     background-size: 1rem;
 }
+/* Estilo para o campo cidade */
+#cidade {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+/* Ajuste para os campos de filtro */
+.campos-busca {
+    margin-top: 15px;
+}
+
+
+
+.no-results {
+    text-align: center;
+    padding: 20px;
+    color: #888;
+}
