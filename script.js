@@ -1196,6 +1196,7 @@ document.getElementById("form-pesquisa")?.addEventListener("submit", function(e)
 
     if (tipo === "imovel") {
         // Elementos do formulário de imóvel
+        
         const bairroInput = document.getElementById("bairro");
         const tipoImovelInput = document.getElementById("tipo-imovel");
         const precoMinInput = document.getElementById("preco-min");
@@ -1217,7 +1218,7 @@ document.getElementById("form-pesquisa")?.addEventListener("submit", function(e)
 
         // Prepara os filtros
         const filtros = {
-            cidade: cidade || undefined, // Adicionado filtro de cidade
+            cidade: cidadeInput?.value || undefined,
             bairro: bairroInput.value.trim(),
             precoMin: parseFloat(precoMinInput.value) || undefined,
             precoMax: parseFloat(precoMaxInput.value) || undefined,
