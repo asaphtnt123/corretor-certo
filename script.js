@@ -341,38 +341,65 @@ function closeDetailsModal() {
     }, 300); // Tempo da animação de fadeOut
 }
 
-// ============== FUNÇÕES DE BUSCA ==============
-async function buscarCarros(precoMin, precoMax, marca, modelo, ano) {
+async function buscarCarros(params = {}) {
     try {
         const carrosRef = collection(db, "automoveis");
         let q = query(carrosRef);
-
-        if (marca) q = query(q, where("marca", "==", marca));
-        if (modelo) q = query(q, where("modelo", "==", modelo));
-        if (ano) q = query(q, where("ano", "==", parseInt(ano)));
-        if (precoMin) q = query(q, where("preco", ">=", precoMin));
-        if (precoMax) q = query(q, where("preco", "<=", precoMax));
+        
+        // Aplicar filtros apenas se os valores forem válidos
+        if (params.marca && params.marca.trim() !== "") {
+            q = query(q, where("marca", "==", params.marca.trim()));
+        }
+        if (params.modelo && params.modelo.trim() !== "") {
+            q = query(q, where("modelo", "==", params.modelo.trim()));
+        }
+        if (params.ano && params.ano.trim() !== "") {
+            q = query(q, where("ano", "==", parseInt(params.ano)));
+        }
+        if (params.precoMin && params.precoMin > 0) {
+            q = query(q, where("preco", ">=", params.precoMin));
+        }
+        if (params.precoMax && params.precoMax > 0) {
+            q = query(q, where("preco", "<=", params.precoMax));
+        }
 
         const querySnapshot = await getDocs(q);
-        const resultadosContainer = document.getElementById("resultados");
-        resultadosContainer.innerHTML = querySnapshot.empty 
-            ? "<p>Nenhum carro encontrado.</p>" 
-            : "<h3>Resultados da Busca:</h3>";
-
+        const resultadosContainer = document.getElementById("lista-resultados");
+        
+        // Limpar resultados anteriores
+        resultadosContainer.innerHTML = "";
+        
+        // Verificar se há resultados
+        if (querySnapshot.empty) {
+            document.querySelector(".sem-resultados").style.display = "block";
+            document.querySelector(".carregando").style.display = "none";
+            return;
+        }
+        
+        // Esconder mensagem de sem resultados
+        document.querySelector(".sem-resultados").style.display = "none";
+        
+        // Processar cada documento
         querySnapshot.forEach((doc) => {
             const data = doc.data();
             data.id = doc.id;
             resultadosContainer.appendChild(criarCardComEvento(data, true));
         });
-
+        
+        // Atualizar contador
+        document.querySelector(".contador-pagina").textContent = 
+            `Mostrando ${querySnapshot.size} resultado(s)`;
+            
     } catch (error) {
         console.error("Erro ao buscar carros:", error);
-        document.getElementById("resultados").innerHTML = `
+        document.getElementById("lista-resultados").innerHTML = `
             <div class="error-message">
                 <p>Erro ao buscar carros.</p>
                 <p>${error.message}</p>
             </div>
         `;
+    } finally {
+        document.querySelector(".carregando").style.display = "none";
     }
 }
 
@@ -1153,18 +1180,14 @@ document.addEventListener("DOMContentLoaded", function() {
 document.getElementById("form-pesquisa")?.addEventListener("submit", function(e) {
     e.preventDefault();
     
-    // Verifica se o elemento tipo existe
     const tipoInput = document.getElementById("tipo");
-    const cidadeInput = document.getElementById("cidade"); // Novo campo de cidade
-    
-    if (!tipoInput || !cidadeInput) {
-        console.error("Elementos do formulário não encontrados");
+    if (!tipoInput) {
+        console.error("Elemento 'tipo' não encontrado");
         showAlert("Erro no formulário. Recarregue a página e tente novamente.", "error");
         return;
     }
     
     const tipo = tipoInput.value;
-    const cidade = cidadeInput.value; // Valor da cidade selecionada
     
     if (!tipo) {
         showAlert("Selecione o tipo de anúncio (imóvel ou automóvel)", "error");
@@ -1212,7 +1235,7 @@ document.getElementById("form-pesquisa")?.addEventListener("submit", function(e)
         if (validarFiltrosImoveis(filtros)) {
             buscarImoveis(filtros);
         }
-    } else if (tipo === "carro") {
+     } else if (tipo === "carro") {
         // Elementos do formulário de automóvel
         const marcaInput = document.getElementById("marca");
         const modeloInput = document.getElementById("modelo");
@@ -1227,12 +1250,14 @@ document.getElementById("form-pesquisa")?.addEventListener("submit", function(e)
             return;
         }
 
-        // Prepara os parâmetros
+        // Mostrar estado de carregamento
+        document.querySelector(".carregando").style.display = "block";
+        
+        // Prepara os parâmetros (sem cidade)
         const params = {
-            cidade: cidade || undefined, // Adicionado filtro de cidade
-            marca: marcaInput.value.trim(),
-            modelo: modeloInput.value.trim(),
-            ano: anoInput.value.trim(),
+            marca: marcaInput.value,
+            modelo: modeloInput.value,
+            ano: anoInput.value,
             precoMin: parseFloat(precoMinInput.value) || 0,
             precoMax: parseFloat(precoMaxInput.value) || 0
         };
@@ -1240,10 +1265,11 @@ document.getElementById("form-pesquisa")?.addEventListener("submit", function(e)
         // Validação básica para carros
         if (!params.marca && !params.modelo && !params.ano) {
             showAlert("Preencha pelo menos um filtro para buscar automóveis", "error");
+            document.querySelector(".carregando").style.display = "none";
             return;
         }
 
-        buscarCarros(params); // Atualizado para receber objeto com cidade
+        buscarCarros(params);
     }
 });
     // Configuração dos botões de tipo
