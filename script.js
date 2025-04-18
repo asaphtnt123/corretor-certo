@@ -1200,101 +1200,101 @@ document.addEventListener("DOMContentLoaded", function() {
 
 document.getElementById("form-pesquisa")?.addEventListener("submit", function(e) {
     e.preventDefault();
+    console.log("[DEBUG] Formulário submetido - Início");
 
-    const tipoInput = document.getElementById("tipo");
-    const carregando = document.querySelector(".carregando");
-    const semResultados = document.querySelector(".sem-resultados");
-    
-    if (!tipoInput) {
-        console.error("Elemento 'tipo' não encontrado");
-        showAlert("Erro no formulário. Recarregue a página e tente novamente.", "error");
-        return;
-    }
-
-    const tipo = tipoInput.value;
-    const cidade = document.getElementById("cidade").value;
-
-    if (!tipo) {
-        showAlert("Selecione o tipo de anúncio (imóvel ou automóvel)", "error");
-        return;
-    }
-
-    // Mostrar estado de carregamento
-    if (carregando) carregando.style.display = "block";
-    if (semResultados) semResultados.style.display = "none";
-
-    if (tipo === "imovel") {
-        // Elementos do formulário de imóvel
-        const bairroInput = document.getElementById("bairro");
-        const tipoImovelInput = document.getElementById("tipo-imovel");
-        const precoMinInput = document.getElementById("preco-min");
-        const precoMaxInput = document.getElementById("preco-max");
-        const quartosInput = document.getElementById("quartos");
-        const banheirosInput = document.getElementById("banheiros");
-        const garagemInput = document.getElementById("garagem");
-        const areaMinInput = document.getElementById("area-min");
-        const aceitaAnimaisInput = document.getElementById("aceita-animais");
-        const mobiliadoInput = document.getElementById("mobiliado");
-        const negociacaoInput = document.querySelector('input[name="negociacao"]:checked');
-
-        // Prepara os filtros
-        const filtros = {
-            cidade: cidade || undefined,
-            bairro: bairroInput?.value.trim() || undefined,
-            tipo: tipoImovelInput?.value || undefined,
-            negociacao: negociacaoInput?.value || undefined,
-            precoMin: parseFloat(precoMinInput?.value) || undefined,
-            precoMax: parseFloat(precoMaxInput?.value) || undefined,
-            quartos: quartosInput ? parseInt(quartosInput.value) || undefined : undefined,
-            banheiros: banheirosInput ? parseInt(banheirosInput.value) || undefined : undefined,
-            garagem: garagemInput ? parseInt(garagemInput.value) || undefined : undefined,
-            areaMin: areaMinInput ? parseFloat(areaMinInput.value) || undefined : undefined,
-            aceitaAnimais: aceitaAnimaisInput?.checked || undefined,
-            mobiliado: mobiliadoInput?.checked || undefined
-        };
-
-        // Valida e executa a busca
-        if (validarFiltrosImoveis(filtros)) {
-            buscarImoveis(filtros).finally(() => {
-                if (carregando) carregando.style.display = "none";
-            });
-        } else {
-            if (carregando) carregando.style.display = "none";
-        }
-
-    } else if (tipo === "carro") {
-        // Elementos do formulário de automóvel
-        const marcaInput = document.getElementById("marca");
-        const modeloInput = document.getElementById("modelo");
-        const anoInput = document.getElementById("ano");
-        const precoMinInput = document.getElementById("preco-min");
-        const precoMaxInput = document.getElementById("preco-max");
-        const combustivelInput = document.getElementById("combustivel");
-
-        // Prepara os parâmetros
-        const params = {
-            cidade: cidade || undefined,
-            marca: marcaInput?.value.trim() || undefined,
-            modelo: modeloInput?.value.trim() || undefined,
-            ano: anoInput?.value || undefined,
-            combustivel: combustivelInput?.value || undefined,
-            precoMin: parseFloat(precoMinInput?.value) || 0,
-            precoMax: parseFloat(precoMaxInput?.value) || 0
-        };
-
-        // Validação básica para carros
-        if (!params.marca && !params.modelo && !params.ano && !params.cidade) {
-            showAlert("Preencha pelo menos um filtro para buscar automóveis", "error");
-            if (carregando) carregando.style.display = "none";
+    try {
+        const tipoInput = document.getElementById("tipo");
+        console.log("[DEBUG] Tipo input:", tipoInput);
+        
+        if (!tipoInput) {
+            console.error("[ERRO] Elemento 'tipo' não encontrado");
+            showAlert("Erro no formulário. Recarregue a página e tente novamente.", "error");
             return;
         }
 
-        buscarCarros(params).finally(() => {
-            if (carregando) carregando.style.display = "none";
-        });
+        const tipo = tipoInput.value;
+        console.log("[DEBUG] Tipo selecionado:", tipo);
+        
+        if (!tipo) {
+            console.warn("[AVISO] Nenhum tipo selecionado");
+            showAlert("Selecione o tipo de anúncio (imóvel ou automóvel)", "error");
+            return;
+        }
+
+        const cidade = document.getElementById("cidade")?.value;
+        console.log("[DEBUG] Cidade selecionada:", cidade);
+
+        // Mostrar loading
+        const carregando = document.querySelector(".carregando");
+        if (carregando) {
+            console.log("[DEBUG] Mostrando spinner de carregamento");
+            carregando.style.display = "block";
+        }
+
+        if (tipo === "imovel") {
+            console.log("[DEBUG] Iniciando busca por imóveis");
+            
+            const filtros = {
+                cidade: cidade || undefined,
+                bairro: document.getElementById("bairro")?.value.trim() || undefined,
+                tipo: document.getElementById("tipo-imovel")?.value || undefined,
+                negociacao: document.querySelector('input[name="negociacao"]:checked')?.value || undefined,
+                precoMin: parseFloat(document.getElementById("preco-min")?.value) || undefined,
+                precoMax: parseFloat(document.getElementById("preco-max")?.value) || undefined,
+                quartos: parseInt(document.getElementById("quartos")?.value) || undefined,
+                banheiros: parseInt(document.getElementById("banheiros")?.value) || undefined,
+                garagem: parseInt(document.getElementById("garagem")?.value) || undefined,
+                areaMin: parseFloat(document.getElementById("area-min")?.value) || undefined
+            };
+
+            console.log("[DEBUG] Filtros aplicados:", JSON.stringify(filtros));
+            
+            if (validarFiltrosImoveis(filtros)) {
+                console.log("[DEBUG] Filtros válidos, iniciando busca...");
+                buscarImoveis(filtros).finally(() => {
+                    console.log("[DEBUG] Busca por imóveis concluída");
+                    if (carregando) carregando.style.display = "none";
+                });
+            } else {
+                console.log("[DEBUG] Filtros inválidos");
+                if (carregando) carregando.style.display = "none";
+            }
+
+        } else if (tipo === "carro") {
+            console.log("[DEBUG] Iniciando busca por automóveis");
+            
+            const params = {
+                cidade: cidade || undefined,
+                marca: document.getElementById("marca")?.value.trim() || undefined,
+                modelo: document.getElementById("modelo")?.value.trim() || undefined,
+                ano: document.getElementById("ano")?.value || undefined,
+                precoMin: parseFloat(document.getElementById("preco-min")?.value) || 0,
+                precoMax: parseFloat(document.getElementById("preco-max")?.value) || 0
+            };
+
+            console.log("[DEBUG] Parâmetros aplicados:", JSON.stringify(params));
+            
+            if (!params.marca && !params.modelo && !params.ano && !params.cidade) {
+                console.warn("[AVISO] Nenhum filtro preenchido para carros");
+                showAlert("Preencha pelo menos um filtro para buscar automóveis", "error");
+                if (carregando) carregando.style.display = "none";
+                return;
+            }
+
+            console.log("[DEBUG] Filtros válidos, iniciando busca...");
+            buscarCarros(params).finally(() => {
+                console.log("[DEBUG] Busca por carros concluída");
+                if (carregando) carregando.style.display = "none";
+            });
+        }
+        
+    } catch (error) {
+        console.error("[ERRO CRÍTICO] No handler do formulário:", error);
+        showAlert("Ocorreu um erro inesperado. Verifique o console para detalhes.", "error");
+    } finally {
+        console.log("[DEBUG] Finalizando handler do formulário");
     }
 });
-
 // Função de validação atualizada
 function validarFiltrosImoveis(filtros) {
     // Verifica se pelo menos um campo relevante foi preenchido
