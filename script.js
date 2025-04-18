@@ -341,12 +341,98 @@ function closeDetailsModal() {
     }, 300); // Tempo da animação de fadeOut
 }
 
+async function buscarImoveis(filtros = {}) {
+    const carregando = document.querySelector(".carregando");
+    if (carregando) carregando.style.display = "block";
+
+    try {
+        // Limpar filtros vazios
+        Object.keys(filtros).forEach(key => {
+            if (filtros[key] === undefined || filtros[key] === "") {
+                delete filtros[key];
+            }
+        });
+
+        const imoveisRef = collection(db, "imoveis");
+        let q = query(imoveisRef);
+
+        // Aplicar filtros
+        for (const [key, value] of Object.entries(filtros)) {
+            if (value !== undefined && value !== "") {
+                if (["precoMin", "precoMax", "quartos", "banheiros", "garagem", "areaMin"].includes(key)) {
+                    const op = key === "precoMin" ? ">=" :
+                               key === "precoMax" ? "<=" : "==";
+                    const fieldName = (key === "precoMin" || key === "precoMax") ? "preco" : key;
+                    q = query(q, where(fieldName, op, value));
+                } else if (key === "cidade") {
+                    q = query(q, where("cidadeNormalizada", "==", value.toLowerCase()));
+                } else if (key === "bairro") {
+                    q = query(q, where("bairroNormalizado", "==", value.toLowerCase()));
+                } else {
+                    q = query(q, where(key, "==", value));
+                }
+            }
+        }
+
+        const querySnapshot = await getDocs(q);
+        const resultadosContainer = document.getElementById("resultados");
+        if (!resultadosContainer) return;
+
+        resultadosContainer.innerHTML = "";
+
+        if (querySnapshot.empty) {
+            resultadosContainer.innerHTML = `
+                <div class="alert alert-info">
+                    <p>Nenhum imóvel encontrado com os filtros selecionados.</p>
+                    <small>Tente ajustar os critérios de busca.</small>
+                </div>
+            `;
+            return;
+        }
+
+        resultadosContainer.innerHTML = "<h3 class='resultados-titulo'>Imóveis encontrados:</h3>";
+
+        const cardsContainer = document.createElement("div");
+        cardsContainer.className = "row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4";
+        resultadosContainer.appendChild(cardsContainer);
+
+        querySnapshot.forEach((doc) => {
+            const imovelData = doc.data();
+            imovelData.id = doc.id;
+            cardsContainer.appendChild(criarCardImovel(imovelData));
+        });
+
+        const contador = document.createElement("p");
+        contador.className = "text-muted mt-3";
+        contador.textContent = `${querySnapshot.size} imóvel(is) encontrado(s)`;
+        resultadosContainer.appendChild(contador);
+
+    } catch (error) {
+        console.error("Erro ao buscar imóveis:", error);
+        const resultadosContainer = document.getElementById("resultados");
+        if (resultadosContainer) {
+            resultadosContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <p>Erro ao buscar imóveis. Por favor, tente novamente.</p>
+                    ${error.message ? `<small>${error.message}</small>` : ""}
+                </div>
+            `;
+        }
+    } finally {
+        if (carregando) carregando.style.display = "none";
+    }
+}
 async function buscarCarros(params = {}) {
+    const carregando = document.querySelector(".carregando");
+    if (carregando) carregando.style.display = "block";
+
     try {
         const carrosRef = collection(db, "automoveis");
         let q = query(carrosRef);
-        
-        // Aplicar filtros apenas se os valores forem válidos
+
+        if (params.cidade && params.cidade.trim() !== "") {
+            q = query(q, where("cidadeNormalizada", "==", params.cidade.toLowerCase()));
+        }
         if (params.marca && params.marca.trim() !== "") {
             q = query(q, where("marca", "==", params.marca.trim()));
         }
@@ -365,135 +451,44 @@ async function buscarCarros(params = {}) {
 
         const querySnapshot = await getDocs(q);
         const resultadosContainer = document.getElementById("lista-resultados");
-        
-        // Limpar resultados anteriores
+        if (!resultadosContainer) return;
+
         resultadosContainer.innerHTML = "";
-        
-        // Verificar se há resultados
+
         if (querySnapshot.empty) {
-            document.querySelector(".sem-resultados").style.display = "block";
-            document.querySelector(".carregando").style.display = "none";
+            document.querySelector(".sem-resultados")?.style.display = "block";
             return;
         }
-        
-        // Esconder mensagem de sem resultados
-        document.querySelector(".sem-resultados").style.display = "none";
-        
-        // Processar cada documento
+
+        document.querySelector(".sem-resultados")?.style.display = "none";
+
         querySnapshot.forEach((doc) => {
             const data = doc.data();
             data.id = doc.id;
             resultadosContainer.appendChild(criarCardComEvento(data, true));
         });
-        
-        // Atualizar contador
-        document.querySelector(".contador-pagina").textContent = 
-            `Mostrando ${querySnapshot.size} resultado(s)`;
-            
+
+        const contador = document.querySelector(".contador-pagina");
+        if (contador) {
+            contador.textContent = `Mostrando ${querySnapshot.size} resultado(s)`;
+        }
+
     } catch (error) {
         console.error("Erro ao buscar carros:", error);
-        document.getElementById("lista-resultados").innerHTML = `
-            <div class="error-message">
-                <p>Erro ao buscar carros.</p>
-                <p>${error.message}</p>
-            </div>
-        `;
-    } finally {
-        document.querySelector(".carregando").style.display = "none";
-    }
-}
-
-async function buscarImoveis(filtros = {}) {
-     const carregando = document.querySelector(".carregando");
-    if (carregando) carregando.style.display = "block";
-
-    
-    try {
-        // Limpar filtros vazios ou undefined
-        Object.keys(filtros).forEach(key => {
-            if (filtros[key] === undefined || filtros[key] === "") {
-                delete filtros[key];
-            }
-        });
-
-        const imoveisRef = collection(db, "imoveis");
-        let q = query(imoveisRef);
-        
-        // Aplicar filtros dinamicamente
-        for (const [key, value] of Object.entries(filtros)) {
-            if (value !== undefined && value !== "") {
-                if (key === "precoMin" || key === "precoMax" || 
-                    key === "quartos" || key === "banheiros" || 
-                    key === "garagem" || key === "areaMin") {
-                    // Para campos numéricos
-                    const op = key === "precoMin" ? ">=" : 
-                              key === "precoMax" ? "<=" : "==";
-                    const fieldName = key === "precoMin" || key === "precoMax" ? "preco" : key;
-                    q = query(q, where(fieldName, op, value));
-                } else if (key === "cidade") {
-                    // Filtro de cidade com busca case-insensitive
-                    q = query(q, where("cidadeNormalizada", "==", value.toLowerCase()));
-                } else if (key === "bairro") {
-                    // Filtro de bairro com busca case-insensitive
-                    q = query(q, where("bairroNormalizado", "==", value.toLowerCase()));
-                } else {
-                    // Para campos textuais/booleanos exatos
-                    q = query(q, where(key, "==", value));
-                }
-            }
-        }
-        
-        // Executar a consulta
-        const querySnapshot = await getDocs(q);
-        const resultadosContainer = document.getElementById("resultados");
-        
-        // Limpar resultados anteriores
-        resultadosContainer.innerHTML = "";
-        
-        // Verificar se há resultados
-        if (querySnapshot.empty) {
+        const resultadosContainer = document.getElementById("lista-resultados");
+        if (resultadosContainer) {
             resultadosContainer.innerHTML = `
-                <div class="alert alert-info">
-                    <p>Nenhum imóvel encontrado com os filtros selecionados.</p>
-                    <small>Tente ajustar os critérios de busca.</small>
+                <div class="error-message">
+                    <p>Erro ao buscar carros.</p>
+                    <p>${error.message}</p>
                 </div>
             `;
-            return;
         }
-        
-        // Adicionar título dos resultados
-        resultadosContainer.innerHTML = "<h3 class='resultados-titulo'>Imóveis encontrados:</h3>";
-        
-        // Criar container para os cards
-        const cardsContainer = document.createElement("div");
-        cardsContainer.className = "row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4";
-        resultadosContainer.appendChild(cardsContainer);
-        
-        // Processar cada documento
-        querySnapshot.forEach((doc) => {
-            const imovelData = doc.data();
-            imovelData.id = doc.id;
-            cardsContainer.appendChild(criarCardImovel(imovelData));
-        });
-        
-        // Adicionar contador de resultados
-        const contador = document.createElement("p");
-        contador.className = "text-muted mt-3";
-        contador.textContent = `${querySnapshot.size} imóvel(s) encontrado(s)`;
-        resultadosContainer.appendChild(contador);
-        
-    } catch (error) {
-        console.error("Erro ao buscar imóveis:", error);
-        document.getElementById("resultados").innerHTML = `
-            <div class="alert alert-danger">
-                <p>Erro ao buscar imóveis. Por favor, tente novamente.</p>
-                ${error.message ? `<small>${error.message}</small>` : ''}
-            </div>
-        `;
     } finally {
         if (carregando) carregando.style.display = "none";
     }
 }
+
 // Adicione esta função em algum lugar do seu arquivo JS (de preferência perto de outras funções utilitárias)
 function validarFiltrosImoveis(filtros) {
     // Verifica se pelo menos um campo relevante foi preenchido
