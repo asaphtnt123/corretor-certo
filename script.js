@@ -354,189 +354,121 @@ function formatarCidadeParaBusca(cidade) {
 
 // Função para buscar imóveis
 async function buscarImoveis(filtros = {}) {
-    const resultadosContainer = document.getElementById("resultados") || document.getElementById("lista-resultados");
-    const carregando = document.querySelector(".carregando");
-    
-    if (!resultadosContainer) {
-        console.error("[ERRO] Container de resultados não encontrado");
-        return;
-    }
+    const resultadosContainer = document.getElementById("lista-resultados");
+    if (!resultadosContainer) return console.error("[ERRO] Container de resultados não encontrado");
+
+    resultadosContainer.innerHTML = "";
 
     try {
-        // Limpar filtros vazios
-        Object.keys(filtros).forEach(key => {
-            if (filtros[key] === undefined || filtros[key] === "") {
-                delete filtros[key];
-            }
-        });
+        const colecao = collection(db, "imoveis");
+        let constraints = [where("status", "==", "ativo")];
 
-        let q = query(collection(db, "imoveis"), where("status", "==", "ativo"));
-
-        // Filtro por cidade (case-insensitive)
         if (filtros.cidade) {
-            q = query(q, where("cidadeNormalizada", "==", filtros.cidade.toLowerCase().trim()));
-            console.log("[DEBUG] Filtrando por cidade:", filtros.cidade.toLowerCase().trim());
+            constraints.push(where("cidadeNormalizada", "==", filtros.cidade.toLowerCase().trim()));
         }
-
-        // Outros filtros
         if (filtros.bairro) {
-            q = query(q, where("bairroNormalizado", "==", filtros.bairro.toLowerCase().trim()));
+            constraints.push(where("bairroNormalizado", "==", filtros.bairro.toLowerCase().trim()));
         }
-        if (filtros.tipo) {
-            q = query(q, where("tipo", "==", filtros.tipo));
-        }
-        if (filtros.negociacao) {
-            q = query(q, where("negociacao", "==", filtros.negociacao));
-        }
-        if (filtros.precoMin) {
-            q = query(q, where("preco", ">=", filtros.precoMin));
-        }
-        if (filtros.precoMax) {
-            q = query(q, where("preco", "<=", filtros.precoMax));
-        }
-        if (filtros.quartos) {
-            q = query(q, where("quartos", "==", filtros.quartos));
-        }
-        if (filtros.banheiros) {
-            q = query(q, where("banheiros", "==", filtros.banheiros));
-        }
-        if (filtros.garagem) {
-            q = query(q, where("garagem", "==", filtros.garagem));
-        }
-        if (filtros.areaMin) {
-            q = query(q, where("area", ">=", filtros.areaMin));
-        }
-        if (filtros.aceitaAnimais !== undefined) {
-            q = query(q, where("aceitaAnimais", "==", filtros.aceitaAnimais));
-        }
-        if (filtros.mobiliado !== undefined) {
-            q = query(q, where("mobiliado", "==", filtros.mobiliado));
-        }
+        if (filtros.tipo) constraints.push(where("tipo", "==", filtros.tipo));
+        if (filtros.negociacao) constraints.push(where("negociacao", "==", filtros.negociacao));
+        if (filtros.quartos) constraints.push(where("quartos", ">=", parseInt(filtros.quartos)));
+        if (filtros.banheiros) constraints.push(where("banheiros", ">=", parseInt(filtros.banheiros)));
+        if (filtros.garagem) constraints.push(where("garagem", ">=", parseInt(filtros.garagem)));
+        if (filtros.areaMin) constraints.push(where("area", ">=", parseFloat(filtros.areaMin)));
+        if (filtros.precoMin) constraints.push(where("preco", ">=", parseFloat(filtros.precoMin)));
+        if (filtros.precoMax) constraints.push(where("preco", "<=", parseFloat(filtros.precoMax)));
+        if (filtros.aceitaAnimais !== undefined) constraints.push(where("aceitaAnimais", "==", filtros.aceitaAnimais));
+        if (filtros.mobiliado !== undefined) constraints.push(where("mobiliado", "==", filtros.mobiliado));
 
-        const querySnapshot = await getDocs(q);
-        resultadosContainer.innerHTML = "";
+        const q = query(colecao, ...constraints);
+        const snapshot = await getDocs(q);
 
-        if (querySnapshot.empty) {
+        if (snapshot.empty) {
             resultadosContainer.innerHTML = `
                 <div class="alert alert-info">
-                    <p>Nenhum imóvel encontrado ${filtros.cidade ? 'em ' + filtros.cidade : ''} com os filtros selecionados.</p>
-                    <small>Tente ajustar os critérios de busca.</small>
+                    <p>Nenhum imóvel encontrado.</p>
+                    <small>Ajuste os filtros e tente novamente.</small>
                 </div>
             `;
             return;
         }
 
-        // Criar container para os cards
-        const cardsContainer = document.createElement("div");
-        cardsContainer.className = "row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4";
-        resultadosContainer.appendChild(cardsContainer);
-        
-        // Processar cada documento
-        querySnapshot.forEach((doc) => {
-            const imovelData = doc.data();
-            imovelData.id = doc.id;
-            console.log("[DEBUG] Imóvel encontrado:", imovelData);
-            cardsContainer.appendChild(criarCardImovel(imovelData));
+        const container = document.createElement("div");
+        container.className = "cards-container";
+        snapshot.forEach(doc => {
+            const dados = doc.data();
+            dados.id = doc.id;
+            container.appendChild(criarCardImovel(dados));
         });
-        
-        // Adicionar contador de resultados
-        const contador = document.createElement("p");
-        contador.className = "text-muted mt-3";
-        contador.textContent = `${querySnapshot.size} imóvel(s) encontrado(s)`;
-        resultadosContainer.appendChild(contador);
-        
+
+        resultadosContainer.appendChild(container);
+        resultadosContainer.insertAdjacentHTML("beforeend", `<p class="text-muted mt-3">${snapshot.size} imóvel(is) encontrado(s)</p>`);
     } catch (error) {
-        console.error("[ERRO] Ao buscar imóveis:", error);
+        console.error("[ERRO] buscarImoveis:", error);
         resultadosContainer.innerHTML = `
             <div class="alert alert-danger">
-                <p>Erro ao buscar imóveis. Por favor, tente novamente.</p>
-                ${error.message ? `<small>${error.message}</small>` : ''}
+                <p>Erro ao buscar imóveis.</p>
+                <small>${error.message || ''}</small>
             </div>
         `;
     }
 }
 
-// Função para buscar carros
-async function buscarCarros(params = {}) {
-    const resultadosContainer = document.getElementById("resultados") || document.getElementById("lista-resultados");
-    const carregando = document.querySelector(".carregando");
-    
-    if (!resultadosContainer) {
-        console.error("[ERRO] Container de resultados não encontrado");
-        return;
-    }
+
+async function buscarCarros(filtros = {}) {
+    const resultadosContainer = document.getElementById("lista-resultados");
+    if (!resultadosContainer) return console.error("[ERRO] Container de resultados não encontrado");
+
+    resultadosContainer.innerHTML = "";
 
     try {
-        let q = query(collection(db, "automoveis"), where("status", "==", "ativo"));
+        const colecao = collection(db, "automoveis");
+        let constraints = [where("status", "==", "ativo")];
 
-        // Filtro por cidade (case-insensitive)
-        if (params.cidade) {
-            q = query(q, where("cidadeNormalizada", "==", params.cidade.toLowerCase().trim()));
-            console.log("[DEBUG] Filtrando por cidade:", params.cidade.toLowerCase().trim());
+        if (filtros.cidade) {
+            constraints.push(where("cidadeNormalizada", "==", filtros.cidade.toLowerCase().trim()));
         }
+        if (filtros.marca) constraints.push(where("marca", "==", filtros.marca));
+        if (filtros.modelo) constraints.push(where("modelo", "==", filtros.modelo));
+        if (filtros.ano) constraints.push(where("ano", "==", parseInt(filtros.ano)));
+        if (filtros.combustivel) constraints.push(where("combustivel", "==", filtros.combustivel));
+        if (filtros.precoMin) constraints.push(where("preco", ">=", parseFloat(filtros.precoMin)));
+        if (filtros.precoMax) constraints.push(where("preco", "<=", parseFloat(filtros.precoMax)));
 
-        // Outros filtros
-        if (params.marca) {
-            q = query(q, where("marca", "==", params.marca.trim()));
-        }
-        if (params.modelo) {
-            q = query(q, where("modelo", "==", params.modelo.trim()));
-        }
-        if (params.ano) {
-            q = query(q, where("ano", "==", parseInt(params.ano)));
-        }
-        if (params.combustivel) {
-            q = query(q, where("combustivel", "==", params.combustivel));
-        }
-        if (params.precoMin > 0) {
-            q = query(q, where("preco", ">=", params.precoMin));
-        }
-        if (params.precoMax > 0) {
-            q = query(q, where("preco", "<=", params.precoMax));
-        }
+        const q = query(colecao, ...constraints);
+        const snapshot = await getDocs(q);
 
-        const querySnapshot = await getDocs(q);
-        resultadosContainer.innerHTML = "";
-
-        if (querySnapshot.empty) {
+        if (snapshot.empty) {
             resultadosContainer.innerHTML = `
                 <div class="alert alert-info">
-                    <p>Nenhum veículo encontrado ${params.cidade ? 'em ' + params.cidade : ''} com os filtros selecionados.</p>
-                    <small>Tente ajustar os critérios de busca.</small>
+                    <p>Nenhum automóvel encontrado.</p>
+                    <small>Ajuste os filtros e tente novamente.</small>
                 </div>
             `;
             return;
         }
 
-        // Criar container para os cards
-        const cardsContainer = document.createElement("div");
-        cardsContainer.className = "row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4";
-        resultadosContainer.appendChild(cardsContainer);
-        
-        // Processar cada documento
-        querySnapshot.forEach((doc) => {
-            const carroData = doc.data();
-            carroData.id = doc.id;
-            console.log("[DEBUG] Carro encontrado:", carroData);
-            cardsContainer.appendChild(criarCardComEvento(carroData, true));
+        const container = document.createElement("div");
+        container.className = "cards-container";
+        snapshot.forEach(doc => {
+            const dados = doc.data();
+            dados.id = doc.id;
+            container.appendChild(criarCardComEvento(dados, true));
         });
-        
-        // Adicionar contador de resultados
-        const contador = document.createElement("p");
-        contador.className = "text-muted mt-3";
-        contador.textContent = `${querySnapshot.size} veículo(s) encontrado(s)`;
-        resultadosContainer.appendChild(contador);
-        
+
+        resultadosContainer.appendChild(container);
+        resultadosContainer.insertAdjacentHTML("beforeend", `<p class="text-muted mt-3">${snapshot.size} veículo(s) encontrado(s)</p>`);
     } catch (error) {
-        console.error("[ERRO] Ao buscar carros:", error);
+        console.error("[ERRO] buscarCarros:", error);
         resultadosContainer.innerHTML = `
             <div class="alert alert-danger">
-                <p>Erro ao buscar veículos. Por favor, tente novamente.</p>
-                ${error.message ? `<small>${error.message}</small>` : ''}
+                <p>Erro ao buscar automóveis.</p>
+                <small>${error.message || ''}</small>
             </div>
         `;
     }
 }
+
 
 function criarCardImovel(imovel) {
     const card = document.createElement('div');
@@ -1244,53 +1176,26 @@ document.addEventListener("DOMContentLoaded", function() {
 
 document.getElementById("form-pesquisa")?.addEventListener("submit", async function(e) {
     e.preventDefault();
-    console.log("[DEBUG] Formulário submetido - Início");
+    console.log("[DEBUG] Formulário submetido");
+
+    const tipo = document.getElementById("tipo")?.value;
+    const cidade = document.getElementById("cidade")?.value;
+
+    const carregando = document.querySelector(".carregando");
+    if (carregando) carregando.style.display = "block";
+
+    const semResultados = document.querySelector(".sem-resultados");
+    if (semResultados) semResultados.style.display = "none";
 
     try {
-        const tipoInput = document.getElementById("tipo");
-        console.log("[DEBUG] Tipo input:", tipoInput);
-        
-        if (!tipoInput) {
-            console.error("[ERRO] Elemento 'tipo' não encontrado");
-            showAlert("Erro no formulário. Recarregue a página e tente novamente.", "error");
-            return;
-        }
-
-        const tipo = tipoInput.value;
-        console.log("[DEBUG] Tipo selecionado:", tipo);
-        
         if (!tipo) {
-            console.warn("[AVISO] Nenhum tipo selecionado");
-            showAlert("Selecione o tipo de anúncio (imóvel ou automóvel)", "error");
+            showAlert("Selecione o tipo de anúncio", "error");
             return;
         }
-
-        const cidadeInput = document.getElementById("cidade");
-        if (!cidadeInput) {
-            console.error("[ERRO] Campo cidade não encontrado");
-            showAlert("Erro no formulário. Campo cidade não encontrado.", "error");
-            return;
-        }
-
-        const cidade = cidadeInput.value;
-        console.log("[DEBUG] Cidade selecionada:", cidade);
-
-        // Mostrar loading
-        const carregando = document.querySelector(".carregando");
-        if (carregando) {
-            console.log("[DEBUG] Mostrando spinner de carregamento");
-            carregando.style.display = "block";
-        }
-
-        // Esconder mensagem de sem resultados
-        const semResultados = document.querySelector(".sem-resultados");
-        if (semResultados) semResultados.style.display = "none";
 
         if (tipo === "imovel") {
-            console.log("[DEBUG] Iniciando busca por imóveis");
-            
             const filtros = {
-                cidade: cidade || undefined,
+                cidade: cidade?.trim() || undefined,
                 bairro: document.getElementById("bairro")?.value.trim() || undefined,
                 tipo: document.getElementById("tipo-imovel")?.value || undefined,
                 negociacao: document.querySelector('input[name="negociacao"]:checked')?.value || undefined,
@@ -1304,20 +1209,12 @@ document.getElementById("form-pesquisa")?.addEventListener("submit", async funct
                 mobiliado: document.getElementById("mobiliado")?.checked || undefined
             };
 
-            console.log("[DEBUG] Filtros aplicados:", JSON.stringify(filtros));
-            
-            if (validarFiltrosImoveis(filtros)) {
-                console.log("[DEBUG] Filtros válidos, iniciando busca...");
-                await buscarImoveis(filtros);
-            } else {
-                console.log("[DEBUG] Filtros inválidos");
-            }
+            if (!validarFiltrosImoveis(filtros)) return;
+            await buscarImoveis(filtros);
 
         } else if (tipo === "carro") {
-            console.log("[DEBUG] Iniciando busca por automóveis");
-            
-            const params = {
-                cidade: cidade || undefined,
+            const filtros = {
+                cidade: cidade?.trim() || undefined,
                 marca: document.getElementById("marca")?.value.trim() || undefined,
                 modelo: document.getElementById("modelo")?.value.trim() || undefined,
                 ano: document.getElementById("ano")?.value || undefined,
@@ -1326,24 +1223,21 @@ document.getElementById("form-pesquisa")?.addEventListener("submit", async funct
                 precoMax: parseFloat(document.getElementById("preco-max")?.value) || 0
             };
 
-            console.log("[DEBUG] Parâmetros aplicados:", JSON.stringify(params));
-            
-            if (!params.marca && !params.modelo && !params.ano && !params.cidade) {
-                console.warn("[AVISO] Nenhum filtro preenchido para carros");
+            if (!filtros.marca && !filtros.modelo && !filtros.ano && !filtros.cidade) {
                 showAlert("Preencha pelo menos um filtro para buscar automóveis", "error");
                 return;
             }
 
-            console.log("[DEBUG] Filtros válidos, iniciando busca...");
-            await buscarCarros(params);
+            await buscarCarros(filtros);
         }
-        
+
+        // Scroll até resultados
+        document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth" });
+
     } catch (error) {
-        console.error("[ERRO CRÍTICO] No handler do formulário:", error);
-        showAlert("Ocorreu um erro inesperado. Verifique o console para detalhes.", "error");
+        console.error("[ERRO CRÍTICO] No envio do formulário:", error);
+        showAlert("Erro ao buscar dados. Tente novamente mais tarde.", "error");
     } finally {
-        console.log("[DEBUG] Finalizando handler do formulário");
-        const carregando = document.querySelector(".carregando");
         if (carregando) carregando.style.display = "none";
     }
 });
