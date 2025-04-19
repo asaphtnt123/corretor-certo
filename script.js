@@ -341,169 +341,157 @@ function closeDetailsModal() {
     }, 300); // Tempo da animação de fadeOut
 }
 
-document.getElementById("form-pesquisa")?.addEventListener("submit", async function(e) {
-    e.preventDefault();
-    
-    const tipoInput = document.getElementById("tipo");
-    if (!tipoInput) {
-        console.error("Elemento 'tipo' não encontrado");
-        showAlert("Erro no formulário. Recarregue a página e tente novamente.", "error");
-        return;
-    }
-    
-    const tipo = tipoInput.value;
-    
-    if (!tipo) {
-        showAlert("Selecione o tipo de anúncio (imóvel ou automóvel)", "error");
-        return;
-    }
-
-    // Mostrar estado de carregamento
-const carregando = document.querySelector(".carregando");
-if (carregando) {
-    carregando.style.display = "block";
-}    
+async function buscarCarros(params = {}) {
     try {
-        if (tipo === "imovel") {
-            await buscarImoveisComFiltros();
-        } else if (tipo === "carro") {
-            await buscarCarrosComFiltros();
+        const carrosRef = collection(db, "automoveis");
+        let q = query(carrosRef);
+        
+        // Aplicar filtros apenas se os valores forem válidos
+        if (params.marca && params.marca.trim() !== "") {
+            q = query(q, where("marca", "==", params.marca.trim()));
         }
+        if (params.modelo && params.modelo.trim() !== "") {
+            q = query(q, where("modelo", "==", params.modelo.trim()));
+        }
+        if (params.ano && params.ano.trim() !== "") {
+            q = query(q, where("ano", "==", parseInt(params.ano)));
+        }
+        if (params.precoMin && params.precoMin > 0) {
+            q = query(q, where("preco", ">=", params.precoMin));
+        }
+        if (params.precoMax && params.precoMax > 0) {
+            q = query(q, where("preco", "<=", params.precoMax));
+        }
+
+        const querySnapshot = await getDocs(q);
+        const resultadosContainer = document.getElementById("lista-resultados");
+        
+        // Limpar resultados anteriores
+        resultadosContainer.innerHTML = "";
+        
+        // Verificar se há resultados
+        if (querySnapshot.empty) {
+            document.querySelector(".sem-resultados").style.display = "block";
+            document.querySelector(".carregando").style.display = "none";
+            return;
+        }
+        
+        // Esconder mensagem de sem resultados
+        document.querySelector(".sem-resultados").style.display = "none";
+        
+        // Processar cada documento
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            data.id = doc.id;
+            resultadosContainer.appendChild(criarCardComEvento(data, true));
+        });
+        
+        // Atualizar contador
+        document.querySelector(".contador-pagina").textContent = 
+            `Mostrando ${querySnapshot.size} resultado(s)`;
+            
     } catch (error) {
-        console.error("Erro na busca:", error);
-        showAlert("Ocorreu um erro durante a busca. Tente novamente.", "error");
+        console.error("Erro ao buscar carros:", error);
+        document.getElementById("lista-resultados").innerHTML = `
+            <div class="error-message">
+                <p>Erro ao buscar carros.</p>
+                <p>${error.message}</p>
+            </div>
+        `;
     } finally {
-        document.querySelector(".carregando")?.style.display = "none";
-    }
-});
-
-async function buscarImoveisComFiltros() {
-    // Elementos do formulário de imóvel
-    const bairroInput = document.getElementById("bairro");
-    const tipoImovelInput = document.getElementById("tipo-imovel");
-    const precoMinInput = document.getElementById("preco-min");
-    const precoMaxInput = document.getElementById("preco-max");
-    const quartosInput = document.getElementById("quartos");
-    const banheirosInput = document.getElementById("banheiros");
-    const garagemInput = document.getElementById("garagem");
-    const areaMinInput = document.getElementById("area-min");
-    const aceitaAnimaisInput = document.getElementById("aceita-animais");
-    const mobiliadoInput = document.getElementById("mobiliado");
-    const negociacaoInput = document.querySelector('input[name="negociacao"]:checked');
-    const cidadeInput = document.getElementById("cidade"); // Adicionado campo cidade
-
-    // Verifica se os elementos principais existem
-    if (!bairroInput || !tipoImovelInput || !precoMinInput || !precoMaxInput) {
-        console.error("Elementos do formulário de imóvel não encontrados");
-        showAlert("Erro no formulário. Recarregue a página e tente novamente.", "error");
-        return;
-    }
-
-    // Prepara os filtros
-    const filtros = {
-        cidade: cidadeInput?.value.trim() || undefined,
-        bairro: bairroInput.value.trim(),
-        precoMin: precoMinInput.value ? parseFloat(precoMinInput.value) : undefined,
-        precoMax: precoMaxInput.value ? parseFloat(precoMaxInput.value) : undefined,
-        tipo: tipoImovelInput.value || undefined,
-        negociacao: negociacaoInput?.value || undefined,
-        quartos: quartosInput?.value ? parseInt(quartosInput.value) : undefined,
-        banheiros: banheirosInput?.value ? parseInt(banheirosInput.value) : undefined,
-        garagem: garagemInput?.value ? parseInt(garagemInput.value) : undefined,
-        areaMin: areaMinInput?.value ? parseFloat(areaMinInput.value) : undefined,
-        aceitaAnimais: aceitaAnimaisInput?.checked || undefined,
-        mobiliado: mobiliadoInput?.checked || undefined
-    };
-    
-    // Valida e executa a busca
-    if (validarFiltrosImoveis(filtros)) {
-        await buscarImoveis(filtros);
+        document.querySelector(".carregando").style.display = "none";
     }
 }
 
-async function buscarCarrosComFiltros() {
-    // Elementos do formulário de automóvel
-    const marcaInput = document.getElementById("marca");
-    const modeloInput = document.getElementById("modelo");
-    const anoInput = document.getElementById("ano");
-    const precoMinInput = document.getElementById("preco-min");
-    const precoMaxInput = document.getElementById("preco-max");
-
-    // Verifica se os elementos principais existem
-    if (!marcaInput || !modeloInput || !anoInput || !precoMinInput || !precoMaxInput) {
-        console.error("Elementos do formulário de automóvel não encontrados");
-        showAlert("Erro no formulário. Recarregue a página e tente novamente.", "error");
-        return;
-    }
-    
-    // Prepara os parâmetros
-    const params = {
-        marca: marcaInput.value.trim(),
-        modelo: modeloInput.value.trim(),
-        ano: anoInput.value.trim(),
-        precoMin: precoMinInput.value ? parseFloat(precoMinInput.value) : 0,
-        precoMax: precoMaxInput.value ? parseFloat(precoMaxInput.value) : 0
-    };
-
-    // Validação básica para carros
-    if (!params.marca && !params.modelo && !params.ano && params.precoMin === 0 && params.precoMax === 0) {
-        showAlert("Preencha pelo menos um filtro para buscar automóveis", "error");
-        return;
-    }
-
-    if (params.precoMin > params.precoMax && params.precoMax > 0) {
-        showAlert("O preço mínimo não pode ser maior que o preço máximo", "error");
-        return;
-    }
-
-    await buscarCarros(params);
-}
-
-// Configuração dos botões de tipo
-const tipoOptions = document.querySelectorAll(".tipo-option");
-const tipoInput = document.getElementById("tipo");
-
-if (tipoOptions.length > 0 && tipoInput) {
-    tipoOptions.forEach((option) => {
-        option.addEventListener("click", function() {
-            tipoOptions.forEach((opt) => opt.classList?.remove("active"));
-            
-            if (this.classList) this.classList.add("active");
-            
-            const novoTipo = this.getAttribute("data-tipo");
-            if (novoTipo) {
-                tipoInput.value = novoTipo;
-                toggleFields(novoTipo);
+async function buscarImoveis(filtros = {}) {
+    try {
+        // Limpar filtros vazios ou undefined
+        Object.keys(filtros).forEach(key => {
+            if (filtros[key] === undefined || filtros[key] === "") {
+                delete filtros[key];
             }
         });
-    });
-    
-    // Inicializar com o primeiro botão ativo (se existir)
-    if (tipoOptions[0]?.classList) {
-        tipoOptions[0].classList.add("active");
-        const tipoInicial = tipoOptions[0].getAttribute("data-tipo");
-        if (tipoInicial) {
-            tipoInput.value = tipoInicial;
-            toggleFields(tipoInicial);
+
+        const imoveisRef = collection(db, "imoveis");
+        let q = query(imoveisRef);
+        
+        // Aplicar filtros dinamicamente
+        for (const [key, value] of Object.entries(filtros)) {
+            if (value !== undefined && value !== "") {
+                if (key === "precoMin" || key === "precoMax" || 
+                    key === "quartos" || key === "banheiros" || 
+                    key === "garagem" || key === "areaMin") {
+                    // Para campos numéricos
+                    const op = key === "precoMin" ? ">=" : 
+                              key === "precoMax" ? "<=" : "==";
+                    const fieldName = key === "precoMin" || key === "precoMax" ? "preco" : key;
+                    q = query(q, where(fieldName, op, value));
+                } else if (key === "cidade") {
+                    // Filtro de cidade com busca case-insensitive
+                    q = query(q, where("cidadeNormalizada", "==", value.toLowerCase()));
+                } else if (key === "bairro") {
+                    // Filtro de bairro com busca case-insensitive
+                    q = query(q, where("bairroNormalizado", "==", value.toLowerCase()));
+                } else {
+                    // Para campos textuais/booleanos exatos
+                    q = query(q, where(key, "==", value));
+                }
+            }
         }
+        
+        // Executar a consulta
+        const querySnapshot = await getDocs(q);
+        const resultadosContainer = document.getElementById("resultados");
+        
+        // Limpar resultados anteriores
+        resultadosContainer.innerHTML = "";
+        
+        // Verificar se há resultados
+        if (querySnapshot.empty) {
+            resultadosContainer.innerHTML = `
+                <div class="alert alert-info">
+                    <p>Nenhum imóvel encontrado com os filtros selecionados.</p>
+                    <small>Tente ajustar os critérios de busca.</small>
+                </div>
+            `;
+            return;
+        }
+        
+        // Adicionar título dos resultados
+        resultadosContainer.innerHTML = "<h3 class='resultados-titulo'>Imóveis encontrados:</h3>";
+        
+        // Criar container para os cards
+        const cardsContainer = document.createElement("div");
+        cardsContainer.className = "row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4";
+        resultadosContainer.appendChild(cardsContainer);
+        
+        // Processar cada documento
+        querySnapshot.forEach((doc) => {
+            const imovelData = doc.data();
+            imovelData.id = doc.id;
+            cardsContainer.appendChild(criarCardImovel(imovelData));
+        });
+        
+        // Adicionar contador de resultados
+        const contador = document.createElement("p");
+        contador.className = "text-muted mt-3";
+        contador.textContent = `${querySnapshot.size} imóvel(s) encontrado(s)`;
+        resultadosContainer.appendChild(contador);
+        
+    } catch (error) {
+        console.error("Erro ao buscar imóveis:", error);
+        document.getElementById("resultados").innerHTML = `
+            <div class="alert alert-danger">
+                <p>Erro ao buscar imóveis. Por favor, tente novamente.</p>
+                ${error.message ? `<small>${error.message}</small>` : ''}
+            </div>
+        `;
     }
 }
-
-// Configuração do botão de anunciar
-document.getElementById("btn-anunciar")?.addEventListener("click", () => {
-    window.location.href = "anunciar.html";
-});
-
-// Configuração do formulário de seleção de tipo
-document.getElementById('form-anuncio')?.addEventListener('submit', function(e) {
-    e.preventDefault();
-    const tipo = document.getElementById('tipo-anuncio').value;
-    window.location.href = "anunciar.html?tipo=" + encodeURIComponent(tipo);
-});
-
+// Adicione esta função em algum lugar do seu arquivo JS (de preferência perto de outras funções utilitárias)
 function validarFiltrosImoveis(filtros) {
     // Verifica se pelo menos um campo relevante foi preenchido
-    const camposRelevantes = ['bairro', 'tipo', 'negociacao', 'quartos', 'banheiros', 'garagem', 'areaMin', 'cidade'];
+    const camposRelevantes = ['bairro', 'tipo', 'negociacao', 'quartos', 'banheiros', 'garagem', 'areaMin'];
     const algumCampoPreenchido = camposRelevantes.some(campo => 
         filtros[campo] !== undefined && filtros[campo] !== "" && filtros[campo] !== 0
     );
@@ -1188,6 +1176,149 @@ document.addEventListener("DOMContentLoaded", function() {
             closeDetailsModal();
         }
     });
+
+document.getElementById("form-pesquisa")?.addEventListener("submit", function(e) {
+    e.preventDefault();
+    
+    const tipoInput = document.getElementById("tipo");
+    if (!tipoInput) {
+        console.error("Elemento 'tipo' não encontrado");
+        showAlert("Erro no formulário. Recarregue a página e tente novamente.", "error");
+        return;
+    }
+    
+    const tipo = tipoInput.value;
+    
+    if (!tipo) {
+        showAlert("Selecione o tipo de anúncio (imóvel ou automóvel)", "error");
+        return;
+    }
+
+    if (tipo === "imovel") {
+        // Elementos do formulário de imóvel
+        const bairroInput = document.getElementById("bairro");
+        const tipoImovelInput = document.getElementById("tipo-imovel");
+        const precoMinInput = document.getElementById("preco-min");
+        const precoMaxInput = document.getElementById("preco-max");
+        const quartosInput = document.getElementById("quartos");
+        const banheirosInput = document.getElementById("banheiros");
+        const garagemInput = document.getElementById("garagem");
+        const areaMinInput = document.getElementById("area-min");
+        const aceitaAnimaisInput = document.getElementById("aceita-animais");
+        const mobiliadoInput = document.getElementById("mobiliado");
+        const negociacaoInput = document.querySelector('input[name="negociacao"]:checked');
+
+        // Verifica se os elementos principais existem
+        if (!bairroInput || !tipoImovelInput || !precoMinInput || !precoMaxInput) {
+            console.error("Elementos do formulário de imóvel não encontrados");
+            showAlert("Erro no formulário. Recarregue a página e tente novamente.", "error");
+            return;
+        }
+
+        // Prepara os filtros
+        const filtros = {
+            cidade: cidade || undefined, // Adicionado filtro de cidade
+            bairro: bairroInput.value.trim(),
+            precoMin: parseFloat(precoMinInput.value) || undefined,
+            precoMax: parseFloat(precoMaxInput.value) || undefined,
+            tipo: tipoImovelInput.value,
+            negociacao: negociacaoInput?.value,
+            quartos: quartosInput ? parseInt(quartosInput.value) || undefined : undefined,
+            banheiros: banheirosInput ? parseInt(banheirosInput.value) || undefined : undefined,
+            garagem: garagemInput ? parseInt(garagemInput.value) || undefined : undefined,
+            areaMin: areaMinInput ? parseFloat(areaMinInput.value) || undefined : undefined,
+            aceitaAnimais: aceitaAnimaisInput?.checked || undefined,
+            mobiliado: mobiliadoInput?.checked || undefined
+        };
+        
+        // Valida e executa a busca
+        if (validarFiltrosImoveis(filtros)) {
+            buscarImoveis(filtros);
+        }
+     } else if (tipo === "carro") {
+        // Elementos do formulário de automóvel
+        const marcaInput = document.getElementById("marca");
+        const modeloInput = document.getElementById("modelo");
+        const anoInput = document.getElementById("ano");
+        const precoMinInput = document.getElementById("preco-min");
+        const precoMaxInput = document.getElementById("preco-max");
+
+        // Verifica se os elementos principais existem
+        if (!marcaInput || !modeloInput || !anoInput || !precoMinInput || !precoMaxInput) {
+            console.error("Elementos do formulário de automóvel não encontrados");
+            showAlert("Erro no formulário. Recarregue a página e tente novamente.", "error");
+            return;
+        }
+
+        // Mostrar estado de carregamento
+        document.querySelector(".carregando").style.display = "block";
+        
+        // Prepara os parâmetros (sem cidade)
+        const params = {
+            marca: marcaInput.value,
+            modelo: modeloInput.value,
+            ano: anoInput.value,
+            precoMin: parseFloat(precoMinInput.value) || 0,
+            precoMax: parseFloat(precoMaxInput.value) || 0
+        };
+
+        // Validação básica para carros
+        if (!params.marca && !params.modelo && !params.ano) {
+            showAlert("Preencha pelo menos um filtro para buscar automóveis", "error");
+            document.querySelector(".carregando").style.display = "none";
+            return;
+        }
+
+        buscarCarros(params);
+    }
+});
+    // Configuração dos botões de tipo
+   // Configuração dos botões de tipo - versão segura
+    const tipoOptions = document.querySelectorAll(".tipo-option");
+    const tipoInput = document.getElementById("tipo");
+    
+    if (tipoOptions.length > 0 && tipoInput) {
+        tipoOptions.forEach((option) => {
+            option.addEventListener("click", function() {
+                // Verificar se é um elemento válido
+                if (!this.getAttribute) return;
+                
+                tipoOptions.forEach((opt) => {
+                    if (opt.classList) opt.classList.remove("active");
+                });
+                
+                if (this.classList) this.classList.add("active");
+                
+                const novoTipo = this.getAttribute("data-tipo");
+                if (novoTipo) {
+                    tipoInput.value = novoTipo;
+                    toggleFields(novoTipo);
+                }
+            });
+        });
+        
+        // Inicializar com o primeiro botão ativo (se existir)
+        if (tipoOptions[0] && tipoOptions[0].classList) {
+            tipoOptions[0].classList.add("active");
+            const tipoInicial = tipoOptions[0].getAttribute("data-tipo");
+            if (tipoInicial) {
+                tipoInput.value = tipoInicial;
+                toggleFields(tipoInicial);
+            }
+        }
+    }
+    // Configuração do botão de anunciar
+    document.getElementById("btn-anunciar")?.addEventListener("click", () => {
+        window.location.href = "anunciar.html";
+    });
+
+    // Configuração do formulário de seleção de tipo
+    document.getElementById('form-anuncio')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const tipo = document.getElementById('tipo-anuncio').value;
+        window.location.href = "anunciar.html?tipo=" + encodeURIComponent(tipo);
+    });
+});
 
 
 // Adicione esta função no início do seu arquivo JavaScript
