@@ -1179,17 +1179,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
   
-        
-        // Inicializar com o primeiro botão ativo (se existir)
-        if (tipoOptions[0] && tipoOptions[0].classList) {
-            tipoOptions[0].classList.add("active");
-            const tipoInicial = tipoOptions[0].getAttribute("data-tipo");
-            if (tipoInicial) {
-                tipoInput.value = tipoInicial;
-                toggleFields(tipoInicial);
-            }
-        }
-    }
+     
     // Configuração do botão de anunciar
     document.getElementById("btn-anunciar")?.addEventListener("click", () => {
         window.location.href = "anunciar.html";
