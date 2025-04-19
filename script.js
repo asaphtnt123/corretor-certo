@@ -2688,7 +2688,7 @@ document.addEventListener('DOMContentLoaded', function() {
             listaResultados.appendChild(card);
         });
     }
-
+));
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
 window.openDetailsModal = openDetailsModal;
