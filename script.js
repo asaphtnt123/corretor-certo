@@ -2679,15 +2679,15 @@ document.addEventListener('DOMContentLoaded', function() {
             carregando.style.display = 'none';
         }
     }
- // Função para exibir resultados
-    function exibirResultados(resultados) {
-        listaResultados.innerHTML = '';
-        
-        resultados.forEach(anuncio => {
-            const card = criarCardAnuncio(anuncio);
-            listaResultados.appendChild(card);
-        });
-    }
+// Função para exibir resultados
+function exibirResultados(resultados) {
+    listaResultados.innerHTML = '';
+    
+    resultados.forEach(anuncio => {
+        const card = criarCardAnuncio(anuncio);
+        listaResultados.appendChild(card);
+    });
+}
 
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
@@ -2695,8 +2695,10 @@ window.openDetailsModal = openDetailsModal;
 window.closeDetailsModal = closeDetailsModal;
 window.buscarCarros = buscarCarros;
 window.buscarImoveis = buscarImoveis;
-window.carregarDestaques =         carregarDestaques;
+window.carregarDestaques = carregarDestaques;
 window.preencherBairros = preencherBairros;
+
+// Debug: Verificar elementos no DOM
 console.log("Elementos no DOM:");
 console.log("campos-imovel:", document.getElementById("campos-imovel"));
 console.log("campos-carro:", document.getElementById("campos-carro"));
