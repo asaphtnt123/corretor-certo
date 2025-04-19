@@ -359,8 +359,10 @@ document.getElementById("form-pesquisa")?.addEventListener("submit", async funct
     }
 
     // Mostrar estado de carregamento
-    document.querySelector(".carregando")?.style.display = "block";
-    
+const carregando = document.querySelector(".carregando");
+if (carregando) {
+    carregando.style.display = "block";
+}    
     try {
         if (tipo === "imovel") {
             await buscarImoveisComFiltros();
