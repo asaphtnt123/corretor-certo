@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesquisa Avançada - Corretor Certo</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+    <!-- CSS Personalizado -->
+    <style>
+        .search-card {
+            border-radius: 15px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+        .search-header {
+            background-color: #f8f9fa;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 1.5rem;
+        }
+        .search-body {
+            padding: 2rem;
+        }
+        .search-btn {
+            border-radius: 50px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+        }
+        .price-range-slider {
+            width: 100%;
+        }
+        .form-switch .form-check-input {
+            width: 3em;
+            height: 1.5em;
+        }
+        .toggle-fields {
+            cursor: pointer;
+            color: #0d6efd;
+        }
+        .toggle-fields:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+                <div class="card search-card border-0">
+                    <div class="card-header search-header border-0">
+                        <h2 class="mb-0 text-center"><i class="fas fa-search me-2"></i>Pesquisa Avançada</h2>
+                    </div>
+                    <div class="card-body search-body">
+                        <form id="advanced-search-form">
+                            <!-- Tipo de Anúncio -->
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <label class="form-label">O que você está procurando?</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="tipo-anuncio" id="search-imovel" value="imovel" checked>
+                                            <label class="form-check-label" for="search-imovel">Imóvel</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="tipo-anuncio" id="search-automovel" value="automovel">
+                                            <label class="form-check-label" for="search-automovel">Automóvel</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="tipo-anuncio" id="search-todos" value="todos">
+                                            <label class="form-check-label" for="search-todos">Todos</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Campos Comuns -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label for="search-palavras-chave" class="form-label">Palavras-chave</label>
+                                    <input type="text" class="form-control" id="search-palavras-chave" placeholder="Ex: apartamento centro, carro 2020">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="search-cidade" class="form-label">Cidade</label>
+                                    <input type="text" class="form-control" id="search-cidade" placeholder="Ex: São Paulo, Rio de Janeiro">
+                                </div>
+                            </div>
+
+                            <!-- Negociação e Preço -->
+                            <div class="row mb-4">
+                                <div class="col-md-3">
+                                    <label class="form-label">Tipo de Negociação</label>
+                                    <select class="form-select" id="search-negociacao">
+                                        <option value="">Todos</option>
+                                        <option value="venda">Venda</option>
+                                        <option value="aluguel">Aluguel</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-9">
+                                    <label class="form-label">Faixa de Preço</label>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <input type="number" class="form-control" id="search-preco-min" placeholder="Mínimo" min="0">
+                                        <span>até</span>
+                                        <input type="number" class="form-control" id="search-preco-max" placeholder="Máximo" min="0">
+                                        <span class="toggle-fields" id="toggle-price-advanced">
+                                            <i class="fas fa-sliders-h"></i> Avançado
+                                        </span>
+                                    </div>
+                                    <div id="price-advanced-fields" style="display: none; margin-top: 15px;">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <label for="search-iptu" class="form-label">IPTU (Imóveis)</label>
+                                                <input type="number" class="form-control" id="search-iptu" placeholder="Valor máximo" min="0">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label for="search-condominio" class="form-label">Condomínio (Imóveis)</label>
+                                                <input type="number" class="form-control" id="search-condominio" placeholder="Valor máximo" min="0">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label for="search-seguro" class="form-label">Seguro (Automóveis)</label>
+                                                <input type="number" class="form-control" id="search-seguro" placeholder="Valor máximo" min="0">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Campos para Imóveis -->
+                            <div id="imovel-search-fields">
+                                <div class="row mb-4">
+                                    <div class="col-md-3">
+                                        <label for="search-tipo-imovel" class="form-label">Tipo de Imóvel</label>
+                                        <select class="form-select" id="search-tipo-imovel">
+                                            <option value="">Todos</option>
+                                            <option value="casa">Casa</option>
+                                            <option value="apartamento">Apartamento</option>
+                                            <option value="terreno">Terreno</option>
+                                            <option value="comercial">Comercial</option>
+                                            <option value="rural">Rural</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="search-bairro" class="form-label">Bairro</label>
+                                        <input type="text" class="form-control" id="search-bairro" placeholder="Ex: Centro, Jardins">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="search-quartos" class="form-label">Quartos</label>
+                                        <select class="form-select" id="search-quartos">
+                                            <option value="">Qualquer</option>
+                                            <option value="1">1+</option>
+                                            <option value="2">2+</option>
+                                            <option value="3">3+</option>
+                                            <option value="4">4+</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="search-banheiros" class="form-label">Banheiros</label>
+                                        <select class="form-select" id="search-banheiros">
+                                            <option value="">Qualquer</option>
+                                            <option value="1">1+</option>
+                                            <option value="2">2+</option>
+                                            <option value="3">3+</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-4">
+                                    <div class="col-md-3">
+                                        <label for="search-vagas" class="form-label">Vagas</label>
+                                        <select class="form-select" id="search-vagas">
+                                            <option value="">Qualquer</option>
+                                            <option value="1">1+</option>
+                                            <option value="2">2+</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="search-area-min" class="form-label">Área mínima (m²)</label>
+                                        <input type="number" class="form-control" id="search-area-min" placeholder="Ex: 50" min="0">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Características</label>
+                                        <div class="d-flex flex-wrap gap-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="search-mobiliado">
+                                                <label class="form-check-label" for="search-mobiliado">Mobiliado</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="search-aceita-animais">
+                                                <label class="form-check-label" for="search-aceita-animais">Aceita animais</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="search-condominio-fechado">
+                                                <label class="form-check-label" for="search-condominio-fechado">Condomínio</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Campos para Automóveis -->
+                            <div id="automovel-search-fields" style="display: none;">
+                                <div class="row mb-4">
+                                    <div class="col-md-3">
+                                        <label for="search-tipo-veiculo" class="form-label">Tipo de Veículo</label>
+                                        <select class="form-select" id="search-tipo-veiculo">
+                                            <option value="">Todos</option>
+                                            <option value="carro">Carro</option>
+                                            <option value="caminhonete">Caminhonete</option>
+                                            <option value="van">Van</option>
+                                            <option value="caminhao">Caminhão</option>
+                                            <option value="moto">Moto</option>
+                                            <option value="onibus">Ônibus</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="search-marca" class="form-label">Marca</label>
+                                        <select class="form-select" id="search-marca">
+                                            <option value="">Todas</option>
+                                            <option value="chevrolet">Chevrolet</option>
+                                            <option value="volkswagen">Volkswagen</option>
+                                            <option value="fiat">Fiat</option>
+                                            <option value="toyota">Toyota</option>
+                                            <option value="honda">Honda</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="search-modelo" class="form-label">Modelo</label>
+                                        <input type="text" class="form-control" id="search-modelo" placeholder="Ex: Corolla, Civic">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="search-ano-min" class="form-label">Ano mínimo</label>
+                                        <select class="form-select" id="search-ano-min">
+                                            <option value="">Qualquer</option>
+                                            <script>
+                                                const currentYear = new Date().getFullYear();
+                                                for(let year = currentYear; year >= 1980; year--) {
+                                                    document.write(`<option value="${year}">${year}</option>`);
+                                                }
+                                            </script>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-4">
+                                    <div class="col-md-3">
+                                        <label for="search-km-max" class="form-label">KM máxima</label>
+                                        <input type="number" class="form-control" id="search-km-max" placeholder="Ex: 50000" min="0">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="search-cor" class="form-label">Cor</label>
+                                        <input type="text" class="form-control" id="search-cor" placeholder="Ex: Prata, Preto">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="search-combustivel" class="form-label">Combustível</label>
+                                        <select class="form-select" id="search-combustivel">
+                                            <option value="">Todos</option>
+                                            <option value="gasolina">Gasolina</option>
+                                            <option value="etanol">Etanol</option>
+                                            <option value="flex">Flex</option>
+                                            <option value="diesel">Diesel</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="search-cambio" class="form-label">Câmbio</label>
+                                        <select class="form-select" id="search-cambio">
+                                            <option value="">Todos</option>
+                                            <option value="manual">Manual</option>
+                                            <option value="automatico">Automático</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-4">
+                                    <div class="col-md-12">
+                                        <label class="form-label">Opcionais</label>
+                                        <div class="d-flex flex-wrap gap-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="search-ar-condicionado">
+                                                <label class="form-check-label" for="search-ar-condicionado">Ar condicionado</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="search-direcao-hidraulica">
+                                                <label class="form-check-label" for="search-direcao-hidraulica">Direção hidráulica</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="search-vidro-eletrico">
+                                                <label class="form-check-label" for="search-vidro-eletrico">Vidros elétricos</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="search-airbag">
+                                                <label class="form-check-label" for="search-airbag">Airbag</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Outros Filtros -->
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <a class="toggle-fields" data-bs-toggle="collapse" href="#more-filters" role="button">
+                                        <i class="fas fa-filter"></i> Mais filtros
+                                    </a>
+                                    <div class="collapse mt-3" id="more-filters">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <label for="search-data" class="form-label">Data de publicação</label>
+                                                <select class="form-select" id="search-data">
+                                                    <option value="">Qualquer data</option>
+                                                    <option value="1">Últimas 24h</option>
+                                                    <option value="7">Últimos 7 dias</option>
+                                                    <option value="30">Últimos 30 dias</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="search-status" class="form-label">Status do anúncio</label>
+                                                <select class="form-select" id="search-status">
+                                                    <option value="ativo">Ativo</option>
+                                                    <option value="todos">Todos</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Ordenar por</label>
+                                                <div class="d-flex gap-3">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="search-order" id="search-order-recentes" value="recentes" checked>
+                                                        <label class="form-check-label" for="search-order-recentes">Mais recentes</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="search-order" id="search-order-preco-asc" value="preco-asc">
+                                                        <label class="form-check-label" for="search-order-preco-asc">Preço: menor primeiro</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="search-order" id="search-order-preco-desc" value="preco-desc">
+                                                        <label class="form-check-label" for="search-order-preco-desc">Preço: maior primeiro</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Botões -->
+                            <div class="row">
+                                <div class="col-md-12 text-center">
+                                    <button type="submit" class="btn btn-primary search-btn me-3">
+                                        <i class="fas fa-search me-2"></i>Pesquisar
+                                    </button>
+                                    <button type="reset" class="btn btn-outline-secondary search-btn">
+                                        <i class="fas fa-undo me-2"></i>Limpar filtros
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- JavaScript para o formulário -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Alternar entre campos de imóvel e automóvel
+            const tipoAnuncioRadios = document.querySelectorAll('input[name="tipo-anuncio"]');
+            const imovelFields = document.getElementById('imovel-search-fields');
+            const automovelFields = document.getElementById('automovel-search-fields');
+            
+            function toggleSearchFields() {
+                const selectedValue = document.querySelector('input[name="tipo-anuncio"]:checked').value;
+                
+                if (selectedValue === 'imovel') {
+                    imovelFields.style.display = 'block';
+                    automovelFields.style.display = 'none';
+                } else if (selectedValue === 'automovel') {
+                    imovelFields.style.display = 'none';
+                    automovelFields.style.display = 'block';
+                } else {
+                    imovelFields.style.display = 'block';
+                    automovelFields.style.display = 'block';
+                }
+            }
+            
+            tipoAnuncioRadios.forEach(radio => {
+                radio.addEventListener('change', toggleSearchFields);
+            });
+            
+            // Mostrar/ocultar campos avançados de preço
+            document.getElementById('toggle-price-advanced').addEventListener('click', function() {
+                const advancedFields = document.getElementById('price-advanced-fields');
+                if (advancedFields.style.display === 'none') {
+                    advancedFields.style.display = 'block';
+                    this.innerHTML = '<i class="fas fa-sliders-h"></i> Simples';
+                } else {
+                    advancedFields.style.display = 'none';
+                    this.innerHTML = '<i class="fas fa-sliders-h"></i> Avançado';
+                }
+            });
+            
+            // Enviar formulário de pesquisa
+            document.getElementById('advanced-search-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                performSearch();
+            });
+            
+            // Função para realizar a pesquisa
+            function performSearch() {
+                // Obter todos os valores do formulário
+                const searchParams = {
+                    tipoAnuncio: document.querySelector('input[name="tipo-anuncio"]:checked').value,
+                    palavrasChave: document.getElementById('search-palavras-chave').value,
+                    cidade: document.getElementById('search-cidade').value,
+                    negociacao: document.getElementById('search-negociacao').value,
+                    precoMin: document.getElementById('search-preco-min').value,
+                    precoMax: document.getElementById('search-preco-max').value,
+                    iptu: document.getElementById('search-iptu').value,
+                    condominio: document.getElementById('search-condominio').value,
+                    seguro: document.getElementById('search-seguro').value,
+                    dataPublicacao: document.getElementById('search-data').value,
+                    status: document.getElementById('search-status').value,
+                    orderBy: document.querySelector('input[name="search-order"]:checked').value,
+                    
+                    // Campos de imóvel
+                    tipoImovel: document.getElementById('search-tipo-imovel').value,
+                    bairro: document.getElementById('search-bairro').value,
+                    quartos: document.getElementById('search-quartos').value,
+                    banheiros: document.getElementById('search-banheiros').value,
+                    vagas: document.getElementById('search-vagas').value,
+                    areaMin: document.getElementById('search-area-min').value,
+                    mobiliado: document.getElementById('search-mobiliado').checked,
+                    aceitaAnimais: document.getElementById('search-aceita-animais').checked,
+                    condominioFechado: document.getElementById('search-condominio-fechado').checked,
+                    
+                    // Campos de automóvel
+                    tipoVeiculo: document.getElementById('search-tipo-veiculo').value,
+                    marca: document.getElementById('search-marca').value,
+                    modelo: document.getElementById('search-modelo').value,
+                    anoMin: document.getElementById('search-ano-min').value,
+                    kmMax: document.getElementById('search-km-max').value,
+                    cor: document.getElementById('search-cor').value,
+                    combustivel: document.getElementById('search-combustivel').value,
+                    cambio: document.getElementById('search-cambio').value,
+                    arCondicionado: document.getElementById('search-ar-condicionado').checked,
+                    direcaoHidraulica: document.getElementById('search-direcao-hidraulica').checked,
+                    vidroEletrico: document.getElementById('search-vidro-eletrico').checked,
+                    airbag: document.getElementById('search-airbag').checked
+                };
+                
+                console.log('Parâmetros de pesquisa:', searchParams);
+                
+                // Aqui você faria a chamada para sua API/backend com os parâmetros de pesquisa
+                // fetch('/api/anuncios', {
+                //     method: 'POST',
+                //     headers: {
+                //         'Content-Type': 'application/json',
+                //     },
+                //     body: JSON.stringify(searchParams)
+                // })
+                // .then(response => response.json())
+                // .then(data => {
+                //     // Processar resultados e exibir
+                //     console.log('Resultados:', data);
+                //     // Redirecionar para página de resultados ou exibir na mesma página
+                // })
+                // .catch(error => {
+                //     console.error('Erro na pesquisa:', error);
+                // });
+                
+                // Por enquanto, apenas redirecionamos para uma página de resultados fictícia
+                window.location.href = 'resultados-pesquisa.html';
+            }
+        });
+    </script>
+</body>
+</html>
