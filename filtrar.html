@@ -374,7 +374,7 @@
         authDomain: "corretorcerto-76933.firebaseapp.com",
         databaseURL: "https://corretorcerto-76933-default-rtdb.firebaseio.com",
         projectId: "corretorcerto-76933",
-        storageBucket: "corretorcerto-76933.firebasestorage.app",
+        storageBucket: "corretorcerto-76933.appspot.com",
         messagingSenderId: "357149829474",
         appId: "1:357149829474:web:324b2005d82eabbce5e43b"
     };
@@ -385,444 +385,89 @@
     }
     const db = firebase.firestore();
 
-    // Funções auxiliares
-    function formatarPreco(preco) {
-        return preco?.toLocaleString('pt-BR', { 
-            style: 'currency', 
-            currency: 'BRL' 
-        }) || 'Preço não informado';
-    }
+    // Funções auxiliares (manter as mesmas do código anterior)
+    function formatarPreco(preco) { /* ... */ }
+    function formatarCombustivel(combustivel) { /* ... */ }
+    function showAlert(message, type = 'success') { /* ... */ }
+    function criarCardAnuncio(anuncio, tipo) { /* ... */ }
+    function mostrarFiltrosAtivos(params, tipo) { /* ... */ }
+    function exibirResultados(resultados, tipo) { /* ... */ }
+    function getUrlParams() { /* ... */ }
+    function ordenarResultados(resultados, orderBy) { /* ... */ }
+    function aplicarFiltros(resultados, filtros) { /* ... */ }
+    function buscarImoveis(filtros) { /* ... */ }
+    function buscarCarros(filtros) { /* ... */ }
+    function salvarERedirecionar(resultados, filtros) { /* ... */ }
 
-    function formatarCombustivel(combustivel) {
-        const map = {
-            'gasolina': 'Gasolina',
-            'etanol': 'Etanol',
-            'flex': 'Flex',
-            'diesel': 'Diesel',
-            'eletrico': 'Elétrico'
-        };
-        return map[combustivel] || combustivel;
-    }
-
-    function showAlert(message, type = 'success') {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type === 'error' ? 'danger' : 'success'} alert-dismissible fade show`;
-        alertDiv.role = 'alert';
-        alertDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-        
-        const container = document.getElementById('alert-container') || document.body;
-        container.prepend(alertDiv);
-        
-        setTimeout(() => {
-            alertDiv.classList.remove('show');
-            setTimeout(() => alertDiv.remove(), 150);
-        }, 5000);
-    }
-
-    // Função para criar card de anúncio
-    function criarCardAnuncio(anuncio, tipo) {
-        const colDiv = document.createElement("div");
-        colDiv.className = "col-md-6 col-lg-4 mb-4";
-        
-        const cardDiv = document.createElement("div");
-        cardDiv.className = "card h-100";
-        
-        // Imagem (usa primeira imagem ou placeholder)
-        const imgUrl = anuncio.imagens?.length > 0 ? anuncio.imagens[0] : 
-            'https://via.placeholder.com/300x200?text=Sem+Imagem';
-        
-        const img = document.createElement("img");
-        img.className = "card-img-top";
-        img.src = imgUrl;
-        img.alt = anuncio.titulo || "Anúncio sem título";
-        
-        // Corpo do card
-        const cardBody = document.createElement("div");
-        cardBody.className = "card-body d-flex flex-column";
-        
-        const title = document.createElement("h5");
-        title.className = "card-title";
-        title.textContent = anuncio.titulo || "Anúncio sem título";
-        
-        const price = document.createElement("div");
-        price.className = "price-tag mb-3";
-        price.textContent = formatarPreco(anuncio.preco);
-        
-        // Detalhes específicos
-        const details = document.createElement("div");
-        details.className = "card-text mb-3";
-        
-        if (tipo === 'imovel') {
-            details.innerHTML = `
-                <p><i class="fas fa-map-marker-alt"></i> ${anuncio.bairro || 'Bairro não informado'}</p>
-                <div class="d-flex flex-wrap gap-2">
-                    <span class="badge bg-secondary"><i class="fas fa-bed"></i> ${anuncio.quartos || 0} quartos</span>
-                    <span class="badge bg-secondary"><i class="fas fa-bath"></i> ${anuncio.banheiros || 0} banheiros</span>
-                    <span class="badge bg-secondary"><i class="fas fa-car"></i> ${anuncio.garagem || 0} vagas</span>
-                    ${anuncio.area ? `<span class="badge bg-secondary"><i class="fas fa-ruler-combined"></i> ${anuncio.area}m²</span>` : ''}
-                </div>
-            `;
-        } else {
-            details.innerHTML = `
-                <p><i class="fas fa-car"></i> ${anuncio.marca || 'Marca não informada'} ${anuncio.modelo || ''}</p>
-                <div class="d-flex flex-wrap gap-2">
-                    ${anuncio.ano ? `<span class="badge bg-secondary"><i class="fas fa-calendar-alt"></i> ${anuncio.ano}</span>` : ''}
-                    ${anuncio.km ? `<span class="badge bg-secondary"><i class="fas fa-tachometer-alt"></i> ${anuncio.km.toLocaleString()} km</span>` : ''}
-                    ${anuncio.combustivel ? `<span class="badge bg-secondary"><i class="fas fa-gas-pump"></i> ${formatarCombustivel(anuncio.combustivel)}</span>` : ''}
-                </div>
-            `;
-        }
-        
-        // Botão de detalhes
-        const btn = document.createElement("a");
-        btn.className = "btn btn-primary mt-auto";
-        btn.href = `detalhes.html?id=${anuncio.id}&tipo=${tipo}`;
-        btn.textContent = "Ver Detalhes";
-        
-        // Montar o card
-        cardBody.appendChild(title);
-        cardBody.appendChild(price);
-        cardBody.appendChild(details);
-        cardBody.appendChild(btn);
-        
-        cardDiv.appendChild(img);
-        cardDiv.appendChild(cardBody);
-        colDiv.appendChild(cardDiv);
-        
-        return colDiv;
-    }
-
-    // Função para mostrar filtros ativos
-    function mostrarFiltrosAtivos(params, tipo) {
-        const container = document.getElementById("filtros-tags");
-        if (!container) return;
-        
-        container.innerHTML = "";
-        
-        let temFiltros = false;
-        
-        for (const [key, value] of Object.entries(params)) {
-            if (value !== undefined && value !== "" && value !== 0 && value !== false) {
-                temFiltros = true;
-                
-                const tag = document.createElement("span");
-                tag.className = "filtro-tag";
-                
-                let label = key;
-                let displayValue = value;
-                
-                switch(key) {
-                    case 'bairro': label = 'Bairro'; break;
-                    case 'tipo': label = tipo === 'imovel' ? 'Tipo Imóvel' : 'Marca'; break;
-                    case 'precoMin': label = 'Preço Mínimo'; displayValue = formatarPreco(value); break;
-                    case 'precoMax': label = 'Preço Máximo'; displayValue = formatarPreco(value); break;
-                    case 'quartos': label = 'Quartos'; displayValue = value + '+'; break;
-                    case 'banheiros': label = 'Banheiros'; displayValue = value + '+'; break;
-                    case 'garagem': label = 'Vagas'; displayValue = value + '+'; break;
-                    case 'areaMin': label = 'Área Mínima'; displayValue = value + 'm²'; break;
-                    case 'aceitaAnimais': label = 'Aceita Animais'; displayValue = ''; break;
-                    case 'mobiliado': label = 'Mobiliado'; displayValue = ''; break;
-                    case 'modelo': label = 'Modelo'; break;
-                    case 'ano': label = 'Ano'; break;
-                    case 'negociacao': label = 'Negociação'; displayValue = value === 'venda' ? 'Venda' : 'Aluguel'; break;
-                    case 'kmMax': label = 'KM Máxima'; displayValue = value.toLocaleString() + ' km'; break;
-                    case 'combustivel': label = 'Combustível'; displayValue = formatarCombustivel(value); break;
-                    case 'cambio': label = 'Câmbio'; displayValue = value === 'automatico' ? 'Automático' : 'Manual'; break;
-                }
-                
-                tag.innerHTML = `<strong>${label}:</strong> ${displayValue}`;
-                container.appendChild(tag);
-            }
-        }
-        
-        const filtrosAtivosDiv = document.getElementById("filtros-ativos");
-        if (filtrosAtivosDiv) {
-            filtrosAtivosDiv.style.display = temFiltros ? "block" : "none";
-        }
-    }
-
-    // Função para exibir resultados
-    function exibirResultados(resultados, tipo) {
-        const container = document.getElementById("resultados-container");
-        const noResultsDiv = document.getElementById("no-results");
-        
-        if (!container || !noResultsDiv) return;
-        
-        container.innerHTML = "";
-        noResultsDiv.style.display = "none";
-        
-        if (resultados.length === 0) {
-            noResultsDiv.style.display = "block";
-            return;
-        }
-        
-        resultados.forEach(anuncio => {
-            container.appendChild(criarCardAnuncio(anuncio, tipo));
-        });
-        
-        const titulo = document.querySelector("h2");
-        if (titulo) {
-            titulo.innerHTML = `Resultados da Pesquisa <span class="badge bg-primary">${resultados.length}</span>`;
-        }
-    }
-
-    // Função para obter parâmetros da URL de forma segura
-    function getUrlParams() {
-        const params = {};
+    // Função principal para carregar e processar dados
+    async function carregarEProcessarDados() {
+        const carregandoDiv = document.querySelector(".carregando");
         try {
-            if (typeof window !== 'undefined' && window.location) {
-                const urlParams = new URLSearchParams(window.location.search);
-                params.orderBy = urlParams.get('search-order') || 'recentes';
-                params.tipoAnuncio = urlParams.get('tipo-anuncio') || '';
-            }
-        } catch (error) {
-            console.error("Erro ao obter parâmetros da URL:", error);
-        }
-        return params;
-    }
-
-    // Implementação segura da função de ordenação
-    function ordenarResultados(resultados, orderBy) {
-        if (!Array.isArray(resultados)) return resultados;
-        
-        try {
-            return [...resultados].sort((a, b) => {
-                switch(orderBy) {
-                    case 'preco-asc':
-                        return (a.preco || 0) - (b.preco || 0);
+            if (carregandoDiv) carregandoDiv.style.display = "block";
+            
+            // Verifica se estamos na página de resultados
+            if (window.location.pathname.includes('resultados-pesquisa.html')) {
+                const resultadosSalvos = localStorage.getItem('searchResults');
+                const filtrosSalvos = localStorage.getItem('searchParams');
+                
+                if (resultadosSalvos && filtrosSalvos) {
+                    const resultados = JSON.parse(resultadosSalvos);
+                    const filtros = JSON.parse(filtrosSalvos);
                     
-                    case 'preco-desc':
-                        return (b.preco || 0) - (a.preco || 0);
+                    const resultadosProcessados = ordenarResultados(
+                        aplicarFiltros(resultados, filtros),
+                        filtros.orderBy || 'recentes'
+                    );
                     
-                    case 'recentes':
-                    default:
-                        try {
-                            const dateA = a.data?.toDate ? a.data.toDate() : new Date(a.data || 0);
-                            const dateB = b.data?.toDate ? b.data.toDate() : new Date(b.data || 0);
-                            return dateB - dateA;
-                        } catch (e) {
-                            return 0;
-                        }
+                    exibirResultados(resultadosProcessados, filtros.tipoAnuncio);
+                    mostrarFiltrosAtivos(filtros, filtros.tipoAnuncio);
+                    return;
                 }
-            });
-        } catch (error) {
-            console.error("Erro na ordenação:", error);
-            return resultados;
-        }
-    }
-
-    // Implementação segura da função de filtro
-    function aplicarFiltros(resultados, filtros) {
-        if (!Array.isArray(resultados)) return [];
-        
-        try {
-            return resultados.filter(anuncio => {
-                // Filtro por tipo
-                if (filtros.tipoAnuncio && filtros.tipoAnuncio !== 'todos') {
-                    if (anuncio.tipo !== filtros.tipoAnuncio) return false;
-                }
-                
-                // Filtro por preço
-                if (filtros.precoMin && (anuncio.preco || 0) < Number(filtros.precoMin)) {
-                    return false;
-                }
-                
-                if (filtros.precoMax && (anuncio.preco || 0) > Number(filtros.precoMax)) {
-                    return false;
-                }
-                
-                return true;
-            });
-        } catch (error) {
-            console.error("Erro na filtragem:", error);
-            return resultados;
-        }
-    }
-
-  function filtrarEOrdenar(dados) {
-    try {
-        // Verifique se os dados existem e não são undefined
-        if (!dados) {
-            console.error('Dados estão undefined ou vazios');
-            return []; // ou faça um fallback apropriado
-        }
-        
-        // Se for string, tente parsear
-        if (typeof dados === 'string') {
-            if (dados.trim() === '') {
-                return [];
             }
-            return JSON.parse(dados);
-        }
-        
-        // Se já for objeto, retorne diretamente
-        return dados;
-    } catch (error) {
-        console.error('Erro no processamento:', error);
-        try {
-            // Fallback: tente recuperar de localStorage ou outra fonte
-            const fallbackData = localStorage.getItem('backupData');
-            if (fallbackData) {
-                return JSON.parse(fallbackData);
+            
+            // Se não houver dados salvos, busca do Firestore
+            const params = getUrlParams();
+            let resultados = [];
+            
+            if (params.tipoAnuncio === 'imovel') {
+                resultados = await buscarImoveis(params);
+            } else if (params.tipoAnuncio === 'automovel') {
+                resultados = await buscarCarros(params);
+            } else {
+                // Busca ambos se nenhum tipo específico foi selecionado
+                const [imoveis, automoveis] = await Promise.all([
+                    buscarImoveis(params),
+                    buscarCarros(params)
+                ]);
+                resultados = [...imoveis, ...automoveis];
             }
-            return [];
-        } catch (fallbackError) {
-            console.error('Erro no fallback:', fallbackError);
-            return [];
-        }
-    }
-}
-function safeJsonParse(data, defaultValue = []) {
-    try {
-        if (typeof data === 'string') {
-            return data ? JSON.parse(data) : defaultValue;
-        }
-        return data || defaultValue;
-    } catch (e) {
-        console.error('Failed to parse JSON:', e);
-        return defaultValue;
-    }
-}
-    // Funções de busca no Firestore
-    async function buscarImoveis(filtros) {
-        try {
-            let query = db.collection("imoveis").where("status", "==", "ativo");
             
-            // Aplicar filtros
-            if (filtros.cidade) query = query.where("cidade", "==", filtros.cidade);
-            if (filtros.bairro) query = query.where("bairro", "==", filtros.bairro);
-            if (filtros.tipo) query = query.where("tipo", "==", filtros.tipo);
-            if (filtros.negociacao) query = query.where("negociacao", "==", filtros.negociacao);
-            if (filtros.precoMin) query = query.where("preco", ">=", Number(filtros.precoMin));
-            if (filtros.precoMax) query = query.where("preco", "<=", Number(filtros.precoMax));
-            if (filtros.quartos) query = query.where("quartos", ">=", Number(filtros.quartos));
-            if (filtros.banheiros) query = query.where("banheiros", ">=", Number(filtros.banheiros));
-            if (filtros.garagem) query = query.where("garagem", ">=", Number(filtros.garagem));
-            if (filtros.areaMin) query = query.where("area", ">=", Number(filtros.areaMin));
-            if (filtros.aceitaAnimais) query = query.where("aceitaAnimais", "==", true);
-            if (filtros.mobiliado) query = query.where("mobiliado", "==", true);
-
-            const querySnapshot = await query.get();
-            const resultados = [];
-
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                resultados.push({ 
-                    id: doc.id,
-                    ...data,
-                    data: data.data?.toDate ? data.data.toDate() : data.data
-                });
-            });
-
-            return resultados;
+            const resultadosOrdenados = ordenarResultados(resultados, params.orderBy);
+            exibirResultados(resultadosOrdenados, params.tipoAnuncio);
+            mostrarFiltrosAtivos(params, params.tipoAnuncio);
+            
         } catch (error) {
-            console.error("Erro ao buscar imóveis:", error);
-            throw error;
-        }
-    }
-
-    async function buscarCarros(filtros) {
-        try {
-            let query = db.collection("automoveis").where("status", "==", "ativo");
-            
-            // Aplicar filtros
-            if (filtros.marca) query = query.where("marca", "==", filtros.marca);
-            if (filtros.modelo) query = query.where("modelo", "==", filtros.modelo);
-            if (filtros.ano) query = query.where("ano", "==", Number(filtros.ano));
-            if (filtros.precoMin) query = query.where("preco", ">=", Number(filtros.precoMin));
-            if (filtros.precoMax) query = query.where("preco", "<=", Number(filtros.precoMax));
-            if (filtros.kmMax) query = query.where("km", "<=", Number(filtros.kmMax));
-            if (filtros.combustivel) query = query.where("combustivel", "==", filtros.combustivel);
-            if (filtros.cambio) query = query.where("cambio", "==", filtros.cambio);
-
-            const querySnapshot = await query.get();
-            const resultados = [];
-
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                resultados.push({ 
-                    id: doc.id,
-                    ...data,
-                    data: data.data?.toDate ? data.data.toDate() : data.data
-                });
-            });
-
-            return resultados;
-        } catch (error) {
-            console.error("Erro ao buscar automóveis:", error);
-            throw error;
-        }
-    }
-
-    // Função para salvar e redirecionar
-    async function salvarERedirecionar(resultados, filtros) {
-        try {
-            if (!resultados) resultados = [];
-            if (!filtros) filtros = {};
-            
-            localStorage.setItem('searchResults', JSON.stringify(resultados));
-            localStorage.setItem('searchParams', JSON.stringify(filtros));
-            
-            setTimeout(() => {
-                window.location.href = 'resultados-pesquisa.html';
-            }, 50);
-        } catch (error) {
-            console.error("Erro ao salvar pesquisa:", error);
-            showAlert("Ocorreu um erro ao processar sua pesquisa. Por favor, tente novamente.", "error");
+            console.error("Erro ao carregar dados:", error);
+            showAlert("Ocorreu um erro ao carregar os resultados. Tente novamente.", "error");
+        } finally {
+            if (carregandoDiv) carregandoDiv.style.display = "none";
         }
     }
 
     // Evento quando o DOM estiver carregado
     document.addEventListener('DOMContentLoaded', function() {
-        // Alternar entre campos de imóvel e automóvel
+        // Configuração dos campos de pesquisa (manter igual ao código anterior)
         const tipoAnuncioRadios = document.querySelectorAll('input[name="tipo-anuncio"]');
         const imovelFields = document.getElementById('imovel-search-fields');
         const automovelFields = document.getElementById('automovel-search-fields');
         
         if (tipoAnuncioRadios && imovelFields && automovelFields) {
-            function toggleSearchFields() {
-                const selectedValue = document.querySelector('input[name="tipo-anuncio"]:checked')?.value;
-                
-                if (selectedValue === 'imovel') {
-                    imovelFields.style.display = 'block';
-                    automovelFields.style.display = 'none';
-                } else if (selectedValue === 'automovel') {
-                    imovelFields.style.display = 'none';
-                    automovelFields.style.display = 'block';
-                } else {
-                    imovelFields.style.display = 'block';
-                    automovelFields.style.display = 'block';
-                }
-            }
-            
-            tipoAnuncioRadios.forEach(radio => {
-                radio.addEventListener('change', toggleSearchFields);
-            });
-            
-            // Inicializar campos visíveis
+            function toggleSearchFields() { /* ... */ }
+            tipoAnuncioRadios.forEach(radio => radio.addEventListener('change', toggleSearchFields));
             toggleSearchFields();
         }
         
-        // Mostrar/ocultar campos avançados de preço
-        const togglePriceBtn = document.getElementById('toggle-price-advanced');
-        const advancedFields = document.getElementById('price-advanced-fields');
-        
-        if (togglePriceBtn && advancedFields) {
-            togglePriceBtn.addEventListener('click', function() {
-                if (advancedFields.style.display === 'none') {
-                    advancedFields.style.display = 'block';
-                    this.innerHTML = '<i class="fas fa-sliders-h"></i> Simples';
-                } else {
-                    advancedFields.style.display = 'none';
-                    this.innerHTML = '<i class="fas fa-sliders-h"></i> Avançado';
-                }
-            });
-        }
-        
-        // Enviar formulário de pesquisa
+        // Configuração do formulário de pesquisa
         const searchForm = document.getElementById('advanced-search-form');
         if (searchForm) {
             searchForm.addEventListener('submit', async function(e) {
@@ -832,45 +477,8 @@ function safeJsonParse(data, defaultValue = []) {
                     const carregandoDiv = document.querySelector(".carregando");
                     if (carregandoDiv) carregandoDiv.style.display = "block";
                     
-                    const searchParams = {
-                        tipoAnuncio: document.querySelector('input[name="tipo-anuncio"]:checked')?.value,
-                        palavrasChave: document.getElementById('search-palavras-chave')?.value,
-                        cidade: document.getElementById('search-cidade')?.value,
-                        negociacao: document.getElementById('search-negociacao')?.value,
-                        precoMin: document.getElementById('search-preco-min')?.value,
-                        precoMax: document.getElementById('search-preco-max')?.value,
-                        iptu: document.getElementById('search-iptu')?.value,
-                        condominio: document.getElementById('search-condominio')?.value,
-                        seguro: document.getElementById('search-seguro')?.value,
-                        dataPublicacao: document.getElementById('search-data')?.value,
-                        status: document.getElementById('search-status')?.value,
-                        orderBy: document.querySelector('input[name="search-order"]:checked')?.value,
-                        
-                        // Campos de imóvel
-                        tipoImovel: document.getElementById('search-tipo-imovel')?.value,
-                        bairro: document.getElementById('search-bairro')?.value,
-                        quartos: document.getElementById('search-quartos')?.value,
-                        banheiros: document.getElementById('search-banheiros')?.value,
-                        vagas: document.getElementById('search-vagas')?.value,
-                        areaMin: document.getElementById('search-area-min')?.value,
-                        mobiliado: document.getElementById('search-mobiliado')?.checked,
-                        aceitaAnimais: document.getElementById('search-aceita-animais')?.checked,
-                        condominioFechado: document.getElementById('search-condominio-fechado')?.checked,
-                        
-                        // Campos de automóvel
-                        tipoVeiculo: document.getElementById('search-tipo-veiculo')?.value,
-                        marca: document.getElementById('search-marca')?.value,
-                        modelo: document.getElementById('search-modelo')?.value,
-                        anoMin: document.getElementById('search-ano-min')?.value,
-                        kmMax: document.getElementById('search-km-max')?.value,
-                        cor: document.getElementById('search-cor')?.value,
-                        combustivel: document.getElementById('search-combustivel')?.value,
-                        cambio: document.getElementById('search-cambio')?.value,
-                        arCondicionado: document.getElementById('search-ar-condicionado')?.checked,
-                        direcaoHidraulica: document.getElementById('search-direcao-hidraulica')?.checked,
-                        vidroEletrico: document.getElementById('search-vidro-eletrico')?.checked,
-                        airbag: document.getElementById('search-airbag')?.checked
-                    };
+                    // Coleta os parâmetros do formulário (manter igual ao código anterior)
+                    const searchParams = { /* ... */ };
                     
                     let resultados;
                     if (searchParams.tipoAnuncio === 'imovel') {
@@ -890,43 +498,10 @@ function safeJsonParse(data, defaultValue = []) {
                 }
             });
         }
-
-        // Na linha antes de onde o erro ocorre (por volta da linha 895)
-if (typeof dados === 'undefined') {
-    console.error('A variável "dados" não foi definida');
-    dados = []; // Ou defina um valor padrão apropriado
-}
         
-
-        // Inicialização da página de resultados
-        const carregandoDiv = document.querySelector(".carregando");
-                        const dadosFiltrados = safeJsonParse(dados);
-
-        if (carregandoDiv) carregandoDiv.style.display = "block";
-        
-        setTimeout(() => {
-            try {
-filtrarEOrdenar(dadosFiltrados);
-            } finally {
-                if (carregandoDiv) carregandoDiv.style.display = "none";
-            }
-        }, 100);
+        // Inicializa o carregamento dos dados
+        carregarEProcessarDados();
     });
-
-    // Exemplo com fetch API
-async function carregarDados() {
-    try {
-        const response = await fetch('sua_api_endpoint');
-        const dados = await response.json();
-        filtrarEOrdenar(dados);
-    } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-        filtrarEOrdenar([]); // Fallback com array vazio
-    }
-}
-
-// Chame esta função quando a página carregar
-document.addEventListener('DOMContentLoaded', carregarDados);
 </script>
 </body>
 </html>
