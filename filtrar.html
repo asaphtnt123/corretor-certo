@@ -365,6 +365,26 @@
     
     <!-- JavaScript para o formulário -->
     <script>
+
+        // Modifique a função que salva os resultados
+function salvarERedirecionar(resultados, filtros) {
+    try {
+        // Garante que os dados são válidos antes de salvar
+        if (!resultados) resultados = [];
+        if (!filtros) filtros = {};
+        
+        localStorage.setItem('searchResults', JSON.stringify(resultados));
+        localStorage.setItem('searchParams', JSON.stringify(filtros));
+        
+        // Redireciona com timeout para garantir que o localStorage foi atualizado
+        setTimeout(() => {
+            window.location.href = 'resultados-pesquisa.html';
+        }, 50);
+    } catch (error) {
+        console.error("Erro ao salvar pesquisa:", error);
+        alert("Ocorreu um erro ao processar sua pesquisa. Por favor, tente novamente.");
+    }
+}
         document.addEventListener('DOMContentLoaded', function() {
             // Alternar entre campos de imóvel e automóvel
             const tipoAnuncioRadios = document.querySelectorAll('input[name="tipo-anuncio"]');
