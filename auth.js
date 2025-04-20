@@ -286,7 +286,7 @@ async function handleRegister(e) {
                 ? 'buscar.html' 
                 : sellerType === 'professional' 
                     ? 'aguardando-aprovacao.html' 
-                    : 'meus-anuncios.html';
+                    : 'index.html';
         });
         
     } catch (error) {
