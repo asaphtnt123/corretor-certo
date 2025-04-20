@@ -413,24 +413,32 @@
             return map[combustivel] || combustivel;
         }
         
-        // Ao carregar a página, verificar se há parâmetros de pesquisa
-        document.addEventListener('DOMContentLoaded', function() {
-            // Verificar se há resultados no localStorage (para navegação entre páginas)
-            const savedResults = localStorage.getItem('searchResults');
-            const searchParams = localStorage.getItem('searchParams');
+       // Substitua esta parte no final do seu script
+document.addEventListener('DOMContentLoaded', function() {
+    // Verificar se há resultados no localStorage (com tratamento de erro)
+    try {
+        const savedResults = localStorage.getItem('searchResults');
+        const searchParams = localStorage.getItem('searchParams');
+        
+        if (savedResults && searchParams) {
+            const resultados = JSON.parse(savedResults);
+            const params = JSON.parse(searchParams);
             
-            if (savedResults && searchParams) {
-                const resultados = JSON.parse(savedResults);
-                const params = JSON.parse(searchParams);
-                
+            if (resultados && params) {
                 mostrarFiltrosAtivos(params, params.tipoAnuncio);
                 exibirResultados(resultados, params.tipoAnuncio);
-            } else {
-                // Se não houver resultados salvos, mostrar mensagem
-                document.getElementById("no-results").style.display = "block";
-                document.getElementById("filtros-ativos").style.display = "none";
+                return; // Sai da função se tudo estiver ok
             }
-        });
+        }
+    } catch (error) {
+        console.error("Erro ao carregar resultados salvos:", error);
+        // Não mostra erro para o usuário, apenas continua para o fluxo alternativo
+    }
+    
+    // Se não houver resultados válidos ou ocorrer erro
+    document.getElementById("no-results").style.display = "block";
+    document.getElementById("filtros-ativos").style.display = "none";
+});
     </script>
 </body>
 </html>
