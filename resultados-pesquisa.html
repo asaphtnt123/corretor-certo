@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados da Pesquisa - Corretor Certo</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        .result-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .card-img-top {
+            height: 200px;
+            object-fit: cover;
+        }
+        .price-tag {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2a6496;
+        }
+        .negociacao-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 2;
+        }
+        .carregando {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .filtros-ativos {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .filtro-tag {
+            display: inline-block;
+            background-color: #e9ecef;
+            padding: 5px 10px;
+            border-radius: 20px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        .no-results {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+        }
+        .pagination .page-item.active .page-link {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <!-- Cabeçalho e Filtros Ativos -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <h2><i class="fas fa-search me-2"></i>Resultados da Pesquisa</h2>
+                <div id="filtros-ativos" class="filtros-ativos">
+                    <h5>Filtros aplicados:</h5>
+                    <div id="filtros-tags"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Alertas -->
+        <div id="alert-container" class="mb-4"></div>
+        
+        <!-- Estado de Carregamento -->
+        <div class="carregando">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+            <p class="mt-2">Buscando anúncios...</p>
+        </div>
+        
+        <!-- Resultados -->
+        <div class="row" id="resultados-container">
+            <!-- Os resultados serão inseridos aqui via JavaScript -->
+        </div>
+        
+        <!-- Paginação -->
+        <nav aria-label="Page navigation" class="mt-4" id="pagination-container">
+            <ul class="pagination justify-content-center">
+                <!-- Paginação será gerada dinamicamente -->
+            </ul>
+        </nav>
+        
+        <!-- Sem Resultados -->
+        <div id="no-results" class="no-results" style="display: none;">
+            <i class="fas fa-search fa-3x mb-3"></i>
+            <h4>Nenhum anúncio encontrado</h4>
+            <p>Não encontramos anúncios que correspondam aos seus critérios de busca.</p>
+            <button class="btn btn-primary" onclick="window.history.back()">Ajustar Filtros</button>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    
+    <!-- JavaScript para Resultados -->
+    <script>
+        // Configuração do Firebase (use a mesma do seu projeto)
+        const firebaseConfig = {
+            apiKey: "AIzaSyA-7HOp-Ycvyf3b_03ev__8aJEwAbWSQZY",
+            authDomain: "connectfamilia-312dc.firebaseapp.com",
+            projectId: "connectfamilia-312dc",
+            storageBucket: "connectfamilia-312dc.appspot.com",
+            messagingSenderId: "797817838649",
+            appId: "1:797817838649:web:1aa7c54abd97661f8d81e8",
+            measurementId: "G-QKN9NFXZZQ"
+        };
+        
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        // Função para exibir alertas
+        function showAlert(message, type = 'success') {
+            const alertContainer = document.getElementById('alert-container');
+            const alertClass = type === 'error' ? 'alert-error' : 'alert-success';
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert ${alertClass} alert-dismissible fade show`;
+            alertDiv.role = 'alert';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            alertContainer.appendChild(alertDiv);
+            
+            // Remove o alerta após 5 segundos
+            setTimeout(() => {
+                alertDiv.classList.remove('show');
+                setTimeout(() => alertDiv.remove(), 150);
+            }, 5000);
+        }
+        
+        // Função para validar filtros de imóveis
+        function validarFiltrosImoveis(filtros) {
+            if (!filtros.bairro && !filtros.tipo && !filtros.precoMin && !filtros.precoMax) {
+                showAlert("Preencha pelo menos um filtro para buscar imóveis", "error");
+                return false;
+            }
+            return true;
+        }
+        
+        // Função para buscar imóveis no Firestore
+        async function buscarImoveis(filtros) {
+            try {
+                document.querySelector(".carregando").style.display = "block";
+                document.getElementById("resultados-container").innerHTML = "";
+                document.getElementById("no-results").style.display = "none";
+                
+                // Mostrar filtros ativos
+                mostrarFiltrosAtivos(filtros, 'imovel');
+                
+                let query = db.collection("imoveis").where("status", "==", "ativo");
+                
+                // Aplicar filtros
+                if (filtros.cidade) query = query.where("cidade", "==", filtros.cidade);
+                if (filtros.bairro) query = query.where("bairro", "==", filtros.bairro);
+                if (filtros.tipo) query = query.where("tipo", "==", filtros.tipo);
+                if (filtros.negociacao) query = query.where("negociacao", "==", filtros.negociacao);
+                if (filtros.precoMin) query = query.where("preco", ">=", filtros.precoMin);
+                if (filtros.precoMax) query = query.where("preco", "<=", filtros.precoMax);
+                if (filtros.quartos) query = query.where("quartos", ">=", filtros.quartos);
+                if (filtros.banheiros) query = query.where("banheiros", ">=", filtros.banheiros);
+                if (filtros.garagem) query = query.where("garagem", ">=", filtros.garagem);
+                if (filtros.areaMin) query = query.where("area", ">=", filtros.areaMin);
+                if (filtros.aceitaAnimais) query = query.where("aceitaAnimais", "==", true);
+                if (filtros.mobiliado) query = query.where("mobiliado", "==", true);
+                
+                const querySnapshot = await query.get();
+                const resultados = [];
+                
+                querySnapshot.forEach((doc) => {
+                    resultados.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // Ordenar por data (mais recentes primeiro)
+                resultados.sort((a, b) => b.data.toDate() - a.data.toDate());
+                
+                exibirResultados(resultados, 'imovel');
+                
+            } catch (error) {
+                console.error("Erro ao buscar imóveis:", error);
+                showAlert("Ocorreu um erro ao buscar imóveis. Tente novamente.", "error");
+            } finally {
+                document.querySelector(".carregando").style.display = "none";
+            }
+        }
+        
+        // Função para buscar automóveis no Firestore
+        async function buscarCarros(filtros) {
+            try {
+                document.querySelector(".carregando").style.display = "block";
+                document.getElementById("resultados-container").innerHTML = "";
+                document.getElementById("no-results").style.display = "none";
+                
+                // Mostrar filtros ativos
+                mostrarFiltrosAtivos(filtros, 'carro');
+                
+                let query = db.collection("automoveis").where("status", "==", "ativo");
+                
+                // Aplicar filtros
+                if (filtros.marca) query = query.where("marca", "==", filtros.marca);
+                if (filtros.modelo) query = query.where("modelo", "==", filtros.modelo);
+                if (filtros.ano) query = query.where("ano", "==", filtros.ano);
+                if (filtros.precoMin) query = query.where("preco", ">=", filtros.precoMin);
+                if (filtros.precoMax) query = query.where("preco", "<=", filtros.precoMax);
+                
+                const querySnapshot = await query.get();
+                const resultados = [];
+                
+                querySnapshot.forEach((doc) => {
+                    resultados.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // Ordenar por data (mais recentes primeiro)
+                resultados.sort((a, b) => b.data.toDate() - a.data.toDate());
+                
+                exibirResultados(resultados, 'carro');
+                
+            } catch (error) {
+                console.error("Erro ao buscar automóveis:", error);
+                showAlert("Ocorreu um erro ao buscar automóveis. Tente novamente.", "error");
+            } finally {
+                document.querySelector(".carregando").style.display = "none";
+            }
+        }
+        
+        // Função para exibir os resultados na página
+        function exibirResultados(resultados, tipo) {
+            const container = document.getElementById("resultados-container");
+            
+            if (resultados.length === 0) {
+                document.getElementById("no-results").style.display = "block";
+                return;
+            }
+            
+            resultados.forEach(anuncio => {
+                const card = criarCardAnuncio(anuncio, tipo);
+                container.appendChild(card);
+            });
+            
+            // Atualizar contagem de resultados
+            document.querySelector("h2").innerHTML += ` <span class="badge bg-primary">${resultados.length} resultados</span>`;
+        }
+        
+        // Função para criar o card de um anúncio
+        function criarCardAnuncio(anuncio, tipo) {
+            const colDiv = document.createElement("div");
+            colDiv.className = "col-md-6 col-lg-4";
+            
+            const cardDiv = document.createElement("div");
+            cardDiv.className = "card result-card h-100";
+            
+            // Badge de negociação (se for imóvel)
+            if (tipo === 'imovel' && anuncio.negociacao) {
+                const negociacaoBadge = document.createElement("span");
+                negociacaoBadge.className = `negociacao-badge badge ${anuncio.negociacao === 'venda' ? 'bg-success' : 'bg-info'}`;
+                negociacaoBadge.textContent = anuncio.negociacao === 'venda' ? 'VENDA' : 'ALUGUEL';
+                cardDiv.appendChild(negociacaoBadge);
+            }
+            
+            // Imagem (primeira imagem do array ou placeholder)
+            const imgUrl = anuncio.imagens && anuncio.imagens.length > 0 ? 
+                anuncio.imagens[0] : 
+                'https://via.placeholder.com/300x200?text=Sem+Imagem';
+            
+            const imgDiv = document.createElement("img");
+            imgDiv.className = "card-img-top";
+            imgDiv.src = imgUrl;
+            imgDiv.alt = anuncio.titulo || "Anúncio sem título";
+            
+            // Corpo do card
+            const cardBody = document.createElement("div");
+            cardBody.className = "card-body";
+            
+            const title = document.createElement("h5");
+            title.className = "card-title";
+            title.textContent = anuncio.titulo || "Anúncio sem título";
+            
+            const price = document.createElement("div");
+            price.className = "price-tag mb-3";
+            price.textContent = formatarPreco(anuncio.preco);
+            
+            // Detalhes específicos por tipo
+            const details = document.createElement("div");
+            details.className = "card-text mb-3";
+            
+            if (tipo === 'imovel') {
+                details.innerHTML = `
+                    <p><i class="fas fa-map-marker-alt"></i> ${anuncio.bairro || 'Bairro não informado'}</p>
+                    <div class="d-flex justify-content-between">
+                        <span><i class="fas fa-bed"></i> ${anuncio.quartos || 0} quartos</span>
+                        <span><i class="fas fa-bath"></i> ${anuncio.banheiros || 0} banheiros</span>
+                        <span><i class="fas fa-car"></i> ${anuncio.garagem || 0} vagas</span>
+                        <span><i class="fas fa-vector-square"></i> ${anuncio.area || 0}m²</span>
+                    </div>
+                `;
+            } else {
+                details.innerHTML = `
+                    <p><i class="fas fa-car"></i> ${anuncio.marca || 'Marca não informada'} ${anuncio.modelo || ''}</p>
+                    <div class="d-flex justify-content-between">
+                        <span><i class="fas fa-calendar-alt"></i> ${anuncio.ano || 'Ano não informado'}</span>
+                        <span><i class="fas fa-tachometer-alt"></i> ${anuncio.km ? anuncio.km.toLocaleString() + ' km' : 'KM não informada'}</span>
+                        <span><i class="fas fa-gas-pump"></i> ${formatarCombustivel(anuncio.combustivel)}</span>
+                    </div>
+                `;
+            }
+            
+            // Botão de ver detalhes
+            const btn = document.createElement("a");
+            btn.className = "btn btn-primary w-100 mt-auto";
+            btn.href = `detalhes.html?id=${anuncio.id}&tipo=${tipo}`;
+            btn.textContent = "Ver Detalhes";
+            
+            // Montar o card
+            cardBody.appendChild(title);
+            cardBody.appendChild(price);
+            cardBody.appendChild(details);
+            cardBody.appendChild(btn);
+            
+            cardDiv.appendChild(imgDiv);
+            cardDiv.appendChild(cardBody);
+            colDiv.appendChild(cardDiv);
+            
+            return colDiv;
+        }
+        
+        // Função para mostrar os filtros ativos
+        function mostrarFiltrosAtivos(filtros, tipo) {
+            const filtrosContainer = document.getElementById("filtros-tags");
+            filtrosContainer.innerHTML = "";
+            
+            let temFiltros = false;
+            
+            for (const [key, value] of Object.entries(filtros)) {
+                if (value !== undefined && value !== "" && value !== 0) {
+                    temFiltros = true;
+                    
+                    const tag = document.createElement("span");
+                    tag.className = "filtro-tag";
+                    
+                    let label = key;
+                    let displayValue = value;
+                    
+                    // Traduzir chaves para nomes amigáveis
+                    switch(key) {
+                        case 'bairro': label = 'Bairro'; break;
+                        case 'tipo': label = tipo === 'imovel' ? 'Tipo Imóvel' : 'Marca'; break;
+                        case 'precoMin': label = 'Preço Mínimo'; displayValue = formatarPreco(value); break;
+                        case 'precoMax': label = 'Preço Máximo'; displayValue = formatarPreco(value); break;
+                        case 'quartos': label = 'Quartos'; displayValue = value + '+'; break;
+                        case 'banheiros': label = 'Banheiros'; displayValue = value + '+'; break;
+                        case 'garagem': label = 'Vagas'; displayValue = value + '+'; break;
+                        case 'areaMin': label = 'Área Mínima'; displayValue = value + 'm²'; break;
+                        case 'aceitaAnimais': label = 'Aceita Animais'; displayValue = ''; break;
+                        case 'mobiliado': label = 'Mobiliado'; displayValue = ''; break;
+                        case 'modelo': label = 'Modelo'; break;
+                        case 'ano': label = 'Ano'; break;
+                        case 'negociacao': label = 'Negociação'; displayValue = value === 'venda' ? 'Venda' : 'Aluguel'; break;
+                    }
+                    
+                    tag.innerHTML = `<strong>${label}:</strong> ${displayValue}`;
+                    filtrosContainer.appendChild(tag);
+                }
+            }
+            
+            document.getElementById("filtros-ativos").style.display = temFiltros ? "block" : "none";
+        }
+        
+        // Funções auxiliares de formatação
+        function formatarPreco(preco) {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(preco);
+        }
+        
+        function formatarCombustivel(combustivel) {
+            if (!combustivel) return 'Não informado';
+            const map = {
+                'gasolina': 'Gasolina',
+                'etanol': 'Etanol',
+                'flex': 'Flex',
+                'diesel': 'Diesel'
+            };
+            return map[combustivel] || combustivel;
+        }
+        
+        // Ao carregar a página, verificar se há parâmetros de pesquisa
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar se há resultados no localStorage (para navegação entre páginas)
+            const savedResults = localStorage.getItem('searchResults');
+            const searchParams = localStorage.getItem('searchParams');
+            
+            if (savedResults && searchParams) {
+                const resultados = JSON.parse(savedResults);
+                const params = JSON.parse(searchParams);
+                
+                mostrarFiltrosAtivos(params, params.tipoAnuncio);
+                exibirResultados(resultados, params.tipoAnuncio);
+            } else {
+                // Se não houver resultados salvos, mostrar mensagem
+                document.getElementById("no-results").style.display = "block";
+                document.getElementById("filtros-ativos").style.display = "none";
+            }
+        });
+    </script>
+</body>
+</html>
