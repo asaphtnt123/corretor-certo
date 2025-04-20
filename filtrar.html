@@ -369,15 +369,15 @@
 
 <script>
     // Configuração do Firebase
-  const firebaseConfig = {
-  apiKey: "AIzaSyCNr5JoKsWJVeUYAaVDqmPznZo100v0uvg",
-  authDomain: "corretorcerto-76933.firebaseapp.com",
-  databaseURL: "https://corretorcerto-76933-default-rtdb.firebaseio.com",
-  projectId: "corretorcerto-76933",
-  storageBucket: "corretorcerto-76933.firebasestorage.app",
-  messagingSenderId: "357149829474",
-  appId: "1:357149829474:web:324b2005d82eabbce5e43b"
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyCNr5JoKsWJVeUYAaVDqmPznZo100v0uvg",
+        authDomain: "corretorcerto-76933.firebaseapp.com",
+        databaseURL: "https://corretorcerto-76933-default-rtdb.firebaseio.com",
+        projectId: "corretorcerto-76933",
+        storageBucket: "corretorcerto-76933.firebasestorage.app",
+        messagingSenderId: "357149829474",
+        appId: "1:357149829474:web:324b2005d82eabbce5e43b"
+    };
 
     // Inicializar Firebase
     if (!firebase.apps.length) {
@@ -420,6 +420,269 @@
             alertDiv.classList.remove('show');
             setTimeout(() => alertDiv.remove(), 150);
         }, 5000);
+    }
+
+    // Função para criar card de anúncio
+    function criarCardAnuncio(anuncio, tipo) {
+        const colDiv = document.createElement("div");
+        colDiv.className = "col-md-6 col-lg-4 mb-4";
+        
+        const cardDiv = document.createElement("div");
+        cardDiv.className = "card h-100";
+        
+        // Imagem (usa primeira imagem ou placeholder)
+        const imgUrl = anuncio.imagens?.length > 0 ? anuncio.imagens[0] : 
+            'https://via.placeholder.com/300x200?text=Sem+Imagem';
+        
+        const img = document.createElement("img");
+        img.className = "card-img-top";
+        img.src = imgUrl;
+        img.alt = anuncio.titulo || "Anúncio sem título";
+        
+        // Corpo do card
+        const cardBody = document.createElement("div");
+        cardBody.className = "card-body d-flex flex-column";
+        
+        const title = document.createElement("h5");
+        title.className = "card-title";
+        title.textContent = anuncio.titulo || "Anúncio sem título";
+        
+        const price = document.createElement("div");
+        price.className = "price-tag mb-3";
+        price.textContent = formatarPreco(anuncio.preco);
+        
+        // Detalhes específicos
+        const details = document.createElement("div");
+        details.className = "card-text mb-3";
+        
+        if (tipo === 'imovel') {
+            details.innerHTML = `
+                <p><i class="fas fa-map-marker-alt"></i> ${anuncio.bairro || 'Bairro não informado'}</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-secondary"><i class="fas fa-bed"></i> ${anuncio.quartos || 0} quartos</span>
+                    <span class="badge bg-secondary"><i class="fas fa-bath"></i> ${anuncio.banheiros || 0} banheiros</span>
+                    <span class="badge bg-secondary"><i class="fas fa-car"></i> ${anuncio.garagem || 0} vagas</span>
+                    ${anuncio.area ? `<span class="badge bg-secondary"><i class="fas fa-ruler-combined"></i> ${anuncio.area}m²</span>` : ''}
+                </div>
+            `;
+        } else {
+            details.innerHTML = `
+                <p><i class="fas fa-car"></i> ${anuncio.marca || 'Marca não informada'} ${anuncio.modelo || ''}</p>
+                <div class="d-flex flex-wrap gap-2">
+                    ${anuncio.ano ? `<span class="badge bg-secondary"><i class="fas fa-calendar-alt"></i> ${anuncio.ano}</span>` : ''}
+                    ${anuncio.km ? `<span class="badge bg-secondary"><i class="fas fa-tachometer-alt"></i> ${anuncio.km.toLocaleString()} km</span>` : ''}
+                    ${anuncio.combustivel ? `<span class="badge bg-secondary"><i class="fas fa-gas-pump"></i> ${formatarCombustivel(anuncio.combustivel)}</span>` : ''}
+                </div>
+            `;
+        }
+        
+        // Botão de detalhes
+        const btn = document.createElement("a");
+        btn.className = "btn btn-primary mt-auto";
+        btn.href = `detalhes.html?id=${anuncio.id}&tipo=${tipo}`;
+        btn.textContent = "Ver Detalhes";
+        
+        // Montar o card
+        cardBody.appendChild(title);
+        cardBody.appendChild(price);
+        cardBody.appendChild(details);
+        cardBody.appendChild(btn);
+        
+        cardDiv.appendChild(img);
+        cardDiv.appendChild(cardBody);
+        colDiv.appendChild(cardDiv);
+        
+        return colDiv;
+    }
+
+    // Função para mostrar filtros ativos
+    function mostrarFiltrosAtivos(params, tipo) {
+        const container = document.getElementById("filtros-tags");
+        if (!container) return;
+        
+        container.innerHTML = "";
+        
+        let temFiltros = false;
+        
+        for (const [key, value] of Object.entries(params)) {
+            if (value !== undefined && value !== "" && value !== 0 && value !== false) {
+                temFiltros = true;
+                
+                const tag = document.createElement("span");
+                tag.className = "filtro-tag";
+                
+                let label = key;
+                let displayValue = value;
+                
+                switch(key) {
+                    case 'bairro': label = 'Bairro'; break;
+                    case 'tipo': label = tipo === 'imovel' ? 'Tipo Imóvel' : 'Marca'; break;
+                    case 'precoMin': label = 'Preço Mínimo'; displayValue = formatarPreco(value); break;
+                    case 'precoMax': label = 'Preço Máximo'; displayValue = formatarPreco(value); break;
+                    case 'quartos': label = 'Quartos'; displayValue = value + '+'; break;
+                    case 'banheiros': label = 'Banheiros'; displayValue = value + '+'; break;
+                    case 'garagem': label = 'Vagas'; displayValue = value + '+'; break;
+                    case 'areaMin': label = 'Área Mínima'; displayValue = value + 'm²'; break;
+                    case 'aceitaAnimais': label = 'Aceita Animais'; displayValue = ''; break;
+                    case 'mobiliado': label = 'Mobiliado'; displayValue = ''; break;
+                    case 'modelo': label = 'Modelo'; break;
+                    case 'ano': label = 'Ano'; break;
+                    case 'negociacao': label = 'Negociação'; displayValue = value === 'venda' ? 'Venda' : 'Aluguel'; break;
+                    case 'kmMax': label = 'KM Máxima'; displayValue = value.toLocaleString() + ' km'; break;
+                    case 'combustivel': label = 'Combustível'; displayValue = formatarCombustivel(value); break;
+                    case 'cambio': label = 'Câmbio'; displayValue = value === 'automatico' ? 'Automático' : 'Manual'; break;
+                }
+                
+                tag.innerHTML = `<strong>${label}:</strong> ${displayValue}`;
+                container.appendChild(tag);
+            }
+        }
+        
+        const filtrosAtivosDiv = document.getElementById("filtros-ativos");
+        if (filtrosAtivosDiv) {
+            filtrosAtivosDiv.style.display = temFiltros ? "block" : "none";
+        }
+    }
+
+    // Função para exibir resultados
+    function exibirResultados(resultados, tipo) {
+        const container = document.getElementById("resultados-container");
+        const noResultsDiv = document.getElementById("no-results");
+        
+        if (!container || !noResultsDiv) return;
+        
+        container.innerHTML = "";
+        noResultsDiv.style.display = "none";
+        
+        if (resultados.length === 0) {
+            noResultsDiv.style.display = "block";
+            return;
+        }
+        
+        resultados.forEach(anuncio => {
+            container.appendChild(criarCardAnuncio(anuncio, tipo));
+        });
+        
+        const titulo = document.querySelector("h2");
+        if (titulo) {
+            titulo.innerHTML = `Resultados da Pesquisa <span class="badge bg-primary">${resultados.length}</span>`;
+        }
+    }
+
+    // Função para obter parâmetros da URL de forma segura
+    function getUrlParams() {
+        const params = {};
+        try {
+            if (typeof window !== 'undefined' && window.location) {
+                const urlParams = new URLSearchParams(window.location.search);
+                params.orderBy = urlParams.get('search-order') || 'recentes';
+                params.tipoAnuncio = urlParams.get('tipo-anuncio') || '';
+            }
+        } catch (error) {
+            console.error("Erro ao obter parâmetros da URL:", error);
+        }
+        return params;
+    }
+
+    // Implementação segura da função de ordenação
+    function ordenarResultados(resultados, orderBy) {
+        if (!Array.isArray(resultados)) return resultados;
+        
+        try {
+            return [...resultados].sort((a, b) => {
+                switch(orderBy) {
+                    case 'preco-asc':
+                        return (a.preco || 0) - (b.preco || 0);
+                    
+                    case 'preco-desc':
+                        return (b.preco || 0) - (a.preco || 0);
+                    
+                    case 'recentes':
+                    default:
+                        try {
+                            const dateA = a.data?.toDate ? a.data.toDate() : new Date(a.data || 0);
+                            const dateB = b.data?.toDate ? b.data.toDate() : new Date(b.data || 0);
+                            return dateB - dateA;
+                        } catch (e) {
+                            return 0;
+                        }
+                }
+            });
+        } catch (error) {
+            console.error("Erro na ordenação:", error);
+            return resultados;
+        }
+    }
+
+    // Implementação segura da função de filtro
+    function aplicarFiltros(resultados, filtros) {
+        if (!Array.isArray(resultados)) return [];
+        
+        try {
+            return resultados.filter(anuncio => {
+                // Filtro por tipo
+                if (filtros.tipoAnuncio && filtros.tipoAnuncio !== 'todos') {
+                    if (anuncio.tipo !== filtros.tipoAnuncio) return false;
+                }
+                
+                // Filtro por preço
+                if (filtros.precoMin && (anuncio.preco || 0) < Number(filtros.precoMin)) {
+                    return false;
+                }
+                
+                if (filtros.precoMax && (anuncio.preco || 0) > Number(filtros.precoMax)) {
+                    return false;
+                }
+                
+                return true;
+            });
+        } catch (error) {
+            console.error("Erro na filtragem:", error);
+            return resultados;
+        }
+    }
+
+    // Função principal para filtrar e ordenar
+    function filtrarEOrdenar() {
+        try {
+            // 1. Obter parâmetros de forma segura
+            const urlParams = getUrlParams();
+            
+            // 2. Obter dados do localStorage com tratamento de erro
+            const resultados = JSON.parse(localStorage.getItem('searchResults') || '[]');
+            const params = JSON.parse(localStorage.getItem('searchParams') || '{}');
+            
+            // 3. Combinar parâmetros
+            const filtrosAtuais = {
+                ...params,
+                tipoAnuncio: urlParams.tipoAnuncio || params.tipoAnuncio,
+                orderBy: urlParams.orderBy
+            };
+            
+            // 4. Aplicar filtros e ordenação
+            let resultadosFiltrados = aplicarFiltros(resultados, filtrosAtuais);
+            resultadosFiltrados = ordenarResultados(resultadosFiltrados, filtrosAtuais.orderBy);
+            
+            // 5. Exibir resultados
+            mostrarFiltrosAtivos(filtrosAtuais, filtrosAtuais.tipoAnuncio);
+            exibirResultados(resultadosFiltrados, filtrosAtuais.tipoAnuncio);
+            
+        } catch (error) {
+            console.error("Erro no processamento:", error);
+            // Fallback: exibir todos os resultados sem filtros
+            try {
+                const resultados = JSON.parse(localStorage.getItem('searchResults') || '[]');
+                const params = JSON.parse(localStorage.getItem('searchParams') || '{}');
+                exibirResultados(resultados, params.tipoAnuncio || 'imovel');
+            } catch (e) {
+                console.error("Erro no fallback:", e);
+                const noResultsDiv = document.getElementById("no-results");
+                if (noResultsDiv) {
+                    noResultsDiv.style.display = "block";
+                    noResultsDiv.querySelector("p").textContent = "Nenhum resultado encontrado.";
+                }
+            }
+        }
     }
 
     // Funções de busca no Firestore
@@ -518,100 +781,126 @@
         const imovelFields = document.getElementById('imovel-search-fields');
         const automovelFields = document.getElementById('automovel-search-fields');
         
-        function toggleSearchFields() {
-            const selectedValue = document.querySelector('input[name="tipo-anuncio"]:checked').value;
-            
-            if (selectedValue === 'imovel') {
-                imovelFields.style.display = 'block';
-                automovelFields.style.display = 'none';
-            } else if (selectedValue === 'automovel') {
-                imovelFields.style.display = 'none';
-                automovelFields.style.display = 'block';
-            } else {
-                imovelFields.style.display = 'block';
-                automovelFields.style.display = 'block';
+        if (tipoAnuncioRadios && imovelFields && automovelFields) {
+            function toggleSearchFields() {
+                const selectedValue = document.querySelector('input[name="tipo-anuncio"]:checked')?.value;
+                
+                if (selectedValue === 'imovel') {
+                    imovelFields.style.display = 'block';
+                    automovelFields.style.display = 'none';
+                } else if (selectedValue === 'automovel') {
+                    imovelFields.style.display = 'none';
+                    automovelFields.style.display = 'block';
+                } else {
+                    imovelFields.style.display = 'block';
+                    automovelFields.style.display = 'block';
+                }
             }
+            
+            tipoAnuncioRadios.forEach(radio => {
+                radio.addEventListener('change', toggleSearchFields);
+            });
+            
+            // Inicializar campos visíveis
+            toggleSearchFields();
         }
         
-        tipoAnuncioRadios.forEach(radio => {
-            radio.addEventListener('change', toggleSearchFields);
-        });
-        
         // Mostrar/ocultar campos avançados de preço
-        document.getElementById('toggle-price-advanced')?.addEventListener('click', function() {
-            const advancedFields = document.getElementById('price-advanced-fields');
-            if (advancedFields.style.display === 'none') {
-                advancedFields.style.display = 'block';
-                this.innerHTML = '<i class="fas fa-sliders-h"></i> Simples';
-            } else {
-                advancedFields.style.display = 'none';
-                this.innerHTML = '<i class="fas fa-sliders-h"></i> Avançado';
-            }
-        });
+        const togglePriceBtn = document.getElementById('toggle-price-advanced');
+        const advancedFields = document.getElementById('price-advanced-fields');
+        
+        if (togglePriceBtn && advancedFields) {
+            togglePriceBtn.addEventListener('click', function() {
+                if (advancedFields.style.display === 'none') {
+                    advancedFields.style.display = 'block';
+                    this.innerHTML = '<i class="fas fa-sliders-h"></i> Simples';
+                } else {
+                    advancedFields.style.display = 'none';
+                    this.innerHTML = '<i class="fas fa-sliders-h"></i> Avançado';
+                }
+            });
+        }
         
         // Enviar formulário de pesquisa
-        document.getElementById('advanced-search-form')?.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            try {
-                document.querySelector(".carregando")?.style?.display = "block";
+        const searchForm = document.getElementById('advanced-search-form');
+        if (searchForm) {
+            searchForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
                 
-                const searchParams = {
-                    tipoAnuncio: document.querySelector('input[name="tipo-anuncio"]:checked').value,
-                    palavrasChave: document.getElementById('search-palavras-chave').value,
-                    cidade: document.getElementById('search-cidade').value,
-                    negociacao: document.getElementById('search-negociacao').value,
-                    precoMin: document.getElementById('search-preco-min').value,
-                    precoMax: document.getElementById('search-preco-max').value,
-                    iptu: document.getElementById('search-iptu').value,
-                    condominio: document.getElementById('search-condominio').value,
-                    seguro: document.getElementById('search-seguro').value,
-                    dataPublicacao: document.getElementById('search-data').value,
-                    status: document.getElementById('search-status').value,
-                    orderBy: document.querySelector('input[name="search-order"]:checked').value,
+                try {
+                    const carregandoDiv = document.querySelector(".carregando");
+                    if (carregandoDiv) carregandoDiv.style.display = "block";
                     
-                    // Campos de imóvel
-                    tipoImovel: document.getElementById('search-tipo-imovel').value,
-                    bairro: document.getElementById('search-bairro').value,
-                    quartos: document.getElementById('search-quartos').value,
-                    banheiros: document.getElementById('search-banheiros').value,
-                    vagas: document.getElementById('search-vagas').value,
-                    areaMin: document.getElementById('search-area-min').value,
-                    mobiliado: document.getElementById('search-mobiliado').checked,
-                    aceitaAnimais: document.getElementById('search-aceita-animais').checked,
-                    condominioFechado: document.getElementById('search-condominio-fechado').checked,
+                    const searchParams = {
+                        tipoAnuncio: document.querySelector('input[name="tipo-anuncio"]:checked')?.value,
+                        palavrasChave: document.getElementById('search-palavras-chave')?.value,
+                        cidade: document.getElementById('search-cidade')?.value,
+                        negociacao: document.getElementById('search-negociacao')?.value,
+                        precoMin: document.getElementById('search-preco-min')?.value,
+                        precoMax: document.getElementById('search-preco-max')?.value,
+                        iptu: document.getElementById('search-iptu')?.value,
+                        condominio: document.getElementById('search-condominio')?.value,
+                        seguro: document.getElementById('search-seguro')?.value,
+                        dataPublicacao: document.getElementById('search-data')?.value,
+                        status: document.getElementById('search-status')?.value,
+                        orderBy: document.querySelector('input[name="search-order"]:checked')?.value,
+                        
+                        // Campos de imóvel
+                        tipoImovel: document.getElementById('search-tipo-imovel')?.value,
+                        bairro: document.getElementById('search-bairro')?.value,
+                        quartos: document.getElementById('search-quartos')?.value,
+                        banheiros: document.getElementById('search-banheiros')?.value,
+                        vagas: document.getElementById('search-vagas')?.value,
+                        areaMin: document.getElementById('search-area-min')?.value,
+                        mobiliado: document.getElementById('search-mobiliado')?.checked,
+                        aceitaAnimais: document.getElementById('search-aceita-animais')?.checked,
+                        condominioFechado: document.getElementById('search-condominio-fechado')?.checked,
+                        
+                        // Campos de automóvel
+                        tipoVeiculo: document.getElementById('search-tipo-veiculo')?.value,
+                        marca: document.getElementById('search-marca')?.value,
+                        modelo: document.getElementById('search-modelo')?.value,
+                        anoMin: document.getElementById('search-ano-min')?.value,
+                        kmMax: document.getElementById('search-km-max')?.value,
+                        cor: document.getElementById('search-cor')?.value,
+                        combustivel: document.getElementById('search-combustivel')?.value,
+                        cambio: document.getElementById('search-cambio')?.value,
+                        arCondicionado: document.getElementById('search-ar-condicionado')?.checked,
+                        direcaoHidraulica: document.getElementById('search-direcao-hidraulica')?.checked,
+                        vidroEletrico: document.getElementById('search-vidro-eletrico')?.checked,
+                        airbag: document.getElementById('search-airbag')?.checked
+                    };
                     
-                    // Campos de automóvel
-                    tipoVeiculo: document.getElementById('search-tipo-veiculo').value,
-                    marca: document.getElementById('search-marca').value,
-                    modelo: document.getElementById('search-modelo').value,
-                    anoMin: document.getElementById('search-ano-min').value,
-                    kmMax: document.getElementById('search-km-max').value,
-                    cor: document.getElementById('search-cor').value,
-                    combustivel: document.getElementById('search-combustivel').value,
-                    cambio: document.getElementById('search-cambio').value,
-                    arCondicionado: document.getElementById('search-ar-condicionado').checked,
-                    direcaoHidraulica: document.getElementById('search-direcao-hidraulica').checked,
-                    vidroEletrico: document.getElementById('search-vidro-eletrico').checked,
-                    airbag: document.getElementById('search-airbag').checked
-                };
-                
-                let resultados;
-                if (searchParams.tipoAnuncio === 'imovel') {
-                    resultados = await buscarImoveis(searchParams);
-                } else if (searchParams.tipoAnuncio === 'automovel') {
-                    resultados = await buscarCarros(searchParams);
+                    let resultados;
+                    if (searchParams.tipoAnuncio === 'imovel') {
+                        resultados = await buscarImoveis(searchParams);
+                    } else if (searchParams.tipoAnuncio === 'automovel') {
+                        resultados = await buscarCarros(searchParams);
+                    }
+                    
+                    await salvarERedirecionar(resultados, searchParams);
+                    
+                } catch (error) {
+                    console.error("Erro na pesquisa:", error);
+                    showAlert("Ocorreu um erro ao realizar a pesquisa. Tente novamente.", "error");
+                } finally {
+                    const carregandoDiv = document.querySelector(".carregando");
+                    if (carregandoDiv) carregandoDiv.style.display = "none";
                 }
-                
-                await salvarERedirecionar(resultados, searchParams);
-                
-            } catch (error) {
-                console.error("Erro na pesquisa:", error);
-                showAlert("Ocorreu um erro ao realizar a pesquisa. Tente novamente.", "error");
+            });
+        }
+
+        // Inicialização da página de resultados
+        const carregandoDiv = document.querySelector(".carregando");
+        if (carregandoDiv) carregandoDiv.style.display = "block";
+        
+        setTimeout(() => {
+            try {
+                filtrarEOrdenar();
             } finally {
-                document.querySelector(".carregando")?.style?.display = "none";
+                if (carregandoDiv) carregandoDiv.style.display = "none";
             }
-        });
+        }, 100);
     });
 </script>
 </body>
