@@ -893,11 +893,12 @@ function safeJsonParse(data, defaultValue = []) {
 
         // Inicialização da página de resultados
         const carregandoDiv = document.querySelector(".carregando");
+                        const dadosFiltrados = safeJsonParse(dados);
+
         if (carregandoDiv) carregandoDiv.style.display = "block";
         
         setTimeout(() => {
             try {
-                const dadosFiltrados = safeJsonParse(dados);
 filtrarEOrdenar(dadosFiltrados);
             } finally {
                 if (carregandoDiv) carregandoDiv.style.display = "none";
