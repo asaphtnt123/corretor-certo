@@ -642,49 +642,50 @@
         }
     }
 
-    // Função principal para filtrar e ordenar
-    function filtrarEOrdenar() {
-        try {
-            // 1. Obter parâmetros de forma segura
-            const urlParams = getUrlParams();
-            
-            // 2. Obter dados do localStorage com tratamento de erro
-            const resultados = JSON.parse(localStorage.getItem('searchResults') || '[]');
-            const params = JSON.parse(localStorage.getItem('searchParams') || '{}');
-            
-            // 3. Combinar parâmetros
-            const filtrosAtuais = {
-                ...params,
-                tipoAnuncio: urlParams.tipoAnuncio || params.tipoAnuncio,
-                orderBy: urlParams.orderBy
-            };
-            
-            // 4. Aplicar filtros e ordenação
-            let resultadosFiltrados = aplicarFiltros(resultados, filtrosAtuais);
-            resultadosFiltrados = ordenarResultados(resultadosFiltrados, filtrosAtuais.orderBy);
-            
-            // 5. Exibir resultados
-            mostrarFiltrosAtivos(filtrosAtuais, filtrosAtuais.tipoAnuncio);
-            exibirResultados(resultadosFiltrados, filtrosAtuais.tipoAnuncio);
-            
-        } catch (error) {
-            console.error("Erro no processamento:", error);
-            // Fallback: exibir todos os resultados sem filtros
-            try {
-                const resultados = JSON.parse(localStorage.getItem('searchResults') || '[]');
-                const params = JSON.parse(localStorage.getItem('searchParams') || '{}');
-                exibirResultados(resultados, params.tipoAnuncio || 'imovel');
-            } catch (e) {
-                console.error("Erro no fallback:", e);
-                const noResultsDiv = document.getElementById("no-results");
-                if (noResultsDiv) {
-                    noResultsDiv.style.display = "block";
-                    noResultsDiv.querySelector("p").textContent = "Nenhum resultado encontrado.";
-                }
+  function filtrarEOrdenar(dados) {
+    try {
+        // Verifique se os dados existem e não são undefined
+        if (!dados) {
+            console.error('Dados estão undefined ou vazios');
+            return []; // ou faça um fallback apropriado
+        }
+        
+        // Se for string, tente parsear
+        if (typeof dados === 'string') {
+            if (dados.trim() === '') {
+                return [];
             }
+            return JSON.parse(dados);
+        }
+        
+        // Se já for objeto, retorne diretamente
+        return dados;
+    } catch (error) {
+        console.error('Erro no processamento:', error);
+        try {
+            // Fallback: tente recuperar de localStorage ou outra fonte
+            const fallbackData = localStorage.getItem('backupData');
+            if (fallbackData) {
+                return JSON.parse(fallbackData);
+            }
+            return [];
+        } catch (fallbackError) {
+            console.error('Erro no fallback:', fallbackError);
+            return [];
         }
     }
-
+}
+function safeJsonParse(data, defaultValue = []) {
+    try {
+        if (typeof data === 'string') {
+            return data ? JSON.parse(data) : defaultValue;
+        }
+        return data || defaultValue;
+    } catch (e) {
+        console.error('Failed to parse JSON:', e);
+        return defaultValue;
+    }
+}
     // Funções de busca no Firestore
     async function buscarImoveis(filtros) {
         try {
@@ -896,7 +897,8 @@
         
         setTimeout(() => {
             try {
-                filtrarEOrdenar();
+                const dadosFiltrados = safeJsonParse(dados);
+filtrarEOrdenar(dadosFiltrados);
             } finally {
                 if (carregandoDiv) carregandoDiv.style.display = "none";
             }
