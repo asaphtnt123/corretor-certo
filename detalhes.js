@@ -12,15 +12,14 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// Configuração do Firebase
 const firebaseConfig = {
-    apiKey: "AIzaSyA-7HOp-Ycvyf3b_03ev__8aJEwAbWSQZY",
-    authDomain: "connectfamilia-312dc.firebaseapp.com",
-    projectId: "connectfamilia-312dc",
-    storageBucket: "connectfamilia-312dc.appspot.com",
-    messagingSenderId: "797817838649",
-    appId: "1:797817838649:web:1aa7c54abd97661f8d81e8",
-    measurementId: "G-QKN9NFXZZQ"
+  apiKey: "AIzaSyCNr5JoKsWJVeUYAaVDqmPznZo100v0uvg",
+  authDomain: "corretorcerto-76933.firebaseapp.com",
+  databaseURL: "https://corretorcerto-76933-default-rtdb.firebaseio.com",
+  projectId: "corretorcerto-76933",
+  storageBucket: "corretorcerto-76933.firebasestorage.app",
+  messagingSenderId: "357149829474",
+  appId: "1:357149829474:web:324b2005d82eabbce5e43b"
 };
 
 // Inicializar Firebase
