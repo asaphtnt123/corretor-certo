@@ -891,6 +891,13 @@ function safeJsonParse(data, defaultValue = []) {
             });
         }
 
+        // Na linha antes de onde o erro ocorre (por volta da linha 895)
+if (typeof dados === 'undefined') {
+    console.error('A variável "dados" não foi definida');
+    dados = []; // Ou defina um valor padrão apropriado
+}
+        
+
         // Inicialização da página de resultados
         const carregandoDiv = document.querySelector(".carregando");
                         const dadosFiltrados = safeJsonParse(dados);
@@ -905,6 +912,21 @@ filtrarEOrdenar(dadosFiltrados);
             }
         }, 100);
     });
+
+    // Exemplo com fetch API
+async function carregarDados() {
+    try {
+        const response = await fetch('sua_api_endpoint');
+        const dados = await response.json();
+        filtrarEOrdenar(dados);
+    } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        filtrarEOrdenar([]); // Fallback com array vazio
+    }
+}
+
+// Chame esta função quando a página carregar
+document.addEventListener('DOMContentLoaded', carregarDados);
 </script>
 </body>
 </html>
