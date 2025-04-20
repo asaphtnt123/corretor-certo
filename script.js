@@ -1177,7 +1177,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-document.getElementById("form-pesquisa")?.addEventListener("submit", function(e) {
+document.getElementById("form-pesquisa")?.addEventListener("submit", async function(e) {
     e.preventDefault();
     
     const tipoInput = document.getElementById("tipo");
@@ -1188,6 +1188,7 @@ document.getElementById("form-pesquisa")?.addEventListener("submit", function(e)
     }
     
     const tipo = tipoInput.value;
+    const cidade = document.getElementById("cidade")?.value; // Novo campo cidade
     
     if (!tipo) {
         showAlert("Selecione o tipo de anúncio (imóvel ou automóvel)", "error");
@@ -1217,7 +1218,8 @@ document.getElementById("form-pesquisa")?.addEventListener("submit", function(e)
 
         // Prepara os filtros
         const filtros = {
-            cidade: cidade || undefined, // Adicionado filtro de cidade
+            tipoAnuncio: 'imovel',
+            cidade: cidade || undefined,
             bairro: bairroInput.value.trim(),
             precoMin: parseFloat(precoMinInput.value) || undefined,
             precoMax: parseFloat(precoMaxInput.value) || undefined,
@@ -1233,7 +1235,14 @@ document.getElementById("form-pesquisa")?.addEventListener("submit", function(e)
         
         // Valida e executa a busca
         if (validarFiltrosImoveis(filtros)) {
-            buscarImoveis(filtros);
+            const resultados = await buscarImoveis(filtros);
+            
+            // Salvar resultados e parâmetros para exibição na página de resultados
+            localStorage.setItem('searchResults', JSON.stringify(resultados));
+            localStorage.setItem('searchParams', JSON.stringify(filtros));
+            
+            // Redirecionar para página de resultados
+            window.location.href = 'resultados-pesquisa.html';
         }
      } else if (tipo === "carro") {
         // Elementos do formulário de automóvel
@@ -1253,8 +1262,10 @@ document.getElementById("form-pesquisa")?.addEventListener("submit", function(e)
         // Mostrar estado de carregamento
         document.querySelector(".carregando").style.display = "block";
         
-        // Prepara os parâmetros (sem cidade)
+        // Prepara os parâmetros
         const params = {
+            tipoAnuncio: 'carro',
+            cidade: cidade || undefined,
             marca: marcaInput.value,
             modelo: modeloInput.value,
             ano: anoInput.value,
@@ -1269,7 +1280,14 @@ document.getElementById("form-pesquisa")?.addEventListener("submit", function(e)
             return;
         }
 
-        buscarCarros(params);
+        const resultados = await buscarCarros(params);
+        
+        // Salvar resultados e parâmetros para exibição na página de resultados
+        localStorage.setItem('searchResults', JSON.stringify(resultados));
+        localStorage.setItem('searchParams', JSON.stringify(params));
+        
+        // Redirecionar para página de resultados
+        window.location.href = 'resultados-pesquisa.html';
     }
 });
     // Configuração dos botões de tipo
