@@ -122,10 +122,11 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     
-    <!-- JavaScript para Resultados -->
-    <script>
-        // Configuração do Firebase (use a mesma do seu projeto)
-      const firebaseConfig = {
+  
+
+<script>
+    // Configuração do Firebase
+    const firebaseConfig = {
   apiKey: "AIzaSyCNr5JoKsWJVeUYAaVDqmPznZo100v0uvg",
   authDomain: "corretorcerto-76933.firebaseapp.com",
   databaseURL: "https://corretorcerto-76933-default-rtdb.firebaseio.com",
@@ -134,181 +135,328 @@
   messagingSenderId: "357149829474",
   appId: "1:357149829474:web:324b2005d82eabbce5e43b"
 };
-        
-        // Inicializar Firebase
+
+    // Inicializar Firebase
+    if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+    }
+    const db = firebase.firestore();
 
-    </script>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Função segura para ler do localStorage
-        function getLocalStorageSafe(key) {
-            try {
-                const item = localStorage.getItem(key);
-                return item && item !== "undefined" ? JSON.parse(item) : null;
-            } catch (e) {
-                console.error(`Erro ao ler ${key} do localStorage:`, e);
-                localStorage.removeItem(key);
-                return null;
-            }
+    // Funções auxiliares
+    function formatarPreco(preco) {
+        return preco?.toLocaleString('pt-BR', { 
+            style: 'currency', 
+            currency: 'BRL' 
+        }) || 'Preço não informado';
+    }
+
+    function formatarCombustivel(combustivel) {
+        const map = {
+            'gasolina': 'Gasolina',
+            'etanol': 'Etanol',
+            'flex': 'Flex',
+            'diesel': 'Diesel',
+            'eletrico': 'Elétrico'
+        };
+        return map[combustivel] || combustivel;
+    }
+
+    function showAlert(message, type = 'success') {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type === 'error' ? 'danger' : 'success'} alert-dismissible fade show`;
+        alertDiv.role = 'alert';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        const container = document.getElementById('alert-container') || document.body;
+        container.prepend(alertDiv);
+        
+        setTimeout(() => {
+            alertDiv.classList.remove('show');
+            setTimeout(() => alertDiv.remove(), 150);
+        }, 5000);
+    }
+
+    // Função segura para ler do localStorage
+    function getLocalStorageSafe(key) {
+        try {
+            const item = localStorage.getItem(key);
+            return item && item !== "undefined" ? JSON.parse(item) : null;
+        } catch (e) {
+            console.error(`Erro ao ler ${key} do localStorage:`, e);
+            localStorage.removeItem(key);
+            return null;
         }
+    }
 
-        // Função para criar card de anúncio
-        function criarCardAnuncio(anuncio, tipo) {
-            const colDiv = document.createElement("div");
-            colDiv.className = "col-md-6 col-lg-4 mb-4";
+    // Função para ordenar resultados
+    function ordenarResultados(resultados, orderBy) {
+        if (!resultados || !orderBy) return resultados;
+        
+        try {
+            const resultadosOrdenados = [...resultados];
             
-            const cardDiv = document.createElement("div");
-            cardDiv.className = "card h-100";
-            
-            // Imagem (usa primeira imagem ou placeholder)
-            const imgUrl = anuncio.imagens?.length > 0 ? anuncio.imagens[0] : 
-                'https://via.placeholder.com/300x200?text=Sem+Imagem';
-            
-            const img = document.createElement("img");
-            img.className = "card-img-top";
-            img.src = imgUrl;
-            img.alt = anuncio.titulo || "Anúncio sem título";
-            
-            // Corpo do card
-            const cardBody = document.createElement("div");
-            cardBody.className = "card-body d-flex flex-column";
-            
-            const title = document.createElement("h5");
-            title.className = "card-title";
-            title.textContent = anuncio.titulo || "Anúncio sem título";
-            
-            const price = document.createElement("div");
-            price.className = "price-tag mb-3";
-            price.textContent = formatarPreco(anuncio.preco);
-            
-            // Detalhes específicos
-            const details = document.createElement("div");
-            details.className = "card-text mb-3";
-            
-            if (tipo === 'imovel') {
-                details.innerHTML = `
-                    <p><i class="fas fa-map-marker-alt"></i> ${anuncio.bairro || 'Bairro não informado'}</p>
-                    <div class="d-flex flex-wrap gap-2">
-                        <span class="badge bg-secondary"><i class="fas fa-bed"></i> ${anuncio.quartos || 0} quartos</span>
-                        <span class="badge bg-secondary"><i class="fas fa-bath"></i> ${anuncio.banheiros || 0} banheiros</span>
-                        <span class="badge bg-secondary"><i class="fas fa-car"></i> ${anuncio.garagem || 0} vagas</span>
-                        ${anuncio.area ? `<span class="badge bg-secondary"><i class="fas fa-ruler-combined"></i> ${anuncio.area}m²</span>` : ''}
-                    </div>
-                `;
-            } else {
-                details.innerHTML = `
-                    <p><i class="fas fa-car"></i> ${anuncio.marca || 'Marca não informada'} ${anuncio.modelo || ''}</p>
-                    <div class="d-flex flex-wrap gap-2">
-                        ${anuncio.ano ? `<span class="badge bg-secondary"><i class="fas fa-calendar-alt"></i> ${anuncio.ano}</span>` : ''}
-                        ${anuncio.km ? `<span class="badge bg-secondary"><i class="fas fa-tachometer-alt"></i> ${anuncio.km.toLocaleString()} km</span>` : ''}
-                        ${anuncio.combustivel ? `<span class="badge bg-secondary"><i class="fas fa-gas-pump"></i> ${formatarCombustivel(anuncio.combustivel)}</span>` : ''}
-                    </div>
-                `;
+            switch(orderBy) {
+                case 'recentes':
+                    resultadosOrdenados.sort((a, b) => {
+                        const dateA = a.data?.toDate ? a.data.toDate() : new Date(a.data);
+                        const dateB = b.data?.toDate ? b.data.toDate() : new Date(b.data);
+                        return dateB - dateA;
+                    });
+                    break;
+                    
+                case 'preco-asc':
+                    resultadosOrdenados.sort((a, b) => (a.preco || 0) - (b.preco || 0));
+                    break;
+                    
+                case 'preco-desc':
+                    resultadosOrdenados.sort((a, b) => (b.preco || 0) - (a.preco || 0));
+                    break;
+                    
+                default:
+                    break;
             }
             
-            // Botão de detalhes
-            const btn = document.createElement("a");
-            btn.className = "btn btn-primary mt-auto";
-            btn.href = `detalhes.html?id=${anuncio.id}&tipo=${tipo}`;
-            btn.textContent = "Ver Detalhes";
-            
-            // Montar o card
-            cardBody.appendChild(title);
-            cardBody.appendChild(price);
-            cardBody.appendChild(details);
-            cardBody.appendChild(btn);
-            
-            cardDiv.appendChild(img);
-            cardDiv.appendChild(cardBody);
-            colDiv.appendChild(cardDiv);
-            
-            return colDiv;
+            return resultadosOrdenados;
+        } catch (error) {
+            console.error("Erro ao ordenar resultados:", error);
+            return resultados;
         }
+    }
 
-        // Função para mostrar filtros ativos
-        function mostrarFiltrosAtivos(params, tipo) {
-            const container = document.getElementById("filtros-tags");
-            container.innerHTML = "";
-            
-            let temFiltros = false;
-            
-            for (const [key, value] of Object.entries(params)) {
-                if (value !== undefined && value !== "" && value !== 0 && value !== false) {
-                    temFiltros = true;
-                    
-                    const tag = document.createElement("span");
-                    tag.className = "filtro-tag";
-                    
-                    let label = key;
-                    let displayValue = value;
-                    
-                    // Traduzir chaves para nomes amigáveis
-                    switch(key) {
-                        case 'bairro': label = 'Bairro'; break;
-                        case 'tipo': label = tipo === 'imovel' ? 'Tipo Imóvel' : 'Marca'; break;
-                        case 'precoMin': label = 'Preço Mínimo'; displayValue = formatarPreco(value); break;
-                        case 'precoMax': label = 'Preço Máximo'; displayValue = formatarPreco(value); break;
-                        case 'quartos': label = 'Quartos'; displayValue = value + '+'; break;
-                        case 'banheiros': label = 'Banheiros'; displayValue = value + '+'; break;
-                        case 'garagem': label = 'Vagas'; displayValue = value + '+'; break;
-                        case 'areaMin': label = 'Área Mínima'; displayValue = value + 'm²'; break;
-                        case 'aceitaAnimais': label = 'Aceita Animais'; displayValue = ''; break;
-                        case 'mobiliado': label = 'Mobiliado'; displayValue = ''; break;
-                        case 'modelo': label = 'Modelo'; break;
-                        case 'ano': label = 'Ano'; break;
-                        case 'negociacao': label = 'Negociação'; displayValue = value === 'venda' ? 'Venda' : 'Aluguel'; break;
-                        case 'kmMax': label = 'KM Máxima'; displayValue = value.toLocaleString() + ' km'; break;
-                        case 'combustivel': label = 'Combustível'; displayValue = formatarCombustivel(value); break;
-                        case 'cambio': label = 'Câmbio'; displayValue = value === 'automatico' ? 'Automático' : 'Manual'; break;
-                    }
-                    
-                    tag.innerHTML = `<strong>${label}:</strong> ${displayValue}`;
-                    container.appendChild(tag);
+    // Função para aplicar filtros
+    function aplicarFiltros(resultados, filtros) {
+        if (!resultados || !filtros) return resultados;
+        
+        try {
+            return resultados.filter(anuncio => {
+                if (filtros.tipoAnuncio && filtros.tipoAnuncio !== 'todos' && 
+                    anuncio.tipo !== filtros.tipoAnuncio) {
+                    return false;
                 }
-            }
-            
-            document.getElementById("filtros-ativos").style.display = temFiltros ? "block" : "none";
+                
+                if (filtros.palavrasChave) {
+                    const palavras = filtros.palavrasChave.toLowerCase().split(' ');
+                    const textoBusca = (
+                        (anuncio.titulo || '') + ' ' + 
+                        (anuncio.descricao || '') + ' ' + 
+                        (anuncio.bairro || '') + ' ' + 
+                        (anuncio.marca || '') + ' ' + 
+                        (anuncio.modelo || '')
+                    ).toLowerCase();
+                    
+                    if (!palavras.some(palavra => textoBusca.includes(palavra))) {
+                        return false;
+                    }
+                }
+                
+                if (filtros.precoMin && (anuncio.preco || 0) < Number(filtros.precoMin)) {
+                    return false;
+                }
+                
+                if (filtros.precoMax && (anuncio.preco || 0) > Number(filtros.precoMax)) {
+                    return false;
+                }
+                
+                return true;
+            });
+        } catch (error) {
+            console.error("Erro ao aplicar filtros:", error);
+            return resultados;
         }
+    }
 
-        // Carregar e exibir resultados
-        function loadAndDisplayResults() {
-            const resultadosContainer = document.getElementById("resultados-container");
-            const noResultsDiv = document.getElementById("no-results");
-            const carregandoDiv = document.querySelector(".carregando");
+    // Função para criar card de anúncio
+    function criarCardAnuncio(anuncio, tipo) {
+        const colDiv = document.createElement("div");
+        colDiv.className = "col-md-6 col-lg-4 mb-4";
+        
+        const cardDiv = document.createElement("div");
+        cardDiv.className = "card h-100";
+        
+        // Imagem (usa primeira imagem ou placeholder)
+        const imgUrl = anuncio.imagens?.length > 0 ? anuncio.imagens[0] : 
+            'https://via.placeholder.com/300x200?text=Sem+Imagem';
+        
+        const img = document.createElement("img");
+        img.className = "card-img-top";
+        img.src = imgUrl;
+        img.alt = anuncio.titulo || "Anúncio sem título";
+        
+        // Corpo do card
+        const cardBody = document.createElement("div");
+        cardBody.className = "card-body d-flex flex-column";
+        
+        const title = document.createElement("h5");
+        title.className = "card-title";
+        title.textContent = anuncio.titulo || "Anúncio sem título";
+        
+        const price = document.createElement("div");
+        price.className = "price-tag mb-3";
+        price.textContent = formatarPreco(anuncio.preco);
+        
+        // Detalhes específicos
+        const details = document.createElement("div");
+        details.className = "card-text mb-3";
+        
+        if (tipo === 'imovel') {
+            details.innerHTML = `
+                <p><i class="fas fa-map-marker-alt"></i> ${anuncio.bairro || 'Bairro não informado'}</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-secondary"><i class="fas fa-bed"></i> ${anuncio.quartos || 0} quartos</span>
+                    <span class="badge bg-secondary"><i class="fas fa-bath"></i> ${anuncio.banheiros || 0} banheiros</span>
+                    <span class="badge bg-secondary"><i class="fas fa-car"></i> ${anuncio.garagem || 0} vagas</span>
+                    ${anuncio.area ? `<span class="badge bg-secondary"><i class="fas fa-ruler-combined"></i> ${anuncio.area}m²</span>` : ''}
+                </div>
+            `;
+        } else {
+            details.innerHTML = `
+                <p><i class="fas fa-car"></i> ${anuncio.marca || 'Marca não informada'} ${anuncio.modelo || ''}</p>
+                <div class="d-flex flex-wrap gap-2">
+                    ${anuncio.ano ? `<span class="badge bg-secondary"><i class="fas fa-calendar-alt"></i> ${anuncio.ano}</span>` : ''}
+                    ${anuncio.km ? `<span class="badge bg-secondary"><i class="fas fa-tachometer-alt"></i> ${anuncio.km.toLocaleString()} km</span>` : ''}
+                    ${anuncio.combustivel ? `<span class="badge bg-secondary"><i class="fas fa-gas-pump"></i> ${formatarCombustivel(anuncio.combustivel)}</span>` : ''}
+                </div>
+            `;
+        }
+        
+        // Botão de detalhes
+        const btn = document.createElement("a");
+        btn.className = "btn btn-primary mt-auto";
+        btn.href = `detalhes.html?id=${anuncio.id}&tipo=${tipo}`;
+        btn.textContent = "Ver Detalhes";
+        
+        // Montar o card
+        cardBody.appendChild(title);
+        cardBody.appendChild(price);
+        cardBody.appendChild(details);
+        cardBody.appendChild(btn);
+        
+        cardDiv.appendChild(img);
+        cardDiv.appendChild(cardBody);
+        colDiv.appendChild(cardDiv);
+        
+        return colDiv;
+    }
+
+    // Função para mostrar filtros ativos
+    function mostrarFiltrosAtivos(params, tipo) {
+        const container = document.getElementById("filtros-tags");
+        container.innerHTML = "";
+        
+        let temFiltros = false;
+        
+        for (const [key, value] of Object.entries(params)) {
+            if (value !== undefined && value !== "" && value !== 0 && value !== false) {
+                temFiltros = true;
+                
+                const tag = document.createElement("span");
+                tag.className = "filtro-tag";
+                
+                let label = key;
+                let displayValue = value;
+                
+                switch(key) {
+                    case 'bairro': label = 'Bairro'; break;
+                    case 'tipo': label = tipo === 'imovel' ? 'Tipo Imóvel' : 'Marca'; break;
+                    case 'precoMin': label = 'Preço Mínimo'; displayValue = formatarPreco(value); break;
+                    case 'precoMax': label = 'Preço Máximo'; displayValue = formatarPreco(value); break;
+                    case 'quartos': label = 'Quartos'; displayValue = value + '+'; break;
+                    case 'banheiros': label = 'Banheiros'; displayValue = value + '+'; break;
+                    case 'garagem': label = 'Vagas'; displayValue = value + '+'; break;
+                    case 'areaMin': label = 'Área Mínima'; displayValue = value + 'm²'; break;
+                    case 'aceitaAnimais': label = 'Aceita Animais'; displayValue = ''; break;
+                    case 'mobiliado': label = 'Mobiliado'; displayValue = ''; break;
+                    case 'modelo': label = 'Modelo'; break;
+                    case 'ano': label = 'Ano'; break;
+                    case 'negociacao': label = 'Negociação'; displayValue = value === 'venda' ? 'Venda' : 'Aluguel'; break;
+                    case 'kmMax': label = 'KM Máxima'; displayValue = value.toLocaleString() + ' km'; break;
+                    case 'combustivel': label = 'Combustível'; displayValue = formatarCombustivel(value); break;
+                    case 'cambio': label = 'Câmbio'; displayValue = value === 'automatico' ? 'Automático' : 'Manual'; break;
+                }
+                
+                tag.innerHTML = `<strong>${label}:</strong> ${displayValue}`;
+                container.appendChild(tag);
+            }
+        }
+        
+        document.getElementById("filtros-ativos").style.display = temFiltros ? "block" : "none";
+    }
+
+    // Função para exibir resultados
+    function exibirResultados(resultados, tipo) {
+        const container = document.getElementById("resultados-container");
+        const noResultsDiv = document.getElementById("no-results");
+        
+        container.innerHTML = "";
+        noResultsDiv.style.display = "none";
+        
+        if (resultados.length === 0) {
+            noResultsDiv.style.display = "block";
+            return;
+        }
+        
+        resultados.forEach(anuncio => {
+            container.appendChild(criarCardAnuncio(anuncio, tipo));
+        });
+        
+        document.querySelector("h2").innerHTML = `Resultados da Pesquisa <span class="badge bg-primary">${resultados.length}</span>`;
+    }
+
+    // Função principal para filtrar e ordenar
+    function filtrarEOrdenar() {
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderBy = urlParams.get('search-order') || 'recentes';
+            const tipoAnuncio = urlParams.get('tipo-anuncio');
             
-            // Resetar exibição
-            resultadosContainer.innerHTML = "";
-            noResultsDiv.style.display = "none";
-            carregandoDiv.style.display = "block";
-            
-            // Obter dados com tratamento seguro
             const resultados = getLocalStorageSafe('searchResults') || [];
             const params = getLocalStorageSafe('searchParams') || {};
             
-            // Verificar se temos parâmetros válidos
-            if (params.tipoAnuncio) {
-                mostrarFiltrosAtivos(params, params.tipoAnuncio);
-                
-                if (resultados.length > 0) {
-                    resultados.forEach(anuncio => {
-                        resultadosContainer.appendChild(criarCardAnuncio(anuncio, params.tipoAnuncio));
-                    });
-                    document.querySelector("h2").innerHTML = `Resultados da Pesquisa <span class="badge bg-primary">${resultados.length}</span>`;
-                } else {
-                    noResultsDiv.style.display = "block";
-                }
-            } else {
-                noResultsDiv.style.display = "block";
-                noResultsDiv.querySelector("p").textContent = "Nenhum critério de pesquisa foi definido.";
-            }
+            const filtrosAtuais = {
+                ...params,
+                tipoAnuncio: tipoAnuncio || params.tipoAnuncio,
+                orderBy: orderBy
+            };
             
-            carregandoDiv.style.display = "none";
+            let resultadosFiltrados = aplicarFiltros(resultados, filtrosAtuais);
+            resultadosFiltrados = ordenarResultados(resultadosFiltrados, orderBy);
+            
+            mostrarFiltrosAtivos(filtrosAtuais, filtrosAtuais.tipoAnuncio);
+            exibirResultados(resultadosFiltrados, filtrosAtuais.tipoAnuncio);
+            
+        } catch (error) {
+            console.error("Erro no processamento de filtros:", error);
+            showAlert("Ocorreu um erro ao filtrar os resultados. Mostrando todos os resultados disponíveis.", "error");
+            
+            const resultados = getLocalStorageSafe('searchResults') || [];
+            const params = getLocalStorageSafe('searchParams') || {};
+            exibirResultados(resultados, params.tipoAnuncio);
         }
+    }
 
-        // Iniciar o carregamento
-        setTimeout(loadAndDisplayResults, 100);
+    // Inicialização quando o DOM estiver carregado
+    document.addEventListener('DOMContentLoaded', function() {
+        const carregandoDiv = document.querySelector(".carregando");
+        carregandoDiv.style.display = "block";
+        
+        setTimeout(() => {
+            filtrarEOrdenar();
+            carregandoDiv.style.display = "none";
+            
+            // Adicionar listeners para mudanças nos filtros
+            document.querySelectorAll('input[name="search-order"], input[name="tipo-anuncio"]').forEach(control => {
+                control.addEventListener('change', function() {
+                    carregandoDiv.style.display = "block";
+                    setTimeout(() => {
+                        filtrarEOrdenar();
+                        carregandoDiv.style.display = "none";
+                    }, 100);
+                });
+            });
+        }, 100);
     });
 </script>
 </body>
