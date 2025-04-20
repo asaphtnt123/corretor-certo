@@ -413,98 +413,57 @@
             return map[combustivel] || combustivel;
         }
         
-       // Substitua esta parte no final do seu script
+  // Substitua todo o código de carregamento por esta versão robusta
 document.addEventListener('DOMContentLoaded', function() {
-    // Verificar se há resultados no localStorage (com tratamento de erro)
-    try {
-        const savedResults = localStorage.getItem('searchResults');
-        const searchParams = localStorage.getItem('searchParams');
-        
-        if (savedResults && searchParams) {
-            const resultados = JSON.parse(savedResults);
-            const params = JSON.parse(searchParams);
-            
-            if (resultados && params) {
-                mostrarFiltrosAtivos(params, params.tipoAnuncio);
-                exibirResultados(resultados, params.tipoAnuncio);
-                return; // Sai da função se tudo estiver ok
-            }
-        }
-    } catch (error) {
-        console.error("Erro ao carregar resultados salvos:", error);
-        // Não mostra erro para o usuário, apenas continua para o fluxo alternativo
-    }
-    
-    // Se não houver resultados válidos ou ocorrer erro
-    document.getElementById("no-results").style.display = "block";
-    document.getElementById("filtros-ativos").style.display = "none";
-});
-
-        document.addEventListener('DOMContentLoaded', function() {
-    // Elementos da página
-    const resultadosContainer = document.getElementById("resultados-container");
-    const noResultsDiv = document.getElementById("no-results");
-    const filtrosAtivosDiv = document.getElementById("filtros-ativos");
-    const filtrosTagsDiv = document.getElementById("filtros-tags");
-    const carregandoDiv = document.querySelector(".carregando");
-    
-    // Função para carregar resultados
-    async function carregarResultados() {
+    // Função segura para ler do localStorage
+    function getLocalStorageSafe(key) {
         try {
-            carregandoDiv.style.display = "block";
-            resultadosContainer.innerHTML = "";
-            noResultsDiv.style.display = "none";
-            filtrosAtivosDiv.style.display = "none";
-            
-            // Tentar obter resultados do localStorage
-            const savedResults = localStorage.getItem('searchResults');
-            const searchParams = localStorage.getItem('searchParams');
-            
-            if (!savedResults || !searchParams) {
-                throw new Error("Nenhum dado de pesquisa encontrado");
-            }
-            
-            // Parse com tratamento de erro
-            const resultados = JSON.parse(savedResults);
-            const params = JSON.parse(searchParams);
-            
-            if (!Array.isArray(resultados) || !params || !params.tipoAnuncio) {
-                throw new Error("Dados de pesquisa inválidos");
-            }
-            
-            // Exibir resultados
+            const item = localStorage.getItem(key);
+            return item && item !== "undefined" ? JSON.parse(item) : null;
+        } catch (e) {
+            console.error(`Erro ao ler ${key} do localStorage:`, e);
+            localStorage.removeItem(key); // Limpa dados inválidos
+            return null;
+        }
+    }
+
+    // Carregar e exibir resultados
+    function loadAndDisplayResults() {
+        const resultadosContainer = document.getElementById("resultados-container");
+        const noResultsDiv = document.getElementById("no-results");
+        const filtrosAtivosDiv = document.getElementById("filtros-ativos");
+        const carregandoDiv = document.querySelector(".carregando");
+        
+        // Resetar exibição
+        resultadosContainer.innerHTML = "";
+        noResultsDiv.style.display = "none";
+        filtrosAtivosDiv.style.display = "none";
+        carregandoDiv.style.display = "block";
+        
+        // Obter dados com tratamento seguro
+        const resultados = getLocalStorageSafe('searchResults') || [];
+        const params = getLocalStorageSafe('searchParams') || {};
+        
+        // Verificar se temos parâmetros válidos
+        if (params.tipoAnuncio) {
             mostrarFiltrosAtivos(params, params.tipoAnuncio);
             
             if (resultados.length > 0) {
                 exibirResultados(resultados, params.tipoAnuncio);
-                document.querySelector("h2").innerHTML += ` <span class="badge bg-primary">${resultados.length} resultados</span>`;
+                document.querySelector("h2").innerHTML = `Resultados da Pesquisa <span class="badge bg-primary">${resultados.length}</span>`;
             } else {
                 noResultsDiv.style.display = "block";
             }
-            
-        } catch (error) {
-            console.error("Erro ao carregar resultados:", error);
+        } else {
             noResultsDiv.style.display = "block";
-            filtrosAtivosDiv.style.display = "none";
-            
-            // Mensagem mais específica para o usuário
-            const alertContainer = document.getElementById("alert-container");
-            alertContainer.innerHTML = `
-                <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                    <strong>Atenção!</strong> Não foi possível carregar os resultados da pesquisa.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            `;
-        } finally {
-            carregandoDiv.style.display = "none";
+            noResultsDiv.querySelector("p").textContent = "Nenhum critério de pesquisa foi definido.";
         }
+        
+        carregandoDiv.style.display = "none";
     }
-    
-    // Iniciar o carregamento
-    carregandoDiv.style.display = "block";
-    setTimeout(() => {
-        carregarResultados();
-    }, 100); // Pequeno delay para garantir que o DOM está pronto
+
+    // Adicione um pequeno delay para garantir que tudo está carregado
+    setTimeout(loadAndDisplayResults, 100);
 });
     </script>
 </body>
