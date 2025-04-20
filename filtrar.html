@@ -364,73 +364,198 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- JavaScript para o formulário -->
-    <script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-        // Modifique a função que salva os resultados
-function salvarERedirecionar(resultados, filtros) {
-    try {
-        // Garante que os dados são válidos antes de salvar
-        if (!resultados) resultados = [];
-        if (!filtros) filtros = {};
-        
-        localStorage.setItem('searchResults', JSON.stringify(resultados));
-        localStorage.setItem('searchParams', JSON.stringify(filtros));
-        
-        // Redireciona com timeout para garantir que o localStorage foi atualizado
-        setTimeout(() => {
-            window.location.href = 'resultados-pesquisa.html';
-        }, 50);
-    } catch (error) {
-        console.error("Erro ao salvar pesquisa:", error);
-        alert("Ocorreu um erro ao processar sua pesquisa. Por favor, tente novamente.");
+<script>
+    // Configuração do Firebase
+  const firebaseConfig = {
+  apiKey: "AIzaSyCNr5JoKsWJVeUYAaVDqmPznZo100v0uvg",
+  authDomain: "corretorcerto-76933.firebaseapp.com",
+  databaseURL: "https://corretorcerto-76933-default-rtdb.firebaseio.com",
+  projectId: "corretorcerto-76933",
+  storageBucket: "corretorcerto-76933.firebasestorage.app",
+  messagingSenderId: "357149829474",
+  appId: "1:357149829474:web:324b2005d82eabbce5e43b"
+};
+
+    // Inicializar Firebase
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
     }
-}
-        document.addEventListener('DOMContentLoaded', function() {
-            // Alternar entre campos de imóvel e automóvel
-            const tipoAnuncioRadios = document.querySelectorAll('input[name="tipo-anuncio"]');
-            const imovelFields = document.getElementById('imovel-search-fields');
-            const automovelFields = document.getElementById('automovel-search-fields');
+    const db = firebase.firestore();
+
+    // Funções auxiliares
+    function formatarPreco(preco) {
+        return preco?.toLocaleString('pt-BR', { 
+            style: 'currency', 
+            currency: 'BRL' 
+        }) || 'Preço não informado';
+    }
+
+    function formatarCombustivel(combustivel) {
+        const map = {
+            'gasolina': 'Gasolina',
+            'etanol': 'Etanol',
+            'flex': 'Flex',
+            'diesel': 'Diesel',
+            'eletrico': 'Elétrico'
+        };
+        return map[combustivel] || combustivel;
+    }
+
+    function showAlert(message, type = 'success') {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type === 'error' ? 'danger' : 'success'} alert-dismissible fade show`;
+        alertDiv.role = 'alert';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        const container = document.getElementById('alert-container') || document.body;
+        container.prepend(alertDiv);
+        
+        setTimeout(() => {
+            alertDiv.classList.remove('show');
+            setTimeout(() => alertDiv.remove(), 150);
+        }, 5000);
+    }
+
+    // Funções de busca no Firestore
+    async function buscarImoveis(filtros) {
+        try {
+            let query = db.collection("imoveis").where("status", "==", "ativo");
             
-            function toggleSearchFields() {
-                const selectedValue = document.querySelector('input[name="tipo-anuncio"]:checked').value;
-                
-                if (selectedValue === 'imovel') {
-                    imovelFields.style.display = 'block';
-                    automovelFields.style.display = 'none';
-                } else if (selectedValue === 'automovel') {
-                    imovelFields.style.display = 'none';
-                    automovelFields.style.display = 'block';
-                } else {
-                    imovelFields.style.display = 'block';
-                    automovelFields.style.display = 'block';
-                }
+            // Aplicar filtros
+            if (filtros.cidade) query = query.where("cidade", "==", filtros.cidade);
+            if (filtros.bairro) query = query.where("bairro", "==", filtros.bairro);
+            if (filtros.tipo) query = query.where("tipo", "==", filtros.tipo);
+            if (filtros.negociacao) query = query.where("negociacao", "==", filtros.negociacao);
+            if (filtros.precoMin) query = query.where("preco", ">=", Number(filtros.precoMin));
+            if (filtros.precoMax) query = query.where("preco", "<=", Number(filtros.precoMax));
+            if (filtros.quartos) query = query.where("quartos", ">=", Number(filtros.quartos));
+            if (filtros.banheiros) query = query.where("banheiros", ">=", Number(filtros.banheiros));
+            if (filtros.garagem) query = query.where("garagem", ">=", Number(filtros.garagem));
+            if (filtros.areaMin) query = query.where("area", ">=", Number(filtros.areaMin));
+            if (filtros.aceitaAnimais) query = query.where("aceitaAnimais", "==", true);
+            if (filtros.mobiliado) query = query.where("mobiliado", "==", true);
+
+            const querySnapshot = await query.get();
+            const resultados = [];
+
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                resultados.push({ 
+                    id: doc.id,
+                    ...data,
+                    data: data.data?.toDate ? data.data.toDate() : data.data
+                });
+            });
+
+            return resultados;
+        } catch (error) {
+            console.error("Erro ao buscar imóveis:", error);
+            throw error;
+        }
+    }
+
+    async function buscarCarros(filtros) {
+        try {
+            let query = db.collection("automoveis").where("status", "==", "ativo");
+            
+            // Aplicar filtros
+            if (filtros.marca) query = query.where("marca", "==", filtros.marca);
+            if (filtros.modelo) query = query.where("modelo", "==", filtros.modelo);
+            if (filtros.ano) query = query.where("ano", "==", Number(filtros.ano));
+            if (filtros.precoMin) query = query.where("preco", ">=", Number(filtros.precoMin));
+            if (filtros.precoMax) query = query.where("preco", "<=", Number(filtros.precoMax));
+            if (filtros.kmMax) query = query.where("km", "<=", Number(filtros.kmMax));
+            if (filtros.combustivel) query = query.where("combustivel", "==", filtros.combustivel);
+            if (filtros.cambio) query = query.where("cambio", "==", filtros.cambio);
+
+            const querySnapshot = await query.get();
+            const resultados = [];
+
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                resultados.push({ 
+                    id: doc.id,
+                    ...data,
+                    data: data.data?.toDate ? data.data.toDate() : data.data
+                });
+            });
+
+            return resultados;
+        } catch (error) {
+            console.error("Erro ao buscar automóveis:", error);
+            throw error;
+        }
+    }
+
+    // Função para salvar e redirecionar
+    async function salvarERedirecionar(resultados, filtros) {
+        try {
+            if (!resultados) resultados = [];
+            if (!filtros) filtros = {};
+            
+            localStorage.setItem('searchResults', JSON.stringify(resultados));
+            localStorage.setItem('searchParams', JSON.stringify(filtros));
+            
+            setTimeout(() => {
+                window.location.href = 'resultados-pesquisa.html';
+            }, 50);
+        } catch (error) {
+            console.error("Erro ao salvar pesquisa:", error);
+            showAlert("Ocorreu um erro ao processar sua pesquisa. Por favor, tente novamente.", "error");
+        }
+    }
+
+    // Evento quando o DOM estiver carregado
+    document.addEventListener('DOMContentLoaded', function() {
+        // Alternar entre campos de imóvel e automóvel
+        const tipoAnuncioRadios = document.querySelectorAll('input[name="tipo-anuncio"]');
+        const imovelFields = document.getElementById('imovel-search-fields');
+        const automovelFields = document.getElementById('automovel-search-fields');
+        
+        function toggleSearchFields() {
+            const selectedValue = document.querySelector('input[name="tipo-anuncio"]:checked').value;
+            
+            if (selectedValue === 'imovel') {
+                imovelFields.style.display = 'block';
+                automovelFields.style.display = 'none';
+            } else if (selectedValue === 'automovel') {
+                imovelFields.style.display = 'none';
+                automovelFields.style.display = 'block';
+            } else {
+                imovelFields.style.display = 'block';
+                automovelFields.style.display = 'block';
             }
+        }
+        
+        tipoAnuncioRadios.forEach(radio => {
+            radio.addEventListener('change', toggleSearchFields);
+        });
+        
+        // Mostrar/ocultar campos avançados de preço
+        document.getElementById('toggle-price-advanced')?.addEventListener('click', function() {
+            const advancedFields = document.getElementById('price-advanced-fields');
+            if (advancedFields.style.display === 'none') {
+                advancedFields.style.display = 'block';
+                this.innerHTML = '<i class="fas fa-sliders-h"></i> Simples';
+            } else {
+                advancedFields.style.display = 'none';
+                this.innerHTML = '<i class="fas fa-sliders-h"></i> Avançado';
+            }
+        });
+        
+        // Enviar formulário de pesquisa
+        document.getElementById('advanced-search-form')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            tipoAnuncioRadios.forEach(radio => {
-                radio.addEventListener('change', toggleSearchFields);
-            });
-            
-            // Mostrar/ocultar campos avançados de preço
-            document.getElementById('toggle-price-advanced').addEventListener('click', function() {
-                const advancedFields = document.getElementById('price-advanced-fields');
-                if (advancedFields.style.display === 'none') {
-                    advancedFields.style.display = 'block';
-                    this.innerHTML = '<i class="fas fa-sliders-h"></i> Simples';
-                } else {
-                    advancedFields.style.display = 'none';
-                    this.innerHTML = '<i class="fas fa-sliders-h"></i> Avançado';
-                }
-            });
-            
-            // Enviar formulário de pesquisa
-            document.getElementById('advanced-search-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                performSearch();
-            });
-            
-            // Função para realizar a pesquisa
-            function performSearch() {
-                // Obter todos os valores do formulário
+            try {
+                document.querySelector(".carregando")?.style?.display = "block";
+                
                 const searchParams = {
                     tipoAnuncio: document.querySelector('input[name="tipo-anuncio"]:checked').value,
                     palavrasChave: document.getElementById('search-palavras-chave').value,
@@ -471,42 +596,23 @@ function salvarERedirecionar(resultados, filtros) {
                     airbag: document.getElementById('search-airbag').checked
                 };
                 
-                console.log('Parâmetros de pesquisa:', searchParams);
+                let resultados;
+                if (searchParams.tipoAnuncio === 'imovel') {
+                    resultados = await buscarImoveis(searchParams);
+                } else if (searchParams.tipoAnuncio === 'automovel') {
+                    resultados = await buscarCarros(searchParams);
+                }
                 
-                // Aqui você faria a chamada para sua API/backend com os parâmetros de pesquisa
-                // fetch('/api/anuncios', {
-                //     method: 'POST',
-                //     headers: {
-                //         'Content-Type': 'application/json',
-                //     },
-                //     body: JSON.stringify(searchParams)
-                // })
-                // .then(response => response.json())
-                // .then(data => {
-                //     // Processar resultados e exibir
-                //     console.log('Resultados:', data);
-                //     // Redirecionar para página de resultados ou exibir na mesma página
-                // })
-                // .catch(error => {
-                //     console.error('Erro na pesquisa:', error);
-                // });
+                await salvarERedirecionar(resultados, searchParams);
                 
-                // Por enquanto, apenas redirecionamos para uma página de resultados fictícia
-                window.location.href = 'resultados-pesquisa.html';
+            } catch (error) {
+                console.error("Erro na pesquisa:", error);
+                showAlert("Ocorreu um erro ao realizar a pesquisa. Tente novamente.", "error");
+            } finally {
+                document.querySelector(".carregando")?.style?.display = "none";
             }
         });
-
-        // Modifique a parte onde você salva os resultados
-function salvarResultadosERedirecionar(resultados, filtros) {
-    try {
-        localStorage.setItem('searchResults', JSON.stringify(resultados || []));
-        localStorage.setItem('searchParams', JSON.stringify(filtros || {}));
-        window.location.href = 'resultados-pesquisa.html';
-    } catch (error) {
-        console.error("Erro ao salvar resultados:", error);
-        showAlert("Ocorreu um erro ao processar a pesquisa. Tente novamente.", "error");
-    }
-}
-    </script>
+    });
+</script>
 </body>
 </html>
