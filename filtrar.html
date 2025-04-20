@@ -475,6 +475,18 @@
                 window.location.href = 'resultados-pesquisa.html';
             }
         });
+
+        // Modifique a parte onde você salva os resultados
+function salvarResultadosERedirecionar(resultados, filtros) {
+    try {
+        localStorage.setItem('searchResults', JSON.stringify(resultados || []));
+        localStorage.setItem('searchParams', JSON.stringify(filtros || {}));
+        window.location.href = 'resultados-pesquisa.html';
+    } catch (error) {
+        console.error("Erro ao salvar resultados:", error);
+        showAlert("Ocorreu um erro ao processar a pesquisa. Tente novamente.", "error");
+    }
+}
     </script>
 </body>
 </html>
