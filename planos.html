@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planos de Assinatura | Corretor Certo</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #f8f8f8, #e0e0e0);
+      margin: 0;
+      padding: 40px 20px;
+    }
+
+    .planos-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .plano {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      width: 300px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
+      text-align: center;
+    }
+
+    .plano:hover {
+      transform: translateY(-5px);
+    }
+
+    .plano h3 {
+      font-size: 24px;
+      margin-bottom: 15px;
+    }
+
+    .preco {
+      font-size: 28px;
+      color: #d4af37;
+      margin-bottom: 10px;
+    }
+
+    .beneficios {
+      list-style: none;
+      padding: 0;
+      margin: 20px 0;
+      text-align: left;
+    }
+
+    .beneficios li {
+      margin-bottom: 10px;
+    }
+
+    .btn-assinar {
+      background: linear-gradient(to right, #d4af37, #f1c40f);
+      color: #000;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .btn-assinar:hover {
+      background: linear-gradient(to right, #c49e2c, #e1b500);
+    }
+
+    .premium {
+      border: 3px solid #d4af37;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 style="text-align:center; margin-bottom: 40px;">Escolha seu Plano</h1>
+
+  <div class="planos-container">
+    <!-- Plano Básico -->
+    <div class="plano">
+      <h3>Básico</h3>
+      <div class="preco">R$ 29,90/mês</div>
+      <ul class="beneficios">
+        <li>✔️ Até 5 anúncios ativos</li>
+        <li>❌ Sem destaques gratuitos</li>
+        <li>📞 Suporte via WhatsApp</li>
+      </ul>
+      <button class="btn-assinar">Assinar agora</button>
+    </div>
+
+    <!-- Plano Profissional -->
+    <div class="plano">
+      <h3>Profissional</h3>
+      <div class="preco">R$ 59,90/mês</div>
+      <ul class="beneficios">
+        <li>✔️ Até 15 anúncios ativos</li>
+        <li>🌟 1 destaque por mês</li>
+        <li>👤 Logo no perfil + suporte rápido</li>
+      </ul>
+      <button class="btn-assinar">Assinar agora</button>
+    </div>
+
+    <!-- Plano Premium -->
+    <div class="plano premium">
+      <h3>Premium</h3>
+      <div class="preco">R$ 99,90/mês</div>
+      <ul class="beneficios">
+        <li>✔️ Anúncios ilimitados</li>
+        <li>🔥 3 destaques por mês</li>
+        <li>🚀 Destaque no carrossel principal</li>
+      </ul>
+      <button class="btn-assinar">Assinar agora</button>
+    </div>
+  </div>
+
+</body>
+</html>
