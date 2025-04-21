@@ -22,7 +22,7 @@ exports.handler = async (event) => {
     }
 
     const planos = {
-      basico: { preco: 2990, nome: "Plano Básico" },
+      basico: { preco: 1090, nome: "Plano Básico" },
       profissional: { preco: 5990, nome: "Plano Profissional" },
       premium: { preco: 9990, nome: "Plano Premium" }
     };
