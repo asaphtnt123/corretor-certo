@@ -834,6 +834,101 @@ function criarQueryAutomoveis(negociacao, localizacao, faixaPreco) {
     return q;
 }
 
+
+
+// ============== FUNÇÕES DE BUSCA ==============
+async function buscarCarros(precoMin, precoMax, marca, modelo, ano, cidade = "") {
+    try {
+        const carrosRef = collection(db, "automoveis");
+        let q = query(carrosRef);
+
+        if (marca) q = query(q, where("marca", "==", marca));
+        if (modelo) q = query(q, where("modelo", "==", modelo));
+        if (ano) q = query(q, where("ano", "==", parseInt(ano)));
+        if (precoMin) q = query(q, where("preco", ">=", precoMin));
+        if (precoMax) q = query(q, where("preco", "<=", precoMax));
+        if (cidade) q = query(q, where("cidade", "==", cidade));
+
+        const querySnapshot = await getDocs(q);
+        const resultadosContainer = document.getElementById("resultados");
+        resultadosContainer.innerHTML = querySnapshot.empty 
+            ? "<p>Nenhum carro encontrado.</p>" 
+            : "<h3>Resultados da Busca:</h3>";
+
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            data.id = doc.id;
+            resultadosContainer.appendChild(criarCardComEvento(data, true));
+        });
+
+    } catch (error) {
+        console.error("Erro ao buscar carros:", error);
+        document.getElementById("resultados").innerHTML = `
+            <div class="error-message">
+                <p>Erro ao buscar carros.</p>
+                <p>${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+async function buscarImoveis(filtros = {}) {
+    try {
+        // Limpar filtros vazios ou undefined
+        Object.keys(filtros).forEach(key => {
+            if (filtros[key] === undefined || filtros[key] === "") {
+                delete filtros[key];
+            }
+        });
+
+        const imoveisRef = collection(db, "imoveis");
+        let q = query(imoveisRef);
+        
+        // Aplicar filtros dinamicamente
+        for (const [key, value] of Object.entries(filtros)) {
+            if (value !== undefined && value !== "") {
+                if (key === "precoMin" || key === "precoMax" || 
+                    key === "quartos" || key === "banheiros" || 
+                    key === "garagem" || key === "areaMin") {
+                    // Para campos numéricos
+                    const op = key === "precoMin" ? ">=" : 
+                              key === "precoMax" ? "<=" : ">=";
+                    q = query(q, where(
+                        key === "precoMin" || key === "precoMax" ? "preco" : key,
+                        op, 
+                        value
+                    ));
+                } else {
+                    // Para campos textuais/booleanos
+                    q = query(q, where(key, "==", value));
+                }
+            }
+        }
+        
+        const querySnapshot = await getDocs(q);
+        const resultadosContainer = document.getElementById("resultados");
+        
+        resultadosContainer.innerHTML = querySnapshot.empty 
+            ? "<p>Nenhum imóvel encontrado com os filtros selecionados.</p>" 
+            : "<h3>Resultados da Busca:</h3>";
+        
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            data.id = doc.id;
+            resultadosContainer.appendChild(criarCardImovel(data));
+        });
+        
+    } catch (error) {
+        console.error("Erro ao buscar imóveis:", error);
+        document.getElementById("resultados").innerHTML = `
+            <div class="alert alert-danger">
+                <p>Erro ao buscar imóveis. Por favor, tente novamente.</p>
+                ${error.message ? `<small>${error.message}</small>` : ''}
+            </div>
+        `;
+    }
+}
+
 async function carregarInsightsParaVendedor(userData) {
     const container = document.getElementById('destaqueContainer');
     if (!container) return;
@@ -1031,98 +1126,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-// ============== FUNÇÕES DE BUSCA ==============
-async function buscarCarros(precoMin, precoMax, marca, modelo, ano, cidade = "") {
-    try {
-        const carrosRef = collection(db, "automoveis");
-        let q = query(carrosRef);
 
-        if (marca) q = query(q, where("marca", "==", marca));
-        if (modelo) q = query(q, where("modelo", "==", modelo));
-        if (ano) q = query(q, where("ano", "==", parseInt(ano)));
-        if (precoMin) q = query(q, where("preco", ">=", precoMin));
-        if (precoMax) q = query(q, where("preco", "<=", precoMax));
-        if (cidade) q = query(q, where("cidade", "==", cidade));
-
-        const querySnapshot = await getDocs(q);
-        const resultadosContainer = document.getElementById("resultados");
-        resultadosContainer.innerHTML = querySnapshot.empty 
-            ? "<p>Nenhum carro encontrado.</p>" 
-            : "<h3>Resultados da Busca:</h3>";
-
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            data.id = doc.id;
-            resultadosContainer.appendChild(criarCardComEvento(data, true));
-        });
-
-    } catch (error) {
-        console.error("Erro ao buscar carros:", error);
-        document.getElementById("resultados").innerHTML = `
-            <div class="error-message">
-                <p>Erro ao buscar carros.</p>
-                <p>${error.message}</p>
-            </div>
-        `;
-    }
-}
-
-async function buscarImoveis(filtros = {}) {
-    try {
-        // Limpar filtros vazios ou undefined
-        Object.keys(filtros).forEach(key => {
-            if (filtros[key] === undefined || filtros[key] === "") {
-                delete filtros[key];
-            }
-        });
-
-        const imoveisRef = collection(db, "imoveis");
-        let q = query(imoveisRef);
-        
-        // Aplicar filtros dinamicamente
-        for (const [key, value] of Object.entries(filtros)) {
-            if (value !== undefined && value !== "") {
-                if (key === "precoMin" || key === "precoMax" || 
-                    key === "quartos" || key === "banheiros" || 
-                    key === "garagem" || key === "areaMin") {
-                    // Para campos numéricos
-                    const op = key === "precoMin" ? ">=" : 
-                              key === "precoMax" ? "<=" : ">=";
-                    q = query(q, where(
-                        key === "precoMin" || key === "precoMax" ? "preco" : key,
-                        op, 
-                        value
-                    ));
-                } else {
-                    // Para campos textuais/booleanos
-                    q = query(q, where(key, "==", value));
-                }
-            }
-        }
-        
-        const querySnapshot = await getDocs(q);
-        const resultadosContainer = document.getElementById("resultados");
-        
-        resultadosContainer.innerHTML = querySnapshot.empty 
-            ? "<p>Nenhum imóvel encontrado com os filtros selecionados.</p>" 
-            : "<h3>Resultados da Busca:</h3>";
-        
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            data.id = doc.id;
-            resultadosContainer.appendChild(criarCardImovel(data));
-        });
-        
-    } catch (error) {
-        console.error("Erro ao buscar imóveis:", error);
-        document.getElementById("resultados").innerHTML = `
-            <div class="alert alert-danger">
-                <p>Erro ao buscar imóveis. Por favor, tente novamente.</p>
-                ${error.message ? `<small>${error.message}</small>` : ''}
-            </div>
-        `;
-    }
-}
 
 // Event listener do formulário de pesquisa - deve vir DEPOIS das definições das funções
 document.getElementById("form-pesquisa")?.addEventListener("submit", function(e) {
