@@ -6,7 +6,9 @@ import {
     addDoc,
     query,
     where,
-    getDocs
+    getDocs,
+    deleteDoc,
+    updateDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { 
     getStorage, 
@@ -478,6 +480,10 @@ form.addEventListener('submit', async function(e) {
         alert('Você precisa estar logado para criar anúncio');
         return;
     }
+const user = auth.currentUser;
+if (user) {
+    verificarAnunciosExpirados(user.uid);
+}
 
     // Verifica limite de anúncios ativos
 const totalAtivos = await contarAnunciosAtivos(user.uid);
@@ -669,4 +675,25 @@ async function contarAnunciosAtivos(uid) {
     }
 
     return total;
+}
+async function verificarAnunciosExpirados(uid) {
+    const colecoes = ['imoveis', 'automoveis'];
+
+    for (const colecao of colecoes) {
+        const q = query(collection(db, colecao), where("userId", "==", uid), where("status", "==", "ativo"));
+        const snapshot = await getDocs(q);
+
+        snapshot.forEach(async (docItem) => {
+            const dataAnuncio = docItem.data().data?.toDate?.() || docItem.data().data;
+            const agora = new Date();
+
+            const diasAtivo = Math.floor((agora - new Date(dataAnuncio)) / (1000 * 60 * 60 * 24));
+            if (diasAtivo > 30) {
+                // Mudar status para inativo OU deletar
+                await deleteDoc(doc(db, colecao, docItem.id));
+
+                console.log(`Anúncio ${docItem.id} do tipo ${colecao} foi inativado após ${diasAtivo} dias.`);
+            }
+        });
+    }
 }
