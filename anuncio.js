@@ -475,6 +475,24 @@ form.addEventListener('submit', async function(e) {
         return;
     }
 
+    // Verifica limite de anúncios ativos
+const totalAtivos = await contarAnunciosAtivos(user.uid);
+if (totalAtivos >= 2) {
+    // Usuário já tem 2 ou mais anúncios
+    const desejaPlano = confirm("Você atingiu o limite de 2 anúncios ativos.\nDeseja adquirir o Plano Premium ou pagar por anúncio avulso?");
+    
+    if (desejaPlano) {
+        // Redirecionar para página de planos ou pagamento
+        window.location.href = "planos.html"; // ajuste conforme sua página
+    }
+
+    // Impede o envio do formulário
+    loadingScreen.style.display = 'none';
+    loadingAnimation.stop();
+    submitBtn.disabled = false;
+    return;
+}
+
     // Configuração do loading
     const loadingScreen = document.getElementById('loading-screen');
     const loadingText = document.getElementById('loading-text');
@@ -628,4 +646,19 @@ async function uploadImages(files, folder, userId) {
     }
     
     return urls;
+}
+
+
+// Função que conta os anúncios ativos do usuário
+async function contarAnunciosAtivos(uid) {
+    const colecoes = ['imoveis', 'automoveis'];
+    let total = 0;
+
+    for (const colecao of colecoes) {
+        const q = query(collection(db, colecao), where("userId", "==", uid), where("status", "==", "ativo"));
+        const snapshot = await getDocs(q);
+        total += snapshot.size;
+    }
+
+    return total;
 }
