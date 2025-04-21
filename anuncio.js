@@ -482,13 +482,17 @@ form.addEventListener('submit', async function(e) {
     // Verifica limite de anúncios ativos
 const totalAtivos = await contarAnunciosAtivos(user.uid);
 if (totalAtivos >= 2) {
-    // Usuário já tem 2 ou mais anúncios
-    const desejaPlano = confirm("Você atingiu o limite de 2 anúncios ativos.\nDeseja adquirir o Plano Premium ou pagar por anúncio avulso?");
-    
-    if (desejaPlano) {
-        // Redirecionar para página de planos ou pagamento
-        window.location.href = "planos.html"; // ajuste conforme sua página
-    }
+   const limiteModal = document.getElementById('limiteModal');
+limiteModal.style.display = 'flex';
+
+document.getElementById('btnIrParaPlanos').onclick = () => {
+    window.location.href = 'planos.html';
+};
+
+document.getElementById('btnFecharModal').onclick = () => {
+    limiteModal.style.display = 'none';
+};
+
 
     // Impede o envio do formulário
     loadingScreen.style.display = 'none';
