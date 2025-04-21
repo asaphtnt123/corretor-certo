@@ -34,6 +34,9 @@
         </div>
     </nav>
 </header>
+
+
+    
     <!-- Main Content -->
     <main class="container my-5">
         <div class="row justify-content-center">
@@ -638,6 +641,18 @@ document.querySelectorAll('input[name="negociacao"]').forEach(radio => {
     <p class="text-white mt-3" id="loading-text">Salvando seu anúncio...</p>
 </div>
 
-    
+    <!-- Modal de Limite de Anúncios -->
+<div id="limiteModal" class="modal-limite">
+  <div class="modal-content-limite">
+    <h2>Limite de Anúncios Atingido</h2>
+    <p>Você já possui <strong>2 anúncios ativos</strong> em sua conta.</p>
+    <p>Para continuar anunciando, adquira o <strong>Plano Premium</strong> ou pague por anúncio avulso.</p>
+    <div class="modal-buttons">
+      <button id="btnIrParaPlanos" class="btn-luxo">Ver Planos</button>
+      <button id="btnFecharModal" class="btn-cancelar">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
