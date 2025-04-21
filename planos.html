@@ -394,10 +394,61 @@
         justify-content: center;
     }
 }
+
+    /* Estilos para o header da página de planos */
+.header-plano {
+    text-align: center;
+    padding: 3rem 0 2rem;
+    background-color: #f8f9fa;
+    margin-bottom: 2rem;
+}
+
+.logo-plano {
+    max-width: 180px;
+    height: auto;
+    margin-bottom: 1.5rem;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.header-plano h1 {
+    font-size: 2.5rem;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.header-plano p {
+    color: #7f8c8d;
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .header-plano {
+        padding: 2rem 0 1.5rem;
+    }
+    
+    .logo-plano {
+        max-width: 140px;
+    }
+    
+    .header-plano h1 {
+        font-size: 2rem;
+    }
+}
   </style>
 </head>
 <body>
-
+<header class="header-plano">
+    <div class="container">
+        <img src="logo.jpg" alt="Logo Corretor Certo" class="logo-plano">
+        <h1>Escolha seu Plano</h1>
+        <p>Selecione o plano que melhor atende suas necessidades</p>
+    </div>
+</header>
   <h1>Escolha seu Plano</h1>
 
   <div class="planos-container">
@@ -407,7 +458,7 @@
     <div class="preco">R$ 29,90/mês</div>
     <ul class="beneficios">
       <li>📌 Até <strong>5 anúncios ativos</strong></li>
-      <li>🌟 <strong>1 destaque por semana</strong></li>
+      <li>🌟 <strong>1 Destaque por 1 semana</strong></li>
       <li>💬 Suporte via WhatsApp</li>
     </ul>
     <button class="btn-assinar">Assinar agora</button>
@@ -420,7 +471,7 @@
     <div class="preco">R$ 59,90/mês</div>
     <ul class="beneficios">
       <li>📌 Até <strong>15 anúncios ativos</strong></li>
-      <li>🎯 <strong>3 destaques válidos por 2 semanas</strong></li>
+      <li>🎯 <strong>3 Destaques válidos por 2 semanas</strong></li>
       <li>👔 Logo no perfil + suporte prioritário</li>
     </ul>
     <button class="btn-assinar">Assinar agora</button>
@@ -432,7 +483,7 @@
     <div class="preco">R$ 99,90/mês</div>
     <ul class="beneficios">
       <li>📌 <strong>Anúncios ilimitados</strong></li>
-      <li>🔥 <strong>5 destaques com duração de 1 mês</strong></li>
+      <li>🔥 <strong>5 Anuncios em destaque por 2 semanas </strong></li>
       <li>🚀 Destaque no carrossel principal</li>
     </ul>
     <button class="btn-assinar">Assinar agora</button>
