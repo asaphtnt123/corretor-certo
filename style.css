@@ -3855,52 +3855,7 @@ select.form-control {
     font-size: 0.95rem;
 }
 
-/* Tipo de Pesquisa */
-.tipo-pesquisa {
-    display: flex;
-    gap: 1rem;
-    margin-top: 0.5rem;
-}
 
-.tipo-option {
-    flex: 1;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background-color: #f9f9f9;
-}
-
-.tipo-option:hover {
-    border-color: #bdc3c7;
-}
-
-.tipo-option.active {
-    border-color: #3498db;
-    background-color: #e8f4fc;
-    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-}
-
-.tipo-option img {
-    width: 32px;
-    height: 32px;
-    margin-bottom: 0.5rem;
-    object-fit: contain;
-}
-
-.tipo-option span {
-    font-weight: 500;
-    color: #2c3e50;
-}
-
-.tipo-option.active span {
-    color: #3498db;
-}
 
 /* Campos de Formulário */
 .form-row {
@@ -4272,3 +4227,31 @@ select.form-control {
         gap: 0.75rem;
     }
 }
+
+
+/* Estilo do botão flutuante */
+.btn-busca-flutuante {
+    position: fixed;
+    top: 110px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.btn-busca-flutuante:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
