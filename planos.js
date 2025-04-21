@@ -19,7 +19,7 @@ class PaymentSystem {
       basico: {
         id: 'basico',
         nome: 'Plano Básico',
-        preco: 990
+        preco: 1090
       },
       profissional: {
         id: 'profissional',
