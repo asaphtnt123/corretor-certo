@@ -6,8 +6,7 @@
 class PaymentSystem {
   constructor() {
     // Configuração inicial
-    this.stripe = Stripe('SUA_CHAVE_PUBLICA_STRIPE'); // Substitua pela sua chave pública
-    this.planos = {
+const stripe = require('stripe')('pk_test_51RGQ31Ctf0sheJfc7YQ32qSzBdzRIsyLRAzBqf3lEgd5F4Ej5RJr3Kp0ZsgkVVUQxouU9vF4jzC2Okp5bmbG3Ic40042yaPE84');    this.planos = {
       basico: {
         id: 'basico',
         nome: 'Plano Básico',
