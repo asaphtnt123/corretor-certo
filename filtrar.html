@@ -400,19 +400,42 @@
     function salvarERedirecionar(resultados, filtros) { /* ... */ }
 
     // Função principal para carregar e processar dados
-  // Substitua a função carregarEProcessarDados por esta versão atualizada
+ // Substitua a função getUrlParams() por esta versão robusta
+function getUrlParams() {
+    const params = {
+        tipoAnuncio: '',
+        orderBy: 'recentes'
+    };
+
+    try {
+        if (typeof window !== 'undefined' && window.location) {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Garante que tipoAnuncio sempre terá um valor válido
+            params.tipoAnuncio = urlParams.get('tipo-anuncio') || '';
+            params.orderBy = urlParams.get('search-order') || 'recentes';
+            
+            // Adiciona todos os outros parâmetros da URL
+            urlParams.forEach((value, key) => {
+                params[key] = value;
+            });
+        }
+    } catch (error) {
+        console.error("Erro ao obter parâmetros da URL:", error);
+    }
+    
+    return params;
+}
+
+// Atualize a função carregarEProcessarDados para usar esta versão
 async function carregarEProcessarDados() {
     const carregandoDiv = document.querySelector(".carregando");
     try {
         if (carregandoDiv) carregandoDiv.style.display = "block";
         
-        // Obter parâmetros com valores padrão seguros
-        const params = {
-            ...getUrlParams(),
-            tipoAnuncio: getUrlParams().tipoAnuncio || '', // Garante que tipoAnuncio existe
-            orderBy: getUrlParams().orderBy || 'recentes'
-        };
-
+        // Obter parâmetros - agora garantido que sempre retorna um objeto válido
+        const params = getUrlParams();
+        
         // Verifica se estamos na página de resultados
         if (window.location.pathname.includes('resultados-pesquisa.html')) {
             const resultadosSalvos = localStorage.getItem('searchResults');
@@ -423,12 +446,12 @@ async function carregarEProcessarDados() {
                     const resultados = JSON.parse(resultadosSalvos);
                     const filtros = JSON.parse(filtrosSalvos) || {};
                     
-                    // Garante que filtros.tipoAnuncio existe
-                    const tipoAnuncio = filtros.tipoAnuncio || '';
+                    // Garante que tipoAnuncio existe nos filtros
+                    const tipoAnuncio = filtros.tipoAnuncio || params.tipoAnuncio || '';
                     
                     const resultadosProcessados = ordenarResultados(
                         aplicarFiltros(resultados, filtros),
-                        filtros.orderBy || 'recentes'
+                        filtros.orderBy || params.orderBy
                     );
                     
                     exibirResultados(resultadosProcessados, tipoAnuncio);
@@ -444,29 +467,30 @@ async function carregarEProcessarDados() {
         // Busca dados do Firestore com fallbacks seguros
         let resultados = [];
         
-        if (params.tipoAnuncio === 'imovel') {
-            resultados = await buscarImoveis(params);
-        } else if (params.tipoAnuncio === 'automovel') {
-            resultados = await buscarCarros(params);
+        // Garante que params.tipoAnuncio existe
+        const tipoAnuncio = params.tipoAnuncio || '';
+        
+        if (tipoAnuncio === 'imovel') {
+            resultados = await buscarImoveis(params).catch(() => []);
+        } else if (tipoAnuncio === 'automovel') {
+            resultados = await buscarCarros(params).catch(() => []);
         } else {
             // Busca ambos se nenhum tipo específico foi selecionado
             try {
                 const [imoveis, automoveis] = await Promise.all([
-                    buscarImoveis(params),
-                    buscarCarros(params)
+                    buscarImoveis(params).catch(() => []),
+                    buscarCarros(params).catch(() => [])
                 ]);
                 resultados = [...imoveis, ...automoveis];
             } catch (error) {
                 console.error("Erro ao buscar ambos os tipos:", error);
-                // Tenta buscar apenas um tipo se a busca combinada falhar
-                resultados = await buscarImoveis(params).catch(() => []);
-                resultados = resultados.concat(await buscarCarros(params).catch(() => []));
+                resultados = [];
             }
         }
         
         const resultadosOrdenados = ordenarResultados(resultados, params.orderBy);
-        exibirResultados(resultadosOrdenados, params.tipoAnuncio || '');
-        mostrarFiltrosAtivos(params, params.tipoAnuncio || '');
+        exibirResultados(resultadosOrdenados, tipoAnuncio);
+        mostrarFiltrosAtivos(params, tipoAnuncio);
 
     } catch (error) {
         console.error("Erro ao carregar dados:", error);
@@ -480,7 +504,6 @@ async function carregarEProcessarDados() {
         if (carregandoDiv) carregandoDiv.style.display = "none";
     }
 }
-
     // Evento quando o DOM estiver carregado
     document.addEventListener('DOMContentLoaded', function() {
         // Configuração dos campos de pesquisa (manter igual ao código anterior)
