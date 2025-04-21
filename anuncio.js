@@ -480,7 +480,6 @@ form.addEventListener('submit', async function(e) {
         alert('Você precisa estar logado para criar anúncio');
         return;
     }
-const user = auth.currentUser;
 if (user) {
     verificarAnunciosExpirados(user.uid);
 }
