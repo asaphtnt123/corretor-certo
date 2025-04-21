@@ -1,16 +1,22 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Planos de Assinatura | Corretor Certo</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to bottom, #f8f8f8, #e0e0e0);
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to bottom, #fefefe, #f3f3f3);
       margin: 0;
       padding: 40px 20px;
+      color: #2c2c2c;
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #111;
     }
 
     .planos-container {
@@ -19,54 +25,59 @@
       justify-content: center;
       gap: 30px;
       max-width: 1200px;
-      margin: auto;
+      margin: 40px auto;
     }
 
     .plano {
-      background: white;
+      background: #fff;
       border-radius: 16px;
       padding: 30px;
       width: 300px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
-      transition: transform 0.3s ease;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
       text-align: center;
+      border-top: 4px solid #f3c000;
     }
 
     .plano:hover {
-      transform: translateY(-5px);
+      transform: translateY(-6px);
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.1);
     }
 
     .plano h3 {
-      font-size: 24px;
-      margin-bottom: 15px;
+      font-size: 22px;
+      margin-bottom: 10px;
+      color: #333;
     }
 
     .preco {
-      font-size: 28px;
-      color: #d4af37;
-      margin-bottom: 10px;
+      font-size: 26px;
+      font-weight: bold;
+      color: #c49e16;
+      margin-bottom: 20px;
     }
 
     .beneficios {
       list-style: none;
       padding: 0;
-      margin: 20px 0;
       text-align: left;
+      margin: 20px 0;
+      line-height: 1.6;
     }
 
     .beneficios li {
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .btn-assinar {
       background: linear-gradient(to right, #d4af37, #f1c40f);
-      color: #000;
+      color: #111;
       border: none;
       padding: 12px 20px;
-      border-radius: 8px;
+      border-radius: 10px;
       font-weight: bold;
       cursor: pointer;
-      transition: background 0.3s ease;
+      transition: 0.3s ease;
     }
 
     .btn-assinar:hover {
@@ -74,60 +85,77 @@
     }
 
     .premium {
-      border: 3px solid #d4af37;
+      border-color: #c49e16;
     }
 
-    .beneficios-planos, .depoimentos, .faq, .cta {
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-}
+    section {
+      max-width: 900px;
+      margin: 60px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
+    }
 
-.beneficios-planos ul {
-  list-style: none;
-  padding: 0;
-}
+    section h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #222;
+    }
 
-.beneficios-planos li {
-  margin-bottom: 10px;
-  font-size: 16px;
-}
+    section ul {
+      list-style: none;
+      padding: 0;
+    }
 
-.depoimentos blockquote {
-  font-style: italic;
-  margin: 20px 0;
-}
+    section ul li {
+      padding-left: 25px;
+      position: relative;
+      margin-bottom: 12px;
+    }
 
-.faq details {
-  margin-bottom: 10px;
-}
+    section ul li::before {
+      content: "✔️";
+      position: absolute;
+      left: 0;
+    }
 
-.cta {
-  text-align: center;
-}
+    blockquote {
+      font-style: italic;
+      color: #555;
+      border-left: 4px solid #f1c40f;
+      padding-left: 15px;
+      margin: 20px 0;
+    }
 
-.cta .btn-assinar {
-  display: inline-block;
-  margin-top: 20px;
-}
+    cite {
+      display: block;
+      font-size: 14px;
+      color: #999;
+      margin-top: 5px;
+    }
 
+    .faq details {
+      margin-bottom: 12px;
+    }
+
+    .faq summary {
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .cta {
+      text-align: center;
+    }
+
+    .cta .btn-assinar {
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
-<section class="beneficios-planos">
-  <h2>Por que escolher nossos planos?</h2>
-  <ul>
-    <li>📈 Aumente sua visibilidade e alcance mais clientes.</li>
-    <li>⏱️ Economize tempo com ferramentas que agilizam seu trabalho.</li>
-    <li>💼 Profissionalize sua presença online com recursos exclusivos.</li>
-    <li>🤝 Tenha suporte dedicado para tirar dúvidas e resolver questões.</li>
-  </ul>
-</section>
 
-  
-  <h1 style="text-align:center; margin-bottom: 40px;">Escolha seu Plano</h1>
+  <h1>Escolha seu Plano</h1>
 
   <div class="planos-container">
     <!-- Plano Básico -->
@@ -135,9 +163,9 @@
       <h3>Básico</h3>
       <div class="preco">R$ 29,90/mês</div>
       <ul class="beneficios">
-        <li>✔️ Até 5 anúncios ativos</li>
-        <li>🌟 1 destaque por semana</li>
-        <li>📞 Suporte via WhatsApp</li>
+        <li>Até 5 anúncios ativos</li>
+        <li>1 destaque por semana</li>
+        <li>Suporte via WhatsApp</li>
       </ul>
       <button class="btn-assinar">Assinar agora</button>
     </div>
@@ -147,9 +175,9 @@
       <h3>Profissional</h3>
       <div class="preco">R$ 59,90/mês</div>
       <ul class="beneficios">
-        <li>✔️ Até 15 anúncios ativos</li>
-        <li>🌟 3 destaque com duração de 2 semana </li>
-        <li>👤 Logo no perfil + suporte rápido</li>
+        <li>Até 15 anúncios ativos</li>
+        <li>3 destaques (2 semanas cada)</li>
+        <li>Logo no perfil + suporte rápido</li>
       </ul>
       <button class="btn-assinar">Assinar agora</button>
     </div>
@@ -159,46 +187,57 @@
       <h3>Premium</h3>
       <div class="preco">R$ 99,90/mês</div>
       <ul class="beneficios">
-        <li>✔️ Anúncios ilimitados</li>
-        <li>🔥 5 destaques com duração de 1 mês </li>
-        <li>🚀 Destaque no carrossel principal</li>
+        <li>Anúncios ilimitados</li>
+        <li>5 destaques (1 mês cada)</li>
+        <li>Destaque no carrossel principal</li>
       </ul>
       <button class="btn-assinar">Assinar agora</button>
     </div>
   </div>
-  
-<section class="depoimentos">
-  <h2>O que nossos clientes dizem</h2>
-  <blockquote>
-    "Desde que assinei o plano Profissional, meus anúncios têm muito mais visibilidade. O suporte é excelente!"<br>
-    <cite>— João Silva, Corretor de Imóveis</cite>
-  </blockquote>
-  <blockquote>
-    "O plano Premium me proporcionou destaque no carrossel principal, o que aumentou significativamente meus contatos."<br>
-    <cite>— Maria Oliveira, Imobiliária XYZ</cite>
-  </blockquote>
-</section>
-<section class="faq">
-  <h2>Perguntas Frequentes</h2>
-  <details>
-    <summary>Como faço para mudar de plano?</summary>
-    <p>Você pode mudar de plano a qualquer momento acessando sua conta e selecionando a opção 'Alterar Plano'.</p>
-  </details>
-  <details>
-    <summary>Posso cancelar a assinatura quando quiser?</summary>
-    <p>Sim, o cancelamento pode ser feito a qualquer momento sem multas ou taxas adicionais.</p>
-  </details>
-  <details>
-    <summary>Os destaques não utilizados acumulam para o próximo mês?</summary>
-    <p>Não, os destaques são renovados mensalmente e não acumulam.</p>
-  </details>
-</section>
-  
-<section class="cta">
-  <h2>Pronto para alavancar seus negócios?</h2>
-  <p>Escolha o plano que melhor se adapta às suas necessidades e comece agora mesmo!</p>
-  <a href="#planos" class="btn-assinar">Ver Planos</a>
-</section>
+
+  <section class="beneficios-planos">
+    <h2>Por que escolher nossos planos?</h2>
+    <ul>
+      <li>📈 Aumente sua visibilidade e alcance mais clientes.</li>
+      <li>⏱️ Economize tempo com ferramentas que agilizam seu trabalho.</li>
+      <li>💼 Profissionalize sua presença online com recursos exclusivos.</li>
+      <li>🤝 Tenha suporte dedicado para tirar dúvidas e resolver questões.</li>
+    </ul>
+  </section>
+
+  <section class="depoimentos">
+    <h2>O que nossos clientes dizem</h2>
+    <blockquote>
+      "Desde que assinei o plano Profissional, meus anúncios têm muito mais visibilidade. O suporte é excelente!"
+      <cite>— João Silva, Corretor de Imóveis</cite>
+    </blockquote>
+    <blockquote>
+      "O plano Premium me proporcionou destaque no carrossel principal, o que aumentou significativamente meus contatos."
+      <cite>— Maria Oliveira, Imobiliária XYZ</cite>
+    </blockquote>
+  </section>
+
+  <section class="faq">
+    <h2>Perguntas Frequentes</h2>
+    <details>
+      <summary>Como faço para mudar de plano?</summary>
+      <p>Você pode mudar de plano a qualquer momento acessando sua conta e selecionando 'Alterar Plano'.</p>
+    </details>
+    <details>
+      <summary>Posso cancelar a assinatura quando quiser?</summary>
+      <p>Sim, o cancelamento pode ser feito a qualquer momento sem multas ou taxas adicionais.</p>
+    </details>
+    <details>
+      <summary>Os destaques não utilizados acumulam para o próximo mês?</summary>
+      <p>Não, os destaques são renovados mensalmente e não acumulam.</p>
+    </details>
+  </section>
+
+  <section class="cta">
+    <h2>Pronto para alavancar seus negócios?</h2>
+    <p>Escolha o plano que melhor se adapta às suas necessidades e comece agora mesmo!</p>
+    <a href="#planos" class="btn-assinar">Ver Planos</a>
+  </section>
 
 </body>
 </html>
