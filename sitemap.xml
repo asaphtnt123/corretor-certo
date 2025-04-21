@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset 
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+>
+  <url>
+    <loc>https://corretorcerto.com.br/</loc>
+    <lastmod>2024-07-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Páginas de anúncio -->
+  <url><loc>https://corretorcerto.com.br/anunciar.html</loc></url>
+  <url><loc>https://corretorcerto.com.br/anunciar-imovel.html</loc></url>
+  <url><loc>https://corretorcerto.com.br/anunciar-automovel.html</loc></url>
+
+  <!-- Páginas de resultado e detalhes -->
+  <url><loc>https://corretorcerto.com.br/automoveis.html</loc></url>
+  <url><loc>https://corretorcerto.com.br/imoveis.html</loc></url>
+  <url><loc>https://corretorcerto.com.br/filtrar.html</loc></url>
+  <url><loc>https://corretorcerto.com.br/detalhes.html</loc></url>
+  <url><loc>https://corretorcerto.com.br/resultados-pesquisa.html</loc></url>
+
+  <!-- Usuário -->
+  <url><loc>https://corretorcerto.com.br/perfil.html</loc></url>
+  <url><loc>https://corretorcerto.com.br/editar-anuncio.html</loc></url>
+  <url><loc>https://corretorcerto.com.br/login.html</loc></url>
+
+  <!-- Institucional -->
+  <url><loc>https://corretorcerto.com.br/planos.html</loc></url>
+  <url><loc>https://corretorcerto.com.br/faq.html</loc></url>
+  <url><loc>https://corretorcerto.com.br/priv.html</loc></url>
+  <url><loc>https://corretorcerto.com.br/terms.html</loc></url>
+
+</urlset>
