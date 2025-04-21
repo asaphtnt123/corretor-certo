@@ -6,6 +6,10 @@
   
   <title>Planos de Assinatura | Corretor Certo</title>
 
+
+  <script src="https://js.stripe.com/v3/"></script>
+
+  
   <!-- ✅ SEO Essencial -->
   <meta name="description" content="Descubra os planos de assinatura da plataforma Corretor Certo para anunciar imóveis e automóveis com visibilidade, destaque e suporte profissional." />
   <meta name="keywords" content="planos para corretores, plano premium, anunciar imóveis, plataforma de imóveis, site de automóveis, corretorcerto, assinatura imobiliária, visibilidade online" />
@@ -461,7 +465,8 @@
       <li>🌟 <strong>1 Destaque por 1 semana</strong></li>
       <li>💬 Suporte via WhatsApp</li>
     </ul>
-    <button class="btn-assinar">Assinar agora</button>
+    <button class="btn-assinar" data-plano="basico" data-preco="2990">Assinar agora</button>
+
   </div>
 
   <!-- Plano Profissional -->
@@ -474,7 +479,7 @@
       <li>🎯 <strong>3 Destaques válidos por 2 semanas</strong></li>
       <li>👔 Logo no perfil + suporte prioritário</li>
     </ul>
-    <button class="btn-assinar">Assinar agora</button>
+<button class="btn-assinar" data-plano="profissional" data-preco="5990">Assinar agora</button>
   </div>
 
   <!-- Plano Premium -->
@@ -486,7 +491,7 @@
       <li>🔥 <strong>5 Anuncios em destaque por 2 semanas </strong></li>
       <li>🚀 Destaque no carrossel principal</li>
     </ul>
-    <button class="btn-assinar">Assinar agora</button>
+<button class="btn-assinar" data-plano="premium" data-preco="9990">Assinar agora</button>
   </div>
 </div>
 
