@@ -38,6 +38,12 @@ exports.handler = async (event) => {
     }
 
     const session = await stripe.checkout.sessions.create({
+
+       metadata: {
+    userId: 'ID_DO_USUARIO_FIREBASE', // Obtenha do seu sistema de autenticação
+    planoId: planoId // 'basico', 'profissional' ou 'premium'
+  },
+      
       payment_method_types: ['card'],
       line_items: [{
         price_data: {
