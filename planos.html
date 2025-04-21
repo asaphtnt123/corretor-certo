@@ -76,10 +76,57 @@
     .premium {
       border: 3px solid #d4af37;
     }
+
+    .beneficios-planos, .depoimentos, .faq, .cta {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+}
+
+.beneficios-planos ul {
+  list-style: none;
+  padding: 0;
+}
+
+.beneficios-planos li {
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.depoimentos blockquote {
+  font-style: italic;
+  margin: 20px 0;
+}
+
+.faq details {
+  margin-bottom: 10px;
+}
+
+.cta {
+  text-align: center;
+}
+
+.cta .btn-assinar {
+  display: inline-block;
+  margin-top: 20px;
+}
+
   </style>
 </head>
 <body>
+<section class="beneficios-planos">
+  <h2>Por que escolher nossos planos?</h2>
+  <ul>
+    <li>📈 Aumente sua visibilidade e alcance mais clientes.</li>
+    <li>⏱️ Economize tempo com ferramentas que agilizam seu trabalho.</li>
+    <li>💼 Profissionalize sua presença online com recursos exclusivos.</li>
+    <li>🤝 Tenha suporte dedicado para tirar dúvidas e resolver questões.</li>
+  </ul>
+</section>
 
+  
   <h1 style="text-align:center; margin-bottom: 40px;">Escolha seu Plano</h1>
 
   <div class="planos-container">
@@ -89,7 +136,7 @@
       <div class="preco">R$ 29,90/mês</div>
       <ul class="beneficios">
         <li>✔️ Até 5 anúncios ativos</li>
-        <li>❌ Sem destaques gratuitos</li>
+        <li>🌟 1 destaque por semana</li>
         <li>📞 Suporte via WhatsApp</li>
       </ul>
       <button class="btn-assinar">Assinar agora</button>
@@ -101,7 +148,7 @@
       <div class="preco">R$ 59,90/mês</div>
       <ul class="beneficios">
         <li>✔️ Até 15 anúncios ativos</li>
-        <li>🌟 1 destaque por mês</li>
+        <li>🌟 3 destaque com duração de 2 semana </li>
         <li>👤 Logo no perfil + suporte rápido</li>
       </ul>
       <button class="btn-assinar">Assinar agora</button>
@@ -113,12 +160,45 @@
       <div class="preco">R$ 99,90/mês</div>
       <ul class="beneficios">
         <li>✔️ Anúncios ilimitados</li>
-        <li>🔥 3 destaques por mês</li>
+        <li>🔥 5 destaques com duração de 1 mês </li>
         <li>🚀 Destaque no carrossel principal</li>
       </ul>
       <button class="btn-assinar">Assinar agora</button>
     </div>
   </div>
+  
+<section class="depoimentos">
+  <h2>O que nossos clientes dizem</h2>
+  <blockquote>
+    "Desde que assinei o plano Profissional, meus anúncios têm muito mais visibilidade. O suporte é excelente!"<br>
+    <cite>— João Silva, Corretor de Imóveis</cite>
+  </blockquote>
+  <blockquote>
+    "O plano Premium me proporcionou destaque no carrossel principal, o que aumentou significativamente meus contatos."<br>
+    <cite>— Maria Oliveira, Imobiliária XYZ</cite>
+  </blockquote>
+</section>
+<section class="faq">
+  <h2>Perguntas Frequentes</h2>
+  <details>
+    <summary>Como faço para mudar de plano?</summary>
+    <p>Você pode mudar de plano a qualquer momento acessando sua conta e selecionando a opção 'Alterar Plano'.</p>
+  </details>
+  <details>
+    <summary>Posso cancelar a assinatura quando quiser?</summary>
+    <p>Sim, o cancelamento pode ser feito a qualquer momento sem multas ou taxas adicionais.</p>
+  </details>
+  <details>
+    <summary>Os destaques não utilizados acumulam para o próximo mês?</summary>
+    <p>Não, os destaques são renovados mensalmente e não acumulam.</p>
+  </details>
+</section>
+  
+<section class="cta">
+  <h2>Pronto para alavancar seus negócios?</h2>
+  <p>Escolha o plano que melhor se adapta às suas necessidades e comece agora mesmo!</p>
+  <a href="#planos" class="btn-assinar">Ver Planos</a>
+</section>
 
 </body>
 </html>
