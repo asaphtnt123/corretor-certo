@@ -1,0 +1,8 @@
+{
+  "name": "corretor-certo",
+  "version": "1.0.0",
+  "description": "Sistema de pagamentos Corretor Certo",
+  "dependencies": {
+    "stripe": "^13.3.0"
+  }
+}
