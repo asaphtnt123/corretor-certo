@@ -1,16 +1,20 @@
 /**
  * Sistema de Pagamento para Planos - Corretor Certo
- * Implementação usando Stripe como gateway de pagamento
+ * Versão para arquivo na raiz
  */
 
 class PaymentSystem {
   constructor() {
-    // Configuração inicial
-class PaymentSystem {
-  constructor() {
-    // Configuração inicial - MODIFICADO AQUI
+    // Verifica se o Stripe.js está carregado
+    if (typeof Stripe === 'undefined') {
+      console.error('Stripe.js não carregado!');
+      return;
+    }
+
+    // Inicializa o Stripe com sua chave pública
     this.stripe = Stripe('pk_test_51RGQ31Ctf0sheJfc7YQ32qSzBdzRIsyLRAzBqf3lEgd5F4Ej5RJr3Kp0ZsgkVVUQxouU9vF4jzC2Okp5bmbG3Ic40042yaPE84');
     
+    // Definição dos planos
     this.planos = {
       basico: {
         id: 'basico',
@@ -29,28 +33,12 @@ class PaymentSystem {
       }
     };
     
+    // Inicia os listeners
     this.initEventListeners();
   }
-// Inicialização (MODIFICADO PARA VERIFICAR CARREGAMENTO DA STRIPE)
-function initializePaymentSystem() {
-  if (window.Stripe) {
-    new PaymentSystem();
-  } else {
-    console.error('Stripe.js não carregado corretamente');
-    // Tentar recarregar ou mostrar mensagem ao usuário
-    setTimeout(initializePaymentSystem, 500);
-  }
-}
 
-// Verifica se o DOM está pronto e a Stripe carregada
-document.addEventListener('DOMContentLoaded', () => {
-  initializePaymentSystem();
-});
-
-
-    
   /**
-   * Inicializa os event listeners para os botões de assinatura
+   * Inicializa os event listeners
    */
   initEventListeners() {
     document.querySelectorAll('.btn-assinar').forEach(button => {
@@ -62,101 +50,82 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Manipula o processo de pagamento
-   * @param {string} planoId - ID do plano selecionado
+   * Processa o pagamento
    */
   async handlePayment(planoId) {
     try {
-      // Mostrar loader (opcional)
       this.showLoading(true);
       
       const plano = this.planos[planoId];
       if (!plano) throw new Error('Plano não encontrado');
 
-      // Criar sessão de pagamento
-      const session = await this.createPaymentSession(plano);
+      // Chamada para a Netlify Function
+      const { sessionId, url } = await this.createPaymentSession(plano);
       
-      // Redirecionar para checkout da Stripe
+      // Redireciona para o checkout
       const result = await this.stripe.redirectToCheckout({
-        sessionId: session.id
+        sessionId: sessionId
       });
 
       if (result.error) {
         this.showError(result.error.message);
       }
     } catch (error) {
-      console.error('Erro no pagamento:', error);
-      this.showError('Ocorreu um erro ao processar seu pagamento.');
+      console.error('Erro:', error);
+      this.showError(error.message || 'Erro ao processar pagamento');
     } finally {
       this.showLoading(false);
     }
   }
 
   /**
-   * Cria uma sessão de pagamento no backend
-   * @param {object} plano - Dados do plano selecionado
-   * @returns {Promise<object>} - Dados da sessão de pagamento
+   * Cria a sessão de pagamento via Netlify Function
    */
   async createPaymentSession(plano) {
-    const response = await fetch('/criar-sessao-pagamento', {
+    const response = await fetch('/.netlify/functions/create-checkout-session', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        planoId: plano.id,
-        planoNome: plano.nome,
-        preco: plano.preco,
-        moeda: 'BRL'
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ planoId: plano.id })
     });
 
     if (!response.ok) {
-      throw new Error('Falha ao criar sessão de pagamento');
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Erro no servidor');
     }
 
     return await response.json();
   }
 
   /**
-   * Exibe um estado de carregamento
-   * @param {boolean} show - Mostrar ou esconder o loader
+   * Mostra estado de carregamento
    */
   showLoading(show) {
-    const loaders = document.querySelectorAll('.btn-assinar');
-    loaders.forEach(button => {
-      if (show) {
-        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
-        button.disabled = true;
-      } else {
-        const planoId = button.getAttribute('data-plano');
-        button.textContent = 'Assinar agora';
-        button.disabled = false;
-      }
+    document.querySelectorAll('.btn-assinar').forEach(btn => {
+      btn.disabled = show;
+      btn.innerHTML = show 
+        ? '<i class="fas fa-spinner fa-spin"></i> Processando...' 
+        : 'Assinar agora';
     });
   }
 
   /**
-   * Exibe uma mensagem de erro
-   * @param {string} message - Mensagem de erro
+   * Mostra erros
    */
   showError(message) {
-    // Você pode implementar um modal de erro ou usar alertas
-    alert(message);
-    
-    // Exemplo com SweetAlert2:
-    // Swal.fire('Erro', message, 'error');
+    // Modifique para usar seu sistema de alertas preferido
+    alert(`Erro: ${message}`);
   }
 }
 
-// Inicializa o sistema de pagamento quando o DOM estiver pronto
+// Inicialização quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', () => {
-  // Verifica se a Stripe está disponível
+  // Carrega o Stripe.js dinamicamente se não estiver presente
   if (typeof Stripe === 'undefined') {
-    console.error('Stripe.js não carregado corretamente');
-    return;
+    const script = document.createElement('script');
+    script.src = 'https://js.stripe.com/v3/';
+    script.onload = () => new PaymentSystem();
+    document.head.appendChild(script);
+  } else {
+    new PaymentSystem();
   }
-
-  // Inicializa o sistema de pagamento
-  new PaymentSystem();
 });
