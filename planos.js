@@ -6,7 +6,12 @@
 class PaymentSystem {
   constructor() {
     // Configuração inicial
-const stripe = require('stripe')('pk_test_51RGQ31Ctf0sheJfc7YQ32qSzBdzRIsyLRAzBqf3lEgd5F4Ej5RJr3Kp0ZsgkVVUQxouU9vF4jzC2Okp5bmbG3Ic40042yaPE84');    this.planos = {
+class PaymentSystem {
+  constructor() {
+    // Configuração inicial - MODIFICADO AQUI
+    this.stripe = Stripe('pk_test_51RGQ31Ctf0sheJfc7YQ32qSzBdzRIsyLRAzBqf3lEgd5F4Ej5RJr3Kp0ZsgkVVUQxouU9vF4jzC2Okp5bmbG3Ic40042yaPE84');
+    
+    this.planos = {
       basico: {
         id: 'basico',
         nome: 'Plano Básico',
@@ -26,7 +31,24 @@ const stripe = require('stripe')('pk_test_51RGQ31Ctf0sheJfc7YQ32qSzBdzRIsyLRAzBq
     
     this.initEventListeners();
   }
+// Inicialização (MODIFICADO PARA VERIFICAR CARREGAMENTO DA STRIPE)
+function initializePaymentSystem() {
+  if (window.Stripe) {
+    new PaymentSystem();
+  } else {
+    console.error('Stripe.js não carregado corretamente');
+    // Tentar recarregar ou mostrar mensagem ao usuário
+    setTimeout(initializePaymentSystem, 500);
+  }
+}
 
+// Verifica se o DOM está pronto e a Stripe carregada
+document.addEventListener('DOMContentLoaded', () => {
+  initializePaymentSystem();
+});
+
+
+    
   /**
    * Inicializa os event listeners para os botões de assinatura
    */
