@@ -22,7 +22,7 @@ exports.handler = async (event) => {
     }
 
     const planos = {
-      basico: { preco: 1090, nome: "Plano Básico" },
+      basico: { preco: 2990, nome: "Plano Básico" },
       profissional: { preco: 5990, nome: "Plano Profissional" },
       premium: { preco: 9990, nome: "Plano Premium" }
     };
@@ -38,12 +38,6 @@ exports.handler = async (event) => {
     }
 
     const session = await stripe.checkout.sessions.create({
-
-      metadata: {
-  userId: event.headers['x-user-id'], // Ou do corpo da requisição, dependendo da sua autenticação
-  planoId: planoId
-},
-      
       payment_method_types: ['card'],
       line_items: [{
         price_data: {
