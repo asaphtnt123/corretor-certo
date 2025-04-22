@@ -56,9 +56,9 @@ class PaymentSystem {
 
  getStripeKey() {
   // 1. Prioridade: Variável de ambiente no Netlify
-  if (typeof process !== 'undefined' && process.env.STRIPE_PUBLISHABLE_KEY) {
-    return process.env.STRIPE_PUBLISHABLE_KEY;
-  }
+   if (process.env.STRIPE_PUBLIC_KEY) {
+      return process.env.STRIPE_PUBLIC_KEY;
+    }
   
   // 2. Fallback: Atributo data-* no HTML (apenas para desenvolvimento)
   const stripeConfig = document.getElementById('payment-config');
