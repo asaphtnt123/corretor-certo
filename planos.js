@@ -3,39 +3,35 @@
  * Integração com Stripe e Firebase
  * Versão 4.0 - Segura, Modular e Pronta para Produção
  */
+
+// No início do arquivo
+if (typeof Stripe === 'undefined') {
+  console.error('Stripe.js não carregou! Verifique o bloqueio de scripts no navegador');
+}
+
+
 class PaymentSystem {
-  constructor(options = {}) {
-    // Configurações padrão
-    this.config = {
-      stripeKey: options.stripeKey || this.detectStripeKey(),
-      apiEndpoint: options.apiEndpoint || '/.netlify/functions/create-checkout-session',
-      authRequired: options.authRequired !== false,
-      defaultCurrency: 'BRL'
-    };
-
-    // Estados
-    this.state = {
-      isLoading: false,
-      currentRequest: null
-    };
-
-    // Inicializações
-    this.initStripe();
-    this.initPlanos();
-    this.initEventListeners();
-    this.setupErrorHandling();
-  }
-getStripeKey() {
-    // 1. Tenta pegar da variável de ambiente (Netlify)
-    if (typeof process !== 'undefined' && process.env.STRIPE_PUBLISHABLE_KEY) {
-      return process.env.STRIPE_PUBLISHABLE_KEY;
+  constructor() {
+    try {
+      this.stripeKey = this.getStripeKey();
+      if (!this.stripeKey) throw new Error('Configuração de pagamento incompleta');
+      
+      this.stripe = Stripe(this.stripeKey, {
+        locale: 'pt-BR',
+        apiVersion: '2023-08-16'
+      });
+      
+      this.initEventListeners();
+    } catch (error) {
+      console.error('Falha na inicialização:', error);
+      this.showError('Sistema de pagamento temporariamente indisponível');
     }
-    
-    // 2. Fallback seguro para produção
-    return null; // Forçará o erro se não configurado corretamente
   }
 
-  
+  getStripeKey() {
+    // Modo produção - só aceita variável de ambiente
+    return typeof process !== 'undefined' ? process.env.STRIPE_PUBLISHABLE_KEY : null;
+  }
   /* ========== INICIALIZAÇÃO ========== */
 
   initStripe() {
