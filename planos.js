@@ -1,57 +1,78 @@
 /**
  * Sistema de Pagamento Completo - Corretor Certo
  * Integração com Stripe e Firebase
- * Versão 4.0 - Segura, Modular e Pronta para Produção
+ * Versão 5.0 - Segura, Modular e Pronta para Produção
  */
 
-// No início do arquivo
-if (typeof Stripe === 'undefined') {
-  console.error('Stripe.js não carregou! Verifique o bloqueio de scripts no navegador');
-}
-
-
 class PaymentSystem {
-  constructor() {
+  constructor(options = {}) {
+    // Configurações padrão
+    this.config = {
+      apiEndpoint: options.apiEndpoint || '/.netlify/functions/create-checkout-session',
+      authRequired: options.authRequired !== false,
+      defaultCurrency: 'BRL',
+      loadingText: '<span class="spinner"></span> Processando...'
+    };
+
+    // Estados
+    this.state = {
+      isLoading: false,
+      currentPlanoId: null,
+      currentRequest: null
+    };
+
     try {
-      this.stripeKey = this.getStripeKey();
-      if (!this.stripeKey) throw new Error('Configuração de pagamento incompleta');
-      
-      this.stripe = Stripe(this.stripeKey, {
-        locale: 'pt-BR',
-        apiVersion: '2023-08-16'
-      });
-      
+      // Inicializações seguras
+      this.initStripe();
+      this.initPlanos();
       this.initEventListeners();
+      this.setupErrorHandling();
+      
+      console.log('Sistema de pagamento inicializado com sucesso');
     } catch (error) {
-      console.error('Falha na inicialização:', error);
-      this.showError('Sistema de pagamento temporariamente indisponível');
+      console.error('Falha na inicialização do PaymentSystem:', error);
+      this.showFatalError('Sistema de pagamento temporariamente indisponível');
     }
   }
 
-  getStripeKey() {
-    // Modo produção - só aceita variável de ambiente
-    return typeof process !== 'undefined' ? process.env.STRIPE_PUBLISHABLE_KEY : null;
-  }
   /* ========== INICIALIZAÇÃO ========== */
 
   initStripe() {
-    try {
-      if (typeof Stripe === 'undefined') {
-        throw new Error('Stripe.js não está disponível');
-      }
-
-      if (!this.config.stripeKey) {
-        throw new Error('Chave pública do Stripe não configurada');
-      }
-
-      this.stripe = Stripe(this.config.stripeKey, {
-        locale: 'pt-BR',
-        betas: ['process_order_beta_3']
-      });
-    } catch (error) {
-      console.error('Falha ao inicializar Stripe:', error);
-      this.showFatalError('Sistema de pagamento indisponível');
+    if (typeof Stripe === 'undefined') {
+      throw new Error('Biblioteca Stripe não carregada');
     }
+
+    this.stripeKey = this.getStripeKey();
+    
+    if (!this.stripeKey) {
+      throw new Error('Configuração de pagamento incompleta');
+    }
+
+    this.stripe = Stripe(this.stripeKey, {
+      locale: 'pt-BR',
+      apiVersion: '2023-08-16'
+    });
+  }
+
+  getStripeKey() {
+    // 1. Prioridade: Variável de ambiente (Netlify)
+    if (typeof process !== 'undefined' && process.env.STRIPE_PUBLISHABLE_KEY) {
+      return process.env.STRIPE_PUBLISHABLE_KEY;
+    }
+    
+    // 2. Fallback: Atributo data-* no HTML
+    const stripeConfig = document.getElementById('payment-config');
+    if (stripeConfig?.dataset.publishableKey) {
+      return stripeConfig.dataset.publishableKey;
+    }
+    
+    // 3. Fallback para desenvolvimento
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      console.warn('Usando chave de teste para desenvolvimento local');
+      return 'pk_test_51RGQ31Ctf0sheJfc7YQ32qSzBdzRIsyLRAzBqf3lEgd5F4Ej5RJr3Kp0ZsgkVVUQxouU9vF4jzC2Okp5bmbG3Ic40042yaPE84';
+    }
+
+    return null;
   }
 
   initPlanos() {
@@ -61,12 +82,8 @@ class PaymentSystem {
         nome: 'Plano Básico',
         preco: 2990,
         moeda: this.config.defaultCurrency,
+        features: ['Acesso básico', 'Suporte por email', 'Relatórios simples'],
         ciclo: 'mensal',
-        features: [
-          'Acesso básico à plataforma',
-          'Suporte por e-mail',
-          'Relatórios simples'
-        ],
         metadata: {
           tipo: 'assinatura',
           nivel: 'iniciante'
@@ -77,12 +94,8 @@ class PaymentSystem {
         nome: 'Plano Profissional',
         preco: 5990,
         moeda: this.config.defaultCurrency,
+        features: ['Acesso completo', 'Suporte prioritário', 'Relatórios avançados'],
         ciclo: 'mensal',
-        features: [
-          'Acesso completo',
-          'Suporte prioritário',
-          'Relatórios avançados'
-        ],
         metadata: {
           tipo: 'assinatura',
           nivel: 'avancado'
@@ -93,12 +106,8 @@ class PaymentSystem {
         nome: 'Plano Premium',
         preco: 9990,
         moeda: this.config.defaultCurrency,
+        features: ['Acesso completo', 'Suporte 24/7', 'Consultoria personalizada'],
         ciclo: 'anual',
-        features: [
-          'Acesso completo',
-          'Suporte 24/7',
-          'Consultoria personalizada'
-        ],
         metadata: {
           tipo: 'assinatura',
           nivel: 'premium'
@@ -108,12 +117,15 @@ class PaymentSystem {
   }
 
   initEventListeners() {
-    // Delegation para melhor performance
     document.addEventListener('click', (e) => {
       const button = e.target.closest('[data-plano]');
       if (!button || this.state.isLoading) return;
 
-      this.handlePaymentClick(button);
+      try {
+        this.handlePaymentClick(button);
+      } catch (error) {
+        this.handlePaymentError(error, button);
+      }
     });
   }
 
@@ -127,10 +139,12 @@ class PaymentSystem {
   /* ========== MÉTODOS PRINCIPAIS ========== */
 
   async handlePaymentClick(button) {
-    try {
-      const planoId = button.dataset.plano;
-      const userId = this.config.authRequired ? await this.getCurrentUserId() : null;
+    const planoId = button.dataset.plano;
+    this.setState({ isLoading: true, currentPlanoId: planoId });
 
+    try {
+      const userId = this.config.authRequired ? await this.getCurrentUserId() : null;
+      
       if (this.config.authRequired && !userId) {
         return this.handleUnauthenticated(button);
       }
@@ -138,32 +152,28 @@ class PaymentSystem {
       await this.processPayment(planoId, userId);
     } catch (error) {
       this.handlePaymentError(error, button);
+    } finally {
+      this.setState({ isLoading: false });
     }
   }
 
   async processPayment(planoId, userId) {
-    this.setState({ isLoading: true });
+    const plano = this.planos[planoId];
+    if (!plano) throw new Error('Plano selecionado é inválido');
 
-    try {
-      const plano = this.planos[planoId];
-      if (!plano) throw new Error('Plano não encontrado');
+    const session = await this.createPaymentSession({
+      planoId,
+      userId,
+      userEmail: await this.getUserEmail(),
+      userIP: await this.getUserIP(),
+      deviceInfo: this.getDeviceInfo()
+    });
 
-      const session = await this.createPaymentSession({
-        planoId,
-        userId,
-        userEmail: await this.getUserEmail(),
-        userIP: await this.getUserIP(),
-        deviceInfo: this.getDeviceInfo()
-      });
+    const result = await this.stripe.redirectToCheckout({
+      sessionId: session.id
+    });
 
-      const result = await this.stripe.redirectToCheckout({
-        sessionId: session.id
-      });
-
-      if (result.error) throw result.error;
-    } finally {
-      this.setState({ isLoading: false });
-    }
+    if (result.error) throw result.error;
   }
 
   async createPaymentSession(paymentData) {
@@ -173,7 +183,7 @@ class PaymentSystem {
     try {
       const response = await fetch(this.config.apiEndpoint, {
         method: 'POST',
-        headers: {
+        headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${await this.getAuthToken()}`
         },
@@ -182,8 +192,8 @@ class PaymentSystem {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Erro ao criar sessão de pagamento');
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || 'Erro ao criar sessão de pagamento');
       }
 
       return await response.json();
@@ -192,16 +202,16 @@ class PaymentSystem {
     }
   }
 
-  /* ========== MÉTODOS DE AUTENTICAÇÃO ========== */
+  /* ========== AUTENTICAÇÃO ========== */
 
   async getCurrentUserId() {
-    // Implementação para Firebase Auth
+    // Firebase Auth
     if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
       return firebase.auth().currentUser.uid;
     }
-
-    // Implementação genérica (adaptar conforme necessário)
-    return localStorage.getItem('userId') || sessionStorage.getItem('userId') || null;
+    
+    // Implementação genérica
+    return localStorage.getItem('userId') || null;
   }
 
   async getAuthToken() {
@@ -209,7 +219,7 @@ class PaymentSystem {
     if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
       return await firebase.auth().currentUser.getIdToken();
     }
-
+    
     // Implementação genérica
     return localStorage.getItem('authToken') || null;
   }
@@ -219,18 +229,16 @@ class PaymentSystem {
     if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
       return firebase.auth().currentUser.email;
     }
-
+    
     // Implementação genérica
     return localStorage.getItem('userEmail') || null;
   }
 
-  /* ========== MÉTODOS AUXILIARES ========== */
+  /* ========== UTILITÁRIOS ========== */
 
   async getUserIP() {
     try {
-      const response = await fetch('https://api.ipify.org?format=json', {
-        timeout: 2000
-      });
+      const response = await fetch('https://api.ipify.org?format=json', { timeout: 2000 });
       const data = await response.json();
       return data.ip || null;
     } catch {
@@ -247,24 +255,6 @@ class PaymentSystem {
     };
   }
 
-  detectStripeKey() {
-    // 1. Tenta obter de atributo data-* no HTML
-    const fromDOM = document.getElementById('stripe-config')?.dataset.publishableKey;
-    if (fromDOM) return fromDOM;
-
-    // 2. Tenta obter de variável de ambiente (build-time)
-    if (typeof process !== 'undefined' && process.env.STRIPE_PUBLISHABLE_KEY) {
-      return process.env.STRIPE_PUBLISHABLE_KEY;
-    }
-
-    // 3. Fallback para desenvolvimento
-    if (window.location.hostname === 'localhost') {
-      return 'pk_test_51RGQ31Ctf0sheJfc7YQ32qSzBdzRIsyLRAzBqf3lEgd5F4Ej5RJr3Kp0ZsgkVVUQxouU9vF4jzC2Okp5bmbG3Ic40042yaPE84';
-    }
-
-    return null;
-  }
-
   /* ========== GERENCIAMENTO DE ESTADO ========== */
 
   setState(newState) {
@@ -274,15 +264,13 @@ class PaymentSystem {
 
   updateUI() {
     const buttons = document.querySelectorAll('[data-plano]');
-    buttons.forEach(button => {
-      button.disabled = this.state.isLoading;
+    buttons.forEach(btn => {
+      const isLoading = this.state.isLoading && btn.dataset.plano === this.state.currentPlanoId;
       
-      if (this.state.isLoading && button.dataset.plano === this.state.currentPlanoId) {
-        button.innerHTML = this.config.loadingText || 'Processando...';
-      } else {
-        const plano = this.planos[button.dataset.plano];
-        button.innerHTML = plano ? `Assinar ${plano.nome}` : 'Assinar';
-      }
+      btn.disabled = this.state.isLoading;
+      btn.innerHTML = isLoading 
+        ? this.config.loadingText 
+        : `Assinar ${this.planos[btn.dataset.plano]?.nome || ''}`;
     });
   }
 
@@ -291,15 +279,13 @@ class PaymentSystem {
   handleUnauthenticated(button) {
     this.showError('Por favor, faça login para continuar');
     button.disabled = false;
-    
-    // Opcional: redirecionar para login
-    // window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+    this.setState({ isLoading: false });
   }
 
   handlePaymentError(error, button) {
     console.error('Erro no pagamento:', {
-      error,
-      button: button?.dataset?.plano,
+      error: error.message,
+      planoId: button?.dataset?.plano,
       timestamp: new Date().toISOString()
     });
 
@@ -307,11 +293,8 @@ class PaymentSystem {
     
     if (button) {
       button.disabled = false;
-      const plano = this.planos[button.dataset.plano];
-      button.innerHTML = plano ? `Assinar ${plano.nome}` : 'Assinar';
+      button.innerHTML = `Assinar ${this.planos[button.dataset.plano]?.nome || ''}`;
     }
-
-    this.setState({ isLoading: false });
   }
 
   getErrorMessage(error) {
@@ -330,104 +313,84 @@ class PaymentSystem {
   /* ========== UI/UX ========== */
 
   showError(message, duration = 5000) {
-    let errorContainer = document.getElementById('payment-error-container');
-    
-    if (!errorContainer) {
-      errorContainer = document.createElement('div');
-      errorContainer.id = 'payment-error-container';
-      errorContainer.style.cssText = `
+    const errorEl = document.createElement('div');
+    errorEl.className = 'payment-error';
+    errorEl.innerHTML = `
+      <div style="
         position: fixed;
         bottom: 20px;
         right: 20px;
-        z-index: 1000;
-      `;
-      document.body.appendChild(errorContainer);
-    }
-
-    const errorElement = document.createElement('div');
-    errorElement.className = 'payment-error';
-    errorElement.innerHTML = `
-      <div style="
         padding: 15px;
         background: #ffebee;
         color: #c62828;
         border-radius: 4px;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        margin-bottom: 10px;
-        display: flex;
-        align-items: center;
+        z-index: 1000;
+        animation: fadeIn 0.3s ease;
       ">
-        <span style="margin-right: 10px;">⚠️</span>
-        <span>${message}</span>
+        <span>⚠️ ${message}</span>
       </div>
     `;
 
-    errorContainer.appendChild(errorElement);
-
-    setTimeout(() => {
-      errorElement.style.opacity = '0';
-      setTimeout(() => errorElement.remove(), 300);
-    }, duration);
+    document.body.appendChild(errorEl);
+    setTimeout(() => errorEl.remove(), duration);
   }
 
-  showFatalError(message) {
-    const fatalError = document.createElement('div');
-    fatalError.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      background: #d32f2f;
-      color: white;
-      padding: 15px;
-      text-align: center;
-      z-index: 9999;
+  showFatalError(message = 'Sistema de pagamento temporariamente indisponível') {
+    const errorEl = document.createElement('div');
+    errorEl.className = 'payment-fatal-error';
+    errorEl.innerHTML = `
+      <div style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: 15px;
+        background: #d32f2f;
+        color: white;
+        text-align: center;
+        z-index: 9999;
+      ">
+        ${message}
+      </div>
     `;
-    fatalError.textContent = message;
-    document.body.prepend(fatalError);
+
+    document.body.prepend(errorEl);
+    document.querySelectorAll('[data-plano]').forEach(btn => btn.disabled = true);
   }
 }
 
-/* ========== INICIALIZAÇÃO AUTOMÁTICA ========== */
+/* ========== INICIALIZAÇÃO ========== */
 
 function initializePaymentSystem() {
-  // Configuração via atributos data-*
-  const paymentElement = document.getElementById('payment-system-config');
-  const options = paymentElement ? paymentElement.dataset : {};
-
   try {
+    const configElement = document.getElementById('payment-config');
+    const options = {
+      apiEndpoint: configElement?.dataset.apiEndpoint
+    };
+
     new PaymentSystem(options);
   } catch (error) {
-    console.error('Falha ao inicializar sistema de pagamento:', error);
+    console.error('Falha na inicialização:', error);
     
-    const errorContainer = document.createElement('div');
-    errorContainer.style.cssText = `
+    const errorEl = document.createElement('div');
+    errorEl.textContent = 'Sistema de pagamento indisponível. Por favor, tente novamente mais tarde.';
+    errorEl.style.cssText = `
       padding: 20px;
       background: #ffebee;
       color: #c62828;
-      border-radius: 4px;
-      margin: 20px;
       text-align: center;
+      margin: 20px;
+      border-radius: 4px;
     `;
-    errorContainer.textContent = 'Sistema de pagamento indisponível no momento. Por favor, tente novamente mais tarde.';
     
-    const container = document.querySelector('.payment-container') || document.body;
-    container.appendChild(errorContainer);
+    (document.querySelector('.planos-container') || document.body).appendChild(errorEl);
   }
 }
 
-// Carrega quando o DOM estiver pronto
-if (document.readyState !== 'loading') {
+// Inicialização segura
+if (document.readyState === 'complete') {
   initializePaymentSystem();
 } else {
   document.addEventListener('DOMContentLoaded', initializePaymentSystem);
-}
-
-// Carrega o Stripe.js dinamicamente se necessário
-if (typeof Stripe === 'undefined') {
-  const script = document.createElement('script');
-  script.src = 'https://js.stripe.com/v3/';
-  script.async = true;
-  script.onload = initializePaymentSystem;
-  document.head.appendChild(script);
 }
