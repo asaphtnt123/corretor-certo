@@ -1,7 +1,6 @@
 /**
  * Sistema de Pagamento Completo - Corretor Certo
- * Integração com Stripe e Firebase
- * Versão 5.5 - Solução Definitiva
+ * Versão 6.0 - Solução Definitiva
  */
 
 class PaymentSystem {
@@ -28,27 +27,32 @@ class PaymentSystem {
     this.initializeSystem();
   }
 
-  /* ========== MÉTODOS DE INICIALIZAÇÃO ========== */
+  /* ========== MÉTODOS PRINCIPAIS ========== */
 
   initializeSystem = async () => {
     try {
-      // Verifica dependências primeiro
-      if (typeof Stripe === 'undefined') {
-        throw new Error('Biblioteca Stripe não carregada');
-      }
+      // Verifica dependências
+      this.checkDependencies();
       
-      // Inicializações síncronas
+      // Inicializações
       this.initPlanos();
-      this.setupErrorHandling();
-      
-      // Inicializações assíncronas
       await this.initStripe();
       this.initEventListeners();
+      this.setupErrorHandling();
       
       console.log('Sistema de pagamento inicializado com sucesso');
     } catch (error) {
-      console.error('Falha na inicialização do PaymentSystem:', error);
-      this.showFatalError('Sistema de pagamento temporariamente indisponível');
+      console.error('Falha na inicialização:', error);
+      this.showFatalError('Sistema temporariamente indisponível');
+    }
+  };
+
+  checkDependencies = () => {
+    if (typeof Stripe === 'undefined') {
+      throw new Error('Biblioteca Stripe não carregada');
+    }
+    if (typeof fetch === 'undefined') {
+      throw new Error('API fetch não disponível');
     }
   };
 
@@ -60,11 +64,7 @@ class PaymentSystem {
         preco: 2990,
         moeda: this.config.defaultCurrency,
         features: ['Acesso básico', 'Suporte por email', 'Relatórios simples'],
-        ciclo: 'mensal',
-        metadata: {
-          tipo: 'assinatura',
-          nivel: 'iniciante'
-        }
+        ciclo: 'mensal'
       },
       profissional: {
         id: 'profissional',
@@ -72,11 +72,7 @@ class PaymentSystem {
         preco: 5990,
         moeda: this.config.defaultCurrency,
         features: ['Acesso completo', 'Suporte prioritário', 'Relatórios avançados'],
-        ciclo: 'mensal',
-        metadata: {
-          tipo: 'assinatura',
-          nivel: 'avancado'
-        }
+        ciclo: 'mensal'
       },
       premium: {
         id: 'premium',
@@ -84,11 +80,7 @@ class PaymentSystem {
         preco: 9990,
         moeda: this.config.defaultCurrency,
         features: ['Acesso completo', 'Suporte 24/7', 'Consultoria personalizada'],
-        ciclo: 'anual',
-        metadata: {
-          tipo: 'assinatura',
-          nivel: 'premium'
-        }
+        ciclo: 'anual'
       }
     };
   };
@@ -96,7 +88,7 @@ class PaymentSystem {
   initStripe = async () => {
     this.stripeKey = await this.getStripeKey();
     
-    if (!this.stripeKey || !this.stripeKey.startsWith('pk_')) {
+    if (!this.stripeKey?.startsWith('pk_')) {
       throw new Error('Chave pública do Stripe inválida');
     }
 
@@ -109,16 +101,10 @@ class PaymentSystem {
   getStripeKey = async () => {
     try {
       const response = await fetch('/.netlify/functions/getStripeKey');
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
       
       const data = await response.json();
-      
-      if (!data.key) {
-        throw new Error('Resposta inválida do servidor');
-      }
+      if (!data?.key) throw new Error('Resposta inválida');
       
       return data.key;
     } catch (error) {
@@ -131,12 +117,11 @@ class PaymentSystem {
     document.addEventListener('click', (e) => {
       const button = e.target.closest('[data-plano]');
       if (!button || this.state.isLoading) return;
-
-      try {
-        this.handlePaymentClick(button);
-      } catch (error) {
-        this.handlePaymentError(error, button);
-      }
+      
+      this.handlePaymentClick(button).catch(error => {
+        console.error('Erro no clique:', error);
+        this.showError('Erro ao processar pagamento');
+      });
     });
   };
 
@@ -147,14 +132,13 @@ class PaymentSystem {
     });
   };
 
-  /* ========== MÉTODOS PRINCIPAIS ========== */
+  /* ========== FLUXO DE PAGAMENTO ========== */
 
   handlePaymentClick = async (button) => {
-    this.setState({ isLoading: true, currentPlanoId: button.dataset.plano });
-
     try {
-      const userId = this.config.authRequired ? await this.getCurrentUserId() : null;
+      this.setState({ isLoading: true, currentPlanoId: button.dataset.plano });
       
+      const userId = this.config.authRequired ? await this.getCurrentUserId() : null;
       if (this.config.authRequired && !userId) {
         return this.handleUnauthenticated(button);
       }
@@ -169,7 +153,7 @@ class PaymentSystem {
 
   processPayment = async (planoId, userId) => {
     const plano = this.planos[planoId];
-    if (!plano) throw new Error('Plano selecionado é inválido');
+    if (!plano) throw new Error('Plano inválido');
 
     const session = await this.createPaymentSession({
       planoId,
@@ -203,7 +187,7 @@ class PaymentSystem {
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || 'Erro ao criar sessão de pagamento');
+        throw new Error(error.message || 'Erro ao criar sessão');
       }
 
       return await response.json();
@@ -213,6 +197,64 @@ class PaymentSystem {
   };
 
   /* ========== MÉTODOS AUXILIARES ========== */
+
+  getCurrentUserId = async () => {
+    if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
+      return firebase.auth().currentUser.uid;
+    }
+    return localStorage.getItem('userId');
+  };
+
+  getAuthToken = async () => {
+    if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
+      return await firebase.auth().currentUser.getIdToken();
+    }
+    return localStorage.getItem('authToken');
+  };
+
+  getUserEmail = async () => {
+    if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
+      return firebase.auth().currentUser.email;
+    }
+    return localStorage.getItem('userEmail');
+  };
+
+  getUserIP = async () => {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      return data.ip;
+    } catch {
+      return null;
+    }
+  };
+
+  getDeviceInfo = () => ({
+    userAgent: navigator.userAgent,
+    screenWidth: window.screen.width,
+    screenHeight: window.screen.height,
+    language: navigator.language
+  });
+
+  handleUnauthenticated = (button) => {
+    this.showError('Por favor, faça login para continuar');
+    button.disabled = false;
+  };
+
+  handlePaymentError = (error, button) => {
+    console.error('Erro no pagamento:', error);
+    this.showError(this.getErrorMessage(error));
+    if (button) button.disabled = false;
+  };
+
+  getErrorMessage = (error) => {
+    const errorMap = {
+      'card_declined': 'Cartão recusado',
+      'expired_card': 'Cartão expirado',
+      'insufficient_funds': 'Saldo insuficiente'
+    };
+    return errorMap[error.code] || error.message || 'Erro ao processar pagamento';
+  };
 
   setState = (newState) => {
     this.state = { ...this.state, ...newState };
@@ -224,57 +266,25 @@ class PaymentSystem {
     buttons.forEach(btn => {
       const isLoading = this.state.isLoading && btn.dataset.plano === this.state.currentPlanoId;
       btn.disabled = this.state.isLoading;
-      btn.innerHTML = isLoading 
-        ? this.config.loadingText 
-        : `Assinar ${this.planos[btn.dataset.plano]?.nome || ''}`;
+      btn.innerHTML = isLoading ? this.config.loadingText : `Assinar ${this.planos[btn.dataset.plano]?.nome || ''}`;
     });
   };
 
   showError = (message, duration = 5000) => {
     const errorEl = document.createElement('div');
     errorEl.className = 'payment-error';
-    errorEl.innerHTML = `
-      <div style="
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        padding: 15px;
-        background: #ffebee;
-        color: #c62828;
-        border-radius: 4px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        z-index: 1000;
-      ">
-        <span>⚠️ ${message}</span>
-      </div>
-    `;
+    errorEl.innerHTML = `<div style="position:fixed;bottom:20px;right:20px;padding:15px;background:#ffebee;color:#c62828;border-radius:4px;box-shadow:0 2px 10px rgba(0,0,0,0.1);z-index:1000">⚠️ ${message}</div>`;
     document.body.appendChild(errorEl);
     setTimeout(() => errorEl.remove(), duration);
   };
 
-  showFatalError = (message = 'Sistema de pagamento temporariamente indisponível') => {
+  showFatalError = (message = 'Sistema indisponível') => {
     const errorEl = document.createElement('div');
     errorEl.className = 'payment-fatal-error';
-    errorEl.innerHTML = `
-      <div style="
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        padding: 15px;
-        background: #d32f2f;
-        color: white;
-        text-align: center;
-        z-index: 9999;
-      ">
-        ${message}
-      </div>
-    `;
+    errorEl.innerHTML = `<div style="position:fixed;top:0;left:0;right:0;padding:15px;background:#d32f2f;color:white;text-align:center;z-index:9999">${message}</div>`;
     document.body.prepend(errorEl);
     document.querySelectorAll('[data-plano]').forEach(btn => btn.disabled = true);
   };
-
-  // ... (outros métodos auxiliares permanecem iguais)
 }
 
 /* ========== INICIALIZAÇÃO ========== */
@@ -282,7 +292,7 @@ class PaymentSystem {
 function initializePaymentSystem() {
   try {
     if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
-      throw new Error('O sistema de pagamento requer HTTPS');
+      throw new Error('Requer conexão segura (HTTPS)');
     }
 
     const configElement = document.getElementById('payment-config');
@@ -291,23 +301,15 @@ function initializePaymentSystem() {
     });
   } catch (error) {
     console.error('Falha na inicialização:', error);
-    
     const errorEl = document.createElement('div');
-    errorEl.innerHTML = `
-      <div style="
-        padding: 20px;
-        background: #ffebee;
-        color: #c62828;
-        text-align: center;
-        margin: 20px;
-        border-radius: 4px;
-      ">
-        ${error.message || 'Sistema de pagamento indisponível. Por favor, recarregue a página.'}
-      </div>
-    `;
+    errorEl.innerHTML = `<div style="padding:20px;background:#ffebee;color:#c62828;text-align:center;margin:20px;border-radius:4px">${error.message || 'Erro ao carregar o sistema de pagamento'}</div>`;
     document.body.appendChild(errorEl);
   }
 }
 
 // Inicialização segura
-document.addEventListener('DOMContentLoaded', initializePaymentSystem);
+if (document.readyState === 'complete') {
+  initializePaymentSystem();
+} else {
+  document.addEventListener('DOMContentLoaded', initializePaymentSystem);
+}
