@@ -12,14 +12,14 @@ class PaymentSystem {
     }
 
     // Inicializa o Stripe com sua chave pública
-    this.stripe = Stripe('pk_live_51RGQ2oCaTJrTX5Tupk7zHAmRzxDgX9RtmxlFRwGNlyHudrhMjPVu0yx871bch1PpXkfUnOQN0UXB1mXzhwSMrDrG00ix8LTK9b');
+    this.stripe = Stripe('pk_test_51RGQ31Ctf0sheJfc7YQ32qSzBdzRIsyLRAzBqf3lEgd5F4Ej5RJr3Kp0ZsgkVVUQxouU9vF4jzC2Okp5bmbG3Ic40042yaPE84');
     
     // Definição dos planos
     this.planos = {
       basico: {
         id: 'basico',
         nome: 'Plano Básico',
-        preco: 1090
+        preco: 2990
       },
       profissional: {
         id: 'profissional',
