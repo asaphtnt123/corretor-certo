@@ -2458,6 +2458,22 @@ async function getSellerStats(userId) {
     }
 }
 
+
+// Quando o login for bem-sucedido:
+function onLoginSuccess(user) {
+  // Armazena o token em localStorage E sessionStorage
+  user.getIdToken().then(token => {
+    localStorage.setItem('authToken', token);
+    sessionStorage.setItem('authToken', token);
+    localStorage.setItem('userEmail', user.email);
+    
+    // Verifica se há redirecionamento pendente
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('redirect')) {
+      window.location.href = `${urlParams.get('redirect')}.html`;
+    }
+  });
+}
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
 window.openDetailsModal = openDetailsModal;
