@@ -198,12 +198,45 @@ class PaymentSystem {
 
   /* ========== MÉTODOS AUXILIARES ========== */
 
-  getCurrentUserId = async () => {
-    if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
-      return firebase.auth().currentUser.uid;
+ // No método getCurrentUserId, atualize para:
+getCurrentUserId = async () => {
+  // 1. Primeiro verifica o Firebase Auth
+  if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
+    return firebase.auth().currentUser.uid;
+  }
+  
+  // 2. Verifica se há token válido no localStorage/sessionStorage
+  const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+  if (authToken) {
+    return this.validateToken(authToken); // Método novo que vamos adicionar
+  }
+  
+  // 3. Se não encontrou usuário autenticado
+  return null;
+};
+
+// Adicione este novo método à classe:
+validateToken = async (token) => {
+  try {
+    // Verifica com seu backend ou Firebase Admin
+    const response = await fetch('/.netlify/functions/validate-token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      return data.userId;
     }
-    return localStorage.getItem('userId');
-  };
+    return null;
+  } catch (error) {
+    console.error('Erro ao validar token:', error);
+    return null;
+  }
+};
 
   getAuthToken = async () => {
     if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
@@ -236,10 +269,13 @@ class PaymentSystem {
     language: navigator.language
   });
 
-  handleUnauthenticated = (button) => {
-    this.showError('Por favor, faça login para continuar');
-    button.disabled = false;
-  };
+ // Modifique o handleUnauthenticated para redirecionar corretamente:
+handleUnauthenticated = (button) => {
+  this.showError('Redirecionando para login...');
+  setTimeout(() => {
+    window.location.href = 'index.html?redirect=planos';
+  }, 1500);
+};
 
   handlePaymentError = (error, button) => {
     console.error('Erro no pagamento:', error);
