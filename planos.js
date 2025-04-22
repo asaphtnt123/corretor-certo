@@ -54,21 +54,16 @@ class PaymentSystem {
     });
   }
 
- getStripeKey() {
-  // 1. Prioridade: Variável de ambiente no Netlify
-   if (process.env.STRIPE_PUBLIC_KEY) {
-      return process.env.STRIPE_PUBLIC_KEY;
-    }
-  
-  // 2. Fallback: Atributo data-* no HTML (apenas para desenvolvimento)
-  const stripeConfig = document.getElementById('payment-config');
-  if (stripeConfig?.dataset.publishableKey) {
-    console.warn('Usando chave do HTML - apenas para desenvolvimento');
-    return stripeConfig.dataset.publishableKey;
+async getStripeKey() {
+  try {
+    const response = await fetch('/.netlify/functions/getStripeKey');
+    const data = await response.json();
+    return data.key;
+  } catch (error) {
+    console.error('Falha ao obter chave:', error);
+    // Fallback seguro
+    return 'pk_live_51RGQ2oCaTJrTX5Tupk7zHAmRzxDgX9RtmxlFRwGNlyHudrhMjPVu0yx871bch1PpXkfUnOQN0UXB1mXzhwSMrDrG00ix8LTK9b';
   }
-  
-  // 3. Erro em produção
-  throw new Error('Chave pública do Stripe não configurada. Verifique as variáveis de ambiente no Netlify.');
 }
 
   initPlanos() {
