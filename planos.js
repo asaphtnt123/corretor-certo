@@ -1,60 +1,256 @@
 /**
- * Sistema de Pagamento para Planos - Corretor Certo
- * Versão 3.0 - Segura, Modular e Pronta para Produção
+ * Sistema de Pagamento Completo - Corretor Certo
+ * Integração com Stripe e Firebase
+ * Versão 4.0 - Segura, Modular e Pronta para Produção
  */
 class PaymentSystem {
-  constructor() {
-    // Configurações centralizadas
+  constructor(options = {}) {
+    // Configurações padrão
     this.config = {
-      apiEndpoint: '/.netlify/functions/create-checkout-session',
-      loadingText: '<span class="spinner"></span> Processando...'
+      stripeKey: options.stripeKey || this.detectStripeKey(),
+      apiEndpoint: options.apiEndpoint || '/.netlify/functions/create-checkout-session',
+      authRequired: options.authRequired !== false,
+      defaultCurrency: 'BRL'
     };
 
-    // Inicializações seguras
+    // Estados
+    this.state = {
+      isLoading: false,
+      currentRequest: null
+    };
+
+    // Inicializações
+    this.initStripe();
+    this.initPlanos();
+    this.initEventListeners();
+    this.setupErrorHandling();
+  }
+
+  /* ========== INICIALIZAÇÃO ========== */
+
+  initStripe() {
     try {
-      this.initStripe();
-      this.initPlanos();
-      this.initEventListeners();
+      if (typeof Stripe === 'undefined') {
+        throw new Error('Stripe.js não está disponível');
+      }
+
+      if (!this.config.stripeKey) {
+        throw new Error('Chave pública do Stripe não configurada');
+      }
+
+      this.stripe = Stripe(this.config.stripeKey, {
+        locale: 'pt-BR',
+        betas: ['process_order_beta_3']
+      });
     } catch (error) {
-      console.error('Falha na inicialização:', error);
-      this.showError('Sistema de pagamento indisponível');
+      console.error('Falha ao inicializar Stripe:', error);
+      this.showFatalError('Sistema de pagamento indisponível');
     }
   }
 
-  /**
-   * Inicialização segura do Stripe.js
-   */
-  initStripe() {
-    if (typeof Stripe === 'undefined') {
-      throw new Error('Biblioteca Stripe não carregada');
-    }
+  initPlanos() {
+    this.planos = {
+      basico: {
+        id: 'basico',
+        nome: 'Plano Básico',
+        preco: 2990,
+        moeda: this.config.defaultCurrency,
+        ciclo: 'mensal',
+        features: [
+          'Acesso básico à plataforma',
+          'Suporte por e-mail',
+          'Relatórios simples'
+        ],
+        metadata: {
+          tipo: 'assinatura',
+          nivel: 'iniciante'
+        }
+      },
+      profissional: {
+        id: 'profissional',
+        nome: 'Plano Profissional',
+        preco: 5990,
+        moeda: this.config.defaultCurrency,
+        ciclo: 'mensal',
+        features: [
+          'Acesso completo',
+          'Suporte prioritário',
+          'Relatórios avançados'
+        ],
+        metadata: {
+          tipo: 'assinatura',
+          nivel: 'avancado'
+        }
+      },
+      premium: {
+        id: 'premium',
+        nome: 'Plano Premium',
+        preco: 9990,
+        moeda: this.config.defaultCurrency,
+        ciclo: 'anual',
+        features: [
+          'Acesso completo',
+          'Suporte 24/7',
+          'Consultoria personalizada'
+        ],
+        metadata: {
+          tipo: 'assinatura',
+          nivel: 'premium'
+        }
+      }
+    };
+  }
 
-    // Carrega a chave pública de forma segura
-    const stripeKey = this.getStripeKey();
-    if (!stripeKey) {
-      throw new Error('Configuração de pagamento incompleta');
-    }
+  initEventListeners() {
+    // Delegation para melhor performance
+    document.addEventListener('click', (e) => {
+      const button = e.target.closest('[data-plano]');
+      if (!button || this.state.isLoading) return;
 
-    this.stripe = Stripe(stripeKey, {
-      betas: ['process_order_beta_3']
+      this.handlePaymentClick(button);
     });
   }
 
-  /**
-   * Obtém a chave do Stripe de forma segura
-   */
-  getStripeKey() {
-    // 1. Tenta obter da variável de ambiente (build-time)
+  setupErrorHandling() {
+    window.addEventListener('unhandledrejection', (event) => {
+      console.error('Erro não tratado:', event.reason);
+      this.showError('Ocorreu um erro inesperado');
+    });
+  }
+
+  /* ========== MÉTODOS PRINCIPAIS ========== */
+
+  async handlePaymentClick(button) {
+    try {
+      const planoId = button.dataset.plano;
+      const userId = this.config.authRequired ? await this.getCurrentUserId() : null;
+
+      if (this.config.authRequired && !userId) {
+        return this.handleUnauthenticated(button);
+      }
+
+      await this.processPayment(planoId, userId);
+    } catch (error) {
+      this.handlePaymentError(error, button);
+    }
+  }
+
+  async processPayment(planoId, userId) {
+    this.setState({ isLoading: true });
+
+    try {
+      const plano = this.planos[planoId];
+      if (!plano) throw new Error('Plano não encontrado');
+
+      const session = await this.createPaymentSession({
+        planoId,
+        userId,
+        userEmail: await this.getUserEmail(),
+        userIP: await this.getUserIP(),
+        deviceInfo: this.getDeviceInfo()
+      });
+
+      const result = await this.stripe.redirectToCheckout({
+        sessionId: session.id
+      });
+
+      if (result.error) throw result.error;
+    } finally {
+      this.setState({ isLoading: false });
+    }
+  }
+
+  async createPaymentSession(paymentData) {
+    const abortController = new AbortController();
+    this.setState({ currentRequest: abortController });
+
+    try {
+      const response = await fetch(this.config.apiEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${await this.getAuthToken()}`
+        },
+        body: JSON.stringify(paymentData),
+        signal: abortController.signal
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Erro ao criar sessão de pagamento');
+      }
+
+      return await response.json();
+    } finally {
+      this.setState({ currentRequest: null });
+    }
+  }
+
+  /* ========== MÉTODOS DE AUTENTICAÇÃO ========== */
+
+  async getCurrentUserId() {
+    // Implementação para Firebase Auth
+    if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
+      return firebase.auth().currentUser.uid;
+    }
+
+    // Implementação genérica (adaptar conforme necessário)
+    return localStorage.getItem('userId') || sessionStorage.getItem('userId') || null;
+  }
+
+  async getAuthToken() {
+    // Firebase Auth
+    if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
+      return await firebase.auth().currentUser.getIdToken();
+    }
+
+    // Implementação genérica
+    return localStorage.getItem('authToken') || null;
+  }
+
+  async getUserEmail() {
+    // Firebase Auth
+    if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
+      return firebase.auth().currentUser.email;
+    }
+
+    // Implementação genérica
+    return localStorage.getItem('userEmail') || null;
+  }
+
+  /* ========== MÉTODOS AUXILIARES ========== */
+
+  async getUserIP() {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json', {
+        timeout: 2000
+      });
+      const data = await response.json();
+      return data.ip || null;
+    } catch {
+      return null;
+    }
+  }
+
+  getDeviceInfo() {
+    return {
+      userAgent: navigator.userAgent,
+      screenWidth: window.screen.width,
+      screenHeight: window.screen.height,
+      language: navigator.language
+    };
+  }
+
+  detectStripeKey() {
+    // 1. Tenta obter de atributo data-* no HTML
+    const fromDOM = document.getElementById('stripe-config')?.dataset.publishableKey;
+    if (fromDOM) return fromDOM;
+
+    // 2. Tenta obter de variável de ambiente (build-time)
     if (typeof process !== 'undefined' && process.env.STRIPE_PUBLISHABLE_KEY) {
       return process.env.STRIPE_PUBLISHABLE_KEY;
     }
-    
-    // 2. Tenta obter de um atributo data-* no HTML
-    const stripeElement = document.getElementById('stripe-config');
-    if (stripeElement?.dataset.publishableKey) {
-      return stripeElement.dataset.publishableKey;
-    }
-    
+
     // 3. Fallback para desenvolvimento
     if (window.location.hostname === 'localhost') {
       return 'pk_test_51RGQ31Ctf0sheJfc7YQ32qSzBdzRIsyLRAzBqf3lEgd5F4Ej5RJr3Kp0ZsgkVVUQxouU9vF4jzC2Okp5bmbG3Ic40042yaPE84';
@@ -63,234 +259,169 @@ class PaymentSystem {
     return null;
   }
 
-  /**
-   * Definição dinâmica dos planos
-   */
-  initPlanos() {
-    this.planos = {
-      basico: {
-        id: 'basico',
-        nome: 'Plano Básico',
-        preco: 2990,
-        moeda: 'BRL',
-        features: ['Acesso básico', 'Suporte por email'],
-        ciclo: 'mensal',
-        metadata: {
-          tipo: 'assinatura'
-        }
-      },
-      profissional: {
-        id: 'profissional',
-        nome: 'Plano Profissional',
-        preco: 5990,
-        moeda: 'BRL',
-        features: ['Acesso completo', 'Suporte prioritário'],
-        ciclo: 'mensal',
-        metadata: {
-          tipo: 'assinatura'
-        }
-      },
-      premium: {
-        id: 'premium',
-        nome: 'Plano Premium',
-        preco: 9990,
-        moeda: 'BRL',
-        features: ['Acesso completo', 'Suporte 24/7', 'Consultoria'],
-        ciclo: 'anual',
-        metadata: {
-          tipo: 'assinatura'
-        }
-      }
-    };
+  /* ========== GERENCIAMENTO DE ESTADO ========== */
+
+  setState(newState) {
+    this.state = { ...this.state, ...newState };
+    this.updateUI();
   }
 
-  /**
-   * Configuração de event listeners com delegção
-   */
-  initEventListeners() {
-    document.body.addEventListener('click', async (e) => {
-      const button = e.target.closest('[data-plano]');
-      if (!button) return;
-
-      try {
-        e.preventDefault();
-        
-        const planoId = button.dataset.plano;
-        const userId = await this.getCurrentUserId();
-        
-        if (!userId) {
-          this.showAuthError();
-          return this.redirectToLogin();
-        }
-
-        await this.handlePayment(planoId, userId);
-      } catch (error) {
-        console.error('Erro no evento:', error);
-        this.showError('Falha ao iniciar pagamento');
-      }
-    });
-  }
-
-  /**
-   * Fluxo principal de pagamento
-   */
-  async handlePayment(planoId, userId) {
-    try {
-      this.showLoading(true, planoId);
-      
-      const plano = this.planos[planoId];
-      if (!plano) throw new Error('Plano selecionado é inválido');
-
-      // 1. Cria a sessão no backend
-      const session = await this.createPaymentSession({
-        planoId,
-        userId,
-        userEmail: await this.getUserEmail(),
-        ip: await this.getUserIP()
-      });
-
-      // 2. Redireciona para o checkout
-      const result = await this.stripe.redirectToCheckout({
-        sessionId: session.id
-      });
-
-      if (result.error) {
-        throw result.error;
-      }
-    } catch (error) {
-      console.error('Erro no fluxo de pagamento:', {
-        error,
-        planoId,
-        userId
-      });
-      
-      this.showError(this.getFriendlyError(error));
-    } finally {
-      this.showLoading(false);
-    }
-  }
-
-  /**
-   * Comunicação segura com o backend
-   */
-  async createPaymentSession(paymentData) {
-    const response = await fetch(this.config.apiEndpoint, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${await this.getAuthToken()}`
-      },
-      body: JSON.stringify(paymentData)
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || 'Erro na comunicação com o servidor');
-    }
-
-    return await response.json();
-  }
-
-  /**
-   * Métodos auxiliares de UI
-   */
-  showLoading(show, planoId = null) {
+  updateUI() {
     const buttons = document.querySelectorAll('[data-plano]');
-    buttons.forEach(btn => {
-      if (!planoId || btn.dataset.plano === planoId) {
-        btn.disabled = show;
-        btn.innerHTML = show 
-          ? this.config.loadingText 
-          : `Assinar ${this.planos[btn.dataset.plano]?.nome || ''}`;
+    buttons.forEach(button => {
+      button.disabled = this.state.isLoading;
+      
+      if (this.state.isLoading && button.dataset.plano === this.state.currentPlanoId) {
+        button.innerHTML = this.config.loadingText || 'Processando...';
+      } else {
+        const plano = this.planos[button.dataset.plano];
+        button.innerHTML = plano ? `Assinar ${plano.nome}` : 'Assinar';
       }
     });
   }
+
+  /* ========== TRATAMENTO DE ERROS ========== */
+
+  handleUnauthenticated(button) {
+    this.showError('Por favor, faça login para continuar');
+    button.disabled = false;
+    
+    // Opcional: redirecionar para login
+    // window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+  }
+
+  handlePaymentError(error, button) {
+    console.error('Erro no pagamento:', {
+      error,
+      button: button?.dataset?.plano,
+      timestamp: new Date().toISOString()
+    });
+
+    this.showError(this.getErrorMessage(error));
+    
+    if (button) {
+      button.disabled = false;
+      const plano = this.planos[button.dataset.plano];
+      button.innerHTML = plano ? `Assinar ${plano.nome}` : 'Assinar';
+    }
+
+    this.setState({ isLoading: false });
+  }
+
+  getErrorMessage(error) {
+    const errorMap = {
+      'card_declined': 'Seu cartão foi recusado',
+      'expired_card': 'Cartão expirado',
+      'insufficient_funds': 'Saldo insuficiente',
+      'authentication_required': 'Autenticação 3D Secure necessária'
+    };
+
+    return errorMap[error.code] || 
+           error.message || 
+           'Ocorreu um erro ao processar seu pagamento';
+  }
+
+  /* ========== UI/UX ========== */
 
   showError(message, duration = 5000) {
-    const errorEl = document.getElementById('payment-error') || this.createErrorElement();
-    errorEl.textContent = message;
-    errorEl.style.display = 'block';
+    let errorContainer = document.getElementById('payment-error-container');
     
+    if (!errorContainer) {
+      errorContainer = document.createElement('div');
+      errorContainer.id = 'payment-error-container';
+      errorContainer.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+      `;
+      document.body.appendChild(errorContainer);
+    }
+
+    const errorElement = document.createElement('div');
+    errorElement.className = 'payment-error';
+    errorElement.innerHTML = `
+      <div style="
+        padding: 15px;
+        background: #ffebee;
+        color: #c62828;
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+      ">
+        <span style="margin-right: 10px;">⚠️</span>
+        <span>${message}</span>
+      </div>
+    `;
+
+    errorContainer.appendChild(errorElement);
+
     setTimeout(() => {
-      errorEl.style.display = 'none';
+      errorElement.style.opacity = '0';
+      setTimeout(() => errorElement.remove(), 300);
     }, duration);
   }
 
-  createErrorElement() {
-    const el = document.createElement('div');
-    el.id = 'payment-error';
-    el.style.display = 'none';
-    document.body.appendChild(el);
-    return el;
-  }
-
-  showAuthError() {
-    this.showError('Por favor, faça login para assinar um plano');
-  }
-
-  redirectToLogin() {
-    window.location.href = '/login?returnTo=' + encodeURIComponent(window.location.pathname);
-  }
-
-  /**
-   * Métodos para implementação específica
-   */
-  async getCurrentUserId() {
-    // Implemente com seu sistema de autenticação
-    return localStorage.getItem('userId') || null;
-  }
-
-  async getUserEmail() {
-    // Implemente para retornar o email do usuário
-    return null;
-  }
-
-  async getAuthToken() {
-    // Implemente para retornar o token JWT
-    return null;
-  }
-
-  async getUserIP() {
-    // Pode ser obtido via API ou headers em algumas implementações
-    return null;
-  }
-
-  getFriendlyError(error) {
-    const defaultMessage = 'Erro ao processar pagamento';
-    if (!error) return defaultMessage;
-    
-    const errorMap = {
-      'card_declined': 'Cartão recusado',
-      'expired_card': 'Cartão expirado',
-      'insufficient_funds': 'Saldo insuficiente'
-    };
-    
-    return errorMap[error.code] || error.message || defaultMessage;
+  showFatalError(message) {
+    const fatalError = document.createElement('div');
+    fatalError.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #d32f2f;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      z-index: 9999;
+    `;
+    fatalError.textContent = message;
+    document.body.prepend(fatalError);
   }
 }
 
-// Inicialização segura com fallback
+/* ========== INICIALIZAÇÃO AUTOMÁTICA ========== */
+
 function initializePaymentSystem() {
+  // Configuração via atributos data-*
+  const paymentElement = document.getElementById('payment-system-config');
+  const options = paymentElement ? paymentElement.dataset : {};
+
   try {
-    if (typeof Stripe !== 'undefined') {
-      return new PaymentSystem();
-    }
-    
-    // Carrega o Stripe.js dinamicamente
-    const script = document.createElement('script');
-    script.src = 'https://js.stripe.com/v3/';
-    script.async = true;
-    script.onload = () => new PaymentSystem();
-    script.onerror = () => console.error('Falha ao carregar Stripe.js');
-    document.head.appendChild(script);
+    new PaymentSystem(options);
   } catch (error) {
-    console.error('Falha na inicialização do sistema de pagamento:', error);
+    console.error('Falha ao inicializar sistema de pagamento:', error);
+    
+    const errorContainer = document.createElement('div');
+    errorContainer.style.cssText = `
+      padding: 20px;
+      background: #ffebee;
+      color: #c62828;
+      border-radius: 4px;
+      margin: 20px;
+      text-align: center;
+    `;
+    errorContainer.textContent = 'Sistema de pagamento indisponível no momento. Por favor, tente novamente mais tarde.';
+    
+    const container = document.querySelector('.payment-container') || document.body;
+    container.appendChild(errorContainer);
   }
 }
 
-// Inicia quando o DOM estiver pronto
+// Carrega quando o DOM estiver pronto
 if (document.readyState !== 'loading') {
   initializePaymentSystem();
 } else {
   document.addEventListener('DOMContentLoaded', initializePaymentSystem);
+}
+
+// Carrega o Stripe.js dinamicamente se necessário
+if (typeof Stripe === 'undefined') {
+  const script = document.createElement('script');
+  script.src = 'https://js.stripe.com/v3/';
+  script.async = true;
+  script.onload = initializePaymentSystem;
+  document.head.appendChild(script);
 }
