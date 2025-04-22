@@ -300,9 +300,16 @@ function initializePaymentSystem() {
     }
 
     const configElement = document.getElementById('payment-config');
-    new PaymentSystem({
+    const options = {
       apiEndpoint: configElement?.dataset.apiEndpoint
-    });
+    };
+
+    // Verifica se a classe está totalmente definida
+    if (typeof PaymentSystem === 'function') {
+      new PaymentSystem(options);
+    } else {
+      throw new Error('Classe PaymentSystem não está definida corretamente');
+    }
   } catch (error) {
     console.error('Falha na inicialização:', error);
     
@@ -316,12 +323,18 @@ function initializePaymentSystem() {
         margin: 20px;
         border-radius: 4px;
       ">
-        ${error.message || 'Sistema de pagamento indisponível'}
+        ${error.message || 'Sistema de pagamento indisponível. Por favor, recarregue a página.'}
       </div>
     `;
     document.body.appendChild(errorEl);
   }
 }
+// Garante que o DOM esteja totalmente carregado
+document.addEventListener('DOMContentLoaded', () => {
+  // Pequeno delay para garantir que tudo esteja carregado
+  setTimeout(initializePaymentSystem, 100);
+});
+
 
 // Inicialização segura
 if (document.readyState === 'complete') {
