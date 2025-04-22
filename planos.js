@@ -54,26 +54,22 @@ class PaymentSystem {
     });
   }
 
-  getStripeKey() {
-    // 1. Prioridade: Variável de ambiente (Netlify)
-    if (typeof process !== 'undefined' && process.env.STRIPE_PUBLISHABLE_KEY) {
-      return process.env.STRIPE_PUBLISHABLE_KEY;
-    }
-    
-    // 2. Fallback: Atributo data-* no HTML
-    const stripeConfig = document.getElementById('payment-config');
-    if (stripeConfig?.dataset.publishableKey) {
-      return stripeConfig.dataset.publishableKey;
-    }
-    
-    // 3. Fallback para desenvolvimento
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      console.warn('Usando chave de teste para desenvolvimento local');
-      return 'pk_test_51RGQ31Ctf0sheJfc7YQ32qSzBdzRIsyLRAzBqf3lEgd5F4Ej5RJr3Kp0ZsgkVVUQxouU9vF4jzC2Okp5bmbG3Ic40042yaPE84';
-    }
-
-    return null;
+ getStripeKey() {
+  // 1. Prioridade: Variável de ambiente no Netlify
+  if (typeof process !== 'undefined' && process.env.STRIPE_PUBLISHABLE_KEY) {
+    return process.env.STRIPE_PUBLISHABLE_KEY;
   }
+  
+  // 2. Fallback: Atributo data-* no HTML (apenas para desenvolvimento)
+  const stripeConfig = document.getElementById('payment-config');
+  if (stripeConfig?.dataset.publishableKey) {
+    console.warn('Usando chave do HTML - apenas para desenvolvimento');
+    return stripeConfig.dataset.publishableKey;
+  }
+  
+  // 3. Erro em produção
+  throw new Error('Chave pública do Stripe não configurada. Verifique as variáveis de ambiente no Netlify.');
+}
 
   initPlanos() {
     this.planos = {
