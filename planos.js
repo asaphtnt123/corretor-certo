@@ -25,7 +25,17 @@ class PaymentSystem {
     this.initEventListeners();
     this.setupErrorHandling();
   }
+getStripeKey() {
+    // 1. Tenta pegar da variável de ambiente (Netlify)
+    if (typeof process !== 'undefined' && process.env.STRIPE_PUBLISHABLE_KEY) {
+      return process.env.STRIPE_PUBLISHABLE_KEY;
+    }
+    
+    // 2. Fallback seguro para produção
+    return null; // Forçará o erro se não configurado corretamente
+  }
 
+  
   /* ========== INICIALIZAÇÃO ========== */
 
   initStripe() {
