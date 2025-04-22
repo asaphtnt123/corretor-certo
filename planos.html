@@ -25,6 +25,7 @@
   <!-- ✅ Fontes e Ícones -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://js.stripe.com/v3/"></script>
 
   <style>
     :root {
@@ -245,8 +246,7 @@
 </head>
 <body>
   <!-- Configuração segura (não contém chaves) -->
-  <div id="payment-config" data-api-endpoint="/.netlify/functions/create-checkout-session"></div>
-
+<div id="payment-config" data-api-endpoint="/.netlify/functions/create-checkout-session"></div>
   <!-- Header -->
   <header class="header-plano">
     <div class="container">
@@ -345,7 +345,6 @@
   </footer>
 
   <!-- Scripts -->
-  <script src="https://js.stripe.com/v3/"></script>
   <script src="planos.js" defer></script>
 </body>
 </html>
