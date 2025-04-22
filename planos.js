@@ -6,12 +6,28 @@
 
 class PaymentSystem {
   constructor(options = {}) {
-    // Garante o contexto correto para callbacks
+    // Primeiro define todos os métodos
+    this.initPlanos = this.initPlanos.bind(this);
+    this.initStripe = this.initStripe.bind(this);
+    this.getStripeKey = this.getStripeKey.bind(this);
+    this.initEventListeners = this.initEventListeners.bind(this);
+    this.setupErrorHandling = this.setupErrorHandling.bind(this);
     this.handlePaymentClick = this.handlePaymentClick.bind(this);
     this.handlePaymentError = this.handlePaymentError.bind(this);
-    this.initializeSystem = this.initializeSystem.bind(this);
+    this.processPayment = this.processPayment.bind(this);
+    this.createPaymentSession = this.createPaymentSession.bind(this);
+    this.getCurrentUserId = this.getCurrentUserId.bind(this);
+    this.getAuthToken = this.getAuthToken.bind(this);
+    this.getUserEmail = this.getUserEmail.bind(this);
+    this.getUserIP = this.getUserIP.bind(this);
+    this.getDeviceInfo = this.getDeviceInfo.bind(this);
+    this.setState = this.setState.bind(this);
+    this.updateUI = this.updateUI.bind(this);
+    this.handleUnauthenticated = this.handleUnauthenticated.bind(this);
     this.showError = this.showError.bind(this);
     this.showFatalError = this.showFatalError.bind(this);
+    this.isNetworkError = this.isNetworkError.bind(this);
+    this.getErrorMessage = this.getErrorMessage.bind(this);
 
     // Configurações padrão
     this.config = {
@@ -37,10 +53,12 @@ class PaymentSystem {
 
   /* ========== MÉTODOS DE INICIALIZAÇÃO ========== */
 
-  async initializeSystem() {
+ async initializeSystem() {
     try {
       // Verifica dependências primeiro
-      await this.checkDependencies();
+      if (typeof Stripe === 'undefined') {
+        throw new Error('Biblioteca Stripe não carregada');
+      }
       
       // Inicializações síncronas
       this.initPlanos();
