@@ -1,2 +1,10 @@
-npm init -y
-npm install stripe
+// 📁 package.json
+{
+  "name": "corretorcerto-functions",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "stripe": "^12.0.0"
+  }
+}
