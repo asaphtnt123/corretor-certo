@@ -87,7 +87,7 @@ if (showRegisterLink) {
     });
 }
 
-// Função de Login
+// Atualização da função handleLogin no auth.js
 async function handleLogin(e) {
     e.preventDefault();
     
@@ -98,8 +98,29 @@ async function handleLogin(e) {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         
-        // Redirecionar após login bem-sucedido
-        window.location.href = 'perfil.html';
+        // Obter o token de autenticação
+        const token = await user.getIdToken();
+        
+        // Armazenar os tokens de autenticação
+        localStorage.setItem('authToken', token);
+        sessionStorage.setItem('authToken', token);
+        localStorage.setItem('userEmail', user.email);
+        localStorage.setItem('userId', user.uid);
+
+        // Verificar se há redirecionamento pendente
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectTo = urlParams.get('redirect') || 'perfil'; // Padrão: perfil.html
+        const planId = urlParams.get('plan');
+
+        // Redirecionar conforme necessário
+        if (redirectTo === 'planos' && planId) {
+            console.log(`Redirecionando para planos.html?plan=${planId}`);
+            window.location.href = `planos.html?plan=${planId}&fromLogin=true`;
+        } else {
+            console.log(`Redirecionando para ${redirectTo}.html`);
+            window.location.href = `${redirectTo}.html?fromLogin=true`;
+        }
+        
     } catch (error) {
         console.error('Erro no login:', error);
         let errorMessage = 'Erro ao fazer login. Tente novamente.';
@@ -108,6 +129,8 @@ async function handleLogin(e) {
             errorMessage = 'E-mail ou senha incorretos.';
         } else if (error.code === 'auth/too-many-requests') {
             errorMessage = 'Muitas tentativas. Tente novamente mais tarde.';
+        } else if (error.code === 'auth/user-not-found') {
+            errorMessage = 'Usuário não encontrado.';
         }
         
         Swal.fire({
@@ -123,6 +146,23 @@ async function handleLogin(e) {
 if (loginForm) {
     loginForm.addEventListener('submit', handleLogin);
 }
+
+// Verificação de redirecionamento ao carregar a página de login
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirectTo = urlParams.get('redirect');
+    const planId = urlParams.get('plan');
+
+    if (redirectTo) {
+        console.log(`Redirecionamento pendente para: ${redirectTo}.html`);
+        console.log(`Plano selecionado: ${planId || 'Nenhum'}`);
+        
+        // Armazena temporariamente para caso a página seja recarregada
+        if (redirectTo === 'planos' && planId) {
+            sessionStorage.setItem('pendingPlan', planId);
+        }
+    }
+});
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
