@@ -1,147 +1,64 @@
-// netlify/functions/create-checkout-session.js
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 exports.handler = async (event) => {
-  // Verifica o método HTTP
-  if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ error: 'Método não permitido' }),
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      }
-    };
-  }
-
   try {
-    // Verifica se o corpo da requisição está presente
-    if (!event.body) {
+    // Verifica o método HTTP
+    if (event.httpMethod !== 'POST') {
       return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Corpo da requisição ausente' }),
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        }
+        statusCode: 405,
+        body: JSON.stringify({ error: 'Método não permitido' })
       };
     }
 
-    const { planoId, userId } = JSON.parse(event.body);
-    
-    // Validação dos campos obrigatórios
-    if (!planoId || !userId) {
+    // Parse dos dados recebidos
+    const { planoId, userId, userEmail, userIP, deviceInfo } = JSON.parse(event.body);
+
+    // Validação básica
+    if (!planoId || !userEmail) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ 
-          error: 'Campos obrigatórios faltando',
-          details: !planoId ? 'planoId é obrigatório' : 'userId é obrigatório'
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        }
+        body: JSON.stringify({ error: 'Dados incompletos' })
       };
     }
 
-    const planos = {
-      basico: { 
-        preco: 2990, 
-        nome: "Plano Básico",
-        descricao: "Acesso aos recursos essenciais"
-      },
-      profissional: { 
-        preco: 5990, 
-        nome: "Plano Profissional",
-        descricao: "Recursos avançados para profissionais"
-      },
-      premium: { 
-        preco: 9990, 
-        nome: "Plano Premium",
-        descricao: "Solução completa com todos os recursos"
-      }
+    // Configuração dos planos no Stripe
+    const stripePlans = {
+      basico: 'price_123456789', // Substitua pelos seus IDs reais do Stripe
+      profissional: 'price_234567890',
+      premium: 'price_345678901'
     };
-
-    const plano = planos[planoId];
-    
-    if (!plano) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ 
-          error: 'Plano inválido',
-          planosDisponiveis: Object.keys(planos)
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        }
-      };
-    }
 
     // Cria a sessão de checkout
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card', 'pix'], // Adicionado Pix como opção
+      payment_method_types: ['card'],
       line_items: [{
-        price_data: {
-          currency: 'brl',
-          product_data: { 
-            name: plano.nome,
-            description: plano.descricao,
-            metadata: {
-              plano_id: planoId,
-              user_id: userId
-            }
-          },
-          unit_amount: plano.preco,
-        },
+        price: stripePlans[planoId],
         quantity: 1,
       }],
-      mode: 'payment',
-      customer_email: event.headers['x-user-email'], // Opcional: captura email do header
+      mode: 'subscription',
+      success_url: `${process.env.URL}/sucesso?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.URL}/planos`,
+      customer_email: userEmail,
       metadata: {
-        userId: userId,
-        planoId: planoId,
-        environment: process.env.NETLIFY_DEV ? 'development' : 'production'
-      },
-      success_url: `${process.env.DOMAIN}/sucesso?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.DOMAIN}/cancelado?session_id={CHECKOUT_SESSION_ID}`,
-      expires_at: Math.floor(Date.now() / 1000) + 3600, // Sessão expira em 1 hora
+        user_id: userId,
+        user_ip: userIP,
+        device_info: JSON.stringify(deviceInfo)
+      }
     });
-
-    // Log seguro (não mostra dados sensíveis)
-    console.log(`Checkout session criada para usuário ${userId}, plano ${planoId}`);
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ 
-        sessionId: session.id,
-        url: session.url,
-        expiraEm: new Date(session.expires_at * 1000).toISOString()
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      }
+      body: JSON.stringify({ id: session.id })
     };
 
   } catch (error) {
-    // Log detalhado do erro (sem expor detalhes sensíveis ao cliente)
-    console.error('Erro no processamento do pagamento:', {
-      message: error.message,
-      type: error.type,
-      statusCode: error.statusCode
-    });
-
+    console.error('Erro na função:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({ 
-        error: 'Erro ao processar pagamento',
-        requestId: event.requestContext?.requestId
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      }
+        error: 'Erro interno no servidor',
+        details: error.message 
+      })
     };
   }
 };
