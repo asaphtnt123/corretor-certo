@@ -29,7 +29,27 @@ class PaymentSystem {
 
   /* ========== MÉTODOS PRINCIPAIS ========== */
 
-  initializeSystem = async () => {
+  // Adicione esta verificação no início do initializeSystem
+initializeSystem = async () => {
+    // Verifica se veio de um redirecionamento pós-login
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromLogin = urlParams.get('fromLogin');
+    const planId = urlParams.get('plan') || sessionStorage.getItem('pendingPlan');
+
+    if (fromLogin === 'true' && planId) {
+        console.log('Redirecionamento pós-login detectado para o plano:', planId);
+        sessionStorage.removeItem('pendingPlan');
+        
+        // Foca no plano selecionado
+        const planElement = document.querySelector(`[data-plano="${planId}"]`);
+        if (planElement) {
+            setTimeout(() => {
+                planElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                planElement.classList.add('plano-destacado');
+            }, 500);
+        }
+    }
+
     try {
       // Verifica dependências
       this.checkDependencies();
