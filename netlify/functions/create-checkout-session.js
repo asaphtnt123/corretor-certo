@@ -27,9 +27,9 @@ exports.handler = async (event) => {
 
     // Mapeamento de planos para preços do Stripe
     const PRICE_IDS = {
-      basico: 'price_XXXX', // Substitua pelo ID real
-      profissional: 'price_XXXX', // Substitua pelo ID real
-      premium: 'price_XXXX' // Substitua pelo ID real
+      basico: 'prod_SBDhbajzuHncVW',   // Substitua pelo ID real
+  profissional: 'prod_SBDiHBImSiF0dg', // Substitua pelo ID real
+  premium: 'prod_SBDiJUSJJ6H363'    // Substitua pelo ID real
     };
 
     const priceId = PRICE_IDS[planoId];
