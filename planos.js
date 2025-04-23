@@ -1,39 +1,131 @@
-document.querySelectorAll('.btn-assinar').forEach(btn => {
-  btn.addEventListener('click', async () => {
-    const plano = btn.getAttribute('data-plano');  // Obtém o plano do atributo 'data-plano'
-    btn.classList.add('loading');  // Adiciona uma classe de carregamento ao botão
+/**
+ * Sistema de Pagamento para Planos - Corretor Certo
+ * Versão para arquivo na raiz
+ */
 
-    try {
-      // Chama o endpoint da função do Netlify para criar a sessão de checkout
-      const response = await fetch('/.netlify/functions/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ plano })  // Passa o plano como corpo da requisição
-      });
-
-      const data = await response.json();
-      console.log("Sessão Stripe:", data);
-
-      const stripe = Stripe('pk_live_xxx'); // Sua chave pública do Stripe
-
-      if (data.id) {
-        // Redireciona o usuário para o Stripe Checkout
-        const { error } = await stripe.redirectToCheckout({ sessionId: data.id });
-        if (error) {
-          console.error("Erro ao redirecionar para o checkout:", error);
-          alert("Ocorreu um erro ao iniciar o pagamento. Tente novamente.");
-        }
-      } else {
-        alert("Erro ao criar sessão de pagamento. Veja o console.");
-        console.error(data);
-      }
-    } catch (error) {
-      alert("Falha na conexão com servidor.");
-      console.error("Erro no checkout:", error);
+class PaymentSystem {
+  constructor() {
+    // Verifica se o Stripe.js está carregado
+    if (typeof Stripe === 'undefined') {
+      console.error('Stripe.js não carregado!');
+      return;
     }
 
-    btn.classList.remove('loading');  // Remove a classe de carregamento ao final
-  });
+    // Inicializa o Stripe com sua chave pública
+    this.stripe = Stripe('pk_live_51RGQ2oCaTJrTX5Tupk7zHAmRzxDgX9RtmxlFRwGNlyHudrhMjPVu0yx871bch1PpXkfUnOQN0UXB1mXzhwSMrDrG00ix8LTK9b');
+    
+    // Definição dos planos
+    this.planos = {
+      basico: {
+        id: 'basico',
+        nome: 'Plano Básico',
+        preco: 1090
+      },
+      profissional: {
+        id: 'profissional',
+        nome: 'Plano Profissional',
+        preco: 5990
+      },
+      premium: {
+        id: 'premium',
+        nome: 'Plano Premium',
+        preco: 9990
+      }
+    };
+    
+    // Inicia os listeners
+    this.initEventListeners();
+  }
+
+  /**
+   * Inicializa os event listeners
+   */
+  initEventListeners() {
+    document.querySelectorAll('.btn-assinar').forEach(button => {
+      button.addEventListener('click', (e) => {
+        const planoId = e.target.getAttribute('data-plano');
+        this.handlePayment(planoId);
+      });
+    });
+  }
+
+  /**
+   * Processa o pagamento
+   */
+  async handlePayment(planoId) {
+    try {
+      this.showLoading(true);
+      
+      const plano = this.planos[planoId];
+      if (!plano) throw new Error('Plano não encontrado');
+
+      // Chamada para a Netlify Function
+      const { sessionId, url } = await this.createPaymentSession(plano);
+      
+      // Redireciona para o checkout
+      const result = await this.stripe.redirectToCheckout({
+        sessionId: sessionId
+      });
+
+      if (result.error) {
+        this.showError(result.error.message);
+      }
+    } catch (error) {
+      console.error('Erro:', error);
+      this.showError(error.message || 'Erro ao processar pagamento');
+    } finally {
+      this.showLoading(false);
+    }
+  }
+
+  /**
+   * Cria a sessão de pagamento via Netlify Function
+   */
+  async createPaymentSession(plano) {
+    const response = await fetch('/.netlify/functions/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ planoId: plano.id })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Erro no servidor');
+    }
+
+    return await response.json();
+  }
+
+  /**
+   * Mostra estado de carregamento
+   */
+  showLoading(show) {
+    document.querySelectorAll('.btn-assinar').forEach(btn => {
+      btn.disabled = show;
+      btn.innerHTML = show 
+        ? '<i class="fas fa-spinner fa-spin"></i> Processando...' 
+        : 'Assinar agora';
+    });
+  }
+
+  /**
+   * Mostra erros
+   */
+  showError(message) {
+    // Modifique para usar seu sistema de alertas preferido
+    alert(`Erro: ${message}`);
+  }
+}
+
+// Inicialização quando o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', () => {
+  // Carrega o Stripe.js dinamicamente se não estiver presente
+  if (typeof Stripe === 'undefined') {
+    const script = document.createElement('script');
+    script.src = 'https://js.stripe.com/v3/';
+    script.onload = () => new PaymentSystem();
+    document.head.appendChild(script);
+  } else {
+    new PaymentSystem();
+  }
 });
