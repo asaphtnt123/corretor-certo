@@ -1,38 +1,82 @@
+// netlify/functions/create-checkout-session.js
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 exports.handler = async (event) => {
-  console.log("📩 Requisição recebida:", event.body);
+  // Verifica o método HTTP
+  if (event.httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ error: 'Método não permitido' }),
+    };
+  }
 
   try {
-    const { plano } = JSON.parse(event.body);
+    const { planoId } = JSON.parse(event.body);
+    
+    // Validação do planoId
+    if (!planoId) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'planoId é obrigatório' }),
+      };
+    }
 
-    const priceLookup = {
-      basico: 'price_1RHBEVCaTJrTX5TuzYgQDOyM',        // Substitua pelos seus Price IDs reais
-      profissional: 'price_1RGrGnCaTJrTX5TuPBTU3gR3',
-      premium: 'price_1RGrHCCaTJrTX5TuFX7GRVjv'
+    const planos = {
+      basico: { preco: 1090, nome: "Plano Básico" },
+      profissional: { preco: 5990, nome: "Plano Profissional" },
+      premium: { preco: 9990, nome: "Plano Premium" }
     };
 
+    const plano = planos[planoId];
+    
+    // Verifica se o plano existe
+    if (!plano) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Plano inválido' }),
+      };
+    }
+
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'], // Apenas 'card' agora
+
+      metadata: {
+  userId: event.headers['x-user-id'], // Ou do corpo da requisição, dependendo da sua autenticação
+  planoId: planoId
+},
+      
+      payment_method_types: ['card'],
       line_items: [{
-        price: priceLookup[plano],
-        quantity: 1
+        price_data: {
+          currency: 'brl',
+          product_data: { 
+            name: plano.nome,
+            description: `Assinatura ${plano.nome} - Corretor Certo`
+          },
+          unit_amount: plano.preco,
+        },
+        quantity: 1,
       }],
-      mode: 'subscription',
-      success_url: 'https://corretorcerto.netlify.app/sucesso.html',
-      cancel_url: 'https://corretorcerto.netlify.app/planos.html'
+      mode: 'payment',
+      success_url: `${process.env.DOMAIN}/sucesso?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.DOMAIN}/cancelado`,
     });
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ id: session.id })
+      body: JSON.stringify({ 
+        sessionId: session.id,
+        url: session.url 
+      }),
     };
 
   } catch (error) {
-    console.error("Erro ao criar sessão:", error);
+    console.error('Erro no pagamento:', error);
     return {
-      statusCode: 400,
-      body: JSON.stringify({ error: error.message })
+      statusCode: 500,
+      body: JSON.stringify({ 
+        error: 'Erro ao processar pagamento',
+        details: error.message 
+      }),
     };
   }
 };
