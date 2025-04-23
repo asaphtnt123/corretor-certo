@@ -1,4 +1,3 @@
-// 📁 public/planos.js (coloque esse arquivo junto com os HTML)
 document.querySelectorAll('.btn-assinar').forEach(btn => {
   btn.addEventListener('click', async () => {
     const plano = btn.getAttribute('data-plano');
