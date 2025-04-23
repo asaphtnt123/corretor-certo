@@ -1,8 +1,2 @@
-{
-  "name": "corretor-certo",
-  "version": "1.0.0",
-  "dependencies": {
-    "stripe": "^13.3.0",
-    "firebase-admin": "^11.11.0"
-  }
-}
+npm init -y
+npm install stripe
