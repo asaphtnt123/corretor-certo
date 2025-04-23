@@ -83,9 +83,12 @@ class PaymentSystem {
    */
 async createPaymentSession(plano) {
   try {
+    this.showLoading(true);
+    
     const email = prompt("Informe seu e-mail para continuar com o pagamento:");
     if (!email) {
       this.showError("E-mail é obrigatório para continuar");
+      this.showLoading(false);
       return;
     }
 
@@ -101,26 +104,39 @@ async createPaymentSession(plano) {
       })
     });
 
-    const data = await response.json();
-    
+    // Verifica se a resposta é OK (status 200-299)
     if (!response.ok) {
-      throw new Error(data.error || 'Erro desconhecido');
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Erro no servidor');
     }
 
-    // Redireciona para o checkout
-    window.location.href = data.url;
+    const data = await response.json();
     
+    // Verifica se os dados necessários existem
+    if (!data.sessionId || !data.url) {
+      throw new Error('Resposta inválida do servidor');
+    }
+
+    // Redireciona para o checkout do Stripe
+    const result = await this.stripe.redirectToCheckout({
+      sessionId: data.sessionId
+    });
+
+    // Se houver erro no redirecionamento
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+
   } catch (error) {
-    console.error('Erro no pagamento:', error);
+    console.error('Erro no processamento:', error);
     this.showError(error.message || 'Erro ao processar pagamento');
     
     // Mostra detalhes adicionais em desenvolvimento
     if (process.env.NODE_ENV === 'development') {
-      console.debug('Detalhes do erro:', {
-        error,
-        plano
-      });
+      console.debug('Detalhes do erro:', error);
     }
+  } finally {
+    this.showLoading(false);
   }
 }
 
