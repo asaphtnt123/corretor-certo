@@ -13,7 +13,7 @@ exports.handler = async (event) => {
     };
 
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card', 'pix'],
+      payment_method_types: ['card'], // Apenas 'card' agora
       line_items: [{
         price: priceLookup[plano],
         quantity: 1
