@@ -251,29 +251,26 @@ getCurrentUserId = async () => {
   return null;
 };
 
-// Adicione este novo método à classe:
 validateToken = async (token) => {
+  // Implementação básica sem backend - em produção, use uma função serverless
   try {
-    // Verifica com seu backend ou Firebase Admin
-    const response = await fetch('/.netlify/functions/validate-token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+    // Verifica se o token existe e tem formato mínimo
+    if (token && token.length > 100) {
+      // Se estiver usando Firebase, pode decodificar o token aqui
+      const userId = localStorage.getItem('userId');
+      if (userId) {
+        return userId;
       }
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      return data.userId;
+      
+      // Fallback: retorna um ID temporário (melhorar em produção)
+      return 'temp-user-from-token';
     }
     return null;
   } catch (error) {
-    console.error('Erro ao validar token:', error);
+    console.error('Erro na validação do token:', error);
     return null;
   }
 };
-
   getAuthToken = async () => {
     if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
       return await firebase.auth().currentUser.getIdToken();
