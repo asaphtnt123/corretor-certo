@@ -349,5 +349,29 @@
 <!-- Stripe deve vir primeiro -->
 <script src="https://js.stripe.com/v3/"></script>
 <!-- Seu script depois -->
-<script src="planos.js" defer></script></body>
+<script src="planos.js" defer></script>
+
+<script>
+// Verifica se veio de um redirecionamento pós-login
+document.addEventListener('DOMContentLoaded', () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const autoLogin = urlParams.get('autologin');
+  const planId = urlParams.get('plan');
+
+  if (autoLogin === 'true' && planId) {
+    console.log('Redirecionamento pós-login detectado, plano:', planId);
+    
+    // Encontra o botão correspondente ao plano e simula o clique
+    const planButton = document.querySelector(`[data-plano="${planId}"]`);
+    if (planButton) {
+      console.log('Simulando clique no plano:', planId);
+      setTimeout(() => {
+        planButton.click();
+      }, 1000); // Pequeno delay para garantir carregamento
+    }
+  }
+});
+</script>
+  
+</body>
 </html>
