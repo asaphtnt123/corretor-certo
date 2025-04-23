@@ -191,30 +191,52 @@ initializeSystem = async () => {
   };
 
   createPaymentSession = async (paymentData) => {
-    const abortController = new AbortController();
-    this.setState({ currentRequest: abortController });
+  const abortController = new AbortController();
+  this.setState({ currentRequest: abortController });
 
-    try {
-      const response = await fetch(this.config.apiEndpoint, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await this.getAuthToken()}`
-        },
-        body: JSON.stringify(paymentData),
-        signal: abortController.signal
-      });
+  try {
+    console.log('Enviando dados para criar sessão:', {
+      endpoint: this.config.apiEndpoint,
+      data: paymentData
+    });
 
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || 'Erro ao criar sessão');
-      }
+    const response = await fetch(this.config.apiEndpoint, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${await this.getAuthToken()}`
+      },
+      body: JSON.stringify(paymentData),
+      signal: abortController.signal
+    });
 
-      return await response.json();
-    } finally {
-      this.setState({ currentRequest: null });
+    console.log('Resposta da API:', {
+      status: response.status,
+      ok: response.ok
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Erro detalhado:', errorData);
+      throw new Error(errorData.message || 'Erro ao criar sessão de pagamento');
     }
-  };
+
+    const sessionData = await response.json();
+    console.log('Sessão criada com sucesso:', sessionData);
+    return sessionData;
+
+  } catch (error) {
+    console.error('Erro completo na criação de sessão:', {
+      error: error.message,
+      stack: error.stack
+    });
+    
+    this.showError('Falha ao conectar com o serviço de pagamentos');
+    throw error;
+  } finally {
+    this.setState({ currentRequest: null });
+  }
+};
 
   /* ========== MÉTODOS AUXILIARES ========== */
 
