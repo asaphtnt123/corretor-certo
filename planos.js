@@ -85,10 +85,17 @@ async createPaymentSession(plano) {
   const email = prompt("Informe seu e-mail para continuar com o pagamento:");
   if (!email) return alert("E-mail é obrigatório!");
   
+  // Armazena o plano no localStorage como fallback
+  localStorage.setItem('planoSelecionado', plano.id);
+  
   const response = await fetch('/.netlify/functions/create-checkout-session', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ planoId: plano.id, email }) // ✅ correto aqui
+    body: JSON.stringify({ 
+      planoId: plano.id,
+      email,
+      successUrl: `${window.location.origin}/sucesso.html?plano=${encodeURIComponent(plano.id)}` // ✅ URL com parâmetro
+    })
   });
 
   if (!response.ok) {
