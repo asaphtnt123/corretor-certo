@@ -1,18 +1,15 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 exports.handler = async (event) => {
-  console.log('Função invocada com:', {
-    httpMethod: event.httpMethod,
-    body: event.body,
-    headers: event.headers
-  });
-
   // Verifica o método HTTP
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
       body: JSON.stringify({ error: 'Método não permitido' }),
-      headers: { 'Content-Type': 'application/json' }
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
     };
   }
 
@@ -22,14 +19,14 @@ exports.handler = async (event) => {
       return {
         statusCode: 400,
         body: JSON.stringify({ error: 'Corpo da requisição ausente' }),
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
       };
     }
 
-    const requestBody = JSON.parse(event.body);
-    console.log('Corpo da requisição:', requestBody);
-
-    const { planoId, userId } = requestBody;
+    const { planoId, userId, userEmail } = JSON.parse(event.body);
     
     // Validação dos campos obrigatórios
     if (!planoId || !userId) {
@@ -42,11 +39,14 @@ exports.handler = async (event) => {
             missingUserId: !userId
           }
         }),
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
       };
     }
 
-    // Mapeamento dos planos com seus Price IDs
+    // Mapeamento dos planos
     const planos = {
       basico: 'price_1RGrG5CaTJrTX5TuntwZRSX6',
       profissional: 'price_1RGrGnCaTJrTX5TuPBTU3gR3',
@@ -62,7 +62,10 @@ exports.handler = async (event) => {
           error: 'Plano inválido',
           planosDisponiveis: Object.keys(planos)
         }),
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
       };
     }
 
@@ -74,18 +77,15 @@ exports.handler = async (event) => {
         quantity: 1,
       }],
       mode: 'payment',
-      customer_email: requestBody.userEmail || undefined,
+      customer_email: userEmail,
       metadata: {
         userId: userId,
-        planoId: planoId,
-        userIP: requestBody.userIP || 'desconhecido'
+        planoId: planoId
       },
-      success_url: `${process.env.URL || 'https://corretorcerto.netlify.app'}/sucesso?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.URL || 'https://corretorcerto.netlify.app'}/cancelado?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${process.env.DOMAIN}/sucesso?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.DOMAIN}/cancelado?session_id={CHECKOUT_SESSION_ID}`,
       expires_at: Math.floor(Date.now() / 1000) + 3600, // 1 hora
     });
-
-    console.log('Sessão criada com sucesso:', { sessionId: session.id });
 
     return {
       statusCode: 200,
@@ -93,23 +93,25 @@ exports.handler = async (event) => {
         sessionId: session.id,
         url: session.url
       }),
-      headers: { 'Content-Type': 'application/json' }
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
     };
 
   } catch (error) {
-    console.error('Erro no processamento:', {
-      message: error.message,
-      type: error.type,
-      stack: error.stack
-    });
-
+    console.error('Erro no processamento:', error);
+    
     return {
       statusCode: 500,
       body: JSON.stringify({ 
         error: 'Erro ao processar pagamento',
         details: process.env.NETLIFY_DEV ? error.message : undefined
       }),
-      headers: { 'Content-Type': 'application/json' }
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
     };
   }
 };
