@@ -3,15 +3,31 @@ document.querySelectorAll('.btn-assinar').forEach(btn => {
     const plano = btn.getAttribute('data-plano');
     btn.classList.add('loading');
 
-    const response = await fetch('/.netlify/functions/create-checkout-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plano })
-    });
+    try {
+      const response = await fetch('/.netlify/functions/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ plano })
+      });
 
-    const data = await response.json();
-    const stripe = Stripe('pk_live_51RGQ2oCaTJrTX5Tupk7zHAmRzxDgX9RtmxlFRwGNlyHudrhMjPVu0yx871bch1PpXkfUnOQN0UXB1mXzhwSMrDrG00ix8LTK9b'); // Substitua pela sua chave pública Stripe
+      const data = await response.json();
+      console.log("Sessão Stripe:", data);
 
-    stripe.redirectToCheckout({ sessionId: data.id });
+      const stripe = Stripe('pk_live_xxx'); // sua chave pública
+
+      if (data.id) {
+        stripe.redirectToCheckout({ sessionId: data.id });
+      } else {
+        alert("Erro ao criar sessão de pagamento. Veja o console.");
+        console.error(data);
+      }
+    } catch (error) {
+      alert("Falha na conexão com servidor.");
+      console.error("Erro no checkout:", error);
+    }
+
+    btn.classList.remove('loading');
   });
 });
