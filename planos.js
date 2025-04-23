@@ -82,28 +82,46 @@ class PaymentSystem {
    * Cria a sessão de pagamento via Netlify Function
    */
 async createPaymentSession(plano) {
-  const email = prompt("Informe seu e-mail para continuar com o pagamento:");
-  if (!email) return alert("E-mail é obrigatório!");
-  
-  // Armazena o plano no localStorage como fallback
-  localStorage.setItem('planoSelecionado', plano.id);
-  
-  const response = await fetch('/.netlify/functions/create-checkout-session', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ 
-      planoId: plano.id,
-      email,
-      successUrl: `${window.location.origin}/sucesso.html?plano=${encodeURIComponent(plano.id)}`
-    })
-  });
+  try {
+    const email = prompt("Informe seu e-mail para continuar com o pagamento:");
+    if (!email) {
+      this.showError("E-mail é obrigatório para continuar");
+      return;
+    }
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Erro no servidor');
+    // Armazena o plano no localStorage como fallback
+    localStorage.setItem('planoSelecionado', plano.id);
+    
+    const response = await fetch('/.netlify/functions/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        planoId: plano.id,
+        email: email
+      })
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || 'Erro desconhecido');
+    }
+
+    // Redireciona para o checkout
+    window.location.href = data.url;
+    
+  } catch (error) {
+    console.error('Erro no pagamento:', error);
+    this.showError(error.message || 'Erro ao processar pagamento');
+    
+    // Mostra detalhes adicionais em desenvolvimento
+    if (process.env.NODE_ENV === 'development') {
+      console.debug('Detalhes do erro:', {
+        error,
+        plano
+      });
+    }
   }
-
-  return await response.json();
 }
 
   /**
