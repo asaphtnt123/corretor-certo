@@ -190,15 +190,12 @@ initializeSystem = async () => {
     if (result.error) throw result.error;
   };
 
-  createPaymentSession = async (paymentData) => {
+createPaymentSession = async (paymentData) => {
   const abortController = new AbortController();
   this.setState({ currentRequest: abortController });
 
   try {
-    console.log('Enviando dados para criar sessão:', {
-      endpoint: this.config.apiEndpoint,
-      data: paymentData
-    });
+    console.log('Criando sessão de pagamento com dados:', paymentData);
 
     const response = await fetch(this.config.apiEndpoint, {
       method: 'POST',
@@ -210,28 +207,19 @@ initializeSystem = async () => {
       signal: abortController.signal
     });
 
-    console.log('Resposta da API:', {
-      status: response.status,
-      ok: response.ok
-    });
+    const data = await response.json();
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error('Erro detalhado:', errorData);
-      throw new Error(errorData.message || 'Erro ao criar sessão de pagamento');
+      console.error('Erro na resposta:', data);
+      throw new Error(data.error || 'Erro ao criar sessão');
     }
 
-    const sessionData = await response.json();
-    console.log('Sessão criada com sucesso:', sessionData);
-    return sessionData;
+    console.log('Sessão criada com sucesso:', data);
+    return data;
 
   } catch (error) {
-    console.error('Erro completo na criação de sessão:', {
-      error: error.message,
-      stack: error.stack
-    });
-    
-    this.showError('Falha ao conectar com o serviço de pagamentos');
+    console.error('Erro completo:', error);
+    this.showError('Falha ao iniciar pagamento. Tente novamente.');
     throw error;
   } finally {
     this.setState({ currentRequest: null });
