@@ -81,23 +81,23 @@ class PaymentSystem {
   /**
    * Cria a sessão de pagamento via Netlify Function
    */
-  async createPaymentSession(plano) {
-    const email = prompt("Informe seu e-mail para continuar com o pagamento:");
-if (!email) return alert("E-mail é obrigatório!");
-    
-    const response = await fetch('/.netlify/functions/create-checkout-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ planoId: plano.id })
-    });
+async createPaymentSession(plano) {
+  const email = prompt("Informe seu e-mail para continuar com o pagamento:");
+  if (!email) return alert("E-mail é obrigatório!");
+  
+  const response = await fetch('/.netlify/functions/create-checkout-session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ planoId: plano.id, email }) // ✅ correto aqui
+  });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Erro no servidor');
-    }
-
-    return await response.json();
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Erro no servidor');
   }
+
+  return await response.json();
+}
 
   /**
    * Mostra estado de carregamento
