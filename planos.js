@@ -11,7 +11,7 @@ document.querySelectorAll('.btn-assinar').forEach(btn => {
     });
 
     const data = await response.json();
-    const stripe = Stripe('pk_test_xxx'); // Substitua pela sua chave pública Stripe
+    const stripe = Stripe('pk_live_51RGQ2oCaTJrTX5Tupk7zHAmRzxDgX9RtmxlFRwGNlyHudrhMjPVu0yx871bch1PpXkfUnOQN0UXB1mXzhwSMrDrG00ix8LTK9b'); // Substitua pela sua chave pública Stripe
 
     stripe.redirectToCheckout({ sessionId: data.id });
   });
