@@ -1,4 +1,3 @@
-// netlify/functions/create-checkout-session.js
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 exports.handler = async (event) => {
@@ -6,80 +5,122 @@ exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
-      body: JSON.stringify({ error: 'Método não permitido' }),
+      body: JSON.stringify({ 
+        error: 'Method Not Allowed',
+        message: 'Apenas requisições POST são permitidas' 
+      }),
+      headers: { 'Allow': 'POST' }
     };
   }
 
   try {
-const { planoId, email } = JSON.parse(event.body);
+    // Parse e validação dos dados de entrada
+    const { planoId, email, successUrl } = JSON.parse(event.body);
     
-    // Validação do planoId
-    if (!planoId) {
+    if (!planoId || !email) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: 'planoId é obrigatório' }),
+        body: JSON.stringify({ 
+          error: 'Dados incompletos',
+          required: ['planoId', 'email'],
+          received: { planoId, email }
+        })
       };
     }
 
+    // Configuração dos planos disponíveis
     const planos = {
-      basico: { preco: 1090, nome: "Plano Básico" },
-      profissional: { preco: 5990, nome: "Plano Profissional" },
-      premium: { preco: 9990, nome: "Plano Premium" }
+      basico: { 
+        price_id: process.env.STRIPE_PRICE_BASICO, // Prefira usar price_ids do Stripe
+        nome: "Plano Básico",
+        descricao: "Inclui 5 anúncios ativos e 1 destaque por semana"
+      },
+      profissional: { 
+        price_id: process.env.STRIPE_PRICE_PROFISSIONAL,
+        nome: "Plano Profissional",
+        descricao: "Inclui 15 anúncios ativos e 3 destaques por 2 semanas"
+      },
+      premium: { 
+        price_id: process.env.STRIPE_PRICE_PREMIUM,
+        nome: "Plano Premium", 
+        descricao: "Anúncios ilimitados e 5 destaques por 2 semanas"
+      }
     };
 
     const plano = planos[planoId];
     
-    // Verifica se o plano existe
     if (!plano) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: 'Plano inválido' }),
+        body: JSON.stringify({ 
+          error: 'Plano inválido',
+          planos_disponiveis: Object.keys(planos)
+        })
       };
     }
 
+    // Criação da sessão de checkout
     const session = await stripe.checkout.sessions.create({
-
-      metadata: {
-  userId: event.headers['x-user-id'], // Ou do corpo da requisição, dependendo da sua autenticação
-  planoId: planoId
-},
-      
       payment_method_types: ['card'],
       line_items: [{
-        price_data: {
-          currency: 'brl',
-          product_data: { 
-            name: plano.nome,
-            description: `Assinatura ${plano.nome} - Corretor Certo`
-          },
-          unit_amount: plano.preco,
-        },
+        price: plano.price_id, // Usando price_id do Stripe
         quantity: 1,
       }],
-      mode: 'payment',
-      success_url: `${process.env.DOMAIN}/sucesso?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.DOMAIN}/cancelado`,
+      mode: 'subscription', // Modo subscription para pagamentos recorrentes
+      metadata: {
+        plano_id: planoId,
+        user_email: email,
+        app: 'corretor_certo'
+      },
       customer_email: email,
-
-
+      subscription_data: {
+        metadata: {
+          plano_id: planoId // Repete nos metadados da subscription
+        }
+      },
+      success_url: successUrl || `${process.env.DOMAIN}/sucesso.html?session_id={CHECKOUT_SESSION_ID}&plano=${planoId}`,
+      cancel_url: `${process.env.DOMAIN}/planos.html`,
+      locale: 'pt-BR',
+      automatic_tax: { enabled: true }, // Habilita cálculo automático de impostos
+      phone_number_collection: {
+        enabled: true // Coleta telefone do cliente
+      },
+      invoice_creation: {
+        enabled: true // Habilita criação de faturas
+      }
     });
 
     return {
       statusCode: 200,
       body: JSON.stringify({ 
         sessionId: session.id,
-        url: session.url 
+        url: session.url,
+        plano: planoId,
+        success_url: session.success_url
       }),
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Content-Type': 'application/json'
+      }
     };
 
   } catch (error) {
-    console.error('Erro no pagamento:', error);
+    console.error('Erro no processamento:', {
+      error: error.message,
+      stack: error.stack,
+      event: event
+    });
+
     return {
       statusCode: 500,
       body: JSON.stringify({ 
-        error: 'Erro ao processar pagamento',
-        details: error.message 
+        error: 'Erro interno no servidor',
+        message: 'Não foi possível criar a sessão de pagamento',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
       }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
     };
   }
 };
