@@ -198,20 +198,56 @@ class PaymentSystem {
 
   /* ========== MÉTODOS AUXILIARES ========== */
 
- // No método getCurrentUserId, atualize para:
+// Modifique o método handleUnauthenticated para:
+handleUnauthenticated = (button) => {
+  console.log('Usuário não autenticado, redirecionando para login...');
+  
+  // Armazena o plano que estava tentando assinar
+  sessionStorage.setItem('targetPlan', this.state.currentPlanoId);
+  
+  // Redireciona para login.html com parâmetros de retorno
+  window.location.href = `login.html?redirect=planos&plan=${this.state.currentPlanoId}`;
+};
+
+// Atualize o getCurrentUserId para debug:
 getCurrentUserId = async () => {
-  // 1. Primeiro verifica o Firebase Auth
-  if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
-    return firebase.auth().currentUser.uid;
+  console.group('Verificando autenticação do usuário');
+  
+  // 1. Verifica Firebase Auth diretamente
+  if (typeof firebase !== 'undefined') {
+    console.log('Firebase está carregado');
+    const currentUser = firebase.auth().currentUser;
+    
+    if (currentUser) {
+      console.log('Usuário autenticado via Firebase:', currentUser.uid);
+      console.groupEnd();
+      return currentUser.uid;
+    }
+    console.log('Nenhum usuário no Firebase Auth');
+  } else {
+    console.log('Firebase não está disponível');
   }
   
-  // 2. Verifica se há token válido no localStorage/sessionStorage
+  // 2. Verifica tokens alternativos
   const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
   if (authToken) {
-    return this.validateToken(authToken); // Método novo que vamos adicionar
+    console.log('Token JWT encontrado');
+    try {
+      const userId = await this.validateToken(authToken);
+      if (userId) {
+        console.log('Token válido para usuário:', userId);
+        console.groupEnd();
+        return userId;
+      }
+    } catch (error) {
+      console.error('Erro na validação do token:', error);
+    }
+  } else {
+    console.log('Nenhum token encontrado no storage');
   }
   
-  // 3. Se não encontrou usuário autenticado
+  console.log('Nenhum método de autenticação válido encontrado');
+  console.groupEnd();
   return null;
 };
 
@@ -269,13 +305,7 @@ validateToken = async (token) => {
     language: navigator.language
   });
 
- // Modifique o handleUnauthenticated para redirecionar corretamente:
-handleUnauthenticated = (button) => {
-  this.showError('Redirecionando para login...');
-  setTimeout(() => {
-    window.location.href = 'index.html?redirect=planos';
-  }, 1500);
-};
+
 
   handlePaymentError = (error, button) => {
     console.error('Erro no pagamento:', error);
