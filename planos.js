@@ -191,59 +191,40 @@ initializeSystem = async () => {
   };
 
 createPaymentSession = async (paymentData) => {
-  const abortController = new AbortController();
-  this.setState({ currentRequest: abortController });
-
   try {
-    console.log('Criando sessão de pagamento com dados:', paymentData);
-
-    const headers = {
-      'Content-Type': 'application/json'
-    };
-
-    // Adiciona headers de autenticação apenas se necessário
-    if (this.config.authRequired) {
-      const authToken = await this.getAuthToken();
-      if (authToken) {
-        headers['Authorization'] = `Bearer ${authToken}`;
-        headers['x-user-email'] = paymentData.userEmail || '';
-      }
-    }
+    console.log('Enviando dados para o servidor:', paymentData);
 
     const response = await fetch(this.config.apiEndpoint, {
       method: 'POST',
-      headers: headers,
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-user-email': paymentData.userEmail || ''
+      },
       body: JSON.stringify({
         planoId: paymentData.planoId,
-        userId: paymentData.userId
-      }),
-      signal: abortController.signal
+        userId: paymentData.userId,
+        userEmail: paymentData.userEmail,
+        userIP: paymentData.userIP
+      })
     });
 
+    const data = await response.json();
+    
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error('Detalhes do erro:', {
+      console.error('Erro detalhado:', {
         status: response.status,
-        statusText: response.statusText,
-        errorData
+        data
       });
-      throw new Error(errorData.error || 'Erro ao criar sessão de pagamento');
+      throw new Error(data.error || 'Erro ao criar sessão de pagamento');
     }
 
-    const data = await response.json();
-    console.log('Sessão criada com sucesso:', data);
     return data;
-
   } catch (error) {
     console.error('Erro completo:', {
       message: error.message,
-      stack: error.stack,
       requestData: paymentData
     });
-    this.showError('Falha ao iniciar pagamento. Tente novamente.');
-    throw new Error('Erro ao processar pagamento');
-  } finally {
-    this.setState({ currentRequest: null });
+    throw error;
   }
 };
   /* ========== MÉTODOS AUXILIARES ========== */
