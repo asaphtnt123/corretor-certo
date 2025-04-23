@@ -7,65 +7,65 @@ const STRIPE_PRICES = {
 };
 
 exports.handler = async (event) => {
-  const headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*'
-  };
-
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
-  }
-
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, headers, body: JSON.stringify({ error: 'Método não permitido' }) };
-  }
-
+  console.log('Recebida requisição para criar sessão');
+  
   try {
+    // Verificação básica
     if (!event.body) {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Corpo da requisição ausente' }) };
+      console.error('Corpo da requisição ausente');
+      return { statusCode: 400, body: JSON.stringify({ error: 'Dados ausentes' }) };
     }
 
     const { planoId, userId, userEmail } = JSON.parse(event.body);
-    
+    console.log('Dados recebidos:', { planoId, userId, userEmail });
+
+    // Validação dos dados
     if (!planoId || !userId || !userEmail) {
-      return { 
-        statusCode: 400, 
-        headers, 
-        body: JSON.stringify({ error: 'Dados incompletos' }) 
-      };
+      console.error('Dados incompletos');
+      return { statusCode: 400, body: JSON.stringify({ error: 'Dados incompletos' }) };
     }
 
-    if (!STRIPE_PRICES[planoId]) {
-      return { 
-        statusCode: 400, 
-        headers, 
-        body: JSON.stringify({ error: 'Plano inválido' }) 
-      };
-    }
-
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card', 'pix'],
-      line_items: [{ price: STRIPE_PRICES[planoId], quantity: 1 }],
-      mode: 'payment',
-      customer_email: userEmail,
-      metadata: { userId, planoId },
-      success_url: `${process.env.DOMAIN}/sucesso.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.DOMAIN}/planos.html`,
-      expires_at: Math.floor(Date.now() / 1000) + 3600,
-    });
-
-    return { 
-      statusCode: 200, 
-      headers, 
-      body: JSON.stringify({ id: session.id, url: session.url }) 
+    // Mapeamento de planos para preços do Stripe
+    const PRICE_IDS = {
+      basico: 'price_XXXX', // Substitua pelo ID real
+      profissional: 'price_XXXX', // Substitua pelo ID real
+      premium: 'price_XXXX' // Substitua pelo ID real
     };
 
+    const priceId = PRICE_IDS[planoId];
+    if (!priceId) {
+      console.error('Plano não encontrado:', planoId);
+      return { statusCode: 400, body: JSON.stringify({ error: 'Plano inválido' }) };
+    }
+
+    console.log('Criando sessão no Stripe para o preço:', priceId);
+    
+    // Criação da sessão
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{ price: priceId, quantity: 1 }],
+      mode: 'payment',
+      customer_email: userEmail,
+      success_url: `${process.env.DOMAIN}/sucesso.html?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.DOMAIN}/planos.html`,
+      metadata: { userId, planoId }
+    });
+
+    console.log('Sessão criada com sucesso:', session.id);
+    return { statusCode: 200, body: JSON.stringify({ id: session.id }) };
+
   } catch (error) {
-    console.error('Erro:', error);
+    console.error('Erro detalhado:', {
+      message: error.message,
+      stack: error.stack,
+      raw: error
+    });
     return { 
       statusCode: 500, 
-      headers, 
-      body: JSON.stringify({ error: 'Erro no servidor' }) 
+      body: JSON.stringify({ 
+        error: 'Erro no processamento',
+        details: error.message 
+      }) 
     };
   }
 };
