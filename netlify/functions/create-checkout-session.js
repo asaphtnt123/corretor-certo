@@ -7,7 +7,7 @@ exports.handler = async (event) => {
     const { plano } = JSON.parse(event.body);
 
     const priceLookup = {
-      basico: 'price_1RGrG5CaTJrTX5TuntwZRSX6',        // Substitua pelos seus Price IDs reais
+      basico: 'price_1RHBEVCaTJrTX5TuzYgQDOyM',        // Substitua pelos seus Price IDs reais
       profissional: 'price_1RGrGnCaTJrTX5TuPBTU3gR3',
       premium: 'price_1RGrHCCaTJrTX5TuFX7GRVjv'
     };
