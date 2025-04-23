@@ -197,35 +197,55 @@ createPaymentSession = async (paymentData) => {
   try {
     console.log('Criando sessão de pagamento com dados:', paymentData);
 
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+
+    // Adiciona headers de autenticação apenas se necessário
+    if (this.config.authRequired) {
+      const authToken = await this.getAuthToken();
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+        headers['x-user-email'] = paymentData.userEmail || '';
+      }
+    }
+
     const response = await fetch(this.config.apiEndpoint, {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${await this.getAuthToken()}`
-      },
-      body: JSON.stringify(paymentData),
+      headers: headers,
+      body: JSON.stringify({
+        planoId: paymentData.planoId,
+        userId: paymentData.userId
+      }),
       signal: abortController.signal
     });
 
-    const data = await response.json();
-
     if (!response.ok) {
-      console.error('Erro na resposta:', data);
-      throw new Error(data.error || 'Erro ao criar sessão');
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Detalhes do erro:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorData
+      });
+      throw new Error(errorData.error || 'Erro ao criar sessão de pagamento');
     }
 
+    const data = await response.json();
     console.log('Sessão criada com sucesso:', data);
     return data;
 
   } catch (error) {
-    console.error('Erro completo:', error);
+    console.error('Erro completo:', {
+      message: error.message,
+      stack: error.stack,
+      requestData: paymentData
+    });
     this.showError('Falha ao iniciar pagamento. Tente novamente.');
-    throw error;
+    throw new Error('Erro ao processar pagamento');
   } finally {
     this.setState({ currentRequest: null });
   }
 };
-
   /* ========== MÉTODOS AUXILIARES ========== */
 
 // Modifique o método handleUnauthenticated para:
