@@ -11,7 +11,7 @@ exports.handler = async (event) => {
   }
 
   try {
-    const { planoId } = JSON.parse(event.body);
+const { planoId, email } = JSON.parse(event.body);
     
     // Validação do planoId
     if (!planoId) {
