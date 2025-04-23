@@ -27,6 +27,13 @@ exports.handler = async (event) => {
     }
 
     const { planoId, userId } = JSON.parse(event.body);
+
+    // Adicione logs para debug
+console.log('Dados recebidos:', {
+  planoId,
+  userId,
+  headers: event.headers
+});
     
     // Validação dos campos obrigatórios
     if (!planoId || !userId) {
