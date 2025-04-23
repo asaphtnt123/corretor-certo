@@ -94,7 +94,7 @@ async createPaymentSession(plano) {
     body: JSON.stringify({ 
       planoId: plano.id,
       email,
-      successUrl: `${window.location.origin}/sucesso.html?plano=${encodeURIComponent(plano.id)}` // ✅ URL com parâmetro
+      successUrl: `${window.location.origin}/sucesso.html?plano=${encodeURIComponent(plano.id)}`
     })
   });
 
