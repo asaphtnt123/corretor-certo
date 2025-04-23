@@ -1,11 +1,5 @@
-/**
- * Sistema de Pagamento Completo - Corretor Certo
- * Versão 6.0 - Solução Definitiva
- */
-
 class PaymentSystem {
   constructor(options = {}) {
-    // Configurações padrão
     this.config = {
       apiEndpoint: options.apiEndpoint || '/.netlify/functions/create-checkout-session',
       authRequired: options.authRequired !== false,
@@ -15,52 +9,22 @@ class PaymentSystem {
       retryDelay: 1000
     };
 
-    // Estados
     this.state = {
       isLoading: false,
       currentPlanoId: null,
-      currentRequest: null,
-      retryCount: 0
+      currentRequest: null
     };
 
-    // Inicializa o sistema
     this.initializeSystem();
   }
 
-  /* ========== MÉTODOS PRINCIPAIS ========== */
-
-  // Adicione esta verificação no início do initializeSystem
-initializeSystem = async () => {
-    // Verifica se veio de um redirecionamento pós-login
-    const urlParams = new URLSearchParams(window.location.search);
-    const fromLogin = urlParams.get('fromLogin');
-    const planId = urlParams.get('plan') || sessionStorage.getItem('pendingPlan');
-
-    if (fromLogin === 'true' && planId) {
-        console.log('Redirecionamento pós-login detectado para o plano:', planId);
-        sessionStorage.removeItem('pendingPlan');
-        
-        // Foca no plano selecionado
-        const planElement = document.querySelector(`[data-plano="${planId}"]`);
-        if (planElement) {
-            setTimeout(() => {
-                planElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                planElement.classList.add('plano-destacado');
-            }, 500);
-        }
-    }
-
+  initializeSystem = async () => {
     try {
-      // Verifica dependências
       this.checkDependencies();
-      
-      // Inicializações
       this.initPlanos();
       await this.initStripe();
       this.initEventListeners();
-      this.setupErrorHandling();
-      
-      console.log('Sistema de pagamento inicializado com sucesso');
+      console.log('Sistema de pagamento inicializado');
     } catch (error) {
       console.error('Falha na inicialização:', error);
       this.showFatalError('Sistema temporariamente indisponível');
@@ -71,9 +35,6 @@ initializeSystem = async () => {
     if (typeof Stripe === 'undefined') {
       throw new Error('Biblioteca Stripe não carregada');
     }
-    if (typeof fetch === 'undefined') {
-      throw new Error('API fetch não disponível');
-    }
   };
 
   initPlanos = () => {
@@ -81,88 +42,46 @@ initializeSystem = async () => {
       basico: {
         id: 'basico',
         nome: 'Plano Básico',
-        preco: 2990,
-        moeda: this.config.defaultCurrency,
-        features: ['Acesso básico', 'Suporte por email', 'Relatórios simples'],
+        preco: 'R$ 29,90',
         ciclo: 'mensal'
       },
       profissional: {
         id: 'profissional',
         nome: 'Plano Profissional',
-        preco: 5990,
-        moeda: this.config.defaultCurrency,
-        features: ['Acesso completo', 'Suporte prioritário', 'Relatórios avançados'],
+        preco: 'R$ 59,90',
         ciclo: 'mensal'
       },
       premium: {
         id: 'premium',
         nome: 'Plano Premium',
-        preco: 9990,
-        moeda: this.config.defaultCurrency,
-        features: ['Acesso completo', 'Suporte 24/7', 'Consultoria personalizada'],
+        preco: 'R$ 99,90',
         ciclo: 'anual'
       }
     };
   };
 
   initStripe = async () => {
-    this.stripeKey = await this.getStripeKey();
-    
-    if (!this.stripeKey?.startsWith('pk_')) {
-      throw new Error('Chave pública do Stripe inválida');
-    }
-
-    this.stripe = Stripe(this.stripeKey, {
-      locale: 'pt-BR',
-      apiVersion: '2023-08-16'
-    });
-  };
-
-  getStripeKey = async () => {
-    try {
-      const response = await fetch('/.netlify/functions/getStripeKey');
-      if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-      
-      const data = await response.json();
-      if (!data?.key) throw new Error('Resposta inválida');
-      
-      return data.key;
-    } catch (error) {
-      console.error('Falha ao obter chave:', error);
-      return 'pk_live_51RGQ2oCaTJrTX5Tupk7zHAmRzxDgX9RtmxlFRwGNlyHudrhMjPVu0yx871bch1PpXkfUnOQN0UXB1mXzhwSMrDrG00ix8LTK9b';
-    }
+    this.stripeKey = 'pk_live_51RGQ2oCaTJrTX5Tupk7zHAmRzxDgX9RtmxlFRwGNlyHudrhMjPVu0yx871bch1PpXkfUnOQN0UXB1mXzhwSMrDrG00ix8LTK9b';
+    this.stripe = Stripe(this.stripeKey, { locale: 'pt-BR' });
   };
 
   initEventListeners = () => {
     document.addEventListener('click', (e) => {
       const button = e.target.closest('[data-plano]');
-      if (!button || this.state.isLoading) return;
-      
-      this.handlePaymentClick(button).catch(error => {
-        console.error('Erro no clique:', error);
-        this.showError('Erro ao processar pagamento');
-      });
+      if (button && !this.state.isLoading) {
+        this.handlePaymentClick(button).catch(error => {
+          console.error('Erro no clique:', error);
+          this.showError('Erro ao processar pagamento');
+        });
+      }
     });
   };
-
-  setupErrorHandling = () => {
-    window.addEventListener('unhandledrejection', (event) => {
-      console.error('Erro não tratado:', event.reason);
-      this.showError('Ocorreu um erro inesperado');
-    });
-  };
-
-  /* ========== FLUXO DE PAGAMENTO ========== */
 
   handlePaymentClick = async (button) => {
+    this.setState({ isLoading: true, currentPlanoId: button.dataset.plano });
+    
     try {
-      this.setState({ isLoading: true, currentPlanoId: button.dataset.plano });
-      
-      const userId = this.config.authRequired ? await this.getCurrentUserId() : null;
-      if (this.config.authRequired && !userId) {
-        return this.handleUnauthenticated(button);
-      }
-
+      const userId = this.config.authRequired ? await this.getCurrentUserId() : 'guest';
       await this.processPayment(button.dataset.plano, userId);
     } catch (error) {
       this.handlePaymentError(error, button);
@@ -172,182 +91,51 @@ initializeSystem = async () => {
   };
 
   processPayment = async (planoId, userId) => {
-    const plano = this.planos[planoId];
-    if (!plano) throw new Error('Plano inválido');
-
     const session = await this.createPaymentSession({
       planoId,
       userId,
-      userEmail: await this.getUserEmail(),
-      userIP: await this.getUserIP(),
-      deviceInfo: this.getDeviceInfo()
+      userEmail: await this.getUserEmail()
     });
 
     const result = await this.stripe.redirectToCheckout({
-      sessionId: session.id
+      sessionId: session.sessionId
     });
 
     if (result.error) throw result.error;
   };
 
-createPaymentSession = async (paymentData) => {
-  try {
-    console.log('Enviando dados para o servidor:', paymentData);
-
-    const response = await fetch(this.config.apiEndpoint, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'x-user-email': paymentData.userEmail || ''
-      },
-      body: JSON.stringify({
-        planoId: paymentData.planoId,
-        userId: paymentData.userId,
-        userEmail: paymentData.userEmail,
-        userIP: paymentData.userIP
-      })
-    });
-
-    const data = await response.json();
-    
-    if (!response.ok) {
-      console.error('Erro detalhado:', {
-        status: response.status,
-        data
-      });
-      throw new Error(data.error || 'Erro ao criar sessão de pagamento');
-    }
-
-    return data;
-  } catch (error) {
-    console.error('Erro completo:', {
-      message: error.message,
-      requestData: paymentData
-    });
-    throw error;
-  }
-};
-  /* ========== MÉTODOS AUXILIARES ========== */
-
-// Modifique o método handleUnauthenticated para:
-handleUnauthenticated = (button) => {
-  console.log('Usuário não autenticado, redirecionando para login...');
-  
-  // Armazena o plano que estava tentando assinar
-  sessionStorage.setItem('targetPlan', this.state.currentPlanoId);
-  
-  // Redireciona para login.html com parâmetros de retorno
-  window.location.href = `login.html?redirect=planos&plan=${this.state.currentPlanoId}`;
-};
-
-// Atualize o getCurrentUserId para debug:
-getCurrentUserId = async () => {
-  console.group('Verificando autenticação do usuário');
-  
-  // 1. Verifica Firebase Auth diretamente
-  if (typeof firebase !== 'undefined') {
-    console.log('Firebase está carregado');
-    const currentUser = firebase.auth().currentUser;
-    
-    if (currentUser) {
-      console.log('Usuário autenticado via Firebase:', currentUser.uid);
-      console.groupEnd();
-      return currentUser.uid;
-    }
-    console.log('Nenhum usuário no Firebase Auth');
-  } else {
-    console.log('Firebase não está disponível');
-  }
-  
-  // 2. Verifica tokens alternativos
-  const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-  if (authToken) {
-    console.log('Token JWT encontrado');
+  createPaymentSession = async (paymentData) => {
     try {
-      const userId = await this.validateToken(authToken);
-      if (userId) {
-        console.log('Token válido para usuário:', userId);
-        console.groupEnd();
-        return userId;
-      }
-    } catch (error) {
-      console.error('Erro na validação do token:', error);
-    }
-  } else {
-    console.log('Nenhum token encontrado no storage');
-  }
-  
-  console.log('Nenhum método de autenticação válido encontrado');
-  console.groupEnd();
-  return null;
-};
+      const response = await fetch(this.config.apiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(paymentData)
+      });
 
-validateToken = async (token) => {
-  // Implementação básica sem backend - em produção, use uma função serverless
-  try {
-    // Verifica se o token existe e tem formato mínimo
-    if (token && token.length > 100) {
-      // Se estiver usando Firebase, pode decodificar o token aqui
-      const userId = localStorage.getItem('userId');
-      if (userId) {
-        return userId;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao criar sessão');
       }
-      
-      // Fallback: retorna um ID temporário (melhorar em produção)
-      return 'temp-user-from-token';
+
+      return await response.json();
+    } catch (error) {
+      console.error('Erro na criação da sessão:', error);
+      throw error;
     }
-    return null;
-  } catch (error) {
-    console.error('Erro na validação do token:', error);
-    return null;
-  }
-};
-  getAuthToken = async () => {
-    if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
-      return await firebase.auth().currentUser.getIdToken();
-    }
-    return localStorage.getItem('authToken');
+  };
+
+  getCurrentUserId = async () => {
+    return localStorage.getItem('userId') || 'guest';
   };
 
   getUserEmail = async () => {
-    if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
-      return firebase.auth().currentUser.email;
-    }
-    return localStorage.getItem('userEmail');
+    return localStorage.getItem('userEmail') || '';
   };
-
-  getUserIP = async () => {
-    try {
-      const response = await fetch('https://api.ipify.org?format=json');
-      const data = await response.json();
-      return data.ip;
-    } catch {
-      return null;
-    }
-  };
-
-  getDeviceInfo = () => ({
-    userAgent: navigator.userAgent,
-    screenWidth: window.screen.width,
-    screenHeight: window.screen.height,
-    language: navigator.language
-  });
-
-
 
   handlePaymentError = (error, button) => {
     console.error('Erro no pagamento:', error);
-    this.showError(this.getErrorMessage(error));
+    this.showError(error.message || 'Erro ao processar pagamento');
     if (button) button.disabled = false;
-  };
-
-  getErrorMessage = (error) => {
-    const errorMap = {
-      'card_declined': 'Cartão recusado',
-      'expired_card': 'Cartão expirado',
-      'insufficient_funds': 'Saldo insuficiente'
-    };
-    return errorMap[error.code] || error.message || 'Erro ao processar pagamento';
   };
 
   setState = (newState) => {
@@ -367,43 +155,20 @@ validateToken = async (token) => {
   showError = (message, duration = 5000) => {
     const errorEl = document.createElement('div');
     errorEl.className = 'payment-error';
-    errorEl.innerHTML = `<div style="position:fixed;bottom:20px;right:20px;padding:15px;background:#ffebee;color:#c62828;border-radius:4px;box-shadow:0 2px 10px rgba(0,0,0,0.1);z-index:1000">⚠️ ${message}</div>`;
+    errorEl.innerHTML = `<div class="error-message">⚠️ ${message}</div>`;
     document.body.appendChild(errorEl);
     setTimeout(() => errorEl.remove(), duration);
   };
 
-  showFatalError = (message = 'Sistema indisponível') => {
+  showFatalError = (message) => {
     const errorEl = document.createElement('div');
-    errorEl.className = 'payment-fatal-error';
-    errorEl.innerHTML = `<div style="position:fixed;top:0;left:0;right:0;padding:15px;background:#d32f2f;color:white;text-align:center;z-index:9999">${message}</div>`;
+    errorEl.className = 'fatal-error';
+    errorEl.innerHTML = `<div>${message}</div>`;
     document.body.prepend(errorEl);
-    document.querySelectorAll('[data-plano]').forEach(btn => btn.disabled = true);
   };
 }
 
-/* ========== INICIALIZAÇÃO ========== */
-
-function initializePaymentSystem() {
-  try {
-    if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
-      throw new Error('Requer conexão segura (HTTPS)');
-    }
-
-    const configElement = document.getElementById('payment-config');
-    new PaymentSystem({
-      apiEndpoint: configElement?.dataset.apiEndpoint
-    });
-  } catch (error) {
-    console.error('Falha na inicialização:', error);
-    const errorEl = document.createElement('div');
-    errorEl.innerHTML = `<div style="padding:20px;background:#ffebee;color:#c62828;text-align:center;margin:20px;border-radius:4px">${error.message || 'Erro ao carregar o sistema de pagamento'}</div>`;
-    document.body.appendChild(errorEl);
-  }
-}
-
-// Inicialização segura
-if (document.readyState === 'complete') {
-  initializePaymentSystem();
-} else {
-  document.addEventListener('DOMContentLoaded', initializePaymentSystem);
-}
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => {
+  new PaymentSystem();
+});
