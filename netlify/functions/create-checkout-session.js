@@ -59,7 +59,8 @@ const { planoId, email } = JSON.parse(event.body);
       mode: 'payment',
       success_url: `${process.env.DOMAIN}/sucesso?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.DOMAIN}/cancelado`,
-        customer_email: event.body.email, // novo
+      customer_email: email,
+
 
     });
 
