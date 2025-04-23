@@ -1,11 +1,275 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-    <title>Pagamento Aprovado</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assinatura Confirmada | Corretor Certo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: #f5f7fa;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .success-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .success-icon {
+            color: var(--success);
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: bounce 1s infinite alternate;
+        }
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        .btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .details-card {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: left;
+            border-left: 4px solid var(--secondary);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+        .status-processing {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status-active {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .progress-bar {
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+        .progress {
+            height: 100%;
+            background: var(--secondary);
+            width: 0;
+            transition: width 1s ease;
+        }
+        .whats-next {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+            text-align: left;
+        }
+        .steps-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .steps-list li {
+            padding: 0.5rem 0;
+            position: relative;
+            padding-left: 30px;
+        }
+        .steps-list li:before {
+            content: "✓";
+            color: var(--success);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        @media (max-width: 768px) {
+            .success-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Pagamento Aprovado!</h1>
-    <p>Obrigado por assinar nosso serviço. Seu plano já está ativo.</p>
-    <a href="/">Voltar ao site</a>
+    <div class="success-container">
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h1 id="titulo-sucesso">Assinatura Confirmada!</h1>
+        <p id="mensagem-sucesso">Seu plano está sendo processado.</p>
+        
+        <div class="details-card" id="detalhes-plano">
+            <h3>Detalhes da Assinatura</h3>
+            <p><strong>Status:</strong> <span id="status-plano" class="status-badge status-processing">Processando</span></p>
+            <p><strong>Plano:</strong> <span id="plano-nome">Premium</span></p>
+            <p><strong>Tempo de ativação:</strong> Até 4 horas úteis</p>
+            
+            <div class="progress-bar">
+                <div class="progress" id="progress-bar"></div>
+            </div>
+            
+            <p id="status-message">Estamos preparando tudo para você. Você receberá um e-mail de confirmação em breve.</p>
+        </div>
+        
+        <div class="whats-next">
+            <h3>O que acontece agora?</h3>
+            <ul class="steps-list">
+                <li>Nossa equipe está verificando seu pagamento</li>
+                <li>Você receberá um e-mail com as credenciais de acesso</li>
+                <li>Seu consultor entrará em contato para orientações</li>
+                <li>Seus anúncios serão migrados automaticamente</li>
+            </ul>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="dashboard.html" class="btn">
+                <i class="fas fa-tachometer-alt"></i> Acessar Minha Conta
+            </a>
+            <a href="planos.html" class="btn" style="background: var(--secondary);">
+                <i class="fas fa-search"></i> Ver Planos Novamente
+            </a>
+        </div>
+        
+        <p style="margin-top: 2rem; font-size: 0.9rem;">
+            Dúvidas? <a href="https://wa.me/5519996249702" style="color: var(--secondary); font-weight: 600;">
+                <i class="fab fa-whatsapp"></i> Fale conosco no WhatsApp
+            </a> ou <a href="mailto:suporte@corretorcerto.com.br" style="color: var(--secondary); font-weight: 600;">
+                <i class="fas fa-envelope"></i> Envie um e-mail
+            </a>
+        </p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 1. Captura os parâmetros da URL
+            const urlParams = new URLSearchParams(window.location.search);
+            let plano = urlParams.get('plano');
+            const sessionId = urlParams.get('session_id');
+            
+            // 2. Fallback para localStorage se não tiver na URL
+            if (!plano) {
+                plano = localStorage.getItem('planoSelecionado');
+                if (plano) {
+                    localStorage.removeItem('planoSelecionado');
+                }
+            }
+            
+            // 3. Mapeia os nomes dos planos
+            const planosNomes = {
+                basico: 'Básico',
+                profissional: 'Profissional',
+                premium: 'Premium'
+            };
+            
+            // 4. Atualiza a UI com os dados do plano
+            if (plano && planosNomes[plano]) {
+                document.getElementById('plano-nome').textContent = planosNomes[plano];
+                document.getElementById('titulo-sucesso').textContent = `Plano ${planosNomes[plano]} Confirmado!`;
+                document.getElementById('mensagem-sucesso').textContent = 
+                    `Obrigado por assinar o Plano ${planosNomes[plano]}. Estamos preparando tudo para você.`;
+            }
+            
+            // 5. Anima a barra de progresso
+            setTimeout(() => {
+                document.getElementById('progress-bar').style.width = '70%';
+            }, 300);
+            
+            // 6. Se tiver sessionId, verifica o status (opcional)
+            if (sessionId) {
+                //checkPaymentStatus(sessionId);
+            }
+            
+            // 7. Adiciona confetti (efeito visual opcional)
+            setTimeout(createConfetti, 500);
+        });
+        
+        // Função para verificar status do pagamento (exemplo)
+        async function checkPaymentStatus(sessionId) {
+            try {
+                const response = await fetch(`/.netlify/functions/check-payment?session_id=${sessionId}`);
+                const data = await response.json();
+                
+                if (data.status === 'paid') {
+                    document.getElementById('status-plano').textContent = 'Ativo';
+                    document.getElementById('status-plano').className = 'status-badge status-active';
+                    document.getElementById('progress-bar').style.width = '100%';
+                    document.getElementById('status-message').textContent = 'Seu plano está ativo e pronto para uso!';
+                }
+            } catch (error) {
+                console.error('Erro ao verificar status:', error);
+            }
+        }
+        
+        // Efeito de confetti (opcional)
+        function createConfetti() {
+            const colors = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6'];
+            const container = document.querySelector('.success-container');
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'absolute';
+                confetti.style.width = '8px';
+                confetti.style.height = '8px';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.top = '-10px';
+                confetti.style.borderRadius = '50%';
+                confetti.style.opacity = '0';
+                confetti.style.animation = `fall ${Math.random() * 3 + 2}s linear forwards`;
+                
+                container.appendChild(confetti);
+                
+                setTimeout(() => {
+                    confetti.style.opacity = '1';
+                }, 100);
+            }
+            
+            // Adiciona os keyframes dinamicamente
+            const style = document.createElement('style');
+            style.innerHTML = `
+                @keyframes fall {
+                    to {
+                        transform: translateY(100vh) rotate(${Math.random() * 360}deg);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    </script>
 </body>
 </html>
