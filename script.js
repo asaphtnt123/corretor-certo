@@ -2474,6 +2474,54 @@ function onLoginSuccess(user) {
     }
   });
 }
+
+
+
+
+// Modal de Boas-Vindas
+document.addEventListener('DOMContentLoaded', function() {
+    const welcomeModal = document.getElementById('welcomeModal');
+    const closeWelcomeBtn = document.querySelector('.welcome-close-btn');
+    const getStartedBtn = document.getElementById('welcomeGetStarted');
+    const dontShowAgain = document.getElementById('dontShowAgain');
+    
+    // Verificar se já foi mostrado antes (usando localStorage)
+    if (!localStorage.getItem('welcomeShown')) {
+        setTimeout(() => {
+            welcomeModal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Impede scroll
+        }, 1000); // Mostra após 1 segundo
+    }
+    
+    // Fechar modal
+    function closeWelcomeModal() {
+        welcomeModal.classList.remove('active');
+        document.body.style.overflow = ''; // Restaura scroll
+        
+        // Se marcado para não mostrar novamente
+        if (dontShowAgain.checked) {
+            localStorage.setItem('welcomeShown', 'true');
+        }
+    }
+    
+    // Event listeners
+    closeWelcomeBtn.addEventListener('click', closeWelcomeModal);
+    getStartedBtn.addEventListener('click', closeWelcomeModal);
+    
+    // Fechar ao clicar fora do modal
+    welcomeModal.addEventListener('click', function(e) {
+        if (e.target === welcomeModal) {
+            closeWelcomeModal();
+        }
+    });
+    
+    // Fechar com ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && welcomeModal.classList.contains('active')) {
+            closeWelcomeModal();
+        }
+    });
+});
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
 window.openDetailsModal = openDetailsModal;
