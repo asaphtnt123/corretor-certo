@@ -483,6 +483,7 @@ form.addEventListener('submit', async function(e) {
 if (user) {
     verificarAnunciosExpirados(user.uid);
 }
+    const totalAtivos = await contarAnunciosAtivos(user.uid); // Definindo a variável aqui
 
   // No evento submit do formulário, onde é verificado o limite de anúncios
 if (totalAtivos >= 1) {
