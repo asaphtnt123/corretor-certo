@@ -14,7 +14,7 @@ exports.handler = async (event, context) => {
     }
 
     // 3. Parse dos dados
-    const { planoId, email } = JSON.parse(event.body);
+    const { planoId, email, tipo, dias } = JSON.parse(event.body);
     
     // 4. Validação dos dados
     if (!planoId || !email) {
@@ -28,11 +28,17 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // 5. Configuração simplificada dos planos (use price_ids do Stripe)
+    // 5. Configuração dos planos (agora incluindo anúncios avulsos)
     const priceIds = {
+      // Planos de assinatura (originais)
       basico: process.env.STRIPE_PRICE_BASICO,
       profissional: process.env.STRIPE_PRICE_PROFISSIONAL,
-      premium: process.env.STRIPE_PRICE_PREMIUM
+      premium: process.env.STRIPE_PRICE_PREMIUM,
+      
+      // Anúncios avulsos (novos)
+      anuncio_5dias: process.env.STRIPE_PRICE_ANUNCIO_5DIAS,
+      anuncio_10dias: process.env.STRIPE_PRICE_ANUNCIO_10DIAS,
+      anuncio_20dias: process.env.STRIPE_PRICE_ANUNCIO_20DIAS
     };
 
     const priceId = priceIds[planoId];
@@ -48,16 +54,42 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // 6. Criação da sessão de checkout
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [{ price: priceId, quantity: 1 }],
-      mode: 'subscription',
-      success_url: `${process.env.URL}/sucesso.html?session_id={CHECKOUT_SESSION_ID}&plano=${planoId}`,
+    // 6. Configuração dinâmica baseada no tipo (assinatura ou anúncio avulso)
+    const isSubscription = tipo !== 'anuncio_avulso';
+    const successUrl = isSubscription 
+      ? `${process.env.URL}/sucesso.html?session_id={CHECKOUT_SESSION_ID}&plano=${planoId}`
+      : `${process.env.URL}/sucesso-anuncio.html?session_id={CHECKOUT_SESSION_ID}&dias=${dias}`;
+
+    // 7. Criação da sessão de checkout
+    const sessionParams = {
+      payment_method_types: ['card', 'pix'], // Adicionado Pix como opção
+      line_items: [{ 
+        price: priceId, 
+        quantity: 1 
+      }],
+      mode: isSubscription ? 'subscription' : 'payment',
+      success_url: successUrl,
       cancel_url: `${process.env.URL}/planos.html`,
       customer_email: email,
-      metadata: { planoId, email }
-    });
+      metadata: { 
+        planoId,
+        email,
+        tipo: tipo || 'assinatura',
+        ...(dias && { dias }) // Inclui dias apenas se existir
+      },
+      payment_intent_data: !isSubscription ? {
+        description: `Anúncio avulso - ${dias} dias de visibilidade`
+      } : undefined,
+      subscription_data: isSubscription ? {
+        trial_settings: {
+          end_behavior: {
+            missing_payment_method: 'cancel'
+          }
+        }
+      } : undefined
+    };
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     console.log('Sessão criada com sucesso:', session.id);
     
@@ -65,12 +97,13 @@ exports.handler = async (event, context) => {
       statusCode: 200,
       body: JSON.stringify({ 
         sessionId: session.id,
-        url: session.url
+        url: session.url,
+        tipo: tipo || 'assinatura'
       }),
     };
 
   } catch (error) {
-    // 7. Tratamento detalhado de erros
+    // 8. Tratamento detalhado de erros
     console.error('ERRO CRÍTICO:', {
       message: error.message,
       stack: error.stack,
@@ -81,7 +114,8 @@ exports.handler = async (event, context) => {
       statusCode: 500,
       body: JSON.stringify({ 
         error: 'Erro ao criar sessão de pagamento',
-        details: process.env.NETLIFY_DEV ? error.message : 'Contate o suporte'
+        details: process.env.NETLIFY_DEV ? error.message : 'Contate o suporte',
+        suggestion: 'Verifique os logs do servidor para mais detalhes'
       }),
     };
   }
