@@ -284,232 +284,184 @@
           <button class="btn-avulsa" onclick="selecionarPlano('maximo')">Selecionar Plano</button>
         </div>
       </div>
-       <!-- Adicione este overlay de loading -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-content">
-            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <h4 class="mt-3">Processando pagamento...</h4>
-            <p>Por favor, aguarde enquanto redirecionamos você para o checkout seguro</p>
-        </div>
-    </div>
-      
-      <div class="avulsa-benefits">
-        <h2>Benefícios de Destacar Seu Anúncio</h2>
-        <div class="benefits-grid">
-          <div class="benefit-item">
-            <div class="benefit-icon">
-              <i class="fas fa-eye"></i>
-            </div>
-            <div class="benefit-text">
-              <h4>Mais Visibilidade</h4>
-              <p>Seu anúncio aparece antes dos anúncios comuns, recebendo mais cliques.</p>
-            </div>
+      <!-- Adicione este overlay de loading -->
+  <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-content">
+          <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+              <span class="visually-hidden">Loading...</span>
           </div>
-          
-          <div class="benefit-item">
-            <div class="benefit-icon">
-              <i class="fas fa-bolt"></i>
-            </div>
-            <div class="benefit-text">
-              <h4>Venda Mais Rápido</h4>
-              <p>Anúncios destacados vendem em média 47% mais rápido que anúncios comuns.</p>
-            </div>
-          </div>
-          
-          <div class="benefit-item">
-            <div class="benefit-icon">
-              <i class="fas fa-chart-line"></i>
-            </div>
-            <div class="benefit-text">
-              <h4>Melhor Posicionamento</h4>
-              <p>Apareça nas primeiras posições das buscas, onde a maioria dos clientes clica.</p>
-            </div>
-          </div>
-          
-          <div class="benefit-item">
-            <div class="benefit-icon">
-              <i class="fas fa-shield-alt"></i>
-            </div>
-            <div class="benefit-text">
-              <h4>Credibilidade</h4>
-              <p>O selo de destaque transmite confiança e profissionalismo aos clientes.</p>
-            </div>
-          </div>
-        </div>
+          <h4 class="mt-3">Processando pagamento...</h4>
+          <p>Por favor, aguarde enquanto redirecionamos você para o checkout seguro</p>
       </div>
-    </section>
-  </main>
-
-  <footer class="footer">
-    <!-- Seu footer existente -->
-  </footer>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://js.stripe.com/v3/"></script>
-    <script>
-        class AnuncioPaymentSystem {
-            constructor() {
-                // Inicializa o Stripe com sua chave pública
-                this.stripe = Stripe('pk_live_51RGQ2oCaTJrTX5Tupk7zHAmRzxDgX9RtmxlFRwGNlyHudrhMjPVu0yx871bch1PpXkfUnOQN0UXB1mXzhwSMrDrG00ix8LTK9b');
-                
-                // Definição dos planos de anúncios avulsos (valores em centavos)
-                this.planos = {
-                    '5dias': {
-                        id: 'anuncio_5dias',
-                        nome: 'Anúncio 5 Dias',
-                        preco: 900, // R$ 9,00
-                        dias: 5
-                    },
-                    '10dias': {
-                        id: 'anuncio_10dias',
-                        nome: 'Anúncio 10 Dias',
-                        preco: 1500, // R$ 15,00
-                        dias: 10
-                    },
-                    '20dias': {
-                        id: 'anuncio_20dias',
-                        nome: 'Anúncio 20 Dias',
-                        preco: 2500, // R$ 25,00
-                        dias: 20
-                    }
-                };
-                
-                // Inicia os listeners
-                this.initEventListeners();
-            }
+  <script>
+      class AnuncioPaymentSystem {
+          constructor() {
+              // Inicializa o Stripe com sua chave pública
+              this.stripe = Stripe('pk_live_51RGQ2oCaTJrTX5Tupk7zHAmRzxDgX9RtmxlFRwGNlyHudrhMjPVu0yx871bch1PpXkfUnOQN0UXB1mXzhwSMrDrG00ix8LTK9b');
+              
+              // Definição dos planos de anúncios avulsos (valores em centavos)
+              this.planos = {
+                  'basico': {
+                      id: 'anuncio_7dias',
+                      nome: 'Destaque Básico',
+                      preco: 2990, // R$ 29,90
+                      dias: 7
+                  },
+                  'premium': {
+                      id: 'anuncio_15dias',
+                      nome: 'Destaque Premium',
+                      preco: 4990, // R$ 49,90
+                      dias: 15
+                  },
+                  'maximo': {
+                      id: 'anuncio_30dias',
+                      nome: 'Destaque Máximo',
+                      preco: 8990, // R$ 89,90
+                      dias: 30
+                  }
+              };
+              
+              // Inicia os listeners
+              this.initEventListeners();
+          }
 
-            /**
-             * Inicializa os event listeners
-             */
-            initEventListeners() {
-                // Listener para os botões dos cards de plano
-                document.querySelectorAll('.pricing-card button').forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const card = e.target.closest('.pricing-card');
-                        let planoId = '';
-                        
-                        if (card.querySelector('.price').textContent.includes('9,00')) {
-                            planoId = '5dias';
-                        } else if (card.querySelector('.price').textContent.includes('15,00')) {
-                            planoId = '10dias';
-                        } else {
-                            planoId = '20dias';
-                        }
-                        
-                        this.handlePayment(planoId);
-                    });
-                });
+          /**
+           * Inicializa os event listeners
+           */
+          initEventListeners() {
+              // Listener para os botões de seleção de plano
+              document.querySelectorAll('.btn-avulsa').forEach(button => {
+                  button.addEventListener('click', (e) => {
+                      const planoId = e.target.getAttribute('onclick').match(/'([^']+)'/)[1];
+                      this.handlePayment(planoId);
+                  });
+              });
+          }
 
-                // Listener para o formulário de pagamento
-                document.getElementById('payment-form').addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const planoId = document.getElementById('package').value;
-                    if (planoId) {
-                        this.handlePayment(planoId);
-                    } else {
-                        alert('Por favor, selecione um pacote');
-                    }
-                });
-            }
+          /**
+           * Processa o pagamento
+           */
+          async handlePayment(planoId) {
+              try {
+                  this.showLoading(true);
+                  
+                  const plano = this.planos[planoId];
+                  if (!plano) throw new Error('Plano não encontrado');
 
-            /**
-             * Processa o pagamento
-             */
-            async handlePayment(planoId) {
-                try {
-                    this.showLoading(true);
-                    
-                    const plano = this.planos[planoId];
-                    if (!plano) throw new Error('Plano não encontrado');
+                  // Solicita o e-mail do usuário com SweetAlert
+                  const { value: email } = await Swal.fire({
+                      title: 'Informe seu e-mail',
+                      input: 'email',
+                      inputLabel: 'Para continuar com o pagamento',
+                      inputPlaceholder: 'seu@email.com',
+                      showCancelButton: true,
+                      inputValidator: (value) => {
+                          if (!value) {
+                              return 'Você precisa informar um e-mail!';
+                          }
+                          if (!/^\S+@\S+\.\S+$/.test(value)) {
+                              return 'Por favor, insira um e-mail válido';
+                          }
+                      }
+                  });
 
-                    // Solicita o e-mail do usuário
-                    const email = prompt("Por favor, informe seu e-mail para continuar com o pagamento:");
-                    if (!email) {
-                        this.showError("E-mail é obrigatório para continuar");
-                        return;
-                    }
+                  if (!email) {
+                      this.showError("E-mail é obrigatório para continuar");
+                      return;
+                  }
 
-                    // Chamada para a Netlify Function
-                    const response = await fetch('/.netlify/functions/create-checkout-session', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            planoId: plano.id,
-                            email: email,
-                            tipo: 'anuncio_avulso',
-                            dias: plano.dias
-                        })
-                    });
+                  // Chamada para a Netlify Function
+                  const response = await fetch('/.netlify/functions/create-checkout-session', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ 
+                          planoId: plano.id,
+                          email: email,
+                          tipo: 'anuncio_avulso',
+                          dias: plano.dias
+                      })
+                  });
 
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.error || 'Erro no servidor');
-                    }
+                  if (!response.ok) {
+                      const errorData = await response.json();
+                      throw new Error(errorData.error || 'Erro no servidor');
+                  }
 
-                    const data = await response.json();
-                    
-                    if (!data.sessionId) {
-                        throw new Error('Resposta inválida do servidor');
-                    }
+                  const data = await response.json();
+                  
+                  if (!data.sessionId) {
+                      throw new Error('Resposta inválida do servidor');
+                  }
 
-                    // Redireciona para o checkout do Stripe
-                    const result = await this.stripe.redirectToCheckout({
-                        sessionId: data.sessionId
-                    });
+                  // Redireciona para o checkout do Stripe
+                  const result = await this.stripe.redirectToCheckout({
+                      sessionId: data.sessionId
+                  });
 
-                    if (result.error) {
-                        throw new Error(result.error.message);
-                    }
-                } catch (error) {
-                    console.error('Erro:', error);
-                    this.showError(error.message || 'Erro ao processar pagamento');
-                } finally {
-                    this.showLoading(false);
-                }
-            }
+                  if (result.error) {
+                      throw new Error(result.error.message);
+                  }
+              } catch (error) {
+                  console.error('Erro:', error);
+                  this.showError(error.message || 'Erro ao processar pagamento');
+              } finally {
+                  this.showLoading(false);
+              }
+          }
 
-            /**
-             * Mostra estado de carregamento
-             */
-            showLoading(show) {
-                const overlay = document.getElementById('loadingOverlay');
-                const buttons = document.querySelectorAll('.pricing-card button, #payment-form button');
-                
-                if (show) {
-                    overlay.style.display = 'flex';
-                    buttons.forEach(btn => {
-                        btn.disabled = true;
-                        if (btn.innerHTML) {
-                            btn.dataset.originalText = btn.innerHTML;
-                            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
-                        }
-                    });
-                } else {
-                    overlay.style.display = 'none';
-                    buttons.forEach(btn => {
-                        btn.disabled = false;
-                        if (btn.dataset.originalText) {
-                            btn.innerHTML = btn.dataset.originalText;
-                        }
-                    });
-                }
-            }
+          /**
+           * Mostra estado de carregamento
+           */
+          showLoading(show) {
+              const overlay = document.getElementById('loadingOverlay');
+              const buttons = document.querySelectorAll('.btn-avulsa');
+              
+              if (show) {
+                  overlay.style.display = 'flex';
+                  buttons.forEach(btn => {
+                      btn.disabled = true;
+                      const originalText = btn.innerHTML;
+                      btn.setAttribute('data-original-text', originalText);
+                      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+                  });
+              } else {
+                  overlay.style.display = 'none';
+                  buttons.forEach(btn => {
+                      btn.disabled = false;
+                      const originalText = btn.getAttribute('data-original-text');
+                      if (originalText) {
+                          btn.innerHTML = originalText;
+                      }
+                  });
+              }
+          }
 
-            /**
-             * Mostra erros
-             */
-            showError(message) {
-                // Você pode substituir por um modal mais bonito se preferir
-                alert(`Erro: ${message}`);
-            }
-        }
+          /**
+           * Mostra erros
+           */
+          showError(message) {
+              Swal.fire({
+                  icon: 'error',
+                  title: 'Erro',
+                  text: message,
+                  confirmButtonText: 'Entendi'
+              });
+          }
+      }
 
-        // Inicialização quando o DOM estiver pronto
-        document.addEventListener('DOMContentLoaded', () => {
-            new AnuncioPaymentSystem();
-        });
-    </script>
+      // Inicialização quando o DOM estiver pronto
+      document.addEventListener('DOMContentLoaded', () => {
+          new AnuncioPaymentSystem();
+          
+          // Remove os onclick antigos para evitar conflitos
+          document.querySelectorAll('.btn-avulsa').forEach(btn => {
+              btn.removeAttribute('onclick');
+          });
+      });
+  </script>
 </body>
 </html>
