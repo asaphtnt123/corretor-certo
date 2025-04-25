@@ -484,20 +484,25 @@ if (user) {
     verificarAnunciosExpirados(user.uid);
 }
 
-    // Verifica limite de anúncios ativos
-const totalAtivos = await contarAnunciosAtivos(user.uid);
+  // No evento submit do formulário, onde é verificado o limite de anúncios
 if (totalAtivos >= 1) {
-   const limiteModal = document.getElementById('limiteModal');
-limiteModal.style.display = 'flex';
+    const limiteModal = document.getElementById('limiteModal');
+    limiteModal.style.display = 'flex';
 
-document.getElementById('btnIrParaPlanos').onclick = () => {
-    window.location.href = 'planos.html';
-};
+    // Botão para ir para planos
+    document.getElementById('btnIrParaPlanos').onclick = () => {
+        window.location.href = 'planos.html';
+    };
 
-document.getElementById('btnFecharModal').onclick = () => {
-    limiteModal.style.display = 'none';
-};
+    // Botão para comprar anúncios avulsos (NOVO)
+    document.getElementById('btnComprarAvulsos').onclick = () => {
+        window.location.href = 'comprar-anuncios-avulsos.html'; // Ou a URL que você desejar
+    };
 
+    // Botão para fechar modal
+    document.getElementById('btnFecharModal').onclick = () => {
+        limiteModal.style.display = 'none';
+    };
 
     // Impede o envio do formulário
     loadingScreen.style.display = 'none';
@@ -505,7 +510,6 @@ document.getElementById('btnFecharModal').onclick = () => {
     submitBtn.disabled = false;
     return;
 }
-
     // Configuração do loading
     const loadingScreen = document.getElementById('loading-screen');
     const loadingText = document.getElementById('loading-text');
