@@ -2534,6 +2534,94 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+
+// ============== CONTADOR DE USUÁRIOS ==============
+let userCount = 0;
+let userCountListener = null;
+
+// Função para animar a mudança de número
+function animateCounter(newCount) {
+    const counterElement = document.getElementById('userCount');
+    if (!counterElement) return;
+    
+    const currentCount = parseInt(counterElement.textContent) || 0;
+    const difference = newCount - currentCount;
+    const duration = 1500; // Duração em milissegundos
+    const startTime = performance.now();
+    
+    function updateCounter(timestamp) {
+        const progress = Math.min((timestamp - startTime) / duration, 1);
+        const currentValue = Math.floor(currentCount + (difference * progress));
+        
+        counterElement.textContent = currentValue.toLocaleString();
+        
+        // Adiciona classe de animação
+        if (progress < 1) {
+            counterElement.classList.add('count-up');
+            requestAnimationFrame(updateCounter);
+        } else {
+            counterElement.classList.remove('count-up');
+            // Efeito de pulso ao completar
+            counterElement.classList.add('counter-animate');
+            setTimeout(() => {
+                counterElement.classList.remove('counter-animate');
+            }, 500);
+        }
+    }
+    
+    requestAnimationFrame(updateCounter);
+}
+
+// Função para iniciar o contador de usuários
+function startUserCounter() {
+    // Primeiro, pega a contagem total atual
+    getTotalUserCount().then(count => {
+        userCount = count;
+        animateCounter(count);
+        
+        // Depois configura o listener em tempo real
+        setupUserCountListener();
+    });
+}
+
+// Função para obter a contagem total de usuários
+async function getTotalUserCount() {
+    try {
+        const usersRef = collection(db, "users");
+        const snapshot = await getCountFromServer(usersRef);
+        return snapshot.data().count;
+    } catch (error) {
+        console.error("Erro ao contar usuários:", error);
+        return 0;
+    }
+}
+
+// Configura o listener em tempo real para novos usuários
+function setupUserCountListener() {
+    // Remove listener anterior se existir
+    if (userCountListener) {
+        userCountListener();
+    }
+    
+    // Cria novo listener
+    const usersRef = collection(db, "users");
+    userCountListener = onSnapshot(usersRef, (snapshot) => {
+        const newCount = snapshot.size;
+        if (newCount > userCount) {
+            userCount = newCount;
+            animateCounter(newCount);
+        }
+    });
+}
+
+// Inicializa o contador quando o DOM estiver pronto
+document.addEventListener("DOMContentLoaded", function() {
+    // Verifica se o contador está na página atual
+    if (document.getElementById('userCount')) {
+        startUserCounter();
+    }
+});
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
 window.openDetailsModal = openDetailsModal;
