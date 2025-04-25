@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Comprar Destaque Avulso | Corretor Certo</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprar Anúncios Avulsos | Corretor Certo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -176,6 +178,26 @@
         font-size: 1.8rem;
       }
     }
+
+     .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            display: none;
+        }
+        .loading-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+        }
   </style>
 </head>
 <body>
@@ -262,6 +284,16 @@
           <button class="btn-avulsa" onclick="selecionarPlano('maximo')">Selecionar Plano</button>
         </div>
       </div>
+       <!-- Adicione este overlay de loading -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h4 class="mt-3">Processando pagamento...</h4>
+            <p>Por favor, aguarde enquanto redirecionamos você para o checkout seguro</p>
+        </div>
+    </div>
       
       <div class="avulsa-benefits">
         <h2>Benefícios de Destacar Seu Anúncio</h2>
@@ -315,48 +347,169 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script>
-    function selecionarPlano(plano) {
-      const user = firebase.auth().currentUser;
-      
-      if (!user) {
-        Swal.fire({
-          title: 'Login Necessário',
-          text: 'Você precisa estar logado para comprar um destaque.',
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonText: 'Fazer Login',
-          cancelButtonText: 'Cancelar'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            window.location.href = 'login.html?redirect=compraavulsa';
-          }
-        });
-        return;
-      }
-      
-      // Aqui você implementaria a lógica de pagamento
-      // Por enquanto, vamos mostrar um modal de sucesso simulado
-      Swal.fire({
-        title: 'Ótima escolha!',
-        html: `Você selecionou o <strong>Destaque ${plano.charAt(0).toUpperCase() + plano.slice(1)}</strong>.<br><br>
-              Você será redirecionado para a página de pagamento.`,
-        icon: 'success',
-        confirmButtonText: 'Continuar'
-      }).then(() => {
-        // Simulação de redirecionamento para o pagamento
-        window.location.href = `pagamento.html?plano=${plano}&tipo=destaque`;
-      });
-    }
-    
-    // Verificar autenticação ao carregar a página
-    document.addEventListener('DOMContentLoaded', function() {
-      firebase.auth().onAuthStateChanged(function(user) {
-        if (user) {
-          document.getElementById('user-name').textContent = user.displayName || 'Minha Conta';
+  <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        class AnuncioPaymentSystem {
+            constructor() {
+                // Inicializa o Stripe com sua chave pública
+                this.stripe = Stripe('pk_live_51RGQ2oCaTJrTX5Tupk7zHAmRzxDgX9RtmxlFRwGNlyHudrhMjPVu0yx871bch1PpXkfUnOQN0UXB1mXzhwSMrDrG00ix8LTK9b');
+                
+                // Definição dos planos de anúncios avulsos (valores em centavos)
+                this.planos = {
+                    '5dias': {
+                        id: 'anuncio_5dias',
+                        nome: 'Anúncio 5 Dias',
+                        preco: 900, // R$ 9,00
+                        dias: 5
+                    },
+                    '10dias': {
+                        id: 'anuncio_10dias',
+                        nome: 'Anúncio 10 Dias',
+                        preco: 1500, // R$ 15,00
+                        dias: 10
+                    },
+                    '20dias': {
+                        id: 'anuncio_20dias',
+                        nome: 'Anúncio 20 Dias',
+                        preco: 2500, // R$ 25,00
+                        dias: 20
+                    }
+                };
+                
+                // Inicia os listeners
+                this.initEventListeners();
+            }
+
+            /**
+             * Inicializa os event listeners
+             */
+            initEventListeners() {
+                // Listener para os botões dos cards de plano
+                document.querySelectorAll('.pricing-card button').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const card = e.target.closest('.pricing-card');
+                        let planoId = '';
+                        
+                        if (card.querySelector('.price').textContent.includes('9,00')) {
+                            planoId = '5dias';
+                        } else if (card.querySelector('.price').textContent.includes('15,00')) {
+                            planoId = '10dias';
+                        } else {
+                            planoId = '20dias';
+                        }
+                        
+                        this.handlePayment(planoId);
+                    });
+                });
+
+                // Listener para o formulário de pagamento
+                document.getElementById('payment-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const planoId = document.getElementById('package').value;
+                    if (planoId) {
+                        this.handlePayment(planoId);
+                    } else {
+                        alert('Por favor, selecione um pacote');
+                    }
+                });
+            }
+
+            /**
+             * Processa o pagamento
+             */
+            async handlePayment(planoId) {
+                try {
+                    this.showLoading(true);
+                    
+                    const plano = this.planos[planoId];
+                    if (!plano) throw new Error('Plano não encontrado');
+
+                    // Solicita o e-mail do usuário
+                    const email = prompt("Por favor, informe seu e-mail para continuar com o pagamento:");
+                    if (!email) {
+                        this.showError("E-mail é obrigatório para continuar");
+                        return;
+                    }
+
+                    // Chamada para a Netlify Function
+                    const response = await fetch('/.netlify/functions/create-checkout-session', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            planoId: plano.id,
+                            email: email,
+                            tipo: 'anuncio_avulso',
+                            dias: plano.dias
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Erro no servidor');
+                    }
+
+                    const data = await response.json();
+                    
+                    if (!data.sessionId) {
+                        throw new Error('Resposta inválida do servidor');
+                    }
+
+                    // Redireciona para o checkout do Stripe
+                    const result = await this.stripe.redirectToCheckout({
+                        sessionId: data.sessionId
+                    });
+
+                    if (result.error) {
+                        throw new Error(result.error.message);
+                    }
+                } catch (error) {
+                    console.error('Erro:', error);
+                    this.showError(error.message || 'Erro ao processar pagamento');
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            /**
+             * Mostra estado de carregamento
+             */
+            showLoading(show) {
+                const overlay = document.getElementById('loadingOverlay');
+                const buttons = document.querySelectorAll('.pricing-card button, #payment-form button');
+                
+                if (show) {
+                    overlay.style.display = 'flex';
+                    buttons.forEach(btn => {
+                        btn.disabled = true;
+                        if (btn.innerHTML) {
+                            btn.dataset.originalText = btn.innerHTML;
+                            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+                        }
+                    });
+                } else {
+                    overlay.style.display = 'none';
+                    buttons.forEach(btn => {
+                        btn.disabled = false;
+                        if (btn.dataset.originalText) {
+                            btn.innerHTML = btn.dataset.originalText;
+                        }
+                    });
+                }
+            }
+
+            /**
+             * Mostra erros
+             */
+            showError(message) {
+                // Você pode substituir por um modal mais bonito se preferir
+                alert(`Erro: ${message}`);
+            }
         }
-      });
-    });
-  </script>
+
+        // Inicialização quando o DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', () => {
+            new AnuncioPaymentSystem();
+        });
+    </script>
 </body>
 </html>
