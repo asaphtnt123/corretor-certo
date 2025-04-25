@@ -11,6 +11,15 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
+      .swal2-popup .btn {
+  padding: 10px 20px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, #3498db, #2c3e50);
+  color: white;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 15px;
+}
     /* Estilos específicos para a página de compra avulsa */
     .avulsa-container {
       max-width: 1200px;
@@ -351,73 +360,96 @@
           /**
            * Processa o pagamento
            */
-          async handlePayment(planoId) {
-              try {
-                  this.showLoading(true);
-                  
-                  const plano = this.planos[planoId];
-                  if (!plano) throw new Error('Plano não encontrado');
+           async handlePayment(planoId) {async handlePayment(planoId) {
+  try {
+    this.showLoading(true);
+    
+    const plano = this.planos[planoId];
+    if (!plano) throw new Error('Plano não encontrado');
 
-                  // Solicita o e-mail do usuário com SweetAlert
-                  const { value: email } = await Swal.fire({
-                      title: 'Informe seu e-mail',
-                      input: 'email',
-                      inputLabel: 'Para continuar com o pagamento',
-                      inputPlaceholder: 'seu@email.com',
-                      showCancelButton: true,
-                      inputValidator: (value) => {
-                          if (!value) {
-                              return 'Você precisa informar um e-mail!';
-                          }
-                          if (!/^\S+@\S+\.\S+$/.test(value)) {
-                              return 'Por favor, insira um e-mail válido';
-                          }
-                      }
-                  });
+    // 1. Solicitação do e-mail com timeout
+    const { value: email, isDismissed } = await Swal.fire({
+      title: 'Informe seu e-mail',
+      input: 'email',
+      inputLabel: 'Para continuar com o pagamento',
+      inputPlaceholder: 'seu@email.com',
+      showCancelButton: true,
+      allowOutsideClick: false,
+      timer: 30000, // 30 segundos timeout
+      timerProgressBar: true,
+      inputValidator: (value) => {
+        if (!value) return 'Você precisa informar um e-mail!';
+        if (!/^\S+@\S+\.\S+$/.test(value)) return 'E-mail inválido';
+      }
+    });
 
-                  if (!email) {
-                      this.showError("E-mail é obrigatório para continuar");
-                      return;
-                  }
+    if (!email || isDismissed) {
+      this.showLoading(false);
+      return;
+    }
 
-                  // Chamada para a Netlify Function
-                  const response = await fetch('/.netlify/functions/create-checkout-session', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ 
-                          planoId: plano.id,
-                          email: email,
-                          tipo: 'anuncio_avulso',
-                          dias: plano.dias
-                      })
-                  });
+    // 2. Criação da sessão com timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos
+    
+    const response = await fetch('/.netlify/functions/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        planoId: plano.id,
+        email: email,
+        tipo: 'anuncio_avulso',
+        dias: plano.dias
+      }),
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
 
-                  if (!response.ok) {
-                      const errorData = await response.json();
-                      throw new Error(errorData.error || 'Erro no servidor');
-                  }
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+      throw new Error(error.message || 'Erro no servidor');
+    }
 
-                  const data = await response.json();
-                  
-                  if (!data.sessionId) {
-                      throw new Error('Resposta inválida do servidor');
-                  }
+    const data = await response.json();
+    
+    if (!data?.sessionId) {
+      throw new Error('Resposta inválida do servidor');
+    }
 
-                  // Redireciona para o checkout do Stripe
-                  const result = await this.stripe.redirectToCheckout({
-                      sessionId: data.sessionId
-                  });
+    // 3. Redirecionamento com fallback
+    const result = await this.stripe.redirectToCheckout({
+      sessionId: data.sessionId
+    }).catch(error => {
+      console.error('Erro no redirecionamento:', error);
+      throw new Error('Falha ao redirecionar para o pagamento');
+    });
 
-                  if (result.error) {
-                      throw new Error(result.error.message);
-                  }
-              } catch (error) {
-                  console.error('Erro:', error);
-                  this.showError(error.message || 'Erro ao processar pagamento');
-              } finally {
-                  this.showLoading(false);
-              }
-          }
+    if (result?.error) {
+      throw new Error(result.error.message);
+    }
+
+  } catch (error) {
+    console.error('Erro no pagamento:', error);
+    this.showLoading(false);
+    
+    if (error.name === 'AbortError') {
+      this.showError('Tempo de conexão esgotado. Verifique sua internet e tente novamente.');
+    } else {
+      this.showError(error.message || 'Erro ao processar pagamento');
+    }
+    
+    // Fallback manual caso o redirecionamento falhe
+    if (error.message.includes('redirecionar')) {
+      Swal.fire({
+        title: 'Redirecionamento falhou',
+        html: `<p>Clique no botão abaixo para acessar o pagamento:</p>
+              <a href="${data?.url}" class="btn btn-primary mt-3">Ir para Pagamento</a>`,
+        showConfirmButton: false
+      });
+    }
+  }
+}
 
           /**
            * Mostra estado de carregamento
