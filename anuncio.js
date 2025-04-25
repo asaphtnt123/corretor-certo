@@ -475,47 +475,44 @@ document.addEventListener('DOMContentLoaded', function() {
 form.addEventListener('submit', async function(e) {
     e.preventDefault();
     
+    // Declarar variáveis no início para evitar erros de acesso
+    const loadingScreen = document.getElementById('loading-screen');
+    const loadingText = document.getElementById('loading-text');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const limiteModal = document.getElementById('limiteModal');
+    
     const user = auth.currentUser;
     if (!user) {
         alert('Você precisa estar logado para criar anúncio');
         return;
     }
-if (user) {
-    verificarAnunciosExpirados(user.uid);
-}
-    const totalAtivos = await contarAnunciosAtivos(user.uid); // Definindo a variável aqui
 
-  // No evento submit do formulário, onde é verificado o limite de anúncios
-if (totalAtivos >= 1) {
-    const limiteModal = document.getElementById('limiteModal');
-    limiteModal.style.display = 'flex';
-
-    // Botão para ir para planos
-    document.getElementById('btnIrParaPlanos').onclick = () => {
-        window.location.href = 'planos.html';
-    };
-
-    // Botão para comprar anúncios avulsos (NOVO)
-    document.getElementById('btnComprarAvulsos').onclick = () => {
-        window.location.href = 'comprar-anuncios-avulsos.html'; // Ou a URL que você desejar
-    };
-
-    // Botão para fechar modal
-    document.getElementById('btnFecharModal').onclick = () => {
-        limiteModal.style.display = 'none';
-    };
-
-    // Impede o envio do formulário
-    loadingScreen.style.display = 'none';
-    loadingAnimation.stop();
-    submitBtn.disabled = false;
-    return;
-}
-    // Configuração do loading
-    const loadingScreen = document.getElementById('loading-screen');
-    const loadingText = document.getElementById('loading-text');
+    // Verificar anúncios expirados
+    await verificarAnunciosExpirados(user.uid);
     
-    // Mostrar loading com fade
+    // Verificar limite de anúncios ativos
+    const totalAtivos = await contarAnunciosAtivos(user.uid);
+
+    if (totalAtivos >= 1) {
+        limiteModal.style.display = 'flex';
+
+        // Configurar botões do modal
+        document.getElementById('btnIrParaPlanos').onclick = () => {
+            window.location.href = 'planos.html';
+        };
+
+        document.getElementById('btnComprarAvulsos').onclick = () => {
+            window.location.href = 'comprar-anuncios-avulsos.html';
+        };
+
+        document.getElementById('btnFecharModal').onclick = () => {
+            limiteModal.style.display = 'none';
+        };
+
+        return;
+    }
+
+    // Configuração do loading (só executa se não atingiu o limite)
     loadingText.textContent = btnImovel.checked 
         ? 'Salvando seu imóvel...' 
         : 'Salvando seu veículo...';
@@ -524,7 +521,6 @@ if (totalAtivos >= 1) {
     loadingAnimation.play();
     
     // Desabilita o botão de submit
-    const submitBtn = form.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
     
     try {
@@ -551,14 +547,14 @@ if (totalAtivos >= 1) {
             userId: user.uid,
             data: new Date(),
             status: 'ativo',
-            visualizacoes: 0, // Inicializa contador de visualizações
-            contatos: [], // Array para armazenar contatos
+            visualizacoes: 0,
+            contatos: [],
             ultimaAtualizacao: new Date()
         };
         
         // Adicionar campos específicos
         if (btnImovel.checked) {
-            // Campos básicos
+            // Campos para imóveis
             formData.tipo = document.getElementById('tipo-imovel').value;
             formData.bairro = document.getElementById('bairro').value;
             formData.quartos = parseInt(document.getElementById('quartos').value) || 0;
@@ -569,13 +565,10 @@ if (totalAtivos >= 1) {
             formData.aceitaAnimais = document.getElementById('aceita-animais').checked;
             formData.endereco = document.getElementById('endereco').value;
             formData.proximoA = document.getElementById('proximo-a').value;
-            
-            // Novos campos para imóveis
             formData.fiador = document.getElementById('fiador').value;
             formData.calcao = parseFloat(document.getElementById('calcao').value) || 0;
             formData.tipoCaucao = document.getElementById('tipo-caucao').value;
             
-            // Upload de imagens e salvar no Firestore
             const imageUrls = await uploadImages(selectedFiles, 'imoveis', user.uid);
             formData.imagens = imageUrls;
             
@@ -583,8 +576,7 @@ if (totalAtivos >= 1) {
         } else {
             // Campos para automóveis
             formData.tipo = document.getElementById('tipo-automovel').value;
-            formData.cidade = document.getElementById('cidade').value; // Novo campo
-
+            formData.cidade = document.getElementById('cidade').value;
             formData.marca = document.getElementById('marca').value;
             formData.modelo = document.getElementById('modelo').value;
             formData.ano = parseInt(document.getElementById('ano').value);
@@ -593,7 +585,6 @@ if (totalAtivos >= 1) {
             formData.combustivel = document.getElementById('combustivel').value;
             formData.cambio = document.getElementById('cambio').value;
             
-            // Upload de imagens e salvar no Firestore
             const imageUrls = await uploadImages(selectedFiles, 'automoveis', user.uid);
             formData.imagens = imageUrls;
             
