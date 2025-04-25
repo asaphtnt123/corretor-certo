@@ -2478,44 +2478,56 @@ function onLoginSuccess(user) {
 
 
 
-// Modal de Boas-Vindas
+// Modal de Boas-Vindas Atualizado
 document.addEventListener('DOMContentLoaded', function() {
     const welcomeModal = document.getElementById('welcomeModal');
     const closeWelcomeBtn = document.querySelector('.welcome-close-btn');
     const getStartedBtn = document.getElementById('welcomeGetStarted');
     const dontShowAgain = document.getElementById('dontShowAgain');
+    const userTypeBtns = document.querySelectorAll('.user-type-btn');
     
-    // Verificar se já foi mostrado antes (usando localStorage)
+    // Verificar se já foi mostrado antes
     if (!localStorage.getItem('welcomeShown')) {
         setTimeout(() => {
             welcomeModal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Impede scroll
-        }, 1000); // Mostra após 1 segundo
+            document.body.style.overflow = 'hidden';
+        }, 1500);
     }
+    
+    // Alternar entre conteúdos
+    userTypeBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            userTypeBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            document.querySelectorAll('.welcome-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            const target = this.getAttribute('data-user-type');
+            document.getElementById(`${target}-content`).classList.add('active');
+        });
+    });
     
     // Fechar modal
     function closeWelcomeModal() {
         welcomeModal.classList.remove('active');
-        document.body.style.overflow = ''; // Restaura scroll
+        document.body.style.overflow = '';
         
-        // Se marcado para não mostrar novamente
         if (dontShowAgain.checked) {
             localStorage.setItem('welcomeShown', 'true');
         }
     }
     
-    // Event listeners
     closeWelcomeBtn.addEventListener('click', closeWelcomeModal);
     getStartedBtn.addEventListener('click', closeWelcomeModal);
     
-    // Fechar ao clicar fora do modal
     welcomeModal.addEventListener('click', function(e) {
         if (e.target === welcomeModal) {
             closeWelcomeModal();
         }
     });
     
-    // Fechar com ESC
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && welcomeModal.classList.contains('active')) {
             closeWelcomeModal();
