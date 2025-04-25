@@ -45,16 +45,21 @@ exports.handler = async (event) => {
     // Configuração da sessão
     const isAnuncioAvulso = tipo === 'anuncio_avulso';
     const sessionParams = {
-      payment_method_types: ['card', 'pix'],
-      line_items: [{ price: priceId, quantity: 1 }],
-      mode: isAnuncioAvulso ? 'payment' : 'subscription',
-      success_url: isAnuncioAvulso 
-        ? `${process.env.URL}/sucesso-anuncio.html?session_id={CHECKOUT_SESSION_ID}`
-        : `${process.env.URL}/sucesso.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.URL}/planos.html`,
-      customer_email: email,
-      metadata: { planoId, email, tipo: tipo || 'assinatura' }
-    };
+  payment_method_types: ['card', 'pix'],
+  line_items: [{ price: priceId, quantity: 1 }],
+  mode: isAnuncioAvulso ? 'payment' : 'subscription',
+  success_url: isAnuncioAvulso 
+    ? `${process.env.DOMAIN}/sucesso-anuncio.html?session_id={CHECKOUT_SESSION_ID}`
+    : `${process.env.DOMAIN}/sucesso.html?session_id={CHECKOUT_SESSION_ID}`,
+  cancel_url: `${process.env.DOMAIN}/planos.html`,
+  customer_email: email,
+  metadata: { 
+    planoId, 
+    email, 
+    tipo: tipo || 'assinatura',
+    ...(isAnuncioAvulso && { dias }) // Adiciona dias apenas para anúncios avulsos
+  }
+};
 
     // Adiciona descrição para anúncios avulsos
     if (isAnuncioAvulso && dias) {
