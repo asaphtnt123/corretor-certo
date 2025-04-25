@@ -36,9 +36,11 @@ exports.handler = async (event, context) => {
       premium: process.env.STRIPE_PRICE_PREMIUM,
       
       // Anúncios avulsos (novos)
-      anuncio_5dias: process.env.STRIPE_PRICE_ANUNCIO_5DIAS,
-      anuncio_10dias: process.env.STRIPE_PRICE_ANUNCIO_10DIAS,
-      anuncio_20dias: process.env.STRIPE_PRICE_ANUNCIO_20DIAS
+ 
+  anuncio_5dias: process.env.STRIPE_PRICE_ANUNCIO_5DIAS,
+  anuncio_10dias: process.env.STRIPE_PRICE_ANUNCIO_10DIAS,
+  anuncio_20dias: process.env.STRIPE_PRICE_ANUNCIO_20DIAS
+};
     };
 
     const priceId = priceIds[planoId];
