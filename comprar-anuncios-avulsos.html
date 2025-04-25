@@ -298,37 +298,37 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://js.stripe.com/v3/"></script>
   <script>
-      class AnuncioPaymentSystem {
-          constructor() {
-              // Inicializa o Stripe com sua chave pública
-              this.stripe = Stripe('pk_live_51RGQ2oCaTJrTX5Tupk7zHAmRzxDgX9RtmxlFRwGNlyHudrhMjPVu0yx871bch1PpXkfUnOQN0UXB1mXzhwSMrDrG00ix8LTK9b');
-              
-              // Definição dos planos de anúncios avulsos (valores em centavos)
-              this.planos = {
-                  'basico': {
-                      id: 'anuncio_7dias',
-                      nome: 'Destaque Básico',
-                      preco: 2990, // R$ 29,90
-                      dias: 7
-                  },
-                  'premium': {
-                      id: 'anuncio_15dias',
-                      nome: 'Destaque Premium',
-                      preco: 4990, // R$ 49,90
-                      dias: 15
-                  },
-                  'maximo': {
-                      id: 'anuncio_30dias',
-                      nome: 'Destaque Máximo',
-                      preco: 8990, // R$ 89,90
-                      dias: 30
-                  }
-              };
-              
-              // Inicia os listeners
-              this.initEventListeners();
-          }
-
+     class AnuncioPaymentSystem {
+  constructor() {
+    this.stripe = Stripe('pk_live_51RGQ2oCaTJrTX5Tupk7zHAmRzxDgX9RtmxlFRwGNlyHudrhMjPVu0yx871bch1PpXkfUnOQN0UXB1mXzhwSMrDrG00ix8LTK9b');
+    
+    // Definição dos planos com os NOVOS VALORES (em centavos)
+    this.planos = {
+      'basico': {
+        id: 'anuncio_5dias', // Este ID deve corresponder ao do Stripe
+        nome: 'Destaque Básico',
+        preco: 900, // R$ 9,00 (900 centavos)
+        dias: 5,
+        precoFormatado: '9,00'
+      },
+      'premium': {
+        id: 'anuncio_10dias',
+        nome: 'Destaque Premium',
+        preco: 1680, // R$ 16,80 (1680 centavos)
+        dias: 10,
+        precoFormatado: '16,80'
+      },
+      'maximo': {
+        id: 'anuncio_20dias',
+        nome: 'Destaque Máximo',
+        preco: 2690, // R$ 26,90 (2690 centavos)
+        dias: 20,
+        precoFormatado: '26,90'
+      }
+    };
+    
+    this.initEventListeners();
+  }
           /**
            * Inicializa os event listeners
            */
