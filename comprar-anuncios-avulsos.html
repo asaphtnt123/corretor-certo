@@ -239,7 +239,7 @@
         <i class="fas fa-check-circle"></i> 2x mais visualizações
       </div>
     </div>
-    <button class="btn-avulsa" onclick="selecionarPlano('basico')">Selecionar Plano</button>
+<button class="btn-avulsa" data-plano="basico">Selecionar Plano</button>
   </div>
   
   <!-- Plano Premium - 10 Dias (Recomendado) -->
@@ -260,7 +260,7 @@
         <i class="fas fa-check-circle"></i> Destaque na home por 2 dias
       </div>
     </div>
-    <button class="btn-avulsa" onclick="selecionarPlano('premium')">Selecionar Plano</button>
+<button class="btn-avulsa" data-plano="premium">Selecionar Plano</button>
   </div>
   
   <!-- Plano Máximo - 20 Dias -->
@@ -284,7 +284,7 @@
         <i class="fas fa-check-circle"></i> Relatório de desempenho
       </div>
     </div>
-    <button class="btn-avulsa" onclick="selecionarPlano('maximo')">Selecionar Plano</button>
+<button class="btn-avulsa" data-plano="maximo">Selecionar Plano</button>
   </div>
 </div>
       <!-- Adicione este overlay de loading -->
@@ -301,45 +301,48 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://js.stripe.com/v3/"></script>
   <script>
-     class AnuncioPaymentSystem {
+    class AnuncioPaymentSystem {
   constructor() {
     this.stripe = Stripe('pk_live_51RGQ2oCaTJrTX5Tupk7zHAmRzxDgX9RtmxlFRwGNlyHudrhMjPVu0yx871bch1PpXkfUnOQN0UXB1mXzhwSMrDrG00ix8LTK9b');
     
-   this.planos = {
-  'basico': {
-    id: 'anuncio_5dias',
-    nome: 'Destaque Básico',
-    preco: 900,  // R$ 9,00
-    dias: 5
-  },
-  'premium': {
-    id: 'anuncio_10dias',
-    nome: 'Destaque Premium',
-    preco: 1680, // R$ 16,80
-    dias: 10
-  },
-  'maximo': {
-    id: 'anuncio_20dias',
-    nome: 'Destaque Máximo',
-    preco: 2690, // R$ 26,90
-    dias: 20
-  }
-};
+    this.planos = {
+      'basico': {
+        id: 'anuncio_5dias',
+        nome: 'Destaque Básico',
+        preco: 900,
+        dias: 5
+      },
+      'premium': {
+        id: 'anuncio_10dias',
+        nome: 'Destaque Premium',
+        preco: 1680,
+        dias: 10
+      },
+      'maximo': {
+        id: 'anuncio_20dias',
+        nome: 'Destaque Máximo',
+        preco: 2690,
+        dias: 20
+      }
+    };
     
     this.initEventListeners();
   }
           /**
            * Inicializa os event listeners
            */
-          initEventListeners() {
-              // Listener para os botões de seleção de plano
-              document.querySelectorAll('.btn-avulsa').forEach(button => {
-                  button.addEventListener('click', (e) => {
-                      const planoId = e.target.getAttribute('onclick').match(/'([^']+)'/)[1];
-                      this.handlePayment(planoId);
-                  });
-              });
-          }
+         initEventListeners() {
+    // Usando data-attributes em vez de onclick
+    document.querySelectorAll('.btn-avulsa').forEach(button => {
+      button.addEventListener('click', (e) => {
+        const planoId = e.target.closest('[data-plano]').dataset.plano;
+        if (planoId) {
+          this.handlePayment(planoId);
+        }
+      });
+    });
+  }
+
 
           /**
            * Processa o pagamento
