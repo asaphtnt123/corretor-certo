@@ -4568,11 +4568,56 @@ select.form-control {
 }
 
 /* Efeito de digitação para o número */
-@keyframes countUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+
 
 .count-up {
     animation: countUp 0.5s ease-out;
+}
+/* Estilos para o contador no footer */
+.user-counter-footer {
+    margin: 20px 0;
+    padding: 15px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-counter-footer .counter-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.user-counter-footer #userCount {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    line-height: 1;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.user-counter-footer .counter-label {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Animação para o footer */
+.user-counter-footer #userCount.counter-animate {
+    animation: pulseFooter 0.5s ease;
+    color: #f1c40f !important;
+}
+
+@keyframes pulseFooter {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+
+
+@keyframes countUp {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
 }
