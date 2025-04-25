@@ -357,100 +357,94 @@
   }
 
 
-          /**
-           * Processa o pagamento
-           */
-           async handlePayment(planoId) {
+         async handlePayment(planoId) {
   try {
     this.showLoading(true);
     
     const plano = this.planos[planoId];
     if (!plano) throw new Error('Plano não encontrado');
 
-    // 1. Solicitação do e-mail com timeout
-    const { value: email, isDismissed } = await Swal.fire({
+    // 1. Obter e-mail com validação reforçada
+    const { value: email } = await Swal.fire({
       title: 'Informe seu e-mail',
       input: 'email',
       inputLabel: 'Para continuar com o pagamento',
       inputPlaceholder: 'seu@email.com',
       showCancelButton: true,
       allowOutsideClick: false,
-      timer: 30000, // 30 segundos timeout
-      timerProgressBar: true,
       inputValidator: (value) => {
-        if (!value) return 'Você precisa informar um e-mail!';
-        if (!/^\S+@\S+\.\S+$/.test(value)) return 'E-mail inválido';
+        if (!value) return 'E-mail é obrigatório!';
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          return 'Por favor, insira um e-mail válido';
+        }
       }
     });
 
-    if (!email || isDismissed) {
+    if (!email) {
       this.showLoading(false);
       return;
     }
 
-    // 2. Criação da sessão com timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos
-    
+    // 2. Chamada à API com tratamento melhorado
     const response = await fetch('/.netlify/functions/create-checkout-session', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
       body: JSON.stringify({ 
         planoId: plano.id,
         email: email,
         tipo: 'anuncio_avulso',
         dias: plano.dias
-      }),
-      signal: controller.signal
+      })
     });
-    
-    clearTimeout(timeoutId);
 
+    // 3. Verificação detalhada da resposta
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
-      throw new Error(error.message || 'Erro no servidor');
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (e) {
+        errorData = { error: `Erro ${response.status}: ${response.statusText}` };
+      }
+      throw new Error(errorData.error || 'Erro no servidor');
     }
 
     const data = await response.json();
     
-    if (!data?.sessionId) {
-      throw new Error('Resposta inválida do servidor');
+    // 4. Validação dos dados de retorno
+    if (!data || !data.sessionId) {
+      console.error('Resposta completa da API:', data);
+      throw new Error('Dados de pagamento inválidos');
     }
 
-    // 3. Redirecionamento com fallback
+    // 5. Redirecionamento com fallback explícito
     const result = await this.stripe.redirectToCheckout({
       sessionId: data.sessionId
-    }).catch(error => {
-      console.error('Erro no redirecionamento:', error);
-      throw new Error('Falha ao redirecionar para o pagamento');
     });
 
-    if (result?.error) {
+    if (result.error) {
       throw new Error(result.error.message);
     }
 
   } catch (error) {
-    console.error('Erro no pagamento:', error);
+    console.error('Erro completo:', error);
     this.showLoading(false);
     
-    if (error.name === 'AbortError') {
-      this.showError('Tempo de conexão esgotado. Verifique sua internet e tente novamente.');
-    } else {
-      this.showError(error.message || 'Erro ao processar pagamento');
-    }
+    // Mensagens mais amigáveis
+    const errorMessage = error.message.includes('servidor') 
+      ? 'Problema temporário no servidor. Tente novamente em alguns minutos.'
+      : error.message;
     
-    // Fallback manual caso o redirecionamento falhe
-    if (error.message.includes('redirecionar')) {
-      Swal.fire({
-        title: 'Redirecionamento falhou',
-        html: `<p>Clique no botão abaixo para acessar o pagamento:</p>
-              <a href="${data?.url}" class="btn btn-primary mt-3">Ir para Pagamento</a>`,
-        showConfirmButton: false
-      });
-    }
+    Swal.fire({
+      icon: 'error',
+      title: 'Erro no pagamento',
+      html: `${errorMessage}<br><small>Se o problema persistir, entre em contato com nosso suporte.</small>`,
+      confirmButtonText: 'Entendi'
+    });
   }
 }
-
           /**
            * Mostra estado de carregamento
            */
