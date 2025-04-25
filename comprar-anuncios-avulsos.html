@@ -301,10 +301,14 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://js.stripe.com/v3/"></script>
   <script>
-    class AnuncioPaymentSystem {
+   class AnuncioPaymentSystem {
   constructor() {
-    this.stripe = Stripe('pk_live_51RGQ2oCaTJrTX5Tupk7zHAmRzxDgX9RtmxlFRwGNlyHudrhMjPVu0yx871bch1PpXkfUnOQN0UXB1mXzhwSMrDrG00ix8LTK9b');
-    
+    // Verifica se o Stripe está carregado
+    if (typeof Stripe === 'undefined') {
+      console.error('Stripe.js não carregado!');
+      this.showError('O sistema de pagamentos não está disponível no momento. Por favor, recarregue a página.');
+      return;
+    }
     this.planos = {
       'basico': {
         id: 'anuncio_5dias',
