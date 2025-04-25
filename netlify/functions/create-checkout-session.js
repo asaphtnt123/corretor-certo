@@ -1,125 +1,88 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 exports.handler = async (event, context) => {
+  // 1. Configuração inicial
+  console.log('Função invocada com:', JSON.parse(event.body));
+  
   try {
-    // 1. Validação do método HTTP
+    // 2. Validação do método HTTP
     if (event.httpMethod !== 'POST') {
       return {
         statusCode: 405,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: 'Método não permitido' })
+        body: JSON.stringify({ error: 'Método não permitido' }),
       };
     }
 
-    // 2. Parse e validação dos dados
-    let requestBody;
-    try {
-      requestBody = JSON.parse(event.body);
-    } catch (e) {
-      return {
-        statusCode: 400,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: 'Corpo da requisição inválido' })
-      };
-    }
-
-    const { planoId, email, tipo, dias } = requestBody;
+    // 3. Parse dos dados
+    const { planoId, email } = JSON.parse(event.body);
     
+    // 4. Validação dos dados
     if (!planoId || !email) {
+      console.error('Dados incompletos recebidos');
       return {
         statusCode: 400,
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           error: 'Dados incompletos',
           details: 'planoId e email são obrigatórios'
-        })
+        }),
       };
     }
 
-    // 3. Configuração dos planos (CORREÇÃO AQUI - removido o }; extra)
+    // 5. Configuração simplificada dos planos (use price_ids do Stripe)
     const priceIds = {
-      // Planos de assinatura
       basico: process.env.STRIPE_PRICE_BASICO,
       profissional: process.env.STRIPE_PRICE_PROFISSIONAL,
-      premium: process.env.STRIPE_PRICE_PREMIUM,
-      
-      // Anúncios avulsos
-      anuncio_5dias: process.env.STRIPE_PRICE_ANUNCIO_5DIAS,
-      anuncio_10dias: process.env.STRIPE_PRICE_ANUNCIO_10DIAS,
-      anuncio_20dias: process.env.STRIPE_PRICE_ANUNCIO_20DIAS
-    }; // <-- Este é o único fechamento necessário
+      premium: process.env.STRIPE_PRICE_PREMIUM
+    };
 
     const priceId = priceIds[planoId];
     
     if (!priceId) {
+      console.error('Plano inválido:', planoId);
       return {
         statusCode: 400,
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           error: 'Plano inválido',
           availablePlans: Object.keys(priceIds)
-        })
+        }),
       };
     }
 
-    // 4. Configuração da sessão
-    const isSubscription = tipo !== 'anuncio_avulso';
-    const successUrl = `${process.env.URL}/sucesso.html?session_id={CHECKOUT_SESSION_ID}&plano=${planoId}`;
-    const cancelUrl = `${process.env.URL}/planos.html`;
-
-    const sessionParams = {
-      payment_method_types: ['card', 'pix'],
+    // 6. Criação da sessão de checkout
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
-      mode: isSubscription ? 'subscription' : 'payment',
-      success_url: successUrl,
-      cancel_url: cancelUrl,
+      mode: 'subscription',
+      success_url: `${process.env.URL}/sucesso.html?session_id={CHECKOUT_SESSION_ID}&plano=${planoId}`,
+      cancel_url: `${process.env.URL}/planos.html`,
       customer_email: email,
-      metadata: { 
-        planoId,
-        email,
-        tipo: tipo || 'assinatura',
-        ...(dias && { dias })
-      }
-    };
+      metadata: { planoId, email }
+    });
 
-    // 5. Adiciona configurações específicas
-    if (!isSubscription) {
-      sessionParams.payment_intent_data = {
-        description: `Anúncio avulso - ${dias} dias de visibilidade`
-      };
-    } else {
-      sessionParams.subscription_data = {
-        trial_settings: { end_behavior: { missing_payment_method: 'cancel' }}
-      };
-    }
-
-    // 6. Cria a sessão
-    const session = await stripe.checkout.sessions.create(sessionParams);
-
+    console.log('Sessão criada com sucesso:', session.id);
+    
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         sessionId: session.id,
-        url: session.url,
-        tipo: tipo || 'assinatura'
-      })
+        url: session.url
+      }),
     };
 
   } catch (error) {
-    console.error('ERRO:', {
+    // 7. Tratamento detalhado de erros
+    console.error('ERRO CRÍTICO:', {
       message: error.message,
       stack: error.stack,
-      event: event
+      rawEvent: event
     });
-
+    
     return {
       statusCode: 500,
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
-        error: 'Erro ao processar pagamento',
-        ...(process.env.NETLIFY_DEV && { details: error.message })
-      })
+        error: 'Erro ao criar sessão de pagamento',
+        details: process.env.NETLIFY_DEV ? error.message : 'Contate o suporte'
+      }),
     };
   }
 };
