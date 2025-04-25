@@ -357,69 +357,47 @@
   }
 
 
-         async handlePayment(planoId) {
+        async handlePayment(planoId) {
   try {
     this.showLoading(true);
     
     const plano = this.planos[planoId];
     if (!plano) throw new Error('Plano não encontrado');
 
-    // 1. Obter e-mail com validação reforçada
+    // Obter e-mail do usuário
     const { value: email } = await Swal.fire({
       title: 'Informe seu e-mail',
       input: 'email',
-      inputLabel: 'Para continuar com o pagamento',
-      inputPlaceholder: 'seu@email.com',
-      showCancelButton: true,
-      allowOutsideClick: false,
-      inputValidator: (value) => {
-        if (!value) return 'E-mail é obrigatório!';
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-          return 'Por favor, insira um e-mail válido';
-        }
-      }
+      inputValidator: (value) => !value && 'E-mail é obrigatório'
     });
 
-    if (!email) {
-      this.showLoading(false);
-      return;
+    if (!email) return;
+
+    // Configuração da requisição
+    const requestBody = {
+      planoId: plano.id,
+      email: email,
+      tipo: plano.tipo || 'anuncio_avulso'
+    };
+
+    // Adiciona dias apenas para anúncios avulsos
+    if (plano.dias) {
+      requestBody.dias = plano.dias;
     }
 
-    // 2. Chamada à API com tratamento melhorado
     const response = await fetch('/.netlify/functions/create-checkout-session', {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({ 
-        planoId: plano.id,
-        email: email,
-        tipo: 'anuncio_avulso',
-        dias: plano.dias
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
     });
 
-    // 3. Verificação detalhada da resposta
-    if (!response.ok) {
-      let errorData;
-      try {
-        errorData = await response.json();
-      } catch (e) {
-        errorData = { error: `Erro ${response.status}: ${response.statusText}` };
-      }
-      throw new Error(errorData.error || 'Erro no servidor');
-    }
-
     const data = await response.json();
-    
-    // 4. Validação dos dados de retorno
-    if (!data || !data.sessionId) {
-      console.error('Resposta completa da API:', data);
-      throw new Error('Dados de pagamento inválidos');
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Erro no servidor');
     }
 
-    // 5. Redirecionamento com fallback explícito
+    // Redirecionamento para o Stripe
     const result = await this.stripe.redirectToCheckout({
       sessionId: data.sessionId
     });
@@ -429,20 +407,9 @@
     }
 
   } catch (error) {
-    console.error('Erro completo:', error);
+    console.error('Erro:', error);
     this.showLoading(false);
-    
-    // Mensagens mais amigáveis
-    const errorMessage = error.message.includes('servidor') 
-      ? 'Problema temporário no servidor. Tente novamente em alguns minutos.'
-      : error.message;
-    
-    Swal.fire({
-      icon: 'error',
-      title: 'Erro no pagamento',
-      html: `${errorMessage}<br><small>Se o problema persistir, entre em contato com nosso suporte.</small>`,
-      confirmButtonText: 'Entendi'
-    });
+    Swal.fire('Erro', error.message || 'Ocorreu um erro', 'error');
   }
 }
           /**
