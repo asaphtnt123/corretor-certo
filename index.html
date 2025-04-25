@@ -1,58 +1,26 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<?xml version="1.0" encoding="UTF-8"?>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Encontre imóveis e automóveis para alugar com facilidade e segurança no Corretor Certo. Anuncie seu imóvel ou carro e alcance milhares de pessoas.">
+    <meta name="keywords" content="aluguel de imóveis, aluguel de carros, corretor certo, imóveis, automóveis">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+	<!-- Google Fonts para tipografia moderna -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <title>Corretor Certo - Imóveis e Automóveis</title>
 	
-  <!-- ✅ SEO Essencial -->
-  <title>Corretor Certo - Imóveis e Automóveis para Alugar e Vender</title>
-  <meta name="description" content="Encontre imóveis e automóveis para alugar ou vender com facilidade e segurança no Corretor Certo. Anuncie seu imóvel ou carro e alcance milhares de pessoas em todo o Brasil." />
-  <meta name="keywords" content="corretor certo, aluguel de imóveis, carros para alugar, venda de automóveis, imóveis à venda, site de imóveis, site de carros, classificados online" />
-  <meta name="author" content="Corretor Certo" />
-  <link rel="canonical" href="https://corretorcerto.com.br/" />
+    <link rel="stylesheet" href="style.css">
+	
 
-  <!-- ✅ Open Graph (Facebook, WhatsApp, LinkedIn) -->
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="Corretor Certo - Imóveis e Automóveis para Alugar e Vender" />
-  <meta property="og:description" content="A melhor plataforma para anunciar imóveis e veículos. Publique grátis, destaque seus anúncios e conecte-se com milhares de interessados." />
-  <meta property="og:image" content="https://corretorcerto.com.br/assets/img/og-image-home.jpg" /> <!-- Substitua por sua imagem real -->
-  <meta property="og:url" content="https://corretorcerto.com.br/" />
-  <meta property="og:site_name" content="Corretor Certo" />
+    
+    <script src="script.js" type="module"></script>
 
-  <!-- ✅ Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Corretor Certo - Imóveis e Automóveis para Alugar e Vender" />
-  <meta name="twitter:description" content="Anuncie seus imóveis e veículos com destaque, segurança e visibilidade. Corretor Certo conecta você aos compradores ideais." />
-  <meta name="twitter:image" content="https://corretorcerto.com.br/assets/img/og-image-home.jpg" />
 
-   <!-- Favicon -->
-   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 
-   <!-- Apple Touch Icon -->
-   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 
-   <!-- Manifesto -->
-   <link rel="manifest" href="/site.webmanifest">
-  <!-- ✅ Fontes e Estilo -->
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-
-  <!-- ✅ Font Awesome Ícones -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <!-- ✅ Seu CSS principal -->
-  <link rel="stylesheet" href="style.css">
-
-  <!-- ✅ Seu JavaScript principal -->
-  <script src="script.js" type="module"></script>
 </head>
-
-
-
-
 <body>
 
     <header class="header">
@@ -71,100 +39,56 @@
     </div>
 </header>
 
-  <!-- Modal de Boas-Vindas Atualizado -->
-<div id="welcomeModal" class="welcome-modal" aria-hidden="true">
-    <div class="welcome-modal-content">
-        <button class="welcome-close-btn" aria-label="Fechar modal de boas-vindas">
-            <i class="fas fa-times"></i>
-        </button>
+    <!-- Conteúdo Principal -->
+    <main>
+        <!-- Banner de Boas-Vindas -->
+        <section class="banner" role="banner">
+            <div class="banner-content">
+                <h1>Encontre o imóvel ou carro dos seus sonhos!</h1>
+                <p>Anuncie Compre e Alugue imóveis e automóveis com facilidade e confiança.</p>
+<button id="btn-anunciar" class="btn btn-primary">Anunciar</button>   
+
+	    </div>
+        </section>
+
+
+	    <section class="mini-anuncios">
+    <div class="container">
+        <h2 class="section-title">Nossos Anúncios</h2>
         
-        <div class="welcome-header">
-            <img src="assets/img/logo-welcome.png" alt="Corretor Certo" loading="lazy" class="welcome-logo">
-            <h2>Bem-vindo ao Corretor Certo!</h2>
-            <p class="welcome-subtitle">A plataforma completa para imóveis e automóveis</p>
-        </div>
-        
-        <div class="welcome-body">
-            <div class="user-type-selector">
-                <button class="user-type-btn active" data-user-type="comprar">
-                    <i class="fas fa-search"></i>
-                    Quero Comprar/Alugar
-                </button>
-                <button class="user-type-btn" data-user-type="anunciar">
-                    <i class="fas fa-bullhorn"></i>
-                    Quero Anunciar
-                </button>
-            </div>
-            
-            <!-- Conteúdo para Compradores -->
-            <div id="comprar-content" class="welcome-content active">
-                <div class="welcome-features">
-                    <div class="feature">
-                        <i class="fas fa-home feature-icon"></i>
-                        <h3>Imóveis Selecionados</h3>
-                        <p>De casas a apartamentos premium, encontre o lar perfeito.</p>
-                    </div>
-                    
-                    <div class="feature">
-                        <i class="fas fa-car feature-icon"></i>
-                        <h3>Automóveis Verificados</h3>
-                        <p>Carros novos e seminovos com histórico transparente.</p>
-                    </div>
-                    
-                    <div class="feature">
-                        <i class="fas fa-shield-alt feature-icon"></i>
-                        <h3>Segurança Garantida</h3>
-                        <p>Anúncios verificados e transações seguras.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Conteúdo para Anunciantes -->
-            <div id="anunciar-content" class="welcome-content">
-                <div class="welcome-features">
-                    <div class="feature">
-                        <i class="fas fa-user-tie feature-icon"></i>
-                        <h3>Para Corretores</h3>
-                        <p>Ferramentas profissionais para gerenciar seus anúncios.</p>
-                    </div>
-                    
-                    <div class="feature">
-                        <i class="fas fa-building feature-icon"></i>
-                        <h3>Para Imobiliárias</h3>
-                        <p>Portal completo com gestão de portfólio e clientes.</p>
-                    </div>
-                    
-                    <div class="feature">
-                        <i class="fas fa-user feature-icon"></i>
-                        <h3>Para Proprietários</h3>
-                        <p>Anuncie diretamente sem intermediários.</p>
-                    </div>
-                </div>
-                
-                <div class="benefits-list">
-                    <h4>Benefícios para Anunciantes:</h4>
-                    <ul>
-                        <li><i class="fas fa-check-circle"></i> Anúncios gratuitos e premium</li>
-                        <li><i class="fas fa-check-circle"></i> Alcance nacional</li>
-                        <li><i class="fas fa-check-circle"></i> Ferramentas de gestão</li>
-                        <li><i class="fas fa-check-circle"></i> Relatórios de performance</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        
-        <div class="welcome-footer">
-            <button id="welcomeGetStarted" class="btn btn-primary">
-                Começar Agora
+        <!-- Abas de Navegação -->
+        <div class="anuncios-tabs">
+            <button class="tab-btn active" data-tab="imoveis">
+                <i class="fas fa-home"></i>
+                <span>Imóveis</span>
             </button>
-            <div class="welcome-checkbox">
-                <input type="checkbox" id="dontShowAgain">
-                <label for="dontShowAgain">Não mostrar novamente</label>
+            <button class="tab-btn" data-tab="automoveis">
+                <i class="fas fa-car"></i>
+                <span>Automóveis</span>
+            </button>
+        </div>
+        
+        <!-- Container da Grade Horizontal -->
+        <div class="horizontal-scroll-container">
+            <!-- Grade de Imóveis -->
+            <div class="mini-grid active" id="mini-grid-imoveis">
+                <div class="grid-placeholder">
+                    <div class="spinner"></div>
+                    <p>Carregando imóveis...</p>
+                </div>
+            </div>
+            
+            <!-- Grade de Automóveis -->
+            <div class="mini-grid" id="mini-grid-automoveis">
+                <div class="grid-placeholder">
+                    <div class="spinner"></div>
+                    <p>Carregando automóveis...</p>
+                </div>
             </div>
         </div>
     </div>
-</div>   
-    
+</section>
+<!-- Coloque isto preferencialmente no final do body, antes do </body> -->
 <button id="btn-ativar-busca" class="btn-busca-flutuante" aria-label="Abrir busca">
     <i class="fas fa-search"></i>
 </button>
@@ -187,11 +111,11 @@
                         <label for="tipo">Tipo de Anúncio</label>
                         <div class="tipo-pesquisa">
                             <div class="tipo-option active" data-tipo="imovel" role="button" tabindex="0">
-                                <img src="casa.png"  loading="lazy" alt="Ícone de Casa" aria-hidden="true">
+                                <img src="casa.png" alt="Ícone de Casa" aria-hidden="true">
                                 <span>Imóvel</span>
                             </div>
                             <div class="tipo-option" data-tipo="carro" role="button" tabindex="0">
-                                <img src="carro.png" loading="lazy" alt="Ícone de Carro" aria-hidden="true">
+                                <img src="carro.png" alt="Ícone de Carro" aria-hidden="true">
                                 <span>Automóvel</span>
                             </div>
                         </div>
@@ -605,7 +529,7 @@
             
             <div class="footer-links">
                  <div class="footer-brand">
-                <img src="logo.png" loading="lazy" alt="Corretor Certo" class="footer-logo">
+                <img src="logo.png" alt="Corretor Certo" class="footer-logo">
                 <p class="footer-slogan">Soluções imobiliárias premium</p>
             </div>
                 
@@ -619,8 +543,8 @@
                 
                 <div class="link-group">
                     <h4 class="link-title">Contato</h4>
-                            <p class="contact-info"><i class="fas fa-phone"></i> (19) 99624-97029</p>
-                    <p class="contact-info"><i class="fas fa-envelope"></i> contato@corretorcerto.com.br</p>
+                    <p class="contact-info"><i class="fas fa-phone"></i> (11) 99999-9999</p>
+                    <p class="contact-info"><i class="fas fa-envelope"></i> contato@corretorcerto.com</p>
                 </div>
             </div>
         </div>
@@ -651,16 +575,8 @@
     </div>
 </div>
 
-	
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-   <!-- Configurações do seu projeto do Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
 
-
-
-	<!-- Modal de Boas-Vindas -->
+	<!-- Modal de Boas-Vindas Atualizado -->
 <div id="welcomeModal" class="welcome-modal" aria-hidden="true">
     <div class="welcome-modal-content">
         <button class="welcome-close-btn" aria-label="Fechar modal de boas-vindas">
@@ -670,35 +586,81 @@
         <div class="welcome-header">
             <img src="assets/img/logo-welcome.png" alt="Corretor Certo" loading="lazy" class="welcome-logo">
             <h2>Bem-vindo ao Corretor Certo!</h2>
+            <p class="welcome-subtitle">A plataforma completa para imóveis e automóveis</p>
         </div>
         
         <div class="welcome-body">
-            <p>Sua plataforma completa para encontrar o imóvel ou automóvel perfeito.</p>
+            <div class="user-type-selector">
+                <button class="user-type-btn active" data-user-type="comprar">
+                    <i class="fas fa-search"></i>
+                    Quero Comprar/Alugar
+                </button>
+                <button class="user-type-btn" data-user-type="anunciar">
+                    <i class="fas fa-bullhorn"></i>
+                    Quero Anunciar
+                </button>
+            </div>
             
-            <div class="welcome-features">
-                <div class="feature">
-                    <i class="fas fa-home feature-icon"></i>
-                    <h3>Imóveis Exclusivos</h3>
-                    <p>Encontre casas, apartamentos e terrenos com as melhores condições.</p>
+            <!-- Conteúdo para Compradores -->
+            <div id="comprar-content" class="welcome-content active">
+                <div class="welcome-features">
+                    <div class="feature">
+                        <i class="fas fa-home feature-icon"></i>
+                        <h3>Imóveis Selecionados</h3>
+                        <p>De casas a apartamentos premium, encontre o lar perfeito.</p>
+                    </div>
+                    
+                    <div class="feature">
+                        <i class="fas fa-car feature-icon"></i>
+                        <h3>Automóveis Verificados</h3>
+                        <p>Carros novos e seminovos com histórico transparente.</p>
+                    </div>
+                    
+                    <div class="feature">
+                        <i class="fas fa-shield-alt feature-icon"></i>
+                        <h3>Segurança Garantida</h3>
+                        <p>Anúncios verificados e transações seguras.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Conteúdo para Anunciantes -->
+            <div id="anunciar-content" class="welcome-content">
+                <div class="welcome-features">
+                    <div class="feature">
+                        <i class="fas fa-user-tie feature-icon"></i>
+                        <h3>Para Corretores</h3>
+                        <p>Ferramentas profissionais para gerenciar seus anúncios.</p>
+                    </div>
+                    
+                    <div class="feature">
+                        <i class="fas fa-building feature-icon"></i>
+                        <h3>Para Imobiliárias</h3>
+                        <p>Portal completo com gestão de portfólio e clientes.</p>
+                    </div>
+                    
+                    <div class="feature">
+                        <i class="fas fa-user feature-icon"></i>
+                        <h3>Para Proprietários</h3>
+                        <p>Anuncie diretamente sem intermediários.</p>
+                    </div>
                 </div>
                 
-                <div class="feature">
-                    <i class="fas fa-car feature-icon"></i>
-                    <h3>Automóveis Selecionados</h3>
-                    <p>Carros novos e seminovos com avaliação de qualidade.</p>
-                </div>
-                
-                <div class="feature">
-                    <i class="fas fa-shield-alt feature-icon"></i>
-                    <h3>Segurança Garantida</h3>
-                    <p>Plataforma verificada e anúncios com certificação de autenticidade.</p>
+                <div class="benefits-list">
+                    <h4>Benefícios para Anunciantes:</h4>
+                    <ul>
+                        <li><i class="fas fa-check-circle"></i> Anúncios gratuitos e premium</li>
+                        <li><i class="fas fa-check-circle"></i> Alcance nacional</li>
+                        <li><i class="fas fa-check-circle"></i> Ferramentas de gestão</li>
+                        <li><i class="fas fa-check-circle"></i> Relatórios de performance</li>
+                    </ul>
                 </div>
             </div>
         </div>
         
         <div class="welcome-footer">
             <button id="welcomeGetStarted" class="btn btn-primary">
-                Começar a Explorar
+                Começar Agora
             </button>
             <div class="welcome-checkbox">
                 <input type="checkbox" id="dontShowAgain">
@@ -707,6 +669,16 @@
         </div>
     </div>
 </div>
+	
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+   <!-- Configurações do seu projeto do Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
+
+
+	
 	
 </body>
 </html>
