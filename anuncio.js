@@ -486,7 +486,7 @@ if (user) {
 
     // Verifica limite de anúncios ativos
 const totalAtivos = await contarAnunciosAtivos(user.uid);
-if (totalAtivos >= 2) {
+if (totalAtivos >= 1) {
    const limiteModal = document.getElementById('limiteModal');
 limiteModal.style.display = 'flex';
 
