@@ -223,67 +223,70 @@
         <p>Aumente em até 3x a visibilidade do seu anúncio com nossos pacotes de destaque avulso</p>
       </div>
       
-      <div class="avulsa-plans">
-        <div class="avulsa-plan">
-          <h3>Destaque Básico</h3>
-          <div class="avulsa-price">R$ 29,90 <span>/por 7 dias</span></div>
-          <div class="avulsa-features">
-            <div class="avulsa-feature">
-              <i class="fas fa-check-circle"></i> Destaque na lista de resultados
-            </div>
-            <div class="avulsa-feature">
-              <i class="fas fa-check-circle"></i> Selo de "Anúncio em Destaque"
-            </div>
-            <div class="avulsa-feature">
-              <i class="fas fa-check-circle"></i> 2x mais visualizações
-            </div>
-          </div>
-          <button class="btn-avulsa" onclick="selecionarPlano('basico')">Selecionar Plano</button>
-        </div>
-        
-        <div class="avulsa-plan recommended">
-          <h3>Destaque Premium</h3>
-          <div class="avulsa-price">R$ 49,90 <span>/por 15 dias</span></div>
-          <div class="avulsa-features">
-            <div class="avulsa-feature">
-              <i class="fas fa-check-circle"></i> Prioridade nos resultados
-            </div>
-            <div class="avulsa-feature">
-              <i class="fas fa-check-circle"></i> Selo "Premium"
-            </div>
-            <div class="avulsa-feature">
-              <i class="fas fa-check-circle"></i> 3x mais visualizações
-            </div>
-            <div class="avulsa-feature">
-              <i class="fas fa-check-circle"></i> Destaque na home por 3 dias
-            </div>
-          </div>
-          <button class="btn-avulsa" onclick="selecionarPlano('premium')">Selecionar Plano</button>
-        </div>
-        
-        <div class="avulsa-plan">
-          <h3>Destaque Máximo</h3>
-          <div class="avulsa-price">R$ 89,90 <span>/por 30 dias</span></div>
-          <div class="avulsa-features">
-            <div class="avulsa-feature">
-              <i class="fas fa-check-circle"></i> Topo dos resultados
-            </div>
-            <div class="avulsa-feature">
-              <i class="fas fa-check-circle"></i> Selo "Destaque Máximo"
-            </div>
-            <div class="avulsa-feature">
-              <i class="fas fa-check-circle"></i> 5x mais visualizações
-            </div>
-            <div class="avulsa-feature">
-              <i class="fas fa-check-circle"></i> Destaque na home por 7 dias
-            </div>
-            <div class="avulsa-feature">
-              <i class="fas fa-check-circle"></i> Relatório de desempenho
-            </div>
-          </div>
-          <button class="btn-avulsa" onclick="selecionarPlano('maximo')">Selecionar Plano</button>
-        </div>
+  <div class="avulsa-plans">
+  <!-- Plano Básico - 5 Dias -->
+  <div class="avulsa-plan">
+    <h3>Destaque Básico</h3>
+    <div class="avulsa-price">R$ 9,00 <span>/por 5 dias</span></div>
+    <div class="avulsa-features">
+      <div class="avulsa-feature">
+        <i class="fas fa-check-circle"></i> Destaque na lista de resultados
       </div>
+      <div class="avulsa-feature">
+        <i class="fas fa-check-circle"></i> Selo de "Anúncio em Destaque"
+      </div>
+      <div class="avulsa-feature">
+        <i class="fas fa-check-circle"></i> 2x mais visualizações
+      </div>
+    </div>
+    <button class="btn-avulsa" onclick="selecionarPlano('basico')">Selecionar Plano</button>
+  </div>
+  
+  <!-- Plano Premium - 10 Dias (Recomendado) -->
+  <div class="avulsa-plan recommended">
+    <h3>Destaque Premium</h3>
+    <div class="avulsa-price">R$ 16,80 <span>/por 10 dias</span></div>
+    <div class="avulsa-features">
+      <div class="avulsa-feature">
+        <i class="fas fa-check-circle"></i> Prioridade nos resultados
+      </div>
+      <div class="avulsa-feature">
+        <i class="fas fa-check-circle"></i> Selo "Premium"
+      </div>
+      <div class="avulsa-feature">
+        <i class="fas fa-check-circle"></i> 3x mais visualizações
+      </div>
+      <div class="avulsa-feature">
+        <i class="fas fa-check-circle"></i> Destaque na home por 2 dias
+      </div>
+    </div>
+    <button class="btn-avulsa" onclick="selecionarPlano('premium')">Selecionar Plano</button>
+  </div>
+  
+  <!-- Plano Máximo - 20 Dias -->
+  <div class="avulsa-plan">
+    <h3>Destaque Máximo</h3>
+    <div class="avulsa-price">R$ 26,90 <span>/por 20 dias</span></div>
+    <div class="avulsa-features">
+      <div class="avulsa-feature">
+        <i class="fas fa-check-circle"></i> Topo dos resultados
+      </div>
+      <div class="avulsa-feature">
+        <i class="fas fa-check-circle"></i> Selo "Destaque Máximo"
+      </div>
+      <div class="avulsa-feature">
+        <i class="fas fa-check-circle"></i> 5x mais visualizações
+      </div>
+      <div class="avulsa-feature">
+        <i class="fas fa-check-circle"></i> Destaque na home por 5 dias
+      </div>
+      <div class="avulsa-feature">
+        <i class="fas fa-check-circle"></i> Relatório de desempenho
+      </div>
+    </div>
+    <button class="btn-avulsa" onclick="selecionarPlano('maximo')">Selecionar Plano</button>
+  </div>
+</div>
       <!-- Adicione este overlay de loading -->
   <div class="loading-overlay" id="loadingOverlay">
       <div class="loading-content">
