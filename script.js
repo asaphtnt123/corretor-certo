@@ -2624,6 +2624,17 @@ document.addEventListener("DOMContentLoaded", function() {
         startUserCounter();
     }
 });
+
+
+function debounce(func, timeout = 300) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => func.apply(this, args), timeout);
+  };
+}
+
+
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
 window.openDetailsModal = openDetailsModal;
