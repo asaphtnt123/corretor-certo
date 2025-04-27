@@ -2634,19 +2634,22 @@ function debounce(func, timeout = 300) {
   };
 }
 
-// Menu Hamburguer
 document.addEventListener('DOMContentLoaded', function() {
     const menuToggle = document.querySelector('.menu-toggle');
     const navMenu = document.querySelector('.nav-menu');
 
     menuToggle.addEventListener('click', function() {
         const isExpanded = this.getAttribute('aria-expanded') === 'true';
+        
+        // Alternar estado
         this.setAttribute('aria-expanded', !isExpanded);
         navMenu.classList.toggle('active');
+        
+        // Bloquear scroll do body
         document.body.style.overflow = isExpanded ? 'auto' : 'hidden';
     });
 
-    // Fechar menu ao clicar em um link
+    // Fechar menu ao clicar em links (importante para mobile)
     document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', () => {
             menuToggle.setAttribute('aria-expanded', 'false');
