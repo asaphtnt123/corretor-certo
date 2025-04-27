@@ -2094,14 +2094,13 @@ footer {
 }
 
 /* Menu */
+/* Garanta que estas regras estão presentes */
 .nav-menu {
-    list-style: none;
     display: flex;
-    padding: 0;
+    list-style: none;
     margin: 0;
-    opacity: 0;
-    transform: translateY(-20px);
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    padding: 0;
+    gap: 1.5rem;
 }
 
 .nav-menu.show {
@@ -2210,33 +2209,33 @@ main {
 }
 
 
-/* Estilos para o menu mobile */
-.nav-menu {
-    display: flex;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
 
-/* Esconder o menu em telas pequenas */
 @media (max-width: 768px) {
     .nav-menu {
-        display: none;
+        position: fixed;
+        top: 70px; /* Ajuste conforme altura do header */
+        right: -100%;
+        width: 80%;
+        max-width: 300px;
+        height: calc(100vh - 70px);
+        background: #fff;
         flex-direction: column;
-        position: absolute;
-        top: 60px; /* Ajuste conforme a altura do seu header */
-        left: 0;
-        width: 100%;
-        background-color: #fff; /* Cor de fundo do menu */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        align-items: center;
+        justify-content: flex-start;
+        padding-top: 2rem;
+        box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+        transition: right 0.3s ease;
     }
 
     .nav-menu.active {
-        display: flex; /* Mostrar o menu quando a classe 'active' estiver presente */
+        right: 0;
     }
 
-    .menu-toggle {
-        display: block; /* Mostrar o botão do menu em telas pequenas */
+    .nav-item {
+        width: 100%;
+        text-align: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #eee;
     }
 }
 
@@ -2291,53 +2290,6 @@ main {
     transform: rotate(-45deg);
     top: 0;
 }
-
-/* Menu de Navegação */
-.nav-menu {
-    display: flex;
-    gap: 1.5rem;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.nav-link {
-    color: #333;
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.3s;
-}
-
-.nav-link:hover {
-    color: #0066cc;
-}
-
-/* Responsivo */
-@media (max-width: 768px) {
-    .menu-toggle {
-        display: block;
-    }
-
-    .nav-menu {
-        position: fixed;
-        top: 0;
-        right: -100%;
-        width: 80%;
-        max-width: 300px;
-        height: 100vh;
-        background: #fff;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        box-shadow: -5px 0 15px rgba(0,0,0,0.1);
-        transition: right 0.3s ease;
-    }
-
-    .nav-menu.active {
-        right: 0;
-    }
-}
-
 
 
 .destaque-item {
