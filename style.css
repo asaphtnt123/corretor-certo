@@ -1952,71 +1952,14 @@ footer {
 }
 
 .nav-menu a {
-    position: relative;
-    display: inline-block;
-    color: transparent;
-    background: linear-gradient(90deg, 
-                #e0e0e0 0%, 
-                #ffffff 25%, 
-                #e0e0e0 50%, 
-                #ffffff 75%, 
-                #e0e0e0 100%);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
+    color: #333;
     text-decoration: none;
     font-weight: 500;
-    text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
-    animation: shine 6s linear infinite;
-    transition: all 0.4s ease;
+    transition: color 0.3s ease;
 }
 
-/* Animação do efeito brilhante */
-@keyframes shine {
-    0% {
-        background-position: 0% center;
-    }
-    100% {
-        background-position: 200% center;
-    }
-}
-
-/* Efeito hover mais discreto */
 .nav-menu a:hover {
-    animation: shine 3s linear infinite;
-    text-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
-}
-
-/* Versão para mobile (mantendo a consistência) */
-@media (max-width: 768px) {
-    .nav-link {
-        color: transparent;
-        background: linear-gradient(90deg, 
-                    #e0e0e0 0%, 
-                    #ffffff 25%, 
-                    #e0e0e0 50%, 
-                    #ffffff 75%, 
-                    #e0e0e0 100%);
-        background-size: 200% auto;
-        -webkit-background-clip: text;
-        background-clip: text;
-        animation: shine 6s linear infinite;
-        padding: 15px 25px;
-    }
-    
-    .nav-link:hover {
-        animation: shine 3s linear infinite;
-    }
-    
-    /* Ajuste para o sublinhado dourado */
-    .nav-link:before {
-        background: linear-gradient(90deg, 
-                    transparent 0%, 
-                    #f1c40f 50%, 
-                    transparent 100%);
-        height: 1px;
-        bottom: 10px;
-    }
+    color: #c99c00;
 }
 
 /* Ações do Header */
@@ -2338,15 +2281,6 @@ main {
     #logoContainer {
         height: 60px;
     }
-}
-
-.nav-link.active {
-    color: #f1c40f;
-}
-
-.nav-link.active:before {
-    width: 60%;
-    background: #f1c40f;
 }
 .destaque-item {
     margin-bottom: 20px;
