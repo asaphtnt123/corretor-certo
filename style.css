@@ -426,11 +426,12 @@ main {
 
 /* Estilos para o botão do menu mobile */
 .menu-toggle {
-    display: none; /* Esconder o botão em telas maiores */
+    display: none; /* Escondido em desktop */
     background: none;
     border: none;
-    font-size: 24px;
     cursor: pointer;
+    padding: 10px;
+    z-index: 1001;
 }
 
 
@@ -442,13 +443,7 @@ main {
     border-radius: 8px;
 }
 
-.carrossel {
-    position: relative;
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
-    overflow: hidden;
-}
+
 
 .carrossel-imagens {
     display: flex;
@@ -783,168 +778,12 @@ main {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
-/* Sobre */
-.about {
-    background: #f9f9f9;
-    padding: 60px 0;
-    text-align: center;
-}
-
-.about h2 {
-    font-size: 32px;
-    margin-bottom: 20px;
-}
-
-.about p {
-    font-size: 20px;
-    max-width: 900px;
-    margin: 0 auto;
-    font-weight: 300;
-}
 
 
 
 
 
-/* Contêiner do carrossel */
-.carrossel {
-    position: relative;
-    width: 100%;       /* Faz o carrossel ocupar 100% da largura do seu contêiner pai */
-    max-width: 400px;  /* Limita a largura máxima do carrossel a 400px */
-    height: 250px;     /* Defina a altura desejada para o carrossel */
-    margin: 0 auto;    /* Centraliza o carrossel horizontalmente */
-    overflow: hidden;  /* Esconde qualquer parte da imagem que ultrapasse o carrossel */
-    border-radius: 8px; /* Borda arredondada no carrossel */
-}
 
-/* Estilo das imagens dentro do carrossel */
-.carrossel-imagens img {
-    width: 100%;       /* A imagem ocupa 100% da largura do contêiner do carrossel */
-    height: 100%;      /* A imagem ocupa 100% da altura do contêiner do carrossel */
-    object-fit: cover; /* A imagem cobre a área do carrossel sem distorcer */
-    display: block;    /* Garante que a imagem seja um bloco (sem espaçamento indesejado) */
-    border-radius: 8px; /* Borda arredondada nas imagens */
-}
-.cards-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
-}
-/* Estilo do card */
-.card {
-    display: flex;
-    flex-direction: column;
-    width: 90%;
-    max-width: 320px; /* Limita a largura máxima do card */
-    border: 1px solid #ddd;
-    border-radius: 10px; /* Borda arredondada */
-    padding: 10px;
-    background-color: #fff;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-/* Efeito ao passar o mouse sobre o card */
-.card:hover {
-    transform: translateY(-5px); /* Dá um efeito de elevação ao passar o mouse */
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-}
-
-/* Responsividade para telas menores */
-@media (max-width: 768px) {
-  
-    
-}
-
-@media (max-width: 480px) {
-   
-
-    .card-content h4 {
-        font-size: 1em; /* Ajusta o tamanho do título para telas muito pequenas */
-    }
-
-    .card-content p {
-        font-size: 0.9em; /* Ajusta o tamanho da descrição */
-    }
-
-    .card-content .btn-view-more {
-        padding: 6px 12px; /* Botão um pouco menor em telas menores */
-    }
-}
-
-
-
-/* Estilos para o Container de Tipo de Pesquisa */
-.tipo-pesquisa {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-
-/* Estilos para cada Opção de Tipo */
-.tipo-option {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background-color: #fff;
-    border: 2px solid #ddd;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    width: 150px;
-    text-align: center;
-}
-
-.tipo-option img {
-    width: 120px;
-    height: 70px;
-    margin-bottom: 10px;
-    transition: transform 0.3s ease;
-}
-
-.tipo-option span {
-    font-size: 1rem;
-    color: #333;
-    font-weight: bold;
-}
-
-/* Efeitos de Hover e Seleção */
-.tipo-option:hover {
-    border-color: #007bff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transform: translateY(-5px);
-}
-
-.tipo-option:hover img {
-    transform: scale(1.1);
-}
-
-.tipo-option.active {
-    border-color: #007bff;
-    background-color: #007bff;
-    color: #fff;
-}
-
-.tipo-option.active span {
-    color: #fff;
-}
-
-/* Responsividade para Dispositivos Móveis */
-@media (max-width: 768px) {
-    .tipo-pesquisa {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .tipo-option {
-        width: 100%;
-        max-width: 200px;
-    }
-}
 /* Modal de Detalhes */
 .modal {
     display: none;
@@ -2239,21 +2078,12 @@ main {
     }
 }
 
-/* Menu Hamburguer */
-.menu-toggle {
-    display: none;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 10px;
-    z-index: 1001;
-}
 
 .hamburger {
     display: block;
     width: 25px;
     height: 3px;
-    background: #333;
+    background: #fff; /* Cor branca para contraste com o header */
     position: relative;
     transition: all 0.3s ease;
 }
@@ -2264,7 +2094,7 @@ main {
     position: absolute;
     width: 100%;
     height: 100%;
-    background: #333;
+    background: #fff; /* Cor branca para contraste com o header */
     transition: all 0.3s ease;
 }
 
@@ -2291,6 +2121,48 @@ main {
     top: 0;
 }
 
+/* Menu de navegação mobile */
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: block; /* Mostra o botão em mobile */
+    }
+    
+    .nav-menu {
+        position: fixed;
+        top: 80px; /* Ajuste conforme a altura do header */
+        left: 0;
+        right: 0;
+        width: 100%;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 0;
+        gap: 15px;
+        transform: translateY(-100%);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        z-index: 1000;
+    }
+    
+    .nav-menu[aria-expanded="true"] {
+        transform: translateY(0);
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .nav-item {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .nav-link {
+        color: #fff;
+        padding: 10px 0;
+        display: block;
+        width: 100%;
+    }
+}
 
 .destaque-item {
     margin-bottom: 20px;
@@ -2299,56 +2171,7 @@ main {
     border-radius: 8px;
 }
 
-.carrossel {
-    position: relative;
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
-    overflow: hidden;
-}
 
-.carrossel-imagens {
-    display: flex;
-    transition: transform 0.5s ease-in-out;
-}
-
-.carrossel-img {
-    width: 100%;
-    display: none; /* Todas as imagens estão ocultas por padrão */
-}
-
-.carrossel-img.active {
-    display: block; /* Apenas a imagem ativa é exibida */
-}
-
-.carrossel-seta {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: rgba(0, 0, 0, 0.5);
-    color: white;
-    border: none;
-    cursor: pointer;
-    padding: 10px;
-    font-size: 18px;
-    z-index: 10;
-}
-
-.carrossel-seta-esquerda {
-    left: 10px;
-}
-
-.carrossel-seta-direita {
-    right: 10px;
-}
-.btn-view-more {
-    background: #c99c00;
-    padding: 12px 25px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: bold;
-    margin-bottom: 20px;
-}
 
 
 
@@ -2369,38 +2192,6 @@ main {
     max-width: 900px;
     margin: 0 auto;
     font-weight: 300;
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-    .nav-menu {
-        display: none;
-        flex-direction: column;
-        position: fixed;
-        top: 80px;
-        right: 0;
-        background: white;
-        width: 100%;
-        text-align: center;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .nav-menu li {
-        padding: 20px 0;
-    }
-
-    .nav-menu.show {
-        display: flex;
-    }
-
-    .menu-toggle {
-        display: block;
-        background: none;
-        border: none;
-        font-size: 30px;
-        cursor: pointer;
-        color: #333;
-    }
 }
 
 
@@ -3605,9 +3396,7 @@ section.banner .btn:hover::before {
     font-size: 0.9em;
 }
 
-.carrossel {
-    position: relative;
-}
+
 
 
 .destaque-card {
@@ -4661,4 +4450,21 @@ select.form-control {
 @keyframes countUp {
     from { opacity: 0; transform: translateY(5px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* Evita scroll quando menu está aberto */
+body.menu-open {
+    overflow: hidden;
+}
+
+/* Melhora a aparência dos links no menu mobile */
+@media (max-width: 768px) {
+    .nav-link {
+        transition: all 0.3s ease;
+    }
+    
+    .nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
 }
