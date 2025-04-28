@@ -2633,29 +2633,25 @@ function debounce(func, timeout = 300) {
     timer = setTimeout(() => func.apply(this, args), timeout);
   };
 }
+// Menu Hamburguer
+const menuToggle = document.querySelector('.menu-toggle');
+const navMenu = document.querySelector('.nav-menu');
 
-document.addEventListener('DOMContentLoaded', function() {
-    const menuToggle = document.querySelector('.menu-toggle');
-    const navMenu = document.querySelector('.nav-menu');
+menuToggle.addEventListener('click', () => {
+    const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
+    menuToggle.setAttribute('aria-expanded', !isExpanded);
+    navMenu.setAttribute('aria-expanded', !isExpanded);
+    
+    // Alternar classe para o body (opcional, para desativar scroll quando menu aberto)
+    document.body.classList.toggle('menu-open', !isExpanded);
+});
 
-    menuToggle.addEventListener('click', function() {
-        const isExpanded = this.getAttribute('aria-expanded') === 'true';
-        
-        // Alternar estado
-        this.setAttribute('aria-expanded', !isExpanded);
-        navMenu.classList.toggle('active');
-        
-        // Bloquear scroll do body
-        document.body.style.overflow = isExpanded ? 'auto' : 'hidden';
-    });
-
-    // Fechar menu ao clicar em links (importante para mobile)
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.addEventListener('click', () => {
-            menuToggle.setAttribute('aria-expanded', 'false');
-            navMenu.classList.remove('active');
-            document.body.style.overflow = 'auto';
-        });
+// Fechar menu ao clicar em um link (opcional)
+document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', () => {
+        menuToggle.setAttribute('aria-expanded', 'false');
+        navMenu.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('menu-open');
     });
 });
 // ============== EXPORTAÇÕES GLOBAIS ==============
