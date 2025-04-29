@@ -278,7 +278,7 @@ async function handleRegister(e) {
     const phone = registerForm.registerPhone.value.trim();
     const password = registerForm.registerPassword.value;
     const userRole = document.querySelector('input[name="userRole"]:checked').value;
-    let sellerType = null; // Definir a variável aqui
+    let sellerType = null;
     
     try {
         // Criar usuário no Firebase Auth
@@ -305,7 +305,7 @@ async function handleRegister(e) {
         } 
         // Adicionar dados específicos do vendedor
         else {
-            sellerType = document.querySelector('input[name="sellerType"]:checked').value; // Atribuir valor aqui
+            sellerType = document.querySelector('input[name="sellerType"]:checked').value;
             userData.sellerProfile = {
                 sellerType,
                 aboutBusiness: registerForm.aboutBusiness.value.trim()
@@ -322,7 +322,7 @@ async function handleRegister(e) {
                     ...(registerForm.cnpj.value.trim() && {
                         cnpj: registerForm.cnpj.value.trim()
                     }),
-                    approved: false // Requer aprovação manual
+                    approved: false
                 };
                 
                 // Validação adicional para profissionais
@@ -338,52 +338,55 @@ async function handleRegister(e) {
         // Salvar no Firestore
         await setDoc(doc(db, 'users', user.uid), userData);
         
-       // Feedback para o usuário
-Swal.fire({
-    title: 'Cadastro realizado!',
-    text: userRole === 'buyer' 
-        ? 'Agora você pode buscar os melhores imóveis e automóveis!' 
-        : sellerType === 'professional' 
-            ? 'Seu cadastro profissional será analisado e em breve você poderá anunciar!' 
-            : 'Agora você pode anunciar seus imóveis e automóveis!',
-    icon: 'success',
-    confirmButtonText: 'Continuar'
-}).then(() => {
-    if (userRole === 'buyer') {
-        const interests = buyerInterestsInput.value.split(',');
+        // Feedback para o usuário
+        Swal.fire({
+            title: 'Cadastro realizado!',
+            text: userRole === 'buyer' 
+                ? 'Agora você pode buscar os melhores imóveis e automóveis!' 
+                : sellerType === 'professional' 
+                    ? 'Seu cadastro profissional será analisado e em breve você poderá anunciar!' 
+                    : 'Agora você pode anunciar seus imóveis e automóveis!',
+            icon: 'success',
+            confirmButtonText: 'Continuar'
+        }).then(() => {
+            if (userRole === 'buyer') {
+                const interests = buyerInterestsInput.value.split(',');
+                
+                const hasVehicleInterest = interests.some(i => i.includes('automoveis'));
+                const hasPropertyInterest = interests.some(i => i.includes('imoveis'));
+                
+                if (hasVehicleInterest && !hasPropertyInterest) {
+                    window.location.href = 'automoveis.html';
+                } else if (hasPropertyInterest && !hasVehicleInterest) {
+                    window.location.href = 'imoveis.html';
+                } else {
+                    window.location.href = 'buscar.html';
+                }
+            } else {
+                window.location.href = sellerType === 'professional' 
+                    ? 'aguardando-aprovacao.html' 
+                    : 'index.html';
+            }
+        });
         
-        // Verifica primeiro se há interesse em automóveis (comprar ou alugar)
-        const hasVehicleInterest = interests.some(i => 
-            i.includes('automoveis') // Captura tanto "automoveis-comprar" quanto "automoveis-alugar"
-        );
+    } catch (error) {
+        console.error('Erro no cadastro:', error);
+        let errorMessage = 'Erro ao realizar cadastro. Tente novamente.';
         
-        // Verifica interesse em imóveis (comprar ou alugar)
-        const hasPropertyInterest = interests.some(i => 
-            i.includes('imoveis') // Captura tanto "imoveis-comprar" quanto "imoveis-alugar"
-        );
-        
-        // Lógica de redirecionamento aprimorada
-        if (hasVehicleInterest && !hasPropertyInterest) {
-            // Apenas veículos -> automoveis.html
-            window.location.href = 'automoveis.html';
-        } else if (hasPropertyInterest && !hasVehicleInterest) {
-            // Apenas imóveis -> imoveis.html
-            window.location.href = 'imoveis.html';
-        } else if (hasVehicleInterest && hasPropertyInterest) {
-            // Ambos interesses -> buscar.html (ou pode criar uma página específica)
-            window.location.href = 'buscar.html';
-        } else {
-            // Nenhum interesse específico (fallback)
-            window.location.href = 'buscar.html';
+        if (error.code === 'auth/email-already-in-use') {
+            errorMessage = 'Este e-mail já está cadastrado.';
+        } else if (error.code === 'auth/weak-password') {
+            errorMessage = 'A senha deve ter pelo menos 6 caracteres.';
         }
-    } else {
-        // Lógica para vendedores (mantida igual)
-        window.location.href = sellerType === 'professional' 
-            ? 'aguardando-aprovacao.html' 
-            : 'index.html';
+        
+        Swal.fire({
+            title: 'Erro',
+            text: errorMessage,
+            icon: 'error',
+            confirmButtonText: 'Entendi'
+        });
     }
-});
-
+}
 
       
 function validateForm() {
