@@ -1092,7 +1092,16 @@ document.addEventListener("DOMContentLoaded", function() {
     carregarLogo();
     preencherBairros();
 
-  
+    // Configuração do menu mobile
+    const menuToggle = document.getElementById('menu-toggle');
+    const navMenu = document.getElementById('nav-menu');
+    if (menuToggle && navMenu) {
+        menuToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            menuToggle.innerHTML = navMenu.classList.contains('active') ? '✕' : '☰';
+        });
+    }
+
     // Configuração do botão de login
     const loginBtn = document.getElementById('login-btn');
     if (loginBtn) {
@@ -2624,7 +2633,18 @@ function debounce(func, timeout = 300) {
     timer = setTimeout(() => func.apply(this, args), timeout);
   };
 }
+// Menu Hamburguer
+const menuToggle = document.querySelector('.menu-toggle');
+const navMenu = document.querySelector('.nav-menu');
 
+menuToggle.addEventListener('click', () => {
+    const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
+    menuToggle.setAttribute('aria-expanded', !isExpanded);
+    navMenu.setAttribute('aria-expanded', !isExpanded);
+    
+    // Alternar classe para o body (opcional, para desativar scroll quando menu aberto)
+    document.body.classList.toggle('menu-open', !isExpanded);
+});
 
 // Fechar menu ao clicar em um link (opcional)
 document.querySelectorAll('.nav-link').forEach(link => {
@@ -2634,16 +2654,6 @@ document.querySelectorAll('.nav-link').forEach(link => {
         document.body.classList.remove('menu-open');
     });
 });
-
-
-const menuToggle = document.getElementById('menu-toggle-btn');
-menuToggle.addEventListener('click', () => {
-    menuToggle.classList.toggle('aberto');
-});
-document.getElementById('menu-toggle-btn').addEventListener('click', function () {
-  this.classList.toggle('aberto');
-});
-
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
 window.openDetailsModal = openDetailsModal;
