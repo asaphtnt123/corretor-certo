@@ -128,20 +128,21 @@ async function handleLogin(e) {
             const userData = userDoc.data();
             
             // Verificar se é comprador e tem interesses definidos
-            if (userData.userRole === 'buyer' && userData.buyerProfile && userData.buyerProfile.interests) {
-                const interests = userData.buyerProfile.interests;
-                
-                // Verificar interesses para redirecionamento
-                if (interests.includes('imoveis')) {
-                    window.location.href = 'imoveis.html?fromLogin=true';
-                } else if (interests.includes('veiculos')) {
-                    window.location.href = 'automoveis.html?fromLogin=true';
-                } else {
-                    // Caso padrão se não houver interesses específicos
-                    window.location.href = 'perfil.html?fromLogin=true';
-                }
-                return;
-            }
+if (userData.userRole === 'buyer' && userData.buyerProfile && userData.buyerProfile.interests) {
+    const interests = userData.buyerProfile.interests;
+    
+    const hasVehicleInterest = interests.some(i => i.includes('automoveis'));
+    const hasPropertyInterest = interests.some(i => i.includes('imoveis'));
+    
+    if (hasVehicleInterest && !hasPropertyInterest) {
+        window.location.href = 'automoveis.html?fromLogin=true';
+    } else if (hasPropertyInterest && !hasVehicleInterest) {
+        window.location.href = 'imoveis.html?fromLogin=true';
+    } else {
+        window.location.href = 'buscar.html?fromLogin=true';
+    }
+    return;
+}
         }
 
         // Redirecionamento padrão caso não encontre interesses
@@ -348,24 +349,43 @@ Swal.fire({
     icon: 'success',
     confirmButtonText: 'Continuar'
 }).then(() => {
-    // Modificação aqui - Redirecionamento baseado nos interesses
     if (userRole === 'buyer') {
         const interests = buyerInterestsInput.value.split(',');
         
-        if (interests.includes('imoveis')) {
-            window.location.href = 'imoveis.html';
-        } else if (interests.includes('veiculos')) {
+        // Verifica primeiro se há interesse em automóveis (comprar ou alugar)
+        const hasVehicleInterest = interests.some(i => 
+            i.includes('automoveis') // Captura tanto "automoveis-comprar" quanto "automoveis-alugar"
+        );
+        
+        // Verifica interesse em imóveis (comprar ou alugar)
+        const hasPropertyInterest = interests.some(i => 
+            i.includes('imoveis') // Captura tanto "imoveis-comprar" quanto "imoveis-alugar"
+        );
+        
+        // Lógica de redirecionamento aprimorada
+        if (hasVehicleInterest && !hasPropertyInterest) {
+            // Apenas veículos -> automoveis.html
             window.location.href = 'automoveis.html';
+        } else if (hasPropertyInterest && !hasVehicleInterest) {
+            // Apenas imóveis -> imoveis.html
+            window.location.href = 'imoveis.html';
+        } else if (hasVehicleInterest && hasPropertyInterest) {
+            // Ambos interesses -> buscar.html (ou pode criar uma página específica)
+            window.location.href = 'buscar.html';
         } else {
-            // Fallback caso não tenha interesses específicos
+            // Nenhum interesse específico (fallback)
             window.location.href = 'buscar.html';
         }
     } else {
+        // Lógica para vendedores (mantida igual)
         window.location.href = sellerType === 'professional' 
             ? 'aguardando-aprovacao.html' 
             : 'index.html';
     }
 });
+
+
+      
 function validateForm() {
     let isValid = true;
     
