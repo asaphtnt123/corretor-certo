@@ -4502,65 +4502,62 @@ body.menu-open {
     }
 }
 .menu-toggle {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background-color: #f1c40f;
-    border: none;
-    position: relative;
-    z-index: 1001;
-    transition: transform 0.3s ease;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #fff;
+  border: 2px solid #333;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.menu-toggle .clock-face {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    display: block;
-    border-radius: 50%;
-    background: #fff;
-    border: 3px solid #333;
+.clock-face {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, #fefefe 90%, #ccc 100%);
 }
 
-.menu-toggle .clock-face::before,
-.menu-toggle .clock-face::after {
-    content: '';
-    position: absolute;
-    background-color: #333;
-    left: 50%;
-    transform-origin: bottom center;
-    transform: translateX(-50%);
-    border-radius: 2px;
+.clock-face::before,
+.clock-face::after {
+  content: '';
+  position: absolute;
+  background-color: #333;
+  left: 50%;
+  transform-origin: bottom center;
+  transform: translateX(-50%) rotate(0deg);
+  border-radius: 2px;
 }
 
-.menu-toggle .clock-face::before {
-    width: 2px;
-    height: 12px;
-    top: 8px;
-    animation: rotateMin 60s linear infinite;
+.clock-face::before {
+  width: 2px;
+  height: 14px;
+  top: 10px;
+  animation: rotateMin 60s linear infinite;
 }
 
-.menu-toggle .clock-face::after {
-    width: 3px;
-    height: 20px;
-    top: 2px;
-    animation: rotateHour 720s linear infinite;
+.clock-face::after {
+  width: 3px;
+  height: 20px;
+  top: 4px;
+  animation: rotateHour 720s linear infinite;
 }
 
-.menu-toggle.aberto .clock-face::before {
-    animation-play-state: running;
-}
-
-.menu-toggle.aberto .clock-face::after {
-    animation-play-state: running;
+.menu-toggle:not(.aberto) .clock-face::before,
+.menu-toggle:not(.aberto) .clock-face::after {
+  animation: none;
 }
 
 @keyframes rotateMin {
-    from { transform: translateX(-50%) rotate(0deg); }
-    to { transform: translateX(-50%) rotate(360deg); }
+  from { transform: translateX(-50%) rotate(0deg); }
+  to { transform: translateX(-50%) rotate(360deg); }
 }
 
 @keyframes rotateHour {
-    from { transform: translateX(-50%) rotate(0deg); }
-    to { transform: translateX(-50%) rotate(360deg); }
+  from { transform: translateX(-50%) rotate(0deg); }
+  to { transform: translateX(-50%) rotate(360deg); }
 }
+
