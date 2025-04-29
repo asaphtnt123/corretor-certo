@@ -2654,6 +2654,13 @@ document.querySelectorAll('.nav-link').forEach(link => {
         document.body.classList.remove('menu-open');
     });
 });
+
+
+const menuToggle = document.getElementById('menu-toggle-btn');
+menuToggle.addEventListener('click', () => {
+    menuToggle.classList.toggle('aberto');
+});
+
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
 window.openDetailsModal = openDetailsModal;
