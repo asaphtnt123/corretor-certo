@@ -2640,6 +2640,9 @@ const menuToggle = document.getElementById('menu-toggle-btn');
 menuToggle.addEventListener('click', () => {
     menuToggle.classList.toggle('aberto');
 });
+document.getElementById('menu-toggle-btn').addEventListener('click', function () {
+  this.classList.toggle('aberto');
+});
 
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
