@@ -87,7 +87,6 @@ if (showRegisterLink) {
     });
 }
 
-// Atualização da função handleLogin no auth.js
 async function handleLogin(e) {
     e.preventDefault();
     
@@ -107,19 +106,46 @@ async function handleLogin(e) {
         localStorage.setItem('userEmail', user.email);
         localStorage.setItem('userId', user.uid);
 
-        // Verificar se há redirecionamento pendente
+        // Verificar se há redirecionamento pendente (como antes)
         const urlParams = new URLSearchParams(window.location.search);
-        const redirectTo = urlParams.get('redirect') || 'perfil'; // Padrão: perfil.html
+        const redirectTo = urlParams.get('redirect');
         const planId = urlParams.get('plan');
 
-        // Redirecionar conforme necessário
+        // Se houver um redirecionamento específico, priorize ele
         if (redirectTo === 'planos' && planId) {
             console.log(`Redirecionando para planos.html?plan=${planId}`);
             window.location.href = `planos.html?plan=${planId}&fromLogin=true`;
-        } else {
+            return;
+        } else if (redirectTo) {
             console.log(`Redirecionando para ${redirectTo}.html`);
             window.location.href = `${redirectTo}.html?fromLogin=true`;
+            return;
         }
+
+        // Se não houver redirecionamento específico, verificar os interesses do usuário
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            
+            // Verificar se é comprador e tem interesses definidos
+            if (userData.userRole === 'buyer' && userData.buyerProfile && userData.buyerProfile.interests) {
+                const interests = userData.buyerProfile.interests;
+                
+                // Verificar interesses para redirecionamento
+                if (interests.includes('imoveis')) {
+                    window.location.href = 'imoveis.html?fromLogin=true';
+                } else if (interests.includes('veiculos')) {
+                    window.location.href = 'automoveis.html?fromLogin=true';
+                } else {
+                    // Caso padrão se não houver interesses específicos
+                    window.location.href = 'perfil.html?fromLogin=true';
+                }
+                return;
+            }
+        }
+
+        // Redirecionamento padrão caso não encontre interesses
+        window.location.href = 'perfil.html?fromLogin=true';
         
     } catch (error) {
         console.error('Erro no login:', error);
