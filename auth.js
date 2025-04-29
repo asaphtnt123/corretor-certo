@@ -337,42 +337,35 @@ async function handleRegister(e) {
         // Salvar no Firestore
         await setDoc(doc(db, 'users', user.uid), userData);
         
-        // Feedback para o usuário
-        Swal.fire({
-            title: 'Cadastro realizado!',
-            text: userRole === 'buyer' 
-                ? 'Agora você pode buscar os melhores imóveis e automóveis!' 
-                : sellerType === 'professional' 
-                    ? 'Seu cadastro profissional será analisado e em breve você poderá anunciar!' 
-                    : 'Agora você pode anunciar seus imóveis e automóveis!',
-            icon: 'success',
-            confirmButtonText: 'Continuar'
-        }).then(() => {
-            window.location.href = userRole === 'buyer' 
-                ? 'buscar.html' 
-                : sellerType === 'professional' 
-                    ? 'aguardando-aprovacao.html' 
-                    : 'index.html';
-        });
+       // Feedback para o usuário
+Swal.fire({
+    title: 'Cadastro realizado!',
+    text: userRole === 'buyer' 
+        ? 'Agora você pode buscar os melhores imóveis e automóveis!' 
+        : sellerType === 'professional' 
+            ? 'Seu cadastro profissional será analisado e em breve você poderá anunciar!' 
+            : 'Agora você pode anunciar seus imóveis e automóveis!',
+    icon: 'success',
+    confirmButtonText: 'Continuar'
+}).then(() => {
+    // Modificação aqui - Redirecionamento baseado nos interesses
+    if (userRole === 'buyer') {
+        const interests = buyerInterestsInput.value.split(',');
         
-    } catch (error) {
-        console.error('Erro no cadastro:', error);
-        let errorMessage = 'Erro ao realizar cadastro. Tente novamente.';
-        
-        if (error.code === 'auth/email-already-in-use') {
-            errorMessage = 'Este e-mail já está cadastrado.';
-        } else if (error.code === 'auth/weak-password') {
-            errorMessage = 'A senha deve ter pelo menos 6 caracteres.';
+        if (interests.includes('imoveis')) {
+            window.location.href = 'imoveis.html';
+        } else if (interests.includes('veiculos')) {
+            window.location.href = 'automoveis.html';
+        } else {
+            // Fallback caso não tenha interesses específicos
+            window.location.href = 'buscar.html';
         }
-        
-        Swal.fire({
-            title: 'Erro',
-            text: errorMessage,
-            icon: 'error',
-            confirmButtonText: 'Entendi'
-        });
+    } else {
+        window.location.href = sellerType === 'professional' 
+            ? 'aguardando-aprovacao.html' 
+            : 'index.html';
     }
-}
+});
 function validateForm() {
     let isValid = true;
     
