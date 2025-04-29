@@ -424,15 +424,6 @@ main {
 
 
 
-/* Estilos para o botão do menu mobile */
-.menu-toggle {
-    display: none; /* Escondido em desktop */
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 10px;
-    z-index: 1001;
-}
 
 
 
@@ -2105,83 +2096,7 @@ main {
     top: 8px;
 }
 
-/* Menu Aberto */
-.menu-toggle[aria-expanded="true"] .hamburger {
-    background: transparent;
-}
 
-.menu-toggle[aria-expanded="true"] .hamburger:before {
-    transform: rotate(45deg);
-    top: 0;
-}
-
-.menu-toggle[aria-expanded="true"] .hamburger:after {
-    transform: rotate(-45deg);
-    top: 0;
-}
-
-/* Menu de navegação mobile - Versão Premium */
-@media (max-width: 768px) {
-    .menu-toggle {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        width: 44px;
-        height: 44px;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-radius: 50%;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-        z-index: 1001;
-    }
-    
-    .menu-toggle:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: scale(1.05);
-    }
-    
-    .hamburger {
-        width: 22px;
-        height: 2px;
-        background: #fff;
-        transition: all 0.3s ease;
-        position: relative;
-    }
-    
-    .hamburger:before,
-    .hamburger:after {
-        content: '';
-        position: absolute;
-        width: 22px;
-        height: 2px;
-        background: #fff;
-        transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-    }
-    
-    .hamburger:before {
-        top: -6px;
-    }
-    
-    .hamburger:after {
-        top: 6px;
-    }
-    
-    .menu-toggle[aria-expanded="true"] .hamburger {
-        background: transparent;
-    }
-    
-    .menu-toggle[aria-expanded="true"] .hamburger:before {
-        transform: rotate(45deg) translate(4px, 4px);
-        background: #f1c40f;
-    }
-    
-    .menu-toggle[aria-expanded="true"] .hamburger:after {
-        transform: rotate(-45deg) translate(4px, -4px);
-        background: #f1c40f;
-    }
-    
     .nav-menu {
         position: fixed;
         left: 50px;
@@ -4585,4 +4500,67 @@ body.menu-open {
     .nav-link:hover {
         background-color: rgba(255, 255, 255, 0.1);
     }
+}
+.menu-toggle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #f1c40f;
+    border: none;
+    position: relative;
+    z-index: 1001;
+    transition: transform 0.3s ease;
+}
+
+.menu-toggle .clock-face {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: block;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid #333;
+}
+
+.menu-toggle .clock-face::before,
+.menu-toggle .clock-face::after {
+    content: '';
+    position: absolute;
+    background-color: #333;
+    left: 50%;
+    transform-origin: bottom center;
+    transform: translateX(-50%);
+    border-radius: 2px;
+}
+
+.menu-toggle .clock-face::before {
+    width: 2px;
+    height: 12px;
+    top: 8px;
+    animation: rotateMin 60s linear infinite;
+}
+
+.menu-toggle .clock-face::after {
+    width: 3px;
+    height: 20px;
+    top: 2px;
+    animation: rotateHour 720s linear infinite;
+}
+
+.menu-toggle.aberto .clock-face::before {
+    animation-play-state: running;
+}
+
+.menu-toggle.aberto .clock-face::after {
+    animation-play-state: running;
+}
+
+@keyframes rotateMin {
+    from { transform: translateX(-50%) rotate(0deg); }
+    to { transform: translateX(-50%) rotate(360deg); }
+}
+
+@keyframes rotateHour {
+    from { transform: translateX(-50%) rotate(0deg); }
+    to { transform: translateX(-50%) rotate(360deg); }
 }
