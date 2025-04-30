@@ -30,7 +30,7 @@ const filterBairro = document.getElementById('filter-bairro');
 const filterTipo = document.getElementById('filter-tipo');
 const filterQuartos = document.getElementById('filter-quartos');
 const filterPreco = document.getElementById('filter-preco');
-const btnFiltrar = document.getElementById('btn-filtrar');
+const btnLimpar = document.getElementById('btn-limpar');
 
 // Variáveis globais
 let currentType = 'todos';
@@ -41,7 +41,43 @@ let currentFilters = {
     preco: ''
 };
 
-// Carregar anúncios
+// Função debounce para evitar múltiplas chamadas
+function debounce(func, timeout = 300) {
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => { func.apply(this, args); }, timeout);
+    };
+}
+
+// Aplicar filtros com debounce
+const applyFilters = debounce(() => {
+    currentFilters = {
+        bairro: filterBairro.value,
+        tipo: filterTipo.value,
+        quartos: filterQuartos.value,
+        preco: filterPreco.value
+    };
+    loadAnuncios();
+});
+
+// Configurar eventos de clique nos cards
+function setupCardClickEvents() {
+    document.querySelectorAll('.property-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+            if (e.target.closest('button') || e.target.tagName === 'A') {
+                return;
+            }
+            
+            const adId = this.closest('[data-ad-id]')?.dataset.adId;
+            if (adId) {
+                window.location.href = `detalhes.html?id=${adId}&tipo=imovel`;
+            }
+        });
+    });
+}
+
+// Carregar anúncios com filtros
 async function loadAnuncios() {
     try {
         // Mostrar estado de carregamento
@@ -57,18 +93,63 @@ async function loadAnuncios() {
         // Construir query baseada nos filtros
         let q = query(collection(db, "imoveis"));
         
+        // Aplicar filtro de tipo
         if (currentType !== 'todos') {
             q = query(q, where("tipo", "==", currentType));
         }
         
-        if (currentFilters.bairro) {
-            q = query(q, where("bairro", "==", currentFilters.bairro));
+        // Aplicar filtro de bairro
+        if (currentFilters.bairro && currentFilters.bairro.trim() !== '' && currentFilters.bairro !== 'Bairro') {
+            q = query(q, where("bairro", "==", currentFilters.bairro.trim()));
         }
         
-        // Adicione outros filtros conforme necessário...
+        // Aplicar filtro de tipo de imóvel
+        if (currentFilters.tipo && currentFilters.tipo.trim() !== '' && currentFilters.tipo !== 'Tipo') {
+            q = query(q, where("tipo", "==", currentFilters.tipo.trim()));
+        }
+        
+        // Aplicar filtro de quartos
+        if (currentFilters.quartos && currentFilters.quartos.trim() !== '' && currentFilters.quartos !== 'Quartos') {
+            const minQuartos = parseInt(currentFilters.quartos);
+            if (!isNaN(minQuartos)) {
+                q = query(q, where("quartos", ">=", minQuartos));
+            }
+        }
+        
+        // Aplicar filtro de preço
+        if (currentFilters.preco && currentFilters.preco.trim() !== '' && currentFilters.preco !== 'Preço') {
+            let precoMin = 0;
+            let precoMax = Infinity;
+            
+            switch(currentFilters.preco) {
+                case 'Até R$ 300.000':
+                    precoMax = 300000;
+                    break;
+                case 'R$ 300.000 - 600.000':
+                    precoMin = 300000;
+                    precoMax = 600000;
+                    break;
+                case 'R$ 600.000 - 1.000.000':
+                    precoMin = 600000;
+                    precoMax = 1000000;
+                    break;
+                case 'Acima de R$ 1.000.000':
+                    precoMin = 1000000;
+                    break;
+            }
+            
+            q = query(q, where("preco", ">=", precoMin));
+            if (precoMax !== Infinity) {
+                q = query(q, where("preco", "<=", precoMax));
+            }
+        }
 
         const querySnapshot = await getDocs(q);
-        
+        console.log('Documentos encontrados:', querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        })));
+
         // Limpar container
         anunciosContainer.innerHTML = '';
         
@@ -89,7 +170,7 @@ async function loadAnuncios() {
             data.id = doc.id;
             anunciosContainer.appendChild(createPropertyCard(data));
         });
-        
+
         // Configurar eventos de clique
         setupCardClickEvents();
         
@@ -122,7 +203,7 @@ function createPropertyCard(property) {
             ${property.status === 'novo' ? '<div class="card-badge">Novo</div>' : ''}
             <div class="card-image-container">
                 <img src="${property.imagens?.[0] || 'https://via.placeholder.com/800x600'}" 
-                     alt="${property.titulo}" class="card-image">
+                     alt="${property.titulo || 'Imóvel'}" class="card-image">
                 <div class="image-overlay"></div>
             </div>
             <div class="card-content">
@@ -142,7 +223,6 @@ function createPropertyCard(property) {
         </div>
     `;
     
-    // Adiciona evento de clique no botão "Ver Detalhes"
     const btn = col.querySelector('.btn-view-more');
     btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -152,56 +232,100 @@ function createPropertyCard(property) {
     return col;
 }
 
-// Configurar eventos de clique nos cards
-function setupCardClickEvents() {
-    document.querySelectorAll('.property-card').forEach(card => {
-        card.addEventListener('click', function(e) {
-            // Evitar abrir detalhes se clicar em botões dentro do card
-            if (e.target.closest('button') || e.target.tagName === 'A') {
-                return;
-            }
-            
-            // Encontrar o ID do anúncio
-            const adId = this.closest('[data-ad-id]')?.dataset.adId;
-            if (adId) {
-                window.location.href = `detalhes.html?id=${adId}&tipo=imovel`;
-            }
+// Carregar todos os bairros disponíveis
+async function loadBairros() {
+    try {
+        filterBairro.innerHTML = '<option value="">Bairro</option>';
+        
+        const bairrosSnapshot = await getDocs(collection(db, "imoveis"));
+        const bairrosSet = new Set();
+        
+        bairrosSnapshot.forEach((doc) => {
+            const bairro = doc.data().bairro;
+            if (bairro) bairrosSet.add(bairro);
         });
-    });
+
+        const bairrosOrdenados = Array.from(bairrosSet).sort((a, b) => a.localeCompare(b));
+        
+        bairrosOrdenados.forEach(bairro => {
+            const option = document.createElement('option');
+            option.value = bairro;
+            option.textContent = bairro;
+            filterBairro.appendChild(option);
+        });
+        
+    } catch (error) {
+        console.error("Erro ao carregar bairros:", error);
+        filterBairro.innerHTML = '<option value="">Erro ao carregar</option>';
+    }
 }
 
-// Event Listeners
+// Carregar todos os tipos de imóvel disponíveis
+async function loadTiposImovel() {
+    try {
+        filterTipo.innerHTML = '<option value="">Tipo</option>';
+        
+        const tiposSnapshot = await getDocs(collection(db, "imoveis"));
+        const tiposSet = new Set();
+        
+        tiposSnapshot.forEach((doc) => {
+            const tipo = doc.data().tipo;
+            if (tipo) tiposSet.add(tipo);
+        });
+
+        const tiposOrdenados = Array.from(tiposSet).sort((a, b) => a.localeCompare(b));
+        
+        tiposOrdenados.forEach(tipo => {
+            const option = document.createElement('option');
+            option.value = tipo;
+            option.textContent = tipo;
+            filterTipo.appendChild(option);
+        });
+        
+    } catch (error) {
+        console.error("Erro ao carregar tipos:", error);
+        filterTipo.innerHTML = '<option value="">Erro ao carregar</option>';
+    }
+}
+
+// Event Listeners para tipos de imóvel
 propertyTypes.forEach(type => {
     type.addEventListener('click', () => {
         propertyTypes.forEach(t => t.classList.remove('active'));
         type.classList.add('active');
         currentType = type.dataset.type;
-        loadAnuncios();
+        applyFilters();
     });
-});
-
-btnFiltrar.addEventListener('click', () => {
-    currentFilters = {
-        bairro: filterBairro.value,
-        tipo: filterTipo.value,
-        quartos: filterQuartos.value,
-        preco: filterPreco.value
-    };
-    loadAnuncios();
 });
 
 // Inicialização
 document.addEventListener('DOMContentLoaded', () => {
+    loadBairros();
+    loadTiposImovel();
     loadAnuncios();
     
-    // Preencher filtros (simulado - em produção, busque do Firebase)
-    const bairros = ['Centro', 'Jardins', 'Vila Olímpia', 'Moema', 'Pinheiros', 'Vila Mariana'];
-    bairros.forEach(bairro => {
-        const option = document.createElement('option');
-        option.value = bairro;
-        option.textContent = bairro;
-        filterBairro.appendChild(option);
-    });
+    // Eventos para os filtros
+    filterBairro.addEventListener('change', applyFilters);
+    filterTipo.addEventListener('change', applyFilters);
+    filterQuartos.addEventListener('change', applyFilters);
+    filterPreco.addEventListener('change', applyFilters);
+});
+
+// Função para limpar filtros
+btnLimpar?.addEventListener('click', () => {
+    // Resetar seleções
+    filterBairro.value = '';
+    filterTipo.value = '';
+    filterQuartos.value = '';
+    filterPreco.value = '';
+    
+    // Resetar tipo para 'todos'
+    propertyTypes.forEach(t => t.classList.remove('active'));
+    document.querySelector('.property-type[data-type="todos"]').classList.add('active');
+    currentType = 'todos';
+    
+    // Recarregar anúncios sem filtros
+    loadAnuncios();
 });
 
 // Função global para SweetAlert
