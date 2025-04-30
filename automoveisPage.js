@@ -220,17 +220,6 @@ vehicleTypes.forEach(type => {
         loadAnuncios();
     });
 });
-// Adicione esta função para aplicar filtros automaticamente
-// Modifique a função applyFilters para usar debounce
-const applyFilters = debounce(() => {
-    currentFilters = {
-        marca: filterMarca.value,
-        modelo: filterModelo.value,
-        ano: filterAno.value,
-        preco: filterPreco.value
-    };
-    loadAnuncios();
-});
 
 
 // Adicione esta função para carregar os modelos disponíveis
@@ -298,13 +287,13 @@ async function loadAnos() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+ document.addEventListener('DOMContentLoaded', () => {
     loadAnuncios();
     loadModelos();
     loadAnos();
     
     // Configurar eventos de change para todos os filtros
-    filterMarca.addEventListener('change', () => {
+    filterMarca.addEventListener('change', async () => {
         applyFilters();
         
         // Atualizar modelos quando a marca for alterada
@@ -348,7 +337,9 @@ document.addEventListener('DOMContentLoaded', () => {
     filterPreco.addEventListener('change', applyFilters);
 });
 
-// Adicione um debounce para evitar muitas chamadas ao Firebase
+
+
+// Implementação do debounce
 function debounce(func, timeout = 300) {
     let timer;
     return (...args) => {
@@ -356,7 +347,16 @@ function debounce(func, timeout = 300) {
         timer = setTimeout(() => { func.apply(this, args); }, timeout);
     };
 }
-
+// Modifique a função applyFilters para usar debounce
+const applyFilters = debounce(() => {
+    currentFilters = {
+        marca: filterMarca.value,
+        modelo: filterModelo.value,
+        ano: filterAno.value,
+        preco: filterPreco.value
+    };
+    loadAnuncios();
+});
 
 // Função global para SweetAlert
 function showAlert(message, type = 'success') {
