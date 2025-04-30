@@ -30,7 +30,6 @@ const filterMarca = document.getElementById('filter-marca');
 const filterModelo = document.getElementById('filter-modelo');
 const filterAno = document.getElementById('filter-ano');
 const filterPreco = document.getElementById('filter-preco');
-const btnFiltrar = document.getElementById('btn-filtrar');
 
 // Variáveis globais
 let currentType = 'todos';
@@ -220,9 +219,9 @@ vehicleTypes.forEach(type => {
         loadAnuncios();
     });
 });
-
-// Modifique o evento do botão filtrar para lidar com faixas de preço
-btnFiltrar.addEventListener('click', () => {
+// Adicione esta função para aplicar filtros automaticamente
+// Modifique a função applyFilters para usar debounce
+const applyFilters = debounce(() => {
     currentFilters = {
         marca: filterMarca.value,
         modelo: filterModelo.value,
@@ -231,6 +230,7 @@ btnFiltrar.addEventListener('click', () => {
     };
     loadAnuncios();
 });
+
 
 // Adicione esta função para carregar os modelos disponíveis
 async function loadModelos() {
@@ -297,14 +297,16 @@ async function loadAnos() {
     }
 }
 
-// Modifique a função de inicialização para carregar os filtros
 document.addEventListener('DOMContentLoaded', () => {
     loadAnuncios();
     loadModelos();
     loadAnos();
     
-    // Atualizar modelos quando a marca for alterada
-    filterMarca.addEventListener('change', async () => {
+    // Configurar eventos de change para todos os filtros
+    filterMarca.addEventListener('change', () => {
+        applyFilters();
+        
+        // Atualizar modelos quando a marca for alterada
         if (!filterMarca.value) {
             loadModelos();
             return;
@@ -320,10 +322,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (modelo) modelosSet.add(modelo);
             });
             
-            // Ordenar modelos alfabeticamente
             const modelosOrdenados = Array.from(modelosSet).sort((a, b) => a.localeCompare(b));
             
-            // Atualizar dropdown de modelos
             filterModelo.innerHTML = '<option value="">Modelo</option>';
             
             modelosOrdenados.forEach(modelo => {
@@ -333,11 +333,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 filterModelo.appendChild(option);
             });
             
+            // Aplicar filtros após atualizar modelos
+            applyFilters();
+            
         } catch (error) {
             console.error("Erro ao filtrar modelos por marca:", error);
         }
     });
+    
+    // Adicionar event listeners para os outros filtros
+    filterModelo.addEventListener('change', applyFilters);
+    filterAno.addEventListener('change', applyFilters);
+    filterPreco.addEventListener('change', applyFilters);
 });
+
+// Adicione um debounce para evitar muitas chamadas ao Firebase
+function debounce(func, timeout = 300) {
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => { func.apply(this, args); }, timeout);
+    };
+}
+
 
 // Função global para SweetAlert
 function showAlert(message, type = 'success') {
