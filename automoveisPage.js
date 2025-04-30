@@ -40,18 +40,34 @@ let currentFilters = {
     preco: ''
 };
 
+// Implementação do debounce
+function debounce(func, timeout = 500) {
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => { func.apply(this, args); }, timeout);
+    };
+}
 
+// Função para aplicar filtros com debounce
+const applyFilters = debounce(() => {
+    currentFilters = {
+        marca: filterMarca.value,
+        modelo: filterModelo.value,
+        ano: filterAno.value,
+        preco: filterPreco.value
+    };
+    loadAnuncios();
+});
 
-// Adicione esta função no seu arquivo automoveis.js
+// Configurar eventos de clique nos cards
 function setupCardClickEvents() {
     document.querySelectorAll('.vehicle-card').forEach(card => {
         card.addEventListener('click', function(e) {
-            // Evitar abrir detalhes se clicar em botões dentro do card
             if (e.target.closest('button') || e.target.tagName === 'A') {
                 return;
             }
             
-            // Encontrar o ID do anúncio
             const adId = this.closest('[data-ad-id]')?.dataset.adId;
             if (adId) {
                 window.location.href = `detalhes.html?id=${adId}&tipo=carro`;
@@ -59,11 +75,10 @@ function setupCardClickEvents() {
         });
     });
 }
-// Carregar anúncios
-// Modifique a função loadAnuncios para lidar melhor com os filtros
+
+// Carregar anúncios com filtros
 async function loadAnuncios() {
     try {
-        
         // Mostrar estado de carregamento
         anunciosContainer.innerHTML = `
             <div class="col-12 text-center py-5">
@@ -82,21 +97,22 @@ async function loadAnuncios() {
             q = query(q, where("tipo", "==", currentType));
         }
         
-        // Aplicar filtro de marca (com tratamento de string)
+        // Aplicar filtro de marca
         if (currentFilters.marca && currentFilters.marca.trim() !== '') {
             q = query(q, where("marca", "==", currentFilters.marca.trim()));
         }
         
-        // Aplicar filtro de modelo (com tratamento de string)
+        // Aplicar filtro de modelo
         if (currentFilters.modelo && currentFilters.modelo.trim() !== '') {
             q = query(q, where("modelo", "==", currentFilters.modelo.trim()));
         }
         
         // Aplicar filtro de ano
         if (currentFilters.ano && currentFilters.ano.trim() !== '') {
-            // Converter para número se necessário
-            const ano = isNaN(currentFilters.ano) ? currentFilters.ano : Number(currentFilters.ano);
-            q = query(q, where("ano", "==", ano));
+            const ano = parseInt(currentFilters.ano);
+            if (!isNaN(ano)) {
+                q = query(q, where("ano", "==", ano));
+            }
         }
         
         // Aplicar filtro de preço
@@ -128,7 +144,7 @@ async function loadAnuncios() {
         }
 
         const querySnapshot = await getDocs(q);
-        console.log('Documentos encontrados:', querySnapshot.docs.map(doc => doc.data())); // Adicione este log
+        console.log('Documentos encontrados:', querySnapshot.docs.map(doc => doc.data()));
 
         // Limpar container
         anunciosContainer.innerHTML = '';
@@ -139,9 +155,6 @@ async function loadAnuncios() {
                     <i class="fas fa-car fa-3x mb-3 text-muted"></i>
                     <h4>Nenhum anúncio encontrado</h4>
                     <p class="text-muted">Tente ajustar seus filtros de busca</p>
-                    <button class="btn btn-primary mt-3" onclick="loadAnuncios()">
-                        <i class="fas fa-sync-alt me-2"></i>Tentar novamente
-                    </button>
                 </div>
             `;
             return;
@@ -172,10 +185,11 @@ async function loadAnuncios() {
     }
 }
 
+// Criar card de veículo
 function createVehicleCard(vehicle) {
     const col = document.createElement('div');
     col.className = 'col-lg-4 col-md-6 mb-4';
-    col.dataset.adId = vehicle.id; // Adiciona o ID do anúncio
+    col.dataset.adId = vehicle.id;
     
     col.innerHTML = `
         <div class="vehicle-card metal-card">
@@ -202,7 +216,6 @@ function createVehicleCard(vehicle) {
         </div>
     `;
     
-    // Adiciona evento de clique no botão "Ver Detalhes"
     const btn = col.querySelector('.btn-view-more');
     btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -211,21 +224,11 @@ function createVehicleCard(vehicle) {
     
     return col;
 }
-// Event Listeners
-vehicleTypes.forEach(type => {
-    type.addEventListener('click', () => {
-        vehicleTypes.forEach(t => t.classList.remove('active'));
-        type.classList.add('active');
-        currentType = type.dataset.type;
-        loadAnuncios();
-    });
-});
 
-
-// Adicione esta função para carregar os modelos disponíveis
+// Carregar modelos disponíveis
 async function loadModelos() {
     try {
-         filterModelo.innerHTML = '<option value="">Carregando modelos...</option>';
+        filterModelo.innerHTML = '<option value="">Carregando modelos...</option>';
         filterModelo.disabled = true;
         
         const modelosSnapshot = await getDocs(collection(db, "automoveis"));
@@ -236,13 +239,9 @@ async function loadModelos() {
             if (modelo) modelosSet.add(modelo);
         });
 
-        // Reativar o dropdown
-        filterModelo.disabled = false;
-        // Ordenar modelos alfabeticamente
         const modelosOrdenados = Array.from(modelosSet).sort((a, b) => a.localeCompare(b));
         
-        // Limpar e preencher o dropdown de modelos
-        filterModelo.innerHTML = '<option value="">Modelo</option>';
+        filterModelo.innerHTML = '<option value="">Todos modelos</option>';
         
         modelosOrdenados.forEach(modelo => {
             const option = document.createElement('option');
@@ -251,14 +250,49 @@ async function loadModelos() {
             filterModelo.appendChild(option);
         });
         
+        filterModelo.disabled = false;
     } catch (error) {
         console.error("Erro ao carregar modelos:", error);
-          filterModelo.innerHTML = '<option value="">Erro ao carregar modelos</option>';
+        filterModelo.innerHTML = '<option value="">Erro ao carregar</option>';
         filterModelo.disabled = false;
     }
 }
 
-// Adicione esta função para carregar os anos disponíveis
+// Carregar modelos por marca
+async function loadModelosByMarca(marca) {
+    try {
+        filterModelo.innerHTML = '<option value="">Carregando modelos...</option>';
+        filterModelo.disabled = true;
+
+        const q = query(collection(db, "automoveis"), where("marca", "==", marca));
+        const querySnapshot = await getDocs(q);
+        const modelosSet = new Set();
+        
+        querySnapshot.forEach((doc) => {
+            const modelo = doc.data().modelo;
+            if (modelo) modelosSet.add(modelo);
+        });
+
+        const modelosOrdenados = Array.from(modelosSet).sort((a, b) => a.localeCompare(b));
+        
+        filterModelo.innerHTML = '<option value="">Todos modelos</option>';
+        
+        modelosOrdenados.forEach(modelo => {
+            const option = document.createElement('option');
+            option.value = modelo;
+            option.textContent = modelo;
+            filterModelo.appendChild(option);
+        });
+        
+        filterModelo.disabled = false;
+    } catch (error) {
+        console.error("Erro ao carregar modelos por marca:", error);
+        filterModelo.innerHTML = '<option value="">Erro ao carregar</option>';
+        filterModelo.disabled = false;
+    }
+}
+
+// Carregar anos disponíveis
 async function loadAnos() {
     try {
         const anosSnapshot = await getDocs(collection(db, "automoveis"));
@@ -269,10 +303,8 @@ async function loadAnos() {
             if (ano) anosSet.add(ano);
         });
         
-        // Ordenar anos em ordem decrescente
         const anosOrdenados = Array.from(anosSet).sort((a, b) => b - a);
         
-        // Limpar e preencher o dropdown de anos
         filterAno.innerHTML = '<option value="">Ano</option>';
         
         anosOrdenados.forEach(ano => {
@@ -287,74 +319,53 @@ async function loadAnos() {
     }
 }
 
- document.addEventListener('DOMContentLoaded', () => {
+// Event Listeners
+vehicleTypes.forEach(type => {
+    type.addEventListener('click', () => {
+        vehicleTypes.forEach(t => t.classList.remove('active'));
+        type.classList.add('active');
+        currentType = type.dataset.type;
+        loadAnuncios();
+    });
+});
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => {
     loadAnuncios();
     loadModelos();
     loadAnos();
     
-    // Configurar eventos de change para todos os filtros
+    // Evento para marca
     filterMarca.addEventListener('change', async () => {
-        applyFilters();
-        
-        // Atualizar modelos quando a marca for alterada
-        if (!filterMarca.value) {
+        if (filterMarca.value) {
+            await loadModelosByMarca(filterMarca.value);
+        } else {
             loadModelos();
-            return;
         }
-        
-        try {
-            const q = query(collection(db, "automoveis"), where("marca", "==", filterMarca.value));
-            const querySnapshot = await getDocs(q);
-            const modelosSet = new Set();
-            
-            querySnapshot.forEach((doc) => {
-                const modelo = doc.data().modelo;
-                if (modelo) modelosSet.add(modelo);
-            });
-            
-            const modelosOrdenados = Array.from(modelosSet).sort((a, b) => a.localeCompare(b));
-            
-            filterModelo.innerHTML = '<option value="">Modelo</option>';
-            
-            modelosOrdenados.forEach(modelo => {
-                const option = document.createElement('option');
-                option.value = modelo;
-                option.textContent = modelo;
-                filterModelo.appendChild(option);
-            });
-            
-            // Aplicar filtros após atualizar modelos
-            applyFilters();
-            
-        } catch (error) {
-            console.error("Erro ao filtrar modelos por marca:", error);
-        }
+        applyFilters();
     });
     
-    // Adicionar event listeners para os outros filtros
+    // Eventos para os outros filtros
     filterModelo.addEventListener('change', applyFilters);
     filterAno.addEventListener('change', applyFilters);
     filterPreco.addEventListener('change', applyFilters);
 });
 
-
-
-// Implementação do debounce
-function debounce(func, timeout = 300) {
-    let timer;
-    return (...args) => {
-        clearTimeout(timer);
-        timer = setTimeout(() => { func.apply(this, args); }, timeout);
-    };
-}
-// Modifique a função applyFilters para usar debounce
-const applyFilters = debounce(() => {
+// Função para limpar filtros
+document.getElementById('btn-limpar')?.addEventListener('click', () => {
+    filterMarca.value = '';
+    filterModelo.value = '';
+    filterAno.value = '';
+    filterPreco.value = '';
+    
     currentFilters = {
-        marca: filterMarca.value,
-        modelo: filterModelo.value,
-        ano: filterAno.value,
-        preco: filterPreco.value
+        marca: '',
+        modelo: '',
+        ano: '',
+        preco: ''
     };
+    
+    loadModelos();
     loadAnuncios();
 });
 
@@ -371,28 +382,6 @@ function showAlert(message, type = 'success') {
         alert(`${type.toUpperCase()}: ${message}`);
     }
 }
-
-document.getElementById('btn-limpar').addEventListener('click', () => {
-    // Resetar filtros
-    filterMarca.value = '';
-    filterModelo.value = '';
-    filterAno.value = '';
-    filterPreco.value = '';
-    
-    // Resetar estado
-    currentFilters = {
-        marca: '',
-        modelo: '',
-        ano: '',
-        preco: ''
-    };
-    
-    // Recarregar modelos completos
-    loadModelos();
-    
-    // Recarregar anúncios sem filtros
-    loadAnuncios();
-});
 
 // Exportar para uso global
 window.loadAnuncios = loadAnuncios;
