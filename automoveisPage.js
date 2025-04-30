@@ -128,7 +128,8 @@ async function loadAnuncios() {
         }
 
         const querySnapshot = await getDocs(q);
-        
+        console.log('Documentos encontrados:', querySnapshot.docs.map(doc => doc.data())); // Adicione este log
+
         // Limpar container
         anunciosContainer.innerHTML = '';
         
