@@ -61,6 +61,7 @@ function setupCardClickEvents() {
     });
 }
 // Carregar anúncios
+// Modifique a função loadAnuncios para lidar melhor com os filtros
 async function loadAnuncios() {
     try {
         // Mostrar estado de carregamento
@@ -73,25 +74,33 @@ async function loadAnuncios() {
             </div>
         `;
 
-         let q = query(collection(db, "automoveis"));
+        // Construir query baseada nos filtros
+        let q = query(collection(db, "automoveis"));
         
+        // Aplicar filtro de tipo
         if (currentType !== 'todos') {
             q = query(q, where("tipo", "==", currentType));
         }
         
-        if (currentFilters.marca) {
-            q = query(q, where("marca", "==", currentFilters.marca));
+        // Aplicar filtro de marca (com tratamento de string)
+        if (currentFilters.marca && currentFilters.marca.trim() !== '') {
+            q = query(q, where("marca", "==", currentFilters.marca.trim()));
         }
         
-        if (currentFilters.modelo) {
-            q = query(q, where("modelo", "==", currentFilters.modelo));
+        // Aplicar filtro de modelo (com tratamento de string)
+        if (currentFilters.modelo && currentFilters.modelo.trim() !== '') {
+            q = query(q, where("modelo", "==", currentFilters.modelo.trim()));
         }
         
-        if (currentFilters.ano) {
-            q = query(q, where("ano", "==", currentFilters.ano));
+        // Aplicar filtro de ano
+        if (currentFilters.ano && currentFilters.ano.trim() !== '') {
+            // Converter para número se necessário
+            const ano = isNaN(currentFilters.ano) ? currentFilters.ano : Number(currentFilters.ano);
+            q = query(q, where("ano", "==", ano));
         }
         
-        if (currentFilters.preco) {
+        // Aplicar filtro de preço
+        if (currentFilters.preco && currentFilters.preco.trim() !== '') {
             let precoMin = 0;
             let precoMax = Infinity;
             
@@ -117,8 +126,6 @@ async function loadAnuncios() {
                 q = query(q, where("preco", "<=", precoMax));
             }
         }
-        
-        // Adicione outros filtros conforme necessário...
 
         const querySnapshot = await getDocs(q);
         
@@ -131,6 +138,9 @@ async function loadAnuncios() {
                     <i class="fas fa-car fa-3x mb-3 text-muted"></i>
                     <h4>Nenhum anúncio encontrado</h4>
                     <p class="text-muted">Tente ajustar seus filtros de busca</p>
+                    <button class="btn btn-primary mt-3" onclick="loadAnuncios()">
+                        <i class="fas fa-sync-alt me-2"></i>Tentar novamente
+                    </button>
                 </div>
             `;
             return;
