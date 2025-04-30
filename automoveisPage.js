@@ -372,7 +372,6 @@ function showAlert(message, type = 'success') {
     }
 }
 
-// E adicione este código no seu JavaScript
 document.getElementById('btn-limpar').addEventListener('click', () => {
     // Resetar filtros
     filterMarca.value = '';
@@ -391,7 +390,7 @@ document.getElementById('btn-limpar').addEventListener('click', () => {
     // Recarregar modelos completos
     loadModelos();
     
-    // Recarregar anúncios
+    // Recarregar anúncios sem filtros
     loadAnuncios();
 });
 
