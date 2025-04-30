@@ -1,404 +1,289 @@
-// Importações do Firebase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { 
-    getFirestore,
-    collection,
-    getDocs,
-    query,
-    where
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-// Configuração do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyCNr5JoKsWJVeUYAaVDqmPznZo100v0uvg",
-  authDomain: "corretorcerto-76933.firebaseapp.com",
-  databaseURL: "https://corretorcerto-76933-default-rtdb.firebaseio.com",
-  projectId: "corretorcerto-76933",
-  storageBucket: "corretorcerto-76933.firebasestorage.app",
-  messagingSenderId: "357149829474",
-  appId: "1:357149829474:web:324b2005d82eabbce5e43b"
-};
+    <!-- ✅ SEO Essencial -->
+    <title>Automóveis | Corretor Certo</title>
+    <meta name="description" content="Encontre os melhores automóveis à venda - carros, motos, caminhões e mais no Corretor Certo. Anuncie seu veículo e encontre ofertas incríveis." />
+    <meta name="keywords" content="automóveis à venda, carros para vender, venda de motos, venda de caminhões, Corretor Certo, classificados de veículos" />
+    <meta name="author" content="Corretor Certo" />
+    <link rel="canonical" href="https://corretorcerto.com.br/automoveis" />
 
-// Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+    <!-- ✅ Open Graph (Facebook, WhatsApp, LinkedIn) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Automóveis | Corretor Certo" />
+    <meta property="og:description" content="Encontre carros, motos, caminhões e outros veículos para venda no Corretor Certo. Anuncie e compre com facilidade e segurança." />
+    <meta property="og:image" content="https://corretorcerto.com.br/assets/img/og-image-automoveis.jpg" /> <!-- Substitua por sua imagem real -->
+    <meta property="og:url" content="https://corretorcerto.com.br/automoveis" />
+    <meta property="og:site_name" content="Corretor Certo" />
 
-// Elementos da página
-const anunciosContainer = document.getElementById('anuncios-container');
-const vehicleTypes = document.querySelectorAll('.vehicle-type');
-const filterMarca = document.getElementById('filter-marca');
-const filterModelo = document.getElementById('filter-modelo');
-const filterAno = document.getElementById('filter-ano');
-const filterPreco = document.getElementById('filter-preco');
-const btnLimpar = document.getElementById('btn-limpar');
+    <!-- ✅ Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Automóveis | Corretor Certo" />
+    <meta name="twitter:description" content="Anuncie seus automóveis ou encontre ofertas incríveis de carros, motos e caminhões no Corretor Certo." />
+    <meta name="twitter:image" content="https://corretorcerto.com.br/assets/img/og-image-automoveis.jpg" />
 
-// Variáveis globais
-let currentType = 'todos';
-let currentFilters = {
-    marca: '',
-    modelo: '',
-    ano: '',
-    preco: ''
-};
+    <!-- ✅ Favicon -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
 
-// Função debounce para evitar múltiplas chamadas
-function debounce(func, timeout = 300) {
-    let timer;
-    return (...args) => {
-        clearTimeout(timer);
-        timer = setTimeout(() => { func.apply(this, args); }, timeout);
-    };
-}
+    <!-- ✅ Fontes e Estilo -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-// Aplicar filtros com debounce
-const applyFilters = debounce(() => {
-    currentFilters = {
-        marca: filterMarca.value,
-        modelo: filterModelo.value,
-        ano: filterAno.value,
-        preco: filterPreco.value
-    };
-    loadAnuncios();
-});
+    <!-- ✅ Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-// Configurar eventos de clique nos cards
-function setupCardClickEvents() {
-    document.querySelectorAll('.vehicle-card').forEach(card => {
-        card.addEventListener('click', function(e) {
-            if (e.target.closest('button') || e.target.tagName === 'A') {
-                return;
-            }
-            
-            const adId = this.closest('[data-ad-id]')?.dataset.adId;
-            if (adId) {
-                window.location.href = `detalhes.html?id=${adId}&tipo=carro`;
-            }
-        });
-    });
-}
+    <!-- ✅ CSS Personalizado -->
+    <link rel="stylesheet" href="automoveis.css">
+</head>
 
-// Carregar anúncios com filtros
-async function loadAnuncios() {
-    try {
-        // Mostrar estado de carregamento
-        anunciosContainer.innerHTML = `
-            <div class="col-12 text-center py-5">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Carregando...</span>
-                </div>
-                <p class="mt-3">Carregando anúncios...</p>
-            </div>
-        `;
-
-        // Construir query baseada nos filtros
-        let q = query(collection(db, "automoveis"));
-        
-        // Aplicar filtro de tipo
-        if (currentType !== 'todos') {
-            q = query(q, where("tipo", "==", currentType));
-        }
-        
-        // Aplicar filtro de marca
-        if (currentFilters.marca && currentFilters.marca.trim() !== '' && currentFilters.marca !== 'Marca') {
-            q = query(q, where("marca", "==", currentFilters.marca.trim()));
-        }
-        
-        // Aplicar filtro de modelo
-        if (currentFilters.modelo && currentFilters.modelo.trim() !== '' && currentFilters.modelo !== 'Modelo') {
-            q = query(q, where("modelo", "==", currentFilters.modelo.trim()));
-        }
-        
-        // Aplicar filtro de ano
-        if (currentFilters.ano && currentFilters.ano.trim() !== '' && currentFilters.ano !== 'Ano') {
-            const ano = parseInt(currentFilters.ano);
-            if (!isNaN(ano)) {
-                q = query(q, where("ano", "==", ano));
-            }
-        }
-        
-        // Aplicar filtro de preço
-        if (currentFilters.preco && currentFilters.preco.trim() !== '' && currentFilters.preco !== 'Preço') {
-            let precoMin = 0;
-            let precoMax = Infinity;
-            
-            switch(currentFilters.preco) {
-                case 'Até R$ 20.000':
-                    precoMax = 20000;
-                    break;
-                case 'R$ 20.000 - 50.000':
-                    precoMin = 20000;
-                    precoMax = 50000;
-                    break;
-                case 'R$ 50.000 - 100.000':
-                    precoMin = 50000;
-                    precoMax = 100000;
-                    break;
-                case 'Acima de R$ 100.000':
-                    precoMin = 100000;
-                    break;
-            }
-            
-            q = query(q, where("preco", ">=", precoMin));
-            if (precoMax !== Infinity) {
-                q = query(q, where("preco", "<=", precoMax));
-            }
-        }
-
-        const querySnapshot = await getDocs(q);
-        console.log('Documentos encontrados:', querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        })));
-
-        // Limpar container
-        anunciosContainer.innerHTML = '';
-        
-        if (querySnapshot.empty) {
-            anunciosContainer.innerHTML = `
-                <div class="col-12 text-center py-5">
-                    <i class="fas fa-car fa-3x mb-3 text-muted"></i>
-                    <h4>Nenhum anúncio encontrado</h4>
-                    <p class="text-muted">Tente ajustar seus filtros de busca</p>
-                </div>
-            `;
-            return;
-        }
-        
-        // Processar resultados
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            data.id = doc.id;
-            anunciosContainer.appendChild(createVehicleCard(data));
-        });
-
-        // Configurar eventos de clique
-        setupCardClickEvents();
-        
-    } catch (error) {
-        console.error("Erro ao carregar anúncios:", error);
-        anunciosContainer.innerHTML = `
-            <div class="col-12 text-center py-5">
-                <i class="fas fa-exclamation-triangle fa-3x mb-3 text-danger"></i>
-                <h4>Erro ao carregar anúncios</h4>
-                <p class="text-muted">${error.message}</p>
-                <button class="btn btn-primary mt-3" onclick="loadAnuncios()">
-                    <i class="fas fa-sync-alt me-2"></i>Tentar novamente
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container">
+                <a class="navbar-brand" href="index.html">
+                    <img src="logo.png" loading="lazy" alt="CorretorCerto" class="brand-logo">
+                </a>
+                
+                <!-- Menu Mobile -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
                 </button>
-            </div>
-        `;
-    }
-}
-
-// Criar card de veículo
-function createVehicleCard(vehicle) {
-    const col = document.createElement('div');
-    col.className = 'col-lg-4 col-md-6 mb-4';
-    col.dataset.adId = vehicle.id;
-    
-    col.innerHTML = `
-        <div class="vehicle-card metal-card">
-            ${vehicle.destaque ? '<div class="card-badge">Destaque</div>' : ''}
-            <div class="card-image-container">
-                <img src="${vehicle.imagens?.[0] || 'https://via.placeholder.com/800x600'}" 
-                     alt="${vehicle.titulo || 'Veículo'}" class="card-image">
-                <div class="image-overlay"></div>
-            </div>
-            <div class="card-content">
-                <h3 class="card-title">${vehicle.titulo || 'Veículo sem título'}</h3>
-                <p class="card-price">R$ ${vehicle.preco?.toLocaleString('pt-BR') || 'Sob consulta'}</p>
-                <div class="card-details">
-                    <span><i class="fas fa-calendar-alt"></i> ${vehicle.ano || 'Ano não informado'}</span>
-                    <span><i class="fas fa-tachometer-alt"></i> ${vehicle.km ? vehicle.km.toLocaleString('pt-BR') + ' km' : 'KM não informada'}</span>
-                    <span><i class="fas fa-gas-pump"></i> ${vehicle.combustivel || 'Combustível não informado'}</span>
+                
+                <!-- Navegação -->
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">Início</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="automoveis.html">Automóveis</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="imoveis.html">Imóveis</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="anunciar.html">Anunciar</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="login.html">Entrar</a>
+                        </li>
+                    </ul>
                 </div>
             </div>
-            <div class="card-hover-effect">
-                <button class="btn-view-more">
-                    Ver Detalhes
-                </button>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <h1 class="hero-title">Encontre Seu Veículo Perfeito</h1>
+            <p class="hero-subtitle">Mais de 5.000 veículos à sua escolha</p>
+
+            <!-- Adicione este botão no seu HTML, na seção de filtros -->
+<div class="col-md-2">
+    <button class="btn btn-outline-secondary w-100" id="btn-limpar">
+        <i class="fas fa-times me-2"></i>Limpar
+    </button>
+</div>
+
+            
+        </div>
+    </section>
+
+    <!-- Barra de Tipos de Veículos -->
+    <section class="vehicle-types-section">
+        <div class="container-fluid">
+            <div class="vehicle-types-scroll">
+                <div class="vehicle-types-container">
+                    <button class="vehicle-type active" data-type="todos">
+                        <i class="fas fa-car"></i>
+                        <span>Todos</span>
+                    </button>
+                    <button class="vehicle-type" data-type="carro">
+                        <i class="fas fa-car-side"></i>
+                        <span>Carros</span>
+                    </button>
+                    <button class="vehicle-type" data-type="moto">
+                        <i class="fas fa-motorcycle"></i>
+                        <span>Motos</span>
+                    </button>
+                    <button class="vehicle-type" data-type="caminhonete">
+                        <i class="fas fa-truck-pickup"></i>
+                        <span>Caminhonetes</span>
+                    </button>
+                    <button class="vehicle-type" data-type="caminhao">
+                        <i class="fas fa-truck"></i>
+                        <span>Caminhões</span>
+                    </button>
+                    <button class="vehicle-type" data-type="onibus">
+                        <i class="fas fa-bus"></i>
+                        <span>Ônibus</span>
+                    </button>
+                    <button class="vehicle-type" data-type="van">
+                        <i class="fas fa-shuttle-van"></i>
+                        <span>Vans</span>
+                    </button>
+                    <button class="vehicle-type" data-type="suv">
+                        <i class="fas fa-car-alt"></i>
+                        <span>SUVs</span>
+                    </button>
+                    <button class="vehicle-type" data-type="luxo">
+                        <i class="fas fa-gem"></i>
+                        <span>Luxo</span>
+                    </button>
+                    <button class="vehicle-type" data-type="classico">
+                        <i class="fas fa-history"></i>
+                        <span>Clássicos</span>
+                    </button>
+                </div>
             </div>
         </div>
-    `;
-    
-    const btn = col.querySelector('.btn-view-more');
-    btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        window.location.href = `detalhes.html?id=${vehicle.id}&tipo=carro`;
-    });
-    
-    return col;
-}
+    </section>
 
-// Carregar todas as marcas disponíveis
-async function loadMarcas() {
-    try {
-        filterMarca.innerHTML = '<option value="">Marca</option>';
-        
-        const marcasSnapshot = await getDocs(collection(db, "automoveis"));
-        const marcasSet = new Set();
-        
-        marcasSnapshot.forEach((doc) => {
-            const marca = doc.data().marca;
-            if (marca) marcasSet.add(marca);
-        });
+    <!-- Filtros -->
+    <section class="filters-section">
+        <div class="container">
+            <div class="filters-container">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <select class="form-select" id="filter-marca">
+                            <option selected>Marca</option>
+                            <option>Chevrolet</option>
+                            <option>Ford</option>
+                            <option>Volkswagen</option>
+                            <!-- Outras marcas -->
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="filter-modelo">
+                            <option selected>Modelo</option>
+                            <!-- Modelos serão preenchidos via JS -->
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="filter-ano">
+                            <option selected>Ano</option>
+                            <!-- Anos serão preenchidos via JS -->
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="filter-preco">
+                            <option selected>Preço</option>
+                            <option>Até R$ 20.000</option>
+                            <option>R$ 20.000 - 50.000</option>
+                            <option>R$ 50.000 - 100.000</option>
+                            <option>Acima de R$ 100.000</option>
+                        </select>
+                    </div>
+                   
+                </div>
+            </div>
+        </div>
+    </section>
 
-        const marcasOrdenadas = Array.from(marcasSet).sort((a, b) => a.localeCompare(b));
-        
-        marcasOrdenadas.forEach(marca => {
-            const option = document.createElement('option');
-            option.value = marca;
-            option.textContent = marca;
-            filterMarca.appendChild(option);
-        });
-        
-    } catch (error) {
-        console.error("Erro ao carregar marcas:", error);
-        filterMarca.innerHTML = '<option value="">Erro ao carregar</option>';
-    }
-}
+    <!-- Listagem de Anúncios -->
+    <section class="listings-section">
+        <div class="container">
+            <div class="row" id="anuncios-container">
+                <!-- Anúncios serão inseridos via JavaScript -->
+                
+                <!-- Exemplo de Card (será gerado dinamicamente) -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="vehicle-card metal-card">
+                        <div class="card-badge">Destaque</div>
+                        <div class="card-image-container">
+                            <img src="https://via.placeholder.com/800x600" loading="lazy" alt="Carro Exemplo" class="card-image">
+                            <div class="image-overlay"></div>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">Chevrolet Onix Premier 1.0 Turbo</h3>
+                            <p class="card-price">R$ 85.900</p>
+                            <div class="card-details">
+                                <span><i class="fas fa-calendar-alt"></i> 2022/2023</span>
+                                <span><i class="fas fa-tachometer-alt"></i> 25.000 km</span>
+                                <span><i class="fas fa-gas-pump"></i> Flex</span>
+                            </div>
+                        </div>
+                        <div class="card-hover-effect">
+                            <button class="btn-view-more">Ver Detalhes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Paginação -->
+            <nav aria-label="Page navigation" class="mt-5">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1">Anterior</a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">Próxima</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </section>
 
-// Carregar modelos disponíveis
-async function loadModelos() {
-    try {
-        filterModelo.innerHTML = '<option value="">Modelo</option>';
-        
-        const modelosSnapshot = await getDocs(collection(db, "automoveis"));
-        const modelosSet = new Set();
-        
-        modelosSnapshot.forEach((doc) => {
-            const modelo = doc.data().modelo;
-            if (modelo) modelosSet.add(modelo);
-        });
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="logo.png" loading="lazy" alt="CorretorCerto" class="footer-logo">
+                    <p class="footer-slogan">Soluções automotivas premium</p>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="link-group">
+                        <h4 class="link-title">Navegação</h4>
+                        <a href="index.html" class="footer-link">Início</a>
+                        <a href="automoveis.html" class="footer-link">Automóveis</a>
+                        <a href="imoveis.html" class="footer-link">Imóveis</a>
+                        <a href="anunciar.html" class="footer-link">Anunciar</a>
+                    </div>
+                    
+                    <div class="link-group">
+                        <h4 class="link-title">Legal</h4>
+                        <a href="#" class="footer-link">Termos de Uso</a>
+                        <a href="#" class="footer-link">Política de Privacidade</a>
+                        <a href="#" class="footer-link">FAQ</a>
+                    </div>
+                    
+                    <div class="link-group">
+                        <h4 class="link-title">Contato</h4>
+                        <p class="contact-info"><i class="fas fa-phone"></i> (11) 99999-9999</p>
+                        <p class="contact-info"><i class="fas fa-envelope"></i> contato@corretorcerto.com</p>
+                        <p class="contact-info"><i class="fas fa-map-marker-alt"></i> São Paulo, SP</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <div class="social-links">
+                    <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-whatsapp"></i></a>
+                </div>
+                <p class="copyright">&copy; 2023 CorretorCerto. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
 
-        const modelosOrdenados = Array.from(modelosSet).sort((a, b) => a.localeCompare(b));
-        
-        modelosOrdenados.forEach(modelo => {
-            const option = document.createElement('option');
-            option.value = modelo;
-            option.textContent = modelo;
-            filterModelo.appendChild(option);
-        });
-        
-    } catch (error) {
-        console.error("Erro ao carregar modelos:", error);
-        filterModelo.innerHTML = '<option value="">Erro ao carregar</option>';
-    }
-}
-
-// Carregar modelos por marca específica
-async function loadModelosByMarca(marca) {
-    try {
-        filterModelo.innerHTML = '<option value="">Carregando modelos...</option>';
-        filterModelo.disabled = true;
-
-        const q = query(collection(db, "automoveis"), where("marca", "==", marca));
-        const querySnapshot = await getDocs(q);
-        const modelosSet = new Set();
-        
-        querySnapshot.forEach((doc) => {
-            const modelo = doc.data().modelo;
-            if (modelo) modelosSet.add(modelo);
-        });
-
-        const modelosOrdenados = Array.from(modelosSet).sort((a, b) => a.localeCompare(b));
-        
-        filterModelo.innerHTML = '<option value="">Todos modelos</option>';
-        
-        modelosOrdenados.forEach(modelo => {
-            const option = document.createElement('option');
-            option.value = modelo;
-            option.textContent = modelo;
-            filterModelo.appendChild(option);
-        });
-        
-        filterModelo.disabled = false;
-    } catch (error) {
-        console.error("Erro ao carregar modelos por marca:", error);
-        filterModelo.innerHTML = '<option value="">Erro ao carregar</option>';
-        filterModelo.disabled = false;
-    }
-}
-
-// Carregar anos disponíveis
-async function loadAnos() {
-    try {
-        const anosSnapshot = await getDocs(collection(db, "automoveis"));
-        const anosSet = new Set();
-        
-        anosSnapshot.forEach((doc) => {
-            const ano = doc.data().ano;
-            if (ano) anosSet.add(ano);
-        });
-        
-        const anosOrdenados = Array.from(anosSet).sort((a, b) => b - a);
-        
-        filterAno.innerHTML = '<option value="">Ano</option>';
-        
-        anosOrdenados.forEach(ano => {
-            const option = document.createElement('option');
-            option.value = ano;
-            option.textContent = ano;
-            filterAno.appendChild(option);
-        });
-        
-    } catch (error) {
-        console.error("Erro ao carregar anos:", error);
-    }
-}
-
-// Event Listeners para tipos de veículo
-vehicleTypes.forEach(type => {
-    type.addEventListener('click', () => {
-        vehicleTypes.forEach(t => t.classList.remove('active'));
-        type.classList.add('active');
-        currentType = type.dataset.type;
-        applyFilters();
-    });
-});
-
-// Inicialização
-document.addEventListener('DOMContentLoaded', () => {
-    loadMarcas();
-    loadModelos();
-    loadAnos();
-    loadAnuncios();
-    
-    // Evento para marca
-    filterMarca.addEventListener('change', async () => {
-        if (filterMarca.value) {
-            await loadModelosByMarca(filterMarca.value);
-        } else {
-            loadModelos();
-        }
-        applyFilters();
-    });
-    
-    // Eventos para os outros filtros
-    filterModelo.addEventListener('change', applyFilters);
-    filterAno.addEventListener('change', applyFilters);
-    filterPreco.addEventListener('change', applyFilters);
-});
-
-// Função para limpar filtros
-btnLimpar.addEventListener('click', () => {
-    // Resetar seleções
-    filterMarca.value = '';
-    filterModelo.value = '';
-    filterAno.value = '';
-    filterPreco.value = '';
-    
-    // Resetar tipo para 'todos'
-    vehicleTypes.forEach(t => t.classList.remove('active'));
-    document.querySelector('.vehicle-type[data-type="todos"]').classList.add('active');
-    currentType = 'todos';
-    
-    // Recarregar modelos completos
-    loadModelos();
-    
-    // Recarregar anúncios sem filtros
-    loadAnuncios();
-});
-
-// Exportar para uso global
-window.loadAnuncios = loadAnuncios;
-window.showAlert = showAlert;
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="automoveisPage.js" type="module"></script>
+</body>
+</html>
