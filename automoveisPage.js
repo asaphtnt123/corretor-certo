@@ -73,8 +73,7 @@ async function loadAnuncios() {
             </div>
         `;
 
-        // Construir query baseada nos filtros
-        let q = query(collection(db, "automoveis"));
+         let q = query(collection(db, "automoveis"));
         
         if (currentType !== 'todos') {
             q = query(q, where("tipo", "==", currentType));
@@ -82,6 +81,41 @@ async function loadAnuncios() {
         
         if (currentFilters.marca) {
             q = query(q, where("marca", "==", currentFilters.marca));
+        }
+        
+        if (currentFilters.modelo) {
+            q = query(q, where("modelo", "==", currentFilters.modelo));
+        }
+        
+        if (currentFilters.ano) {
+            q = query(q, where("ano", "==", currentFilters.ano));
+        }
+        
+        if (currentFilters.preco) {
+            let precoMin = 0;
+            let precoMax = Infinity;
+            
+            switch(currentFilters.preco) {
+                case 'Até R$ 20.000':
+                    precoMax = 20000;
+                    break;
+                case 'R$ 20.000 - 50.000':
+                    precoMin = 20000;
+                    precoMax = 50000;
+                    break;
+                case 'R$ 50.000 - 100.000':
+                    precoMin = 50000;
+                    precoMax = 100000;
+                    break;
+                case 'Acima de R$ 100.000':
+                    precoMin = 100000;
+                    break;
+            }
+            
+            q = query(q, where("preco", ">=", precoMin));
+            if (precoMax !== Infinity) {
+                q = query(q, where("preco", "<=", precoMax));
+            }
         }
         
         // Adicione outros filtros conforme necessário...
@@ -176,6 +210,7 @@ vehicleTypes.forEach(type => {
     });
 });
 
+// Modifique o evento do botão filtrar para lidar com faixas de preço
 btnFiltrar.addEventListener('click', () => {
     currentFilters = {
         marca: filterMarca.value,
@@ -189,6 +224,9 @@ btnFiltrar.addEventListener('click', () => {
 // Adicione esta função para carregar os modelos disponíveis
 async function loadModelos() {
     try {
+         filterModelo.innerHTML = '<option value="">Carregando modelos...</option>';
+        filterModelo.disabled = true;
+        
         const modelosSnapshot = await getDocs(collection(db, "automoveis"));
         const modelosSet = new Set();
         
@@ -196,7 +234,9 @@ async function loadModelos() {
             const modelo = doc.data().modelo;
             if (modelo) modelosSet.add(modelo);
         });
-        
+
+        // Reativar o dropdown
+        filterModelo.disabled = false;
         // Ordenar modelos alfabeticamente
         const modelosOrdenados = Array.from(modelosSet).sort((a, b) => a.localeCompare(b));
         
@@ -212,6 +252,8 @@ async function loadModelos() {
         
     } catch (error) {
         console.error("Erro ao carregar modelos:", error);
+          filterModelo.innerHTML = '<option value="">Erro ao carregar modelos</option>';
+        filterModelo.disabled = false;
     }
 }
 
@@ -299,6 +341,29 @@ function showAlert(message, type = 'success') {
         alert(`${type.toUpperCase()}: ${message}`);
     }
 }
+
+// E adicione este código no seu JavaScript
+document.getElementById('btn-limpar').addEventListener('click', () => {
+    // Resetar filtros
+    filterMarca.value = '';
+    filterModelo.value = '';
+    filterAno.value = '';
+    filterPreco.value = '';
+    
+    // Resetar estado
+    currentFilters = {
+        marca: '',
+        modelo: '',
+        ano: '',
+        preco: ''
+    };
+    
+    // Recarregar modelos completos
+    loadModelos();
+    
+    // Recarregar anúncios
+    loadAnuncios();
+});
 
 // Exportar para uso global
 window.loadAnuncios = loadAnuncios;
