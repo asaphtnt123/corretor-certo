@@ -63,6 +63,7 @@ function setupCardClickEvents() {
 // Modifique a função loadAnuncios para lidar melhor com os filtros
 async function loadAnuncios() {
     try {
+        
         // Mostrar estado de carregamento
         anunciosContainer.innerHTML = `
             <div class="col-12 text-center py-5">
