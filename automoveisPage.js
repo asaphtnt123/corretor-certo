@@ -186,17 +186,103 @@ btnFiltrar.addEventListener('click', () => {
     loadAnuncios();
 });
 
-// Inicialização
+// Adicione esta função para carregar os modelos disponíveis
+async function loadModelos() {
+    try {
+        const modelosSnapshot = await getDocs(collection(db, "automoveis"));
+        const modelosSet = new Set();
+        
+        modelosSnapshot.forEach((doc) => {
+            const modelo = doc.data().modelo;
+            if (modelo) modelosSet.add(modelo);
+        });
+        
+        // Ordenar modelos alfabeticamente
+        const modelosOrdenados = Array.from(modelosSet).sort((a, b) => a.localeCompare(b));
+        
+        // Limpar e preencher o dropdown de modelos
+        filterModelo.innerHTML = '<option value="">Modelo</option>';
+        
+        modelosOrdenados.forEach(modelo => {
+            const option = document.createElement('option');
+            option.value = modelo;
+            option.textContent = modelo;
+            filterModelo.appendChild(option);
+        });
+        
+    } catch (error) {
+        console.error("Erro ao carregar modelos:", error);
+    }
+}
+
+// Adicione esta função para carregar os anos disponíveis
+async function loadAnos() {
+    try {
+        const anosSnapshot = await getDocs(collection(db, "automoveis"));
+        const anosSet = new Set();
+        
+        anosSnapshot.forEach((doc) => {
+            const ano = doc.data().ano;
+            if (ano) anosSet.add(ano);
+        });
+        
+        // Ordenar anos em ordem decrescente
+        const anosOrdenados = Array.from(anosSet).sort((a, b) => b - a);
+        
+        // Limpar e preencher o dropdown de anos
+        filterAno.innerHTML = '<option value="">Ano</option>';
+        
+        anosOrdenados.forEach(ano => {
+            const option = document.createElement('option');
+            option.value = ano;
+            option.textContent = ano;
+            filterAno.appendChild(option);
+        });
+        
+    } catch (error) {
+        console.error("Erro ao carregar anos:", error);
+    }
+}
+
+// Modifique a função de inicialização para carregar os filtros
 document.addEventListener('DOMContentLoaded', () => {
     loadAnuncios();
+    loadModelos();
+    loadAnos();
     
-    // Preencher filtros (simulado - em produção, busque do Firebase)
-    const marcas = ['Chevrolet', 'Ford', 'Volkswagen', 'Fiat', 'Toyota', 'Hyundai', 'Renault'];
-    marcas.forEach(marca => {
-        const option = document.createElement('option');
-        option.value = marca;
-        option.textContent = marca;
-        filterMarca.appendChild(option);
+    // Atualizar modelos quando a marca for alterada
+    filterMarca.addEventListener('change', async () => {
+        if (!filterMarca.value) {
+            loadModelos();
+            return;
+        }
+        
+        try {
+            const q = query(collection(db, "automoveis"), where("marca", "==", filterMarca.value));
+            const querySnapshot = await getDocs(q);
+            const modelosSet = new Set();
+            
+            querySnapshot.forEach((doc) => {
+                const modelo = doc.data().modelo;
+                if (modelo) modelosSet.add(modelo);
+            });
+            
+            // Ordenar modelos alfabeticamente
+            const modelosOrdenados = Array.from(modelosSet).sort((a, b) => a.localeCompare(b));
+            
+            // Atualizar dropdown de modelos
+            filterModelo.innerHTML = '<option value="">Modelo</option>';
+            
+            modelosOrdenados.forEach(modelo => {
+                const option = document.createElement('option');
+                option.value = modelo;
+                option.textContent = modelo;
+                filterModelo.appendChild(option);
+            });
+            
+        } catch (error) {
+            console.error("Erro ao filtrar modelos por marca:", error);
+        }
     });
 });
 
