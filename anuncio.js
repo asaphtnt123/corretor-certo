@@ -493,7 +493,7 @@ form.addEventListener('submit', async function(e) {
     // Verificar limite de anúncios ativos
     const totalAtivos = await contarAnunciosAtivos(user.uid);
 
-    if (totalAtivos >= 1) {
+    if (totalAtivos >= 10) {
         limiteModal.style.display = 'flex';
 
         // Configurar botões do modal
