@@ -243,7 +243,7 @@ function renderAdDetails() {
         </h4>
         <p class="text-muted">
             <i class="fas fa-calendar-alt me-2"></i>
-            Publicado em: ${currentAd.dataPublicacao ? formatarData(currentAd.dataPublicacao) : 'Data não informada'}
+            Publicado em: ${currentAd.data ? formatarData(currentAd.data) : 'Data não informada'}
         </p>
     </div>
     <div class="visualizacoes-badge bg-primary text-white p-2 rounded">
