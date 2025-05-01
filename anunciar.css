@@ -624,6 +624,8 @@ body {
 }
 
 #termosModal .modal-content {
+        position: relative; /* Garante que o conteúdo respeite o z-index do modal */
+
     border: none;
     box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
     border-radius: 10px;
@@ -632,6 +634,9 @@ body {
     height: 80vh; /* Altura máxima do modal */
 }
 
+#termosModal {
+    z-index: 1050 !important; /* Valor maior que o backdrop */
+}
 #termosModal .modal-header {
     background-color: #0d6efd;
     color: white;
