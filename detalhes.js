@@ -661,3 +661,7 @@ function renderAdDetails() {
     // Configurar botões e interações
     setupInteractions();
 }
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => {
+    loadAdDetails();
+});
