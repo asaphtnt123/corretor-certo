@@ -4586,3 +4586,14 @@ body.menu-open {
         background-color: rgba(255, 255, 255, 0.1);
     }
 }
+/* Estilo para a data de publicação */
+.data-publicacao {
+    color: #6c757d;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+}
+
+.data-publicacao i {
+    margin-right: 5px;
+    color: var(--primary);
+}
