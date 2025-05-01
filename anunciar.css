@@ -617,3 +617,28 @@ body {
     margin-top: 20px;
     flex-wrap: wrap;
 }
+.terms-content {
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.terms-content h4 {
+    font-weight: 600;
+    color: #2c3e50;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+    margin-top: 25px;
+}
+
+.terms-content ul {
+    padding-left: 20px;
+}
+
+.terms-content li {
+    margin-bottom: 8px;
+}
+
+.modal-dialog-scrollable .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
