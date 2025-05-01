@@ -3578,6 +3578,7 @@ section.banner .btn:hover::before {
 .destaque-info h3 {
     margin: 0 0 0.5rem 0;
     font-size: 1.1rem;
+	margin-right: 10px;
     color: #333;
 }
 
