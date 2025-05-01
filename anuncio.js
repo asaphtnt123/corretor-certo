@@ -714,31 +714,41 @@ document.getElementById('termos').addEventListener('change', function() {
     }
 });
 
+// Adicione este script após o carregamento do Bootstrap
 document.addEventListener('DOMContentLoaded', function() {
     const termosModal = document.getElementById('termosModal');
     
-    // Configurar o modal corretamente
+    // Configurar o modal sem backdrop padrão
     const modal = new bootstrap.Modal(termosModal, {
-        backdrop: true,
-        keyboard: true,
-        focus: true
+        backdrop: false // Desativa o backdrop padrão
     });
     
-    // Resetar o scroll quando o modal é aberto
-    termosModal.addEventListener('shown.bs.modal', function() {
-        this.querySelector('.modal-body').scrollTop = 0;
-    });
-    
-    // Marcar checkbox quando o usuário concorda
-    termosModal.querySelector('.btn-primary').addEventListener('click', function() {
-        document.getElementById('termos').checked = true;
-        modal.hide();
-    });
-    
-    // Fechar modal ao clicar no backdrop
-    termosModal.addEventListener('click', function(e) {
-        if (e.target === this) {
+    // Criar um backdrop personalizado
+    function setupCustomBackdrop() {
+        const backdrop = document.createElement('div');
+        backdrop.className = 'custom-modal-backdrop';
+        document.body.appendChild(backdrop);
+        
+        // Fechar modal ao clicar no backdrop personalizado
+        backdrop.addEventListener('click', function() {
             modal.hide();
+        });
+        
+        return backdrop;
+    }
+    
+    // Mostrar/ocultar backdrop personalizado
+    termosModal.addEventListener('show.bs.modal', function() {
+        const backdrop = setupCustomBackdrop();
+        this.dataset.backdropId = backdrop.id;
+    });
+    
+    termosModal.addEventListener('hidden.bs.modal', function() {
+        const backdropId = this.dataset.backdropId;
+        if (backdropId) {
+            const backdrop = document.getElementById(backdropId);
+            if (backdrop) backdrop.remove();
         }
     });
+});
 });
