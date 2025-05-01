@@ -713,3 +713,16 @@ document.getElementById('termos').addEventListener('change', function() {
         document.getElementById('termos-error').style.display = 'none';
     }
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Fechar modal ao clicar no botão "Li e concordo"
+    document.querySelector('#termosModal .btn-primary').addEventListener('click', function() {
+        document.getElementById('termos').checked = true;
+        bootstrap.Modal.getInstance(document.getElementById('termosModal')).hide();
+    });
+    
+    // Resetar o scroll do modal quando ele é aberto
+    document.getElementById('termosModal').addEventListener('show.bs.modal', function() {
+        this.querySelector('.modal-body').scrollTop = 0;
+    });
+});
