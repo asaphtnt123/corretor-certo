@@ -184,17 +184,7 @@ function showLoading() {
 
 
 
-    // Inserir o HTML no container principal
-    elements.conteudoDetalhes.innerHTML = html;
-
-    // Configurar os elementos após renderização
-    setupElementsAfterRender();
-    
-    // Carrega as informações do usuário se não estiverem disponíveis
-    if (!currentAd.userName && currentAd.userId) {
-        loadAgentInfo();
-    }
-}
+  
 // Função auxiliar para formatar o tipo de caução
 function formatTipoCaucao(tipo) {
     const tipos = {
