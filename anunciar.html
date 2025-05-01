@@ -562,7 +562,7 @@
 
     <!-- Termos Modal -->
     <div class="modal fade" id="termosModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">Termos de Uso - Corretor Certo</h5>
@@ -639,9 +639,13 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Li e concordo com os Termos</button>
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+             <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnAceitarTermos">
+                    <i class="fas fa-check-circle me-2"></i>Li e concordo
+                </button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times-circle me-2"></i>Fechar
+                </button>
             </div>
         </div>
     </div>
