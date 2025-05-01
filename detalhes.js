@@ -232,97 +232,98 @@ function renderAdDetails() {
     // Criar o HTML dos detalhes
     let html = `
         <div class="container py-4">
-            <div class="row">
-                <div class="col-lg-8">
-                    <!-- Cabeçalho com título, preço e visualizações -->
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div>
-                            <h2 id="detailTitle">${currentAd.titulo || 'Sem título'}</h2>
-                            <h4 class="text-primary my-3" id="detailPrice">
-                                R$ ${currentAd.preco?.toLocaleString('pt-BR') || 'Preço não informado'}
-                            </h4>
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Cabeçalho com título, preço e visualizações -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 id="detailTitle">${currentAd.titulo || 'Sem título'}</h2>
+                    <h4 class="text-primary my-3" id="detailPrice">
+                        R$ ${currentAd.preco?.toLocaleString('pt-BR') || 'Preço não informado'}
+                    </h4>
+                    <!-- Adicionei a data de publicação aqui -->
+                    <p class="text-muted">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Publicado em: ${currentAd.dataPublicacao ? formatarData(currentAd.dataPublicacao) : 'Data não informada'}
+                    </p>
+                </div>
+                <div class="visualizacoes-badge">
+                    <i class="fas fa-eye"></i> ${currentAd.visualizacoes || 0} visualizações
+                </div>
+            </div>
+            
+            <!-- Restante do código permanece igual -->
+            <div id="mainCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+                <div class="carousel-inner" id="carousel-inner">
+                    ${renderCarouselImages()}
+                </div>
+                ${currentAd.imagens?.length > 1 ? renderCarouselControls() : ''}
+            </div>
+            
+            ${currentAd.imagens?.length > 1 ? `
+            <div class="thumbnails-container d-flex flex-wrap gap-2 mb-4" id="thumbnails-container">
+                ${renderThumbnails()}
+            </div>
+            ` : ''}
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <p><strong>Localização:</strong> <span id="detailLocation">${getLocationText()}</span></p>
                         </div>
-                        <div class="visualizacoes-badge">
-                            <i class="fas fa-eye"></i> ${currentAd.visualizacoes || 0} visualizações
+                        <div class="col-md-4">
+                            <p><strong>${currentAdType === 'imovel' ? 'Área' : 'Ano'}:</strong> <span id="detailArea">${getAreaOrYearText()}</span></p>
                         </div>
-                    </div>
-                    
-                    <!-- Carrossel de Imagens -->
-                    <div id="mainCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
-                        <div class="carousel-inner" id="carousel-inner">
-                            ${renderCarouselImages()}
-                        </div>
-                        ${currentAd.imagens?.length > 1 ? renderCarouselControls() : ''}
-                    </div>
-                    
-                    <!-- Miniaturas -->
-                    ${currentAd.imagens?.length > 1 ? `
-                    <div class="thumbnails-container d-flex flex-wrap gap-2 mb-4" id="thumbnails-container">
-                        ${renderThumbnails()}
-                    </div>
-                    ` : ''}
-                    
-                    <!-- Descrição -->
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <div class="row mb-3">
-                                <div class="col-md-4">
-                                    <p><strong>Localização:</strong> <span id="detailLocation">${getLocationText()}</span></p>
-                                </div>
-                                <div class="col-md-4">
-                                    <p><strong>${currentAdType === 'imovel' ? 'Área' : 'Ano'}:</strong> <span id="detailArea">${getAreaOrYearText()}</span></p>
-                                </div>
-                                <div class="col-md-4">
-                                    <p><strong>${currentAdType === 'imovel' ? 'Quartos' : 'KM'}:</strong> <span id="detailBedrooms">${getBedroomsOrKmText()}</span></p>
-                                </div>
-                            </div>
-                            
-                            ${aluguelFields}
-                            
-                            <div class="description" id="detailDescription">
-                                <h5>Descrição</h5>
-                                <p>${currentAd.descricao || 'Nenhuma descrição fornecida.'}</p>
-                            </div>
+                        <div class="col-md-4">
+                            <p><strong>${currentAdType === 'imovel' ? 'Quartos' : 'KM'}:</strong> <span id="detailBedrooms">${getBedroomsOrKmText()}</span></p>
                         </div>
                     </div>
                     
-                    <!-- Características -->
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">Características</h5>
-                            <div class="row" id="featuresGrid">
-                                ${renderFeatures()}
-                            </div>
-                        </div>
+                    ${aluguelFields}
+                    
+                    <div class="description" id="detailDescription">
+                        <h5>Descrição</h5>
+                        <p>${currentAd.descricao || 'Nenhuma descrição fornecida.'}</p>
                     </div>
                 </div>
-                
-                <div class="col-lg-4">
-                    <!-- Anunciante -->
-                    <div class="card mb-4">
-                        <div class="card-body text-center">
-                            <div class="mb-3">
-                                <i class="fas fa-user-circle fa-4x text-secondary"></i>
-                            </div>
-                            <h5 id="agentName">${currentAd.userName || 'Anunciante'}</h5>
-                            <p class="text-muted" id="agentType">${currentAd.userType || 'Usuário'}</p>
-                            ${currentAd.userPhone ? `<p class="text-muted mb-3"><i class="fas fa-phone"></i> ${currentAd.userPhone}</p>` : ''}
-                            <div class="d-grid gap-2">
-                                <a href="${whatsappLink}" class="btn btn-success" id="btnWhatsApp" target="_blank">
-                                    <i class="fab fa-whatsapp me-2"></i> Contatar via WhatsApp
-                                </a>
-                                <button class="btn ${isFavorite ? 'btn-danger' : 'btn-outline-primary'}" id="btnFavorite">
-                                    <i class="${isFavorite ? 'fas' : 'far'} fa-heart me-2"></i> ${isFavorite ? 'Remover dos' : 'Adicionar aos'} Favoritos
-                                </button>
-                                <button class="btn btn-outline-secondary" id="btnReport">
-                                    <i class="fas fa-flag me-2"></i> Denunciar anúncio
-                                </button>
-                            </div>
-                        </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Características</h5>
+                    <div class="row" id="featuresGrid">
+                        ${renderFeatures()}
                     </div>
                 </div>
             </div>
         </div>
+        
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-user-circle fa-4x text-secondary"></i>
+                    </div>
+                    <h5 id="agentName">${currentAd.userName || 'Anunciante'}</h5>
+                    <p class="text-muted" id="agentType">${currentAd.userType || 'Usuário'}</p>
+                    ${currentAd.userPhone ? `<p class="text-muted mb-3"><i class="fas fa-phone"></i> ${currentAd.userPhone}</p>` : ''}
+                    <div class="d-grid gap-2">
+                        <a href="${whatsappLink}" class="btn btn-success" id="btnWhatsApp" target="_blank">
+                            <i class="fab fa-whatsapp me-2"></i> Contatar via WhatsApp
+                        </a>
+                        <button class="btn ${isFavorite ? 'btn-danger' : 'btn-outline-primary'}" id="btnFavorite">
+                            <i class="${isFavorite ? 'fas' : 'far'} fa-heart me-2"></i> ${isFavorite ? 'Remover dos' : 'Adicionar aos'} Favoritos
+                        </button>
+                        <button class="btn btn-outline-secondary" id="btnReport">
+                            <i class="fas fa-flag me-2"></i> Denunciar anúncio
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
     `;
 
     // Inserir o HTML no container principal
@@ -347,7 +348,20 @@ function formatTipoCaucao(tipo) {
 }
 
 
-
+function formatarData(data) {
+    // Se for um timestamp do Firebase
+    const date = data.toDate ? data.toDate() : new Date(data);
+    
+    const options = { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    };
+    
+    return date.toLocaleDateString('pt-BR', options);
+}
 
 function renderCarouselControls() {
     return `
