@@ -182,149 +182,7 @@ function showLoading() {
     }
 }
 
-function renderAdDetails() {
-    if (!elements.conteudoDetalhes) return;
 
-    // Verifica se é aluguel e prepara os campos específicos
-    const isAluguel = currentAd.negociacao === 'aluguel';
-    const aluguelFields = isAluguel ? `
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <p><strong>Fiador:</strong> <span>${currentAd.fiador || 'Não informado'}</span></p>
-            </div>
-            <div class="col-md-4">
-                <p><strong>Calção:</strong> <span>${currentAd.calcao ? 'R$ ' + currentAd.calcao.toLocaleString('pt-BR') : 'Não informado'}</span></p>
-            </div>
-            <div class="col-md-4">
-                <p><strong>Tipo Caução:</strong> <span>${formatTipoCaucao(currentAd.tipoCaucao) || 'Não informado'}</span></p>
-            </div>
-        </div>
-    ` : '';
-
-    // Formata o telefone para o link do WhatsApp
-    const formatPhoneForWhatsApp = (phone) => {
-        if (!phone) return null;
-        const cleaned = phone.replace(/\D/g, '');
-        return cleaned.length === 11 ? `55${cleaned}` : cleaned;
-    };
-
-    // Prepara o link do WhatsApp
-    const whatsappNumber = formatPhoneForWhatsApp(currentAd.userPhone) || '5564679464949';
-    const whatsappMessage = `Olá ${currentAd.userName || ''}, vi seu anúncio "${currentAd.titulo || ''}" e gostaria de mais informações.`;
-    const whatsappLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
-
-    // Função para obter o texto de localização corretamente
-    const getLocationText = () => {
-        if (currentAdType === 'imovel') {
-            return `
-                ${currentAd.bairro || 'Bairro não informado'}, 
-                ${currentAd.cidade || 'Cidade não informada'} - 
-                ${currentAd.estado || 'Estado não informado'}
-            `;
-        } else {
-            // Para automóveis, mostra apenas cidade/estado se existir
-            return currentAd.cidade ? 
-                `${currentAd.cidade}${currentAd.estado ? ' - ' + currentAd.estado : ''}` : 
-                'Localização não informada';
-        }
-    };
-
-    // Criar o HTML dos detalhes
-    let html = `
-        <div class="container py-4">
-    <div class="row">
-        <div class="col-lg-8">
-            <!-- Cabeçalho com título, preço e visualizações -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 id="detailTitle">${currentAd.titulo || 'Sem título'}</h2>
-        <h4 class="text-primary my-3" id="detailPrice">
-            R$ ${currentAd.preco?.toLocaleString('pt-BR') || 'Preço não informado'}
-        </h4>
-        <p class="text-muted">
-            <i class="fas fa-calendar-alt me-2"></i>
-            Publicado em: ${currentAd.data ? formatarData(currentAd.data) : 'Data não informada'}
-        </p>
-    </div>
-    <div class="visualizacoes-badge bg-primary text-white p-2 rounded">
-        <i class="fas fa-eye me-1"></i> 
-        <span id="visualizacoes-count">${currentAd.visualizacoes || 0}</span> visualizações
-    </div>
-</div>
-            
-            <!-- Restante do código permanece igual -->
-            <div id="mainCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
-                <div class="carousel-inner" id="carousel-inner">
-                    ${renderCarouselImages()}
-                </div>
-                ${currentAd.imagens?.length > 1 ? renderCarouselControls() : ''}
-            </div>
-            
-            ${currentAd.imagens?.length > 1 ? `
-            <div class="thumbnails-container d-flex flex-wrap gap-2 mb-4" id="thumbnails-container">
-                ${renderThumbnails()}
-            </div>
-            ` : ''}
-            
-            <div class="card mb-4">
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <p><strong>Localização:</strong> <span id="detailLocation">${getLocationText()}</span></p>
-                        </div>
-                        <div class="col-md-4">
-                            <p><strong>${currentAdType === 'imovel' ? 'Área' : 'Ano'}:</strong> <span id="detailArea">${getAreaOrYearText()}</span></p>
-                        </div>
-                        <div class="col-md-4">
-                            <p><strong>${currentAdType === 'imovel' ? 'Quartos' : 'KM'}:</strong> <span id="detailBedrooms">${getBedroomsOrKmText()}</span></p>
-                        </div>
-                    </div>
-                    
-                    ${aluguelFields}
-                    
-                    <div class="description" id="detailDescription">
-                        <h5>Descrição</h5>
-                        <p>${currentAd.descricao || 'Nenhuma descrição fornecida.'}</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Características</h5>
-                    <div class="row" id="featuresGrid">
-                        ${renderFeatures()}
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-4">
-            <div class="card mb-4">
-                <div class="card-body text-center">
-                    <div class="mb-3">
-                        <i class="fas fa-user-circle fa-4x text-secondary"></i>
-                    </div>
-                    <h5 id="agentName">${currentAd.userName || 'Anunciante'}</h5>
-                    <p class="text-muted" id="agentType">${currentAd.userType || 'Usuário'}</p>
-                    ${currentAd.userPhone ? `<p class="text-muted mb-3"><i class="fas fa-phone"></i> ${currentAd.userPhone}</p>` : ''}
-                    <div class="d-grid gap-2">
-                        <a href="${whatsappLink}" class="btn btn-success" id="btnWhatsApp" target="_blank">
-                            <i class="fab fa-whatsapp me-2"></i> Contatar via WhatsApp
-                        </a>
-                        <button class="btn ${isFavorite ? 'btn-danger' : 'btn-outline-primary'}" id="btnFavorite">
-                            <i class="${isFavorite ? 'fas' : 'far'} fa-heart me-2"></i> ${isFavorite ? 'Remover dos' : 'Adicionar aos'} Favoritos
-                        </button>
-                        <button class="btn btn-outline-secondary" id="btnReport">
-                            <i class="fas fa-flag me-2"></i> Denunciar anúncio
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-    `;
 
     // Inserir o HTML no container principal
     elements.conteudoDetalhes.innerHTML = html;
@@ -553,21 +411,7 @@ async function registrarContatoWhatsApp(anuncioId, tipo) {
 }
 
 
-async function registrarVisualizacao(anuncioId, tipo) {
-    try {
-        const docRef = doc(db, tipo, anuncioId);
-        
-        // Atualiza incrementando 1 e registra a última visualização
-        await updateDoc(docRef, {
-            visualizacoes: increment(1),
-            ultimaVisualizacao: new Date()
-        });
-        
-        console.log(`Visualização registrada para ${tipo} ID: ${anuncioId}`);
-    } catch (error) {
-        console.error("Erro ao registrar visualização:", error);
-    }
-}
+
 
 async function checkIfFavorite(userId, adId) {
     try {
@@ -702,3 +546,118 @@ window.addEventListener('DOMContentLoaded', () => {
         registrarVisualizacao(anuncioId, tipo);
     }
 });
+
+
+
+// Função para registrar visualizações (versão robusta)
+async function registrarVisualizacao(anuncioId, tipo) {
+    try {
+        const user = auth.currentUser;
+        if (!user) return; // Só registra se usuário estiver logado
+
+        const docRef = doc(db, tipo, anuncioId);
+        const docSnap = await getDoc(docRef);
+        
+        if (!docSnap.exists()) return;
+
+        // Verifica se o usuário já visualizou hoje
+        const hoje = new Date().toDateString();
+        const visualizacoes = docSnap.data().visualizacoes || {};
+        
+        if (visualizacoes[user.uid] !== hoje) {
+            await updateDoc(docRef, {
+                [`visualizacoes.${user.uid}`]: hoje,
+                totalVisualizacoes: increment(1),
+                ultimaVisualizacao: serverTimestamp()
+            });
+            console.log(`Visualização registrada para ${tipo} ID: ${anuncioId}`);
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error("Erro ao registrar visualização:", error);
+        return false;
+    }
+}
+
+// Função para carregar detalhes do anúncio (atualizada)
+async function loadAdDetails() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const adId = urlParams.get('id');
+    currentAdType = urlParams.get('tipo');
+    
+    if (!adId || !currentAdType) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    try {
+        const collectionName = currentAdType === 'carro' ? 'automoveis' : 'imoveis';
+        const docRef = doc(db, collectionName, adId);
+        
+        // Usando onSnapshot para atualizações em tempo real
+        const unsubscribe = onSnapshot(docRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                currentAd = { 
+                    id: docSnap.id,
+                    ...data,
+                    // Calcula visualizações totais
+                    visualizacoes: data.totalVisualizacoes || Object.keys(data.visualizacoes || {}).length
+                };
+                
+                renderAdDetails();
+                
+                // Registra visualização após renderização
+                setTimeout(() => registrarVisualizacao(adId, collectionName), 1000);
+            } else {
+                showError("Anúncio não encontrado");
+            }
+        });
+
+        // Limpeza quando a página for fechada
+        window.addEventListener('beforeunload', () => unsubscribe());
+        
+    } catch (error) {
+        console.error("Erro ao carregar anúncio:", error);
+        showError("Erro ao carregar anúncio");
+    }
+}
+
+// Função para renderizar detalhes (atualizada)
+function renderAdDetails() {
+    if (!currentAd) return;
+    
+    const whatsappLink = `https://wa.me/55${currentAd.userPhone}?text=Olá, vi seu anúncio "${currentAd.titulo}" no Corretor Certo`;
+    
+    document.getElementById('app').innerHTML = `
+        <div class="container py-4">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2>${currentAd.titulo || 'Sem título'}</h2>
+                            <h4 class="text-primary my-3">
+                                R$ ${currentAd.preco?.toLocaleString('pt-BR') || 'Preço não informado'}
+                            </h4>
+                            <p class="text-muted">
+                                <i class="fas fa-calendar-alt me-2"></i>
+                                Publicado em: ${formatarData(currentAd.dataPublicacao || currentAd.data)}
+                            </p>
+                        </div>
+                        <div class="visualizacoes-badge">
+                            <i class="fas fa-eye me-1"></i> 
+                            ${currentAd.visualizacoes?.toLocaleString('pt-BR') || '0'} 
+                            visualização${currentAd.visualizacoes !== 1 ? 's' : ''}
+                        </div>
+                    </div>
+                    
+                    <!-- Restante do seu template HTML aqui -->
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Configurar botões e interações
+    setupInteractions();
+}
