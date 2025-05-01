@@ -7,7 +7,8 @@ import {
     updateDoc,
     arrayUnion,
     arrayRemove,
-     increment
+     increment,
+    serverTimestamp
      
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -247,9 +248,12 @@ function renderAdDetails() {
         </p>
     </div>
     <div class="visualizacoes-badge bg-primary text-white p-2 rounded">
-        <i class="fas fa-eye me-1"></i> 
-        <span id="visualizacoes-count">${currentAd.visualizacoes || 0}</span> visualizações
-    </div>
+    <i class="fas fa-eye me-1"></i> 
+    <span id="visualizacoes-count">
+        ${currentAd.totalVisualizacoes || Object.keys(currentAd.visualizacoes || {}).length || 0}
+    </span> 
+    visualização${(currentAd.totalVisualizacoes || Object.keys(currentAd.visualizacoes || {}).length || 0) !== 1 ? 's' : ''}
+</div>
 </div>
             
             <!-- Restante do código permanece igual -->
@@ -555,17 +559,38 @@ async function registrarContatoWhatsApp(anuncioId, tipo) {
 
 async function registrarVisualizacao(anuncioId, tipo) {
     try {
+        const user = auth.currentUser;
+        if (!user) return; // Só registra se usuário estiver logado
+
         const docRef = doc(db, tipo, anuncioId);
+        const docSnap = await getDoc(docRef);
         
-        // Atualiza incrementando 1 e registra a última visualização
-        await updateDoc(docRef, {
-            visualizacoes: increment(1),
-            ultimaVisualizacao: new Date()
-        });
+        if (!docSnap.exists()) return;
+
+        // Verifica se o usuário já visualizou hoje
+        const hoje = new Date().toDateString();
+        const visualizacoes = docSnap.data().visualizacoes || {};
         
-        console.log(`Visualização registrada para ${tipo} ID: ${anuncioId}`);
+        if (visualizacoes[user.uid] !== hoje) {
+            await updateDoc(docRef, {
+                [`visualizacoes.${user.uid}`]: hoje,
+                totalVisualizacoes: increment(1),
+                ultimaVisualizacao: serverTimestamp()
+            });
+            console.log(`Visualização registrada para ${tipo} ID: ${anuncioId}`);
+            
+            // Atualiza o contador na página se existir
+            const counter = document.getElementById('visualizacoes-count');
+            if (counter) {
+                const currentViews = Number(counter.textContent) || 0;
+                counter.textContent = (currentViews + 1).toLocaleString('pt-BR');
+            }
+            return true;
+        }
+        return false;
     } catch (error) {
         console.error("Erro ao registrar visualização:", error);
+        return false;
     }
 }
 
@@ -692,13 +717,15 @@ function showAlert(message, type = 'success') {
 }
 
 
-// Chamada quando a página carrega
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const anuncioId = urlParams.get('id');
     const tipo = urlParams.get('tipo') === 'carro' ? 'automoveis' : 'imoveis';
     
     if (anuncioId && tipo) {
-        registrarVisualizacao(anuncioId, tipo);
+        // Adicione um pequeno delay para garantir que a página carregue
+        setTimeout(async () => {
+            await registrarVisualizacao(anuncioId, tipo);
+        }, 1000);
     }
 });
