@@ -236,21 +236,21 @@ function renderAdDetails() {
         <div class="col-lg-8">
             <!-- Cabeçalho com título, preço e visualizações -->
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 id="detailTitle">${currentAd.titulo || 'Sem título'}</h2>
-                    <h4 class="text-primary my-3" id="detailPrice">
-                        R$ ${currentAd.preco?.toLocaleString('pt-BR') || 'Preço não informado'}
-                    </h4>
-                    <!-- Adicionei a data de publicação aqui -->
-                    <p class="text-muted">
-                        <i class="fas fa-calendar-alt me-2"></i>
-                        Publicado em: ${currentAd.dataPublicacao ? formatarData(currentAd.dataPublicacao) : 'Data não informada'}
-                    </p>
-                </div>
-                <div class="visualizacoes-badge">
-                    <i class="fas fa-eye"></i> ${currentAd.visualizacoes || 0} visualizações
-                </div>
-            </div>
+    <div>
+        <h2 id="detailTitle">${currentAd.titulo || 'Sem título'}</h2>
+        <h4 class="text-primary my-3" id="detailPrice">
+            R$ ${currentAd.preco?.toLocaleString('pt-BR') || 'Preço não informado'}
+        </h4>
+        <p class="text-muted">
+            <i class="fas fa-calendar-alt me-2"></i>
+            Publicado em: ${currentAd.dataPublicacao ? formatarData(currentAd.dataPublicacao) : 'Data não informada'}
+        </p>
+    </div>
+    <div class="visualizacoes-badge bg-primary text-white p-2 rounded">
+        <i class="fas fa-eye me-1"></i> 
+        <span id="visualizacoes-count">${currentAd.visualizacoes || 0}</span> visualizações
+    </div>
+</div>
             
             <!-- Restante do código permanece igual -->
             <div id="mainCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
@@ -557,27 +557,17 @@ async function registrarVisualizacao(anuncioId, tipo) {
     try {
         const docRef = doc(db, tipo, anuncioId);
         
+        // Atualiza incrementando 1 e registra a última visualização
         await updateDoc(docRef, {
-            visualizacoes: increment(1), // Agora usando a função importada
+            visualizacoes: increment(1),
             ultimaVisualizacao: new Date()
         });
         
-        console.log("Visualização registrada com sucesso!");
+        console.log(`Visualização registrada para ${tipo} ID: ${anuncioId}`);
     } catch (error) {
         console.error("Erro ao registrar visualização:", error);
-        
-        // Fallback para documentos que não existem ou não têm o campo
-        try {
-            await setDoc(docRef, {
-                visualizacoes: 1,
-                ultimaVisualizacao: new Date()
-            }, { merge: true });
-        } catch (fallbackError) {
-            console.error("Erro no fallback de visualização:", fallbackError);
-        }
     }
 }
-
 
 async function checkIfFavorite(userId, adId) {
     try {
