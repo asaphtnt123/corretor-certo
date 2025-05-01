@@ -672,9 +672,20 @@ body {
     width: 100vw;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1040; /* Abaixo do modal */
+    z-index: 1040; /* Deve estar abaixo do modal (1050) */
+    display: none; /* Inicialmente escondido */
 }
 
+
+/* Quando o modal estiver aberto */
+.modal.show .custom-modal-backdrop {
+    display: block;
+}
+/* Corrigir overflow do body */
+body.modal-open {
+    overflow: hidden;
+    padding-right: 0 !important;
+}
 /* Estilo do conteúdo dos termos */
 .terms-content {
     font-size: 0.95rem;
