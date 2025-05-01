@@ -42,6 +42,7 @@ const steps = document.querySelectorAll('.form-step');
 const imageInput = document.getElementById('imagens');
 const imagePreview = document.getElementById('image-preview');
 const reviewImages = document.getElementById('review-images');
+// No JavaScript, altere para:
 const btnImovel = document.getElementById('btn-imovel');
 const btnAutomovel = document.getElementById('btn-automovel');
 
@@ -714,64 +715,100 @@ document.getElementById('termos').addEventListener('change', function() {
     }
 });
 
-// Adicione este código no final do arquivo, substituindo o evento DOMContentLoaded existente para os termos
 document.addEventListener('DOMContentLoaded', function() {
+    // Verificar se os elementos existem antes de adicionar listeners
     const termosModal = document.getElementById('termosModal');
     const termosCheckbox = document.getElementById('termos');
-    
-    // Configurar o modal sem backdrop padrão
-    const modal = new bootstrap.Modal(termosModal, {
-        backdrop: false // Desativa o backdrop padrão
-    });
-    
-    // Criar um backdrop personalizado
+    const btnAceitarTermos = document.getElementById('btnAceitarTermos');
+    const btnCloseTermos = document.querySelector('#termosModal .btn-close');
+    const abrirTermosLink = document.getElementById('abrirTermosLink');
+
+    // Só continua se o modal e checkbox existirem
+    if (!termosModal || !termosCheckbox) return;
+
+    // Configurar o modal
+    const modal = termosModal ? new bootstrap.Modal(termosModal, {
+        backdrop: false
+    }) : null;
+
+    // Função do backdrop personalizado
     function setupCustomBackdrop() {
         const backdrop = document.createElement('div');
         backdrop.className = 'custom-modal-backdrop';
         document.body.appendChild(backdrop);
         
-        // Fechar modal ao clicar no backdrop personalizado
         backdrop.addEventListener('click', function() {
-            modal.hide();
+            modal?.hide();
         });
         
         return backdrop;
     }
-    
-    // Mostrar/ocultar backdrop personalizado
-    termosModal.addEventListener('show.bs.modal', function() {
-        const backdrop = setupCustomBackdrop();
-        this.dataset.backdropId = backdrop.id;
-    });
-    
-    termosModal.addEventListener('hidden.bs.modal', function() {
-        const backdropId = this.dataset.backdropId;
-        if (backdropId) {
-            const backdrop = document.getElementById(backdropId);
-            if (backdrop) backdrop.remove();
-        }
-        
-        // Habilitar scroll novamente
-        document.body.style.overflow = 'auto';
-    });
-    
-    // Configurar botão de aceitar termos
-    document.getElementById('btnAceitarTermos').addEventListener('click', function() {
-        termosCheckbox.checked = true;
-        termosCheckbox.classList.remove('is-invalid');
-        document.getElementById('termos-error').style.display = 'none';
-        modal.hide();
-    });
-    
-    // Configurar botão de fechar
-    document.querySelector('#termosModal .btn-close').addEventListener('click', function() {
-        modal.hide();
-    });
-    
-    // Configurar link para abrir termos
-    document.getElementById('abrirTermosLink').addEventListener('click', function(e) {
-        e.preventDefault();
-        modal.show();
-    });
-});
 
+    // Eventos do modal
+    if (termosModal) {
+        termosModal.addEventListener('show.bs.modal', function() {
+            const backdrop = setupCustomBackdrop();
+            this.dataset.backdropId = backdrop.id;
+        });
+
+        termosModal.addEventListener('hidden.bs.modal', function() {
+            const backdropId = this.dataset.backdropId;
+            if (backdropId) {
+                const backdrop = document.getElementById(backdropId);
+                backdrop?.remove();
+            }
+            document.body.style.overflow = 'auto';
+        });
+    }
+
+    // Evento do botão Aceitar (se existir)
+    if (btnAceitarTermos) {
+        btnAceitarTermos.addEventListener('click', function() {
+            termosCheckbox.checked = true;
+            termosCheckbox.classList.remove('is-invalid');
+            document.getElementById('termos-error')?.style?.display === 'none';
+            modal?.hide();
+        });
+    }
+
+    // Evento do botão Fechar (se existir)
+    if (btnCloseTermos) {
+        btnCloseTermos.addEventListener('click', function() {
+            modal?.hide();
+        });
+    }
+
+    // Evento do link Abrir Termos (se existir)
+    if (abrirTermosLink) {
+        abrirTermosLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            modal?.show();
+        });
+    }
+});
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos do modal de termos
+    const termosModal = document.getElementById('termosModal');
+    const termosCheckbox = document.getElementById('termos');
+    const btnAceitarTermos = document.getElementById('btnAceitarTermos');
+    
+    if (termosModal && termosCheckbox && btnAceitarTermos) {
+        const modal = new bootstrap.Modal(termosModal);
+        
+        // Configurar botão de aceitar termos
+        btnAceitarTermos.addEventListener('click', function() {
+            termosCheckbox.checked = true;
+            termosCheckbox.classList.remove('is-invalid');
+            document.getElementById('termos-error').style.display = 'none';
+            modal.hide();
+        });
+        
+        // Configurar evento de mudança no checkbox
+        termosCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                this.classList.remove('is-invalid');
+                document.getElementById('termos-error').style.display = 'none';
+            }
+        });
+    }
+});
