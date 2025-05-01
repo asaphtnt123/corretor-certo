@@ -453,3 +453,7 @@ body {
 .btn-success i {
     font-size: 1.2em;
 }
+.text-muted i.fas.fa-calendar-alt {
+    color: var(--primary);
+    margin-right: 5px;
+}
