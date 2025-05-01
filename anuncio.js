@@ -474,6 +474,21 @@ document.addEventListener('DOMContentLoaded', function() {
 // Atualização do código JavaScript para criar anúncio
 form.addEventListener('submit', async function(e) {
     e.preventDefault();
+
+     // Verificar se os termos foram aceitos
+    const termosCheckbox = document.getElementById('termos');
+    if (!termosCheckbox.checked) {
+        termosCheckbox.classList.add('is-invalid');
+        document.getElementById('termos-error').style.display = 'block';
+        window.scrollTo({
+            top: termosCheckbox.offsetTop - 100,
+            behavior: 'smooth'
+        });
+        return;
+    } else {
+        termosCheckbox.classList.remove('is-invalid');
+        document.getElementById('termos-error').style.display = 'none';
+    }
     
     // Declarar variáveis no início para evitar erros de acesso
     const loadingScreen = document.getElementById('loading-screen');
@@ -692,3 +707,9 @@ async function verificarAnunciosExpirados(uid) {
         });
     }
 }
+document.getElementById('termos').addEventListener('change', function() {
+    if (this.checked) {
+        this.classList.remove('is-invalid');
+        document.getElementById('termos-error').style.display = 'none';
+    }
+});
