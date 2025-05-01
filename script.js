@@ -611,6 +611,7 @@ function toggleFields(tipo) {
         formPesquisa.reset();
     }
 }
+
 function criarCardDestaque(dados, isAutomovel = false) {
     const card = document.createElement('div');
     card.className = 'destaque-card';
@@ -618,6 +619,9 @@ function criarCardDestaque(dados, isAutomovel = false) {
     const imagens = dados.imagens || ["images/default.jpg"];
     const isAluguel = dados.negociacao === 'aluguel';
     const visualizacoes = dados.visualizacoes || 0;
+    
+    // Formatar a data de publicação
+    const dataPublicacao = dados.dataPublicacao ? formatarData(dados.dataPublicacao) : 'Data não informada';
     
     card.innerHTML = `
         <div class="destaque-imagem-container">
@@ -636,6 +640,11 @@ function criarCardDestaque(dados, isAutomovel = false) {
             <h3>${dados.titulo || 'Sem título'}</h3>
             <p class="negociacao-tipo ${isAluguel ? 'aluguel' : 'venda'}">
                 ${isAluguel ? 'Aluguel' : 'Venda'}
+            </p>
+            
+            <!-- Adicionei a data de publicação aqui -->
+            <p class="data-publicacao">
+                <i class="fas fa-clock"></i> Publicado em: ${dataPublicacao}
             </p>
             
             ${isAutomovel ? `
@@ -662,7 +671,7 @@ function criarCardDestaque(dados, isAutomovel = false) {
         </div>
     `;
     
-     // Configura o evento de favorito
+    // Configura o evento de favorito
     const favoriteBtn = card.querySelector('.favorite-btn');
     
     // Verifica o estado inicial do favorito
@@ -675,10 +684,26 @@ function criarCardDestaque(dados, isAutomovel = false) {
     favoriteBtn.addEventListener('click', async function(e) {
         e.preventDefault();
         e.stopPropagation();
-        await toggleFavorito(dados, this); // Passa o botão como argumento
+        await toggleFavorito(dados, this);
     });
     
     return card;
+}
+
+// Função auxiliar para formatar a data (adicione ao seu código)
+function formatarData(data) {
+    // Se for um timestamp do Firebase ou string ISO
+    const date = data.toDate ? data.toDate() : new Date(data);
+    
+    const options = { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    };
+    
+    return date.toLocaleDateString('pt-BR', options);
 }
 
 // Função principal para carregar anúncios recomendados
