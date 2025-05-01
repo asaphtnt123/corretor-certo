@@ -714,9 +714,10 @@ document.getElementById('termos').addEventListener('change', function() {
     }
 });
 
-// Adicione este script após o carregamento do Bootstrap
+// Adicione este código no final do arquivo, substituindo o evento DOMContentLoaded existente para os termos
 document.addEventListener('DOMContentLoaded', function() {
     const termosModal = document.getElementById('termosModal');
+    const termosCheckbox = document.getElementById('termos');
     
     // Configurar o modal sem backdrop padrão
     const modal = new bootstrap.Modal(termosModal, {
@@ -749,6 +750,28 @@ document.addEventListener('DOMContentLoaded', function() {
             const backdrop = document.getElementById(backdropId);
             if (backdrop) backdrop.remove();
         }
+        
+        // Habilitar scroll novamente
+        document.body.style.overflow = 'auto';
+    });
+    
+    // Configurar botão de aceitar termos
+    document.getElementById('btnAceitarTermos').addEventListener('click', function() {
+        termosCheckbox.checked = true;
+        termosCheckbox.classList.remove('is-invalid');
+        document.getElementById('termos-error').style.display = 'none';
+        modal.hide();
+    });
+    
+    // Configurar botão de fechar
+    document.querySelector('#termosModal .btn-close').addEventListener('click', function() {
+        modal.hide();
+    });
+    
+    // Configurar link para abrir termos
+    document.getElementById('abrirTermosLink').addEventListener('click', function(e) {
+        e.preventDefault();
+        modal.show();
     });
 });
 
