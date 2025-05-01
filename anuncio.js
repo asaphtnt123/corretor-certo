@@ -715,14 +715,30 @@ document.getElementById('termos').addEventListener('change', function() {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Fechar modal ao clicar no botão "Li e concordo"
-    document.querySelector('#termosModal .btn-primary').addEventListener('click', function() {
-        document.getElementById('termos').checked = true;
-        bootstrap.Modal.getInstance(document.getElementById('termosModal')).hide();
+    const termosModal = document.getElementById('termosModal');
+    
+    // Configurar o modal corretamente
+    const modal = new bootstrap.Modal(termosModal, {
+        backdrop: true,
+        keyboard: true,
+        focus: true
     });
     
-    // Resetar o scroll do modal quando ele é aberto
-    document.getElementById('termosModal').addEventListener('show.bs.modal', function() {
+    // Resetar o scroll quando o modal é aberto
+    termosModal.addEventListener('shown.bs.modal', function() {
         this.querySelector('.modal-body').scrollTop = 0;
+    });
+    
+    // Marcar checkbox quando o usuário concorda
+    termosModal.querySelector('.btn-primary').addEventListener('click', function() {
+        document.getElementById('termos').checked = true;
+        modal.hide();
+    });
+    
+    // Fechar modal ao clicar no backdrop
+    termosModal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            modal.hide();
+        }
     });
 });
