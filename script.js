@@ -22,7 +22,6 @@ import {
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 
-import { getDatabase, ref as dbRef, onDisconnect, onValue, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const rtdb = getDatabase(app);
 
@@ -41,6 +40,8 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
+
+import { getDatabase, ref as dbRef, onDisconnect, onValue, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 // ============== VARIÁVEIS GLOBAIS ==============
 let currentAdData = null;
