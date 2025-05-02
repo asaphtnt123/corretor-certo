@@ -85,169 +85,7 @@ function showLoading() {
     }
 }
 
-function renderAdDetails() {
-    if (!elements.conteudoDetalhes) return;
 
-    // Verifica se é aluguel e prepara os campos específicos
-    const isAluguel = currentAd.negociacao === 'aluguel';
-    const aluguelFields = isAluguel ? `
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <p><strong>Fiador:</strong> <span>${currentAd.fiador || 'Não informado'}</span></p>
-            </div>
-            <div class="col-md-4">
-                <p><strong>Calção:</strong> <span>${currentAd.calcao ? 'R$ ' + currentAd.calcao.toLocaleString('pt-BR') : 'Não informado'}</span></p>
-            </div>
-            <div class="col-md-4">
-                <p><strong>Tipo Caução:</strong> <span>${formatTipoCaucao(currentAd.tipoCaucao) || 'Não informado'}</span></p>
-            </div>
-        </div>
-    ` : '';
-
-    // Formata o telefone para o link do WhatsApp
-    const formatPhoneForWhatsApp = (phone) => {
-        if (!phone) return null;
-        const cleaned = phone.replace(/\D/g, '');
-        return cleaned.length === 11 ? `55${cleaned}` : cleaned;
-    };
-
-    // Prepara o link do WhatsApp
-    const whatsappNumber = formatPhoneForWhatsApp(currentAd.userPhone) || '5564679464949';
-    const whatsappMessage = `Olá ${currentAd.userName || ''}, vi seu anúncio "${currentAd.titulo || ''}" e gostaria de mais informações.`;
-    const whatsappLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
-
-    // Função para obter o texto de localização corretamente
-    const getLocationText = () => {
-        if (currentAdType === 'imovel') {
-            return `
-                ${currentAd.bairro || 'Bairro não informado'}, 
-                ${currentAd.cidade || 'Cidade não informada'} - 
-                ${currentAd.estado || 'Estado não informado'}
-            `;
-        } else {
-            // Para automóveis, mostra apenas cidade/estado se existir
-            return currentAd.cidade ? 
-                `${currentAd.cidade}${currentAd.estado ? ' - ' + currentAd.estado : ''}` : 
-                'Localização não informada';
-        }
-    };
-
-    // Criar o HTML dos detalhes
-    let html = `
-        <div class="container py-4">
-    <div class="row">
-        <div class="col-lg-8">
-            <!-- Cabeçalho com título, preço e visualizações -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 id="detailTitle">${currentAd.titulo || 'Sem título'}</h2>
-        <h4 class="text-primary my-3" id="detailPrice">
-            R$ ${currentAd.preco?.toLocaleString('pt-BR') || 'Preço não informado'}
-        </h4>
-        <p class="text-muted">
-            <i class="fas fa-calendar-alt me-2"></i>
-            Publicado em: ${currentAd.data ? formatarData(currentAd.data) : 'Data não informada'}
-        </p>
-    </div>
-    <div class="visualizacoes-badge bg-primary text-white p-2 rounded">
-    <i class="fas fa-eye me-1"></i> 
-    <span id="visualizacoes-count">
-        ${currentAd.totalVisualizacoes || Object.keys(currentAd.visualizacoes || {}).length || 0}
-    </span> 
-    visualização${(currentAd.totalVisualizacoes || Object.keys(currentAd.visualizacoes || {}).length || 0) !== 1 ? 's' : ''}
-</div>
-</div>
-            
-            <!-- Restante do código permanece igual -->
-            <div id="mainCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
-                <div class="carousel-inner" id="carousel-inner">
-                    ${renderCarouselImages()}
-                </div>
-                ${currentAd.imagens?.length > 1 ? renderCarouselControls() : ''}
-            </div>
-            
-            ${currentAd.imagens?.length > 1 ? `
-            <div class="thumbnails-container d-flex flex-wrap gap-2 mb-4" id="thumbnails-container">
-                ${renderThumbnails()}
-            </div>
-            ` : ''}
-            
-            <div class="card mb-4">
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <p><strong>Localização:</strong> <span id="detailLocation">${getLocationText()}</span></p>
-                        </div>
-                        <div class="col-md-4">
-                            <p><strong>${currentAdType === 'imovel' ? 'Área' : 'Ano'}:</strong> <span id="detailArea">${getAreaOrYearText()}</span></p>
-                        </div>
-                        <div class="col-md-4">
-                            <p><strong>${currentAdType === 'imovel' ? 'Quartos' : 'KM'}:</strong> <span id="detailBedrooms">${getBedroomsOrKmText()}</span></p>
-                        </div>
-                    </div>
-                    
-                    ${aluguelFields}
-                    
-                    <div class="description" id="detailDescription">
-                        <h5>Descrição</h5>
-                        <p>${currentAd.descricao || 'Nenhuma descrição fornecida.'}</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Características</h5>
-                    <div class="row" id="featuresGrid">
-                        ${renderFeatures()}
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-4">
-            <div class="card mb-4">
-                <div class="card-body text-center">
-                    <div class="mb-3">
-                        <i class="fas fa-user-circle fa-4x text-secondary"></i>
-                    </div>
-                    <h5 id="agentName">${currentAd.userName || 'Anunciante'}</h5>
-                    <p class="text-muted" id="agentType">${currentAd.userType || 'Usuário'}</p>
-                    ${currentAd.userPhone ? `<p class="text-muted mb-3"><i class="fas fa-phone"></i> ${currentAd.userPhone}</p>` : ''}
-                    <div class="d-grid gap-2">
-    <a href="${whatsappLink}" class="btn btn-success" id="btnWhatsApp" target="_blank">
-        <i class="fab fa-whatsapp me-2"></i> Contatar via WhatsApp
-    </a>
-    <button class="btn ${isFavorite ? 'btn-danger' : 'btn-outline-primary'}" id="btnFavorite">
-        <i class="${isFavorite ? 'fas' : 'far'} fa-heart me-2"></i> ${isFavorite ? 'Remover dos' : 'Adicionar aos'} Favoritos
-    </button>
-    <!-- Botão de Compartilhamento no Facebook -->
-    <button class="btn btn-primary" id="shareFacebookBtn">
-        <i class="fab fa-facebook-f me-2"></i> Compartilhar
-    </button>
-    <button class="btn btn-outline-secondary" id="btnReport">
-        <i class="fas fa-flag me-2"></i> Denunciar anúncio
-    </button>
-</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-    `;
-
-    // Inserir o HTML no container principal
-    elements.conteudoDetalhes.innerHTML = html;
-
-    // Configurar os elementos após renderização
-    setupElementsAfterRender();
-    
-    // Carrega as informações do usuário se não estiverem disponíveis
-    if (!currentAd.userName && currentAd.userId) {
-        loadAgentInfo();
-        updateMetaTags();
-    }
-}
 // Função auxiliar para formatar o tipo de caução
 function formatTipoCaucao(tipo) {
     const tipos = {
@@ -784,29 +622,261 @@ function shareOnFacebook() {
         'width=600,height=500'
     );
 }
+function renderAdDetails() {
+    if (!elements.conteudoDetalhes) {
+        console.error('Elemento conteudo-detalhes não encontrado');
+        return;
+    }
 
-// Inicializa o compartilhamento quando o DOM estiver pronto
-document.addEventListener('DOMContentLoaded', setupFacebookShare);
-async function updateMetaTags() {
-    if (!currentAd) return;
+    try {
+        // Verifica se é aluguel e prepara os campos específicos
+        const isAluguel = currentAd.negociacao === 'aluguel';
+        const aluguelFields = isAluguel ? `
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <p><strong>Fiador:</strong> <span>${currentAd.fiador || 'Não informado'}</span></p>
+                </div>
+                <div class="col-md-4">
+                    <p><strong>Calção:</strong> <span>${currentAd.calcao ? 'R$ ' + currentAd.calcao.toLocaleString('pt-BR') : 'Não informado'}</span></p>
+                </div>
+                <div class="col-md-4">
+                    <p><strong>Tipo Caução:</strong> <span>${formatTipoCaucao(currentAd.tipoCaucao) || 'Não informado'}</span></p>
+                </div>
+            </div>
+        ` : '';
 
-    // URLs absolutas
-    const baseUrl = 'https://corretorcerto.netlify.app';
-    const canonicalUrl = `${baseUrl}/detalhes.html?id=${currentAd.id}&tipo=${currentAdType}`;
-    
-    // Imagem principal ou padrão
-    const imageUrl = currentAd.imagens?.[0] ? 
-        new URL(currentAd.imagens[0], baseUrl).href : 
-        `${baseUrl}/assets/img/og-image-default.jpg`;
+        // Formata o telefone para o link do WhatsApp
+        const whatsappNumber = currentAd.userPhone ? 
+            '55' + currentAd.userPhone.replace(/\D/g, '') : 
+            '5564679464949';
+        
+        const whatsappMessage = `Olá ${currentAd.userName || ''}, vi seu anúncio "${currentAd.titulo || ''}" e gostaria de mais informações.`;
+        const whatsappLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
 
-    // Atualiza todas as tags
-    document.querySelector('link[rel="canonical"]').href = canonicalUrl;
-    document.getElementById('ogUrl').content = canonicalUrl;
-    document.getElementById('ogTitle').content = `${currentAd.titulo} | Corretor Certo`;
-    document.getElementById('ogDescription').content = currentAd.descricao?.substring(0, 155) + '...';
-    document.getElementById('ogImage').content = imageUrl;
+        // URL canônica e imagem para compartilhamento
+        const baseUrl = 'https://corretorcerto.netlify.app';
+        const canonicalUrl = `${baseUrl}/detalhes.html?id=${currentAd.id}&tipo=${currentAdType}`;
+        const imageUrl = currentAd.imagens?.[0] ? 
+            new URL(currentAd.imagens[0], baseUrl).href : 
+            `${baseUrl}/assets/img/og-image-default.jpg`;
 
-    // Força atualização no Facebook
-    await fetch(`https://graph.facebook.com/?id=${encodeURIComponent(canonicalUrl)}&scrape=true&fields=og_object`);
+        // Criar o HTML dos detalhes
+        let html = `
+            <div class="container py-4">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <h2 id="detailTitle">${currentAd.titulo || 'Sem título'}</h2>
+                                <h4 class="text-primary my-3" id="detailPrice">
+                                    R$ ${currentAd.preco?.toLocaleString('pt-BR') || 'Preço não informado'}
+                                </h4>
+                                <p class="text-muted">
+                                    <i class="fas fa-calendar-alt me-2"></i>
+                                    Publicado em: ${currentAd.data ? formatarData(currentAd.data) : 'Data não informada'}
+                                </p>
+                            </div>
+                            <div class="visualizacoes-badge bg-primary text-white p-2 rounded">
+                                <i class="fas fa-eye me-1"></i> 
+                                <span id="visualizacoes-count">
+                                    ${currentAd.totalVisualizacoes || Object.keys(currentAd.visualizacoes || {}).length || 0}
+                                </span> 
+                                visualização${(currentAd.totalVisualizacoes || Object.keys(currentAd.visualizacoes || {}).length || 0) !== 1 ? 's' : ''}
+                            </div>
+                        </div>
+
+                        <div id="mainCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+                            <div class="carousel-inner" id="carousel-inner">
+                                ${renderCarouselImages()}
+                            </div>
+                            ${currentAd.imagens?.length > 1 ? renderCarouselControls() : ''}
+                        </div>
+                        
+                        ${currentAd.imagens?.length > 1 ? `
+                        <div class="thumbnails-container d-flex flex-wrap gap-2 mb-4" id="thumbnails-container">
+                            ${renderThumbnails()}
+                        </div>
+                        ` : ''}
+                        
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <p><strong>Localização:</strong> <span id="detailLocation">${getLocationText()}</span></p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>${currentAdType === 'imovel' ? 'Área' : 'Ano'}:</strong> <span id="detailArea">${getAreaOrYearText()}</span></p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>${currentAdType === 'imovel' ? 'Quartos' : 'KM'}:</strong> <span id="detailBedrooms">${getBedroomsOrKmText()}</span></p>
+                                    </div>
+                                </div>
+                                
+                                ${aluguelFields}
+                                
+                                <div class="description" id="detailDescription">
+                                    <h5>Descrição</h5>
+                                    <p>${currentAd.descricao || 'Nenhuma descrição fornecida.'}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title">Características</h5>
+                                <div class="row" id="featuresGrid">
+                                    ${renderFeatures()}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="card mb-4">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-user-circle fa-4x text-secondary"></i>
+                                </div>
+                                <h5 id="agentName">${currentAd.userName || 'Anunciante'}</h5>
+                                <p class="text-muted" id="agentType">${currentAd.userType || 'Usuário'}</p>
+                                ${currentAd.userPhone ? `<p class="text-muted mb-3"><i class="fas fa-phone"></i> ${currentAd.userPhone}</p>` : ''}
+                                <div class="d-grid gap-2">
+                                    <a href="${whatsappLink}" class="btn btn-success" id="btnWhatsApp" target="_blank">
+                                        <i class="fab fa-whatsapp me-2"></i> Contatar via WhatsApp
+                                    </a>
+                                    <button class="btn ${isFavorite ? 'btn-danger' : 'btn-outline-primary'}" id="btnFavorite">
+                                        <i class="${isFavorite ? 'fas' : 'far'} fa-heart me-2"></i> ${isFavorite ? 'Remover dos' : 'Adicionar aos'} Favoritos
+                                    </button>
+                                    <button class="btn btn-primary" id="shareFacebookBtn">
+                                        <i class="fab fa-facebook-f me-2"></i> Compartilhar
+                                    </button>
+                                    <button class="btn btn-outline-secondary" id="btnReport">
+                                        <i class="fas fa-flag me-2"></i> Denunciar anúncio
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Inserir o HTML no container principal
+        elements.conteudoDetalhes.innerHTML = html;
+
+        // Configurar os elementos após renderização
+        setupElementsAfterRender();
+        
+        // Atualizar meta tags para compartilhamento
+        updateMetaTagsSafe();
+        
+        // Carrega as informações do usuário se não estiverem disponíveis
+        if (!currentAd.userName && currentAd.userId) {
+            loadAgentInfo();
+        }
+
+        // Configurar o botão de compartilhamento
+        document.getElementById('shareFacebookBtn')?.addEventListener('click', () => {
+            shareOnFacebook(currentAd, currentAdType);
+        });
+
+    } catch (error) {
+        console.error('Erro ao renderizar detalhes:', error);
+        elements.conteudoDetalhes.innerHTML = `
+            <div class="alert alert-danger">
+                Ocorreu um erro ao carregar os detalhes do anúncio. 
+                <a href="javascript:location.reload()">Tente recarregar a página</a>.
+            </div>
+        `;
+    }
 }
 
+// Função auxiliar para atualizar meta tags
+function updateMetaTagsSafe() {
+    try {
+        if (!currentAd) return;
+
+        const baseUrl = 'https://corretorcerto.netlify.app';
+        const canonicalUrl = `${baseUrl}/detalhes.html?id=${currentAd.id}&tipo=${currentAdType}`;
+        const imageUrl = currentAd.imagens?.[0] ? 
+            new URL(currentAd.imagens[0], baseUrl).href : 
+            `${baseUrl}/assets/img/og-image-default.jpg`;
+
+        // Atualiza ou cria as meta tags necessárias
+        const metaTags = {
+            'og:title': `${currentAd.titulo || 'Anúncio'} | Corretor Certo`,
+            'og:description': currentAd.descricao?.substring(0, 155) + '...' || 'Confira este anúncio no Corretor Certo',
+            'og:image': imageUrl,
+            'og:url': canonicalUrl,
+            'og:type': 'website',
+            'og:site_name': 'Corretor Certo',
+            'og:locale': 'pt_BR'
+        };
+
+        Object.entries(metaTags).forEach(([property, content]) => {
+            let tag = document.querySelector(`meta[property="${property}"]`);
+            if (!tag) {
+                tag = document.createElement('meta');
+                tag.setAttribute('property', property);
+                document.head.appendChild(tag);
+            }
+            tag.setAttribute('content', content);
+        });
+
+        // Atualiza a tag canônica
+        let canonicalTag = document.querySelector('link[rel="canonical"]');
+        if (!canonicalTag) {
+            canonicalTag = document.createElement('link');
+            canonicalTag.rel = 'canonical';
+            document.head.appendChild(canonicalTag);
+        }
+        canonicalTag.href = canonicalUrl;
+
+        // Força atualização no Facebook
+        fetch(`https://graph.facebook.com/?id=${encodeURIComponent(canonicalUrl)}&scrape=true`)
+            .then(() => console.log('Facebook cache atualizado'))
+            .catch(err => console.error('Erro ao atualizar cache do Facebook:', err));
+
+    } catch (error) {
+        console.error('Erro ao atualizar meta tags:', error);
+    }
+}
+
+// Função de compartilhamento global
+window.shareOnFacebook = function(ad, adType) {
+    try {
+        const baseUrl = 'https://corretorcerto.netlify.app';
+        const shareUrl = `${baseUrl}/detalhes.html?id=${ad.id}&tipo=${adType}`;
+        const imageUrl = ad.imagens?.[0] ? 
+            new URL(ad.imagens[0], baseUrl).href : 
+            `${baseUrl}/assets/img/og-image-default.jpg`;
+        
+        const shareText = `🏘️ ${adType === 'imovel' ? 'Imóvel' : 'Veículo'} ${ad.negociacao === 'venda' ? 'à Venda' : 'para Alugar'}\n\n` +
+                         `📌 ${ad.titulo || 'Anúncio sem título'}\n` +
+                         `💰 ${ad.preco ? 'R$ ' + ad.preco.toLocaleString('pt-BR') : 'Preço sob consulta'}\n\n` +
+                         `🔍 Confira este e outros anúncios em Corretor Certo!`;
+
+        window.open(
+            `https://www.facebook.com/dialog/share?` +
+            `app_id=2676543169456090` +
+            `&display=popup` +
+            `&href=${encodeURIComponent(shareUrl)}` +
+            `&quote=${encodeURIComponent(shareText)}` +
+            `&picture=${encodeURIComponent(imageUrl)}` +
+            `&redirect_uri=${encodeURIComponent(shareUrl)}`,
+            'fb-share-dialog',
+            'width=600,height=500,top=100,left=100,toolbar=0,status=0'
+        );
+
+    } catch (error) {
+        console.error('Erro ao compartilhar:', error);
+        // Fallback básico
+        window.open(
+            `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`,
+            'fb-share-dialog',
+            'width=600,height=500'
+        );
+    }
+};
+// Inicializa o compartilhamento quando o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', setupFacebookShare);
