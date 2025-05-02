@@ -725,16 +725,16 @@ function showError(message) {
 }
 
 function showAlert(message, type = 'success') {
-    if (typeof Swal !== 'undefined') {
-        Swal.fire({
-            title: type === 'error' ? 'Erro!' : type === 'info' ? 'Informação' : 'Sucesso!',
-            text: message,
-            icon: type,
-            confirmButtonText: 'OK'
-        });
-    } else {
-        alert(`${type.toUpperCase()}: ${message}`);
-    }
+  if (typeof Swal !== 'undefined') {
+    Swal.fire({
+      title: type === 'error' ? 'Erro!' : 'Sucesso!',
+      text: message,
+      icon: type,
+      confirmButtonText: 'OK'
+    });
+  } else {
+    alert(`${type.toUpperCase()}: ${message}`);
+  }
 }
 
 
@@ -751,11 +751,17 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-document.getElementById('shareFacebookBtn').addEventListener('click', function() {
+// Função principal de compartilhamento
+function shareOnFacebook() {
   // Verifica se o SDK está carregado
   if (typeof FB === 'undefined') {
-    console.error('Facebook SDK não carregado!');
-    alert('Por favor, aguarde o carregamento do Facebook ou atualize a página.');
+    console.error('Facebook SDK não carregado');
+    
+    // Fallback: Abre uma nova janela com o sharer.php
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent(`Confira este ${currentAdType === 'imovel' ? 'imóvel' : 'veículo'}: ${currentAd.titulo || 'Anúncio sem título'}`);
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`, '_blank');
+    
     return;
   }
 
@@ -770,12 +776,21 @@ document.getElementById('shareFacebookBtn').addEventListener('click', function()
   }, function(response) {
     if (response && !response.error_message) {
       console.log('Compartilhado com sucesso!', response);
+      showAlert('Anúncio compartilhado com sucesso!', 'success');
     } else {
       console.error('Erro ao compartilhar:', response?.error_message || 'Usuário cancelou');
+      showAlert('Compartilhamento cancelado ou falhou', 'error');
     }
   });
-});
+}
 
+// Adicione o event listener corretamente
+document.addEventListener('DOMContentLoaded', function() {
+  const shareBtn = document.getElementById('shareFacebookBtn');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', shareOnFacebook);
+  }
+});
 // Fechar modal
 document.querySelector('.close').addEventListener('click', function() {
   document.getElementById('shareModal').style.display = 'none';
