@@ -245,6 +245,7 @@ function renderAdDetails() {
     // Carrega as informações do usuário se não estiverem disponíveis
     if (!currentAd.userName && currentAd.userId) {
         loadAgentInfo();
+        updateMetaTags();
     }
 }
 // Função auxiliar para formatar o tipo de caução
@@ -808,3 +809,27 @@ function shareOnFacebook() {
 
 // Inicializa o compartilhamento quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', setupFacebookShare);
+function updateMetaTags() {
+    if (!currentAd) return;
+    
+    const titulo = `${currentAd.titulo || 'Anúncio'} - Corretor Certo`;
+    const descricao = currentAd.descricao ? 
+        currentAd.descricao.substring(0, 160) + (currentAd.descricao.length > 160 ? '...' : '') : 
+        'Confira este anúncio no Corretor Certo';
+    const imagem = currentAd.imagens?.[0] || 'https://corretorcerto.netlify.app/images/logo-social.jpg';
+    const url = window.location.href;
+    
+    // Atualiza as meta tags
+    document.getElementById('ogTitle')?.setAttribute('content', titulo);
+    document.getElementById('ogDescription')?.setAttribute('content', descricao);
+    document.getElementById('ogImage')?.setAttribute('content', imagem);
+    document.getElementById('ogUrl')?.setAttribute('content', url);
+    
+    // Para o Twitter (opcional)
+    document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', titulo);
+    document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', descricao);
+    document.querySelector('meta[name="twitter:image"]')?.setAttribute('content', imagem);
+}
+
+// Chame esta função sempre que carregar um novo anúncio
+// Adicione isso onde você define currentAd (provavelmente na função loadAdDetails)
