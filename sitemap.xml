@@ -3,33 +3,33 @@
   xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
 >
   <url>
-    <loc>https://corretorcerto.com.br/</loc>
+    <loc>https://corretorcerto.netlify.app//</loc>
     <lastmod>2024-07-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 
   <!-- Páginas de anúncio -->
-  <url><loc>https://corretorcerto.com.br/anunciar.html</loc></url>
-  <url><loc>https://corretorcerto.com.br/anunciar-imovel.html</loc></url>
-  <url><loc>https://corretorcerto.com.br/anunciar-automovel.html</loc></url>
+  <url><loc>https://corretorcerto.netlify.app//anunciar.html</loc></url>
+  <url><loc>https://corretorcerto.netlify.app//anunciar-imovel.html</loc></url>
+  <url><loc>https://corretorcerto.netlify.app//anunciar-automovel.html</loc></url>
 
   <!-- Páginas de resultado e detalhes -->
-  <url><loc>https://corretorcerto.com.br/automoveis.html</loc></url>
-  <url><loc>https://corretorcerto.com.br/imoveis.html</loc></url>
-  <url><loc>https://corretorcerto.com.br/filtrar.html</loc></url>
-  <url><loc>https://corretorcerto.com.br/detalhes.html</loc></url>
-  <url><loc>https://corretorcerto.com.br/resultados-pesquisa.html</loc></url>
+  <url><loc>https://corretorcerto.netlify.app//automoveis.html</loc></url>
+  <url><loc>https://corretorcerto.netlify.app//imoveis.html</loc></url>
+  <url><loc>https://corretorcerto.netlify.app//filtrar.html</loc></url>
+  <url><loc>https://corretorcerto.netlify.app//detalhes.html</loc></url>
+  <url><loc>https://corretorcerto.netlify.app//resultados-pesquisa.html</loc></url>
 
   <!-- Usuário -->
-  <url><loc>https://corretorcerto.com.br/perfil.html</loc></url>
-  <url><loc>https://corretorcerto.com.br/editar-anuncio.html</loc></url>
-  <url><loc>https://corretorcerto.com.br/login.html</loc></url>
+  <url><loc>https://corretorcerto.netlify.app//perfil.html</loc></url>
+  <url><loc>https://corretorcerto.netlify.app//editar-anuncio.html</loc></url>
+  <url><loc>https://corretorcerto.netlify.app//login.html</loc></url>
 
   <!-- Institucional -->
-  <url><loc>https://corretorcerto.com.br/planos.html</loc></url>
-  <url><loc>https://corretorcerto.com.br/faq.html</loc></url>
-  <url><loc>https://corretorcerto.com.br/priv.html</loc></url>
-  <url><loc>https://corretorcerto.com.br/terms.html</loc></url>
+  <url><loc>https://corretorcerto.netlify.app//planos.html</loc></url>
+  <url><loc>https://corretorcerto.netlify.app//faq.html</loc></url>
+  <url><loc>https://corretorcerto.netlify.app//priv.html</loc></url>
+  <url><loc>https://corretorcerto.netlify.app//terms.html</loc></url>
 
 </urlset>
