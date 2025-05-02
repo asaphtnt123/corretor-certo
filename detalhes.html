@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+
+    <!-- Facebook SDK -->
+<div id="fb-root"></div>
+<script async defer crossorigin="anonymous" 
+  src="https://connect.facebook.net/pt_BR/sdk.js#xfbml=1&version=v19.0" 
+  nonce="SEU_NONCE_AQUI">
+</script>
+
+    
     <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -110,6 +119,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <span class="visually-hidden">Carregando...</span>
             </div>
             <p class="mt-3">Carregando anúncio...</p>
+
+            <!-- Botão de Compartilhamento -->
+<div class="share-button">
+  <button id="shareFacebookBtn" class="btn-share">
+    <i class="fab fa-facebook"></i> Compartilhar no Facebook
+  </button>
+</div>
+
+<!-- Modal de Confirmação (Opcional) -->
+<div id="shareModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <p>Anúncio compartilhado com sucesso!</p>
+  </div>
+</div>
+            
         </div>
 
         <!-- Estado de Erro -->
