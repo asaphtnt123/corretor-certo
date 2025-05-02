@@ -10,7 +10,7 @@ exports.handler = async (event) => {
     secure: true, // true para 465, false para outras portas
     auth: {
       user: 'contato@corretorcerto.online',
-      pass: process.env.Dolar520@, // Senha do e-mail (definida no Netlify)
+      pass: process.env.SMTP_PASSWORD, // Senha do e-mail (definida no Netlify)
     },
   });
 
