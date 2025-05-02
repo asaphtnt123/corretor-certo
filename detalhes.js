@@ -752,20 +752,30 @@ window.addEventListener('DOMContentLoaded', async () => {
 });
 
 document.getElementById('shareFacebookBtn').addEventListener('click', function() {
-    const urlToShare = window.location.href;
-    const quoteText = `Confira este ${currentAdType === 'imovel' ? 'imóvel' : 'veículo'} no Corretor Certo: ${currentAd.titulo || 'Anúncio sem título'}`;
-    
-    FB.ui({
-        method: 'share',
-        href: urlToShare,
-        quote: quoteText,
-        hashtag: '#CorretorCerto',
-    }, function(response) {
-        if (response && !response.error_message) {
-            console.log('Anúncio compartilhado com sucesso!');
-        }
-    });
+  // Verifica se o SDK está carregado
+  if (typeof FB === 'undefined') {
+    console.error('Facebook SDK não carregado!');
+    alert('Por favor, aguarde o carregamento do Facebook ou atualize a página.');
+    return;
+  }
+
+  const urlToShare = window.location.href;
+  const quoteText = `Confira este ${currentAdType === 'imovel' ? 'imóvel' : 'veículo'} no Corretor Certo: ${currentAd.titulo || 'Anúncio sem título'}`;
+  
+  FB.ui({
+    method: 'share',
+    href: urlToShare,
+    quote: quoteText,
+    hashtag: '#CorretorCerto'
+  }, function(response) {
+    if (response && !response.error_message) {
+      console.log('Compartilhado com sucesso!', response);
+    } else {
+      console.error('Erro ao compartilhar:', response?.error_message || 'Usuário cancelou');
+    }
+  });
 });
+
 // Fechar modal
 document.querySelector('.close').addEventListener('click', function() {
   document.getElementById('shareModal').style.display = 'none';
