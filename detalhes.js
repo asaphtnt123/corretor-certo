@@ -767,69 +767,46 @@ function setupFacebookShare() {
 }
 
 function shareOnFacebook() {
-    try {
-        // Pega os dados do anúncio
-        const titulo = currentAd?.titulo || 'Ótimo anúncio no Corretor Certo';
-        const preco = currentAd?.preco ? `R$ ${currentAd.preco.toLocaleString('pt-BR')}` : 'Preço a consultar';
-        const localizacao = currentAd?.bairro || currentAd?.cidade || '';
-        const tipoAnuncio = currentAdType === 'imovel' ? 'Imóvel' : 'Veículo';
-        
-        // Pega a primeira imagem do anúncio (ou imagem padrão)
-        const imagem = currentAd?.imagens?.[0] || 'https://corretorcerto.netlify.app/images/logo-social.jpg';
-        
-        // Texto profissional para compartilhamento
-        const texto = `🏘️ ${tipoAnuncio} à ${currentAd?.negociacao === 'venda' ? 'Venda' : 'Aluguel'}\n✍️ ${titulo}\n💵 ${preco}\n📍 ${localizacao}\n\n🔍 Encontrei no Corretor Certo - Plataforma especializada em ${tipoAnuncio === 'Imóvel' ? 'imóveis' : 'veículos'}!`;
-        
-        // URL completa para compartilhamento
-        const urlCompartilhamento = window.location.href;
-        
-        // Abre o diálogo de compartilhamento com todos os parâmetros
-        window.open(
-            `https://www.facebook.com/dialog/share?` +
-            `app_id=2676543169456090` +  // App ID genérico para compartilhamento básico
-            `&display=popup` +
-            `&href=${encodeURIComponent(urlCompartilhamento)}` +
-            `&quote=${encodeURIComponent(texto)}` +
-            `&picture=${encodeURIComponent(imagem)}` +
-            `&redirect_uri=https://corretorcerto.netlify.app`,
-            'fb-share-dialog',
-            'width=600,height=500,top=100,left=100,toolbar=0,status=0'
-        );
+    const baseUrl = 'https://corretorcerto.netlify.app';
+    const shareUrl = `${baseUrl}/detalhes.html?id=${currentAd.id}&tipo=${currentAdType}`;
+    const imageUrl = currentAd.imagens?.[0] ? 
+        new URL(currentAd.imagens[0], baseUrl).href : 
+        `${baseUrl}/assets/img/og-image-default.jpg`;
 
-    } catch (error) {
-        console.error('Erro ao compartilhar:', error);
-        // Fallback simples
-        window.open(
-            `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`,
-            'fb-share-dialog',
-            'width=600,height=500'
-        );
-    }
+    window.open(
+        `https://www.facebook.com/dialog/share?` +
+        `app_id=2676543169456090` +
+        `&display=popup` +
+        `&href=${encodeURIComponent(shareUrl)}` +
+        `&picture=${encodeURIComponent(imageUrl)}` +
+        `&redirect_uri=${encodeURIComponent(shareUrl)}`,
+        'fb-share',
+        'width=600,height=500'
+    );
 }
 
 // Inicializa o compartilhamento quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', setupFacebookShare);
-function updateMetaTags() {
+async function updateMetaTags() {
     if (!currentAd) return;
+
+    // URLs absolutas
+    const baseUrl = 'https://corretorcerto.netlify.app';
+    const canonicalUrl = `${baseUrl}/detalhes.html?id=${currentAd.id}&tipo=${currentAdType}`;
     
-    const titulo = `${currentAd.titulo || 'Anúncio'} - Corretor Certo`;
-    const descricao = currentAd.descricao ? 
-        currentAd.descricao.substring(0, 160) + (currentAd.descricao.length > 160 ? '...' : '') : 
-        'Confira este anúncio no Corretor Certo';
-    const imagem = currentAd.imagens?.[0] || 'https://corretorcerto.netlify.app/images/logo-social.jpg';
-    const url = window.location.href;
-    
-    // Atualiza as meta tags
-    document.getElementById('ogTitle')?.setAttribute('content', titulo);
-    document.getElementById('ogDescription')?.setAttribute('content', descricao);
-    document.getElementById('ogImage')?.setAttribute('content', imagem);
-    document.getElementById('ogUrl')?.setAttribute('content', url);
-    
-    // Para o Twitter (opcional)
-    document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', titulo);
-    document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', descricao);
-    document.querySelector('meta[name="twitter:image"]')?.setAttribute('content', imagem);
+    // Imagem principal ou padrão
+    const imageUrl = currentAd.imagens?.[0] ? 
+        new URL(currentAd.imagens[0], baseUrl).href : 
+        `${baseUrl}/assets/img/og-image-default.jpg`;
+
+    // Atualiza todas as tags
+    document.querySelector('link[rel="canonical"]').href = canonicalUrl;
+    document.getElementById('ogUrl').content = canonicalUrl;
+    document.getElementById('ogTitle').content = `${currentAd.titulo} | Corretor Certo`;
+    document.getElementById('ogDescription').content = currentAd.descricao?.substring(0, 155) + '...';
+    document.getElementById('ogImage').content = imageUrl;
+
+    // Força atualização no Facebook
+    await fetch(`https://graph.facebook.com/?id=${encodeURIComponent(canonicalUrl)}&scrape=true&fields=og_object`);
 }
 
-// Chame esta função sempre que carregar um novo anúncio
-// Adicione isso onde você define currentAd (provavelmente na função loadAdDetails)
