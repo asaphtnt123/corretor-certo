@@ -285,6 +285,14 @@ async function handleRegister(e) {
         // Criar usuário no Firebase Auth
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
+
+      // Chamar a função para enviar e-mail
+    await fetch('/.netlify/functions/sendEmail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, name }),
+    });
+      
         
         // Preparar dados para Firestore
         const userData = {
