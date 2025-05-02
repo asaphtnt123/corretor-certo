@@ -2709,7 +2709,7 @@ document.querySelectorAll('.nav-link').forEach(link => {
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        const userStatusRef = ref(rtdb, `/status/${user.uid}`);
+        const userStatusRef = dbRef(rtdb, `/status/${user.uid}`);
         
         // Quando o usuário sair (fechar aba, perder conexão, etc)
         onDisconnect(userStatusRef).remove();
@@ -2724,7 +2724,7 @@ onAuthStateChanged(auth, (user) => {
 
 // ============== CONTAGEM DE USUARIOS ATIVOS NO MOMENTO ATUAL ==============
 
-const statusRef = ref(rtdb, '/status');
+const statusRef = dbRef(rtdb, '/status');
 
 onValue(statusRef, (snapshot) => {
     const statusData = snapshot.val();
