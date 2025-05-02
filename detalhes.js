@@ -746,3 +746,28 @@ window.addEventListener('DOMContentLoaded', async () => {
         }, 1000);
     }
 });
+
+document.getElementById('shareFacebookBtn').addEventListener('click', function() {
+  // URL do anúncio (dinâmica ou fixa)
+  const urlToShare = window.location.href; 
+  // Ou use um link específico: const urlToShare = 'https://corretorcerto.netlify.app/anuncio-123';
+
+  FB.ui({
+    method: 'share',
+    href: urlToShare,
+    quote: 'Confira este anúncio incrível no Corretor Certo!',
+    hashtag: '#CorretorCerto',
+  }, function(response) {
+    if (response && !response.error_message) {
+      // Mostrar modal de sucesso
+      document.getElementById('shareModal').style.display = 'block';
+    } else {
+      console.error('Erro ao compartilhar:', response.error_message);
+    }
+  });
+});
+
+// Fechar modal
+document.querySelector('.close').addEventListener('click', function() {
+  document.getElementById('shareModal').style.display = 'none';
+});
