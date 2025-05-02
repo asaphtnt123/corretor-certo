@@ -751,47 +751,55 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// Função principal de compartilhamento
-function shareOnFacebook() {
-  // Verifica se o SDK está carregado
-  if (typeof FB === 'undefined') {
-    console.error('Facebook SDK não carregado');
-    
-    // Fallback: Abre uma nova janela com o sharer.php
-    const url = encodeURIComponent(window.location.href);
-    const text = encodeURIComponent(`Confira este ${currentAdType === 'imovel' ? 'imóvel' : 'veículo'}: ${currentAd.titulo || 'Anúncio sem título'}`);
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`, '_blank');
-    
-    return;
-  }
-
-  const urlToShare = window.location.href;
-  const quoteText = `Confira este ${currentAdType === 'imovel' ? 'imóvel' : 'veículo'} no Corretor Certo: ${currentAd.titulo || 'Anúncio sem título'}`;
-  
-  FB.ui({
-    method: 'share',
-    href: urlToShare,
-    quote: quoteText,
-    hashtag: '#CorretorCerto'
-  }, function(response) {
-    if (response && !response.error_message) {
-      console.log('Compartilhado com sucesso!', response);
-      showAlert('Anúncio compartilhado com sucesso!', 'success');
-    } else {
-      console.error('Erro ao compartilhar:', response?.error_message || 'Usuário cancelou');
-      showAlert('Compartilhamento cancelado ou falhou', 'error');
-    }
-  });
+function setupFacebookShare() {
+    // Cria um evento delegado para o botão (funciona mesmo se o botão for criado depois)
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'shareFacebookBtn') {
+            shareOnFacebook();
+        }
+        
+        // Também funciona se clicar em elementos dentro do botão
+        if (e.target && e.target.closest('#shareFacebookBtn')) {
+            shareOnFacebook();
+        }
+    });
 }
 
-// Adicione o event listener corretamente
-document.addEventListener('DOMContentLoaded', function() {
-  const shareBtn = document.getElementById('shareFacebookBtn');
-  if (shareBtn) {
-    shareBtn.addEventListener('click', shareOnFacebook);
-  }
-});
-// Fechar modal
-document.querySelector('.close').addEventListener('click', function() {
-  document.getElementById('shareModal').style.display = 'none';
-});
+// Função de compartilhamento melhorada
+function shareOnFacebook() {
+    try {
+        // Pega os dados do anúncio atual
+        const titulo = currentAd?.titulo || 'Ótimo anúncio no Corretor Certo';
+        const preco = currentAd?.preco ? `R$ ${currentAd.preco.toLocaleString('pt-BR')}` : 'Preço a consultar';
+        const localizacao = currentAd?.bairro || currentAd?.cidade || '';
+        const tipoAnuncio = currentAdType === 'imovel' ? 'Imóvel' : 'Veículo';
+        
+        // Texto formatado para compartilhamento
+        const texto = `🏡 ${tipoAnuncio}: ${titulo}\n💵 ${preco}\n📍 ${localizacao}\n\nConfira este anúncio no Corretor Certo! #CorretorCerto`;
+        
+        // URL atual
+        const urlCompartilhamento = window.location.href;
+        
+        // Abre a janela de compartilhamento
+        window.open(
+            `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(urlCompartilhamento)}&quote=${encodeURIComponent(texto)}`,
+            'fb-share-dialog',
+            'width=600,height=500,top=100,left=100,toolbar=0,status=0'
+        );
+        
+        // Registra o compartilhamento (opcional)
+        console.log('Anúncio compartilhado:', { titulo, preco, localizacao });
+        
+    } catch (error) {
+        console.error('Erro ao compartilhar:', error);
+        // Fallback simples caso ocorra algum erro
+        window.open(
+            `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`,
+            'fb-share-dialog',
+            'width=600,height=500'
+        );
+    }
+}
+
+// Inicializa o compartilhamento quando o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', setupFacebookShare);
