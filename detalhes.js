@@ -215,16 +215,20 @@ function renderAdDetails() {
                     <p class="text-muted" id="agentType">${currentAd.userType || 'Usuário'}</p>
                     ${currentAd.userPhone ? `<p class="text-muted mb-3"><i class="fas fa-phone"></i> ${currentAd.userPhone}</p>` : ''}
                     <div class="d-grid gap-2">
-                        <a href="${whatsappLink}" class="btn btn-success" id="btnWhatsApp" target="_blank">
-                            <i class="fab fa-whatsapp me-2"></i> Contatar via WhatsApp
-                        </a>
-                        <button class="btn ${isFavorite ? 'btn-danger' : 'btn-outline-primary'}" id="btnFavorite">
-                            <i class="${isFavorite ? 'fas' : 'far'} fa-heart me-2"></i> ${isFavorite ? 'Remover dos' : 'Adicionar aos'} Favoritos
-                        </button>
-                        <button class="btn btn-outline-secondary" id="btnReport">
-                            <i class="fas fa-flag me-2"></i> Denunciar anúncio
-                        </button>
-                    </div>
+    <a href="${whatsappLink}" class="btn btn-success" id="btnWhatsApp" target="_blank">
+        <i class="fab fa-whatsapp me-2"></i> Contatar via WhatsApp
+    </a>
+    <button class="btn ${isFavorite ? 'btn-danger' : 'btn-outline-primary'}" id="btnFavorite">
+        <i class="${isFavorite ? 'fas' : 'far'} fa-heart me-2"></i> ${isFavorite ? 'Remover dos' : 'Adicionar aos'} Favoritos
+    </button>
+    <!-- Botão de Compartilhamento no Facebook -->
+    <button class="btn btn-primary" id="shareFacebookBtn">
+        <i class="fab fa-facebook-f me-2"></i> Compartilhar
+    </button>
+    <button class="btn btn-outline-secondary" id="btnReport">
+        <i class="fas fa-flag me-2"></i> Denunciar anúncio
+    </button>
+</div>
                 </div>
             </div>
         </div>
