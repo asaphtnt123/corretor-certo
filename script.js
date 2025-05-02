@@ -1,47 +1,64 @@
-// ============== CONFIGURAÇÃO DO FIREBASE ==============
-// Adicione esta importação no início do arquivo com as outras importações do Firebase
-import { getCountFromServer } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+// ============== IMPORTAÇÕES DO FIREBASE ==============
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+
 import { 
-    getFirestore,
-    doc,
-    getDoc,
-    updateDoc,
-    collection,
-    query,
-    where,
-    getDocs,
-    orderBy,
-    limit, 
-    addDoc,
-    onSnapshot ,
-    deleteDoc
+  getFirestore,
+  doc,
+  getDoc,
+  updateDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  orderBy,
+  limit, 
+  addDoc,
+  onSnapshot,
+  deleteDoc,
+  getCountFromServer
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+import { 
+  getAuth, 
+  setPersistence, 
+  browserLocalPersistence, 
+  onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+import { 
+  getStorage, 
+  ref as storageRef, 
+  uploadBytes, 
+  getDownloadURL 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+import { 
+  getDatabase, 
+  ref as dbRef, 
+  onDisconnect, 
+  onValue, 
+  set, 
+  serverTimestamp 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
-
-
-
-const rtdb = getDatabase(app);
-
-
+// ============== CONFIGURAÇÃO DO FIREBASE ==============
 const firebaseConfig = {
   apiKey: "AIzaSyCNr5JoKsWJVeUYAaVDqmPznZo100v0uvg",
   authDomain: "corretorcerto-76933.firebaseapp.com",
   databaseURL: "https://corretorcerto-76933-default-rtdb.firebaseio.com",
   projectId: "corretorcerto-76933",
-  storageBucket: "corretorcerto-76933.firebasestorage.app",
+  storageBucket: "corretorcerto-76933.appspot.com",
   messagingSenderId: "357149829474",
   appId: "1:357149829474:web:324b2005d82eabbce5e43b"
 };
 
+// Inicialização dos serviços Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
-
-import { getDatabase, ref as dbRef, onDisconnect, onValue, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+const rtdb = getDatabase(app); // Agora está após a definição de app
 
 // ============== VARIÁVEIS GLOBAIS ==============
 let currentAdData = null;
