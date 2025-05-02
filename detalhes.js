@@ -765,34 +765,39 @@ function setupFacebookShare() {
     });
 }
 
-// Função de compartilhamento melhorada
 function shareOnFacebook() {
     try {
-        // Pega os dados do anúncio atual
+        // Pega os dados do anúncio
         const titulo = currentAd?.titulo || 'Ótimo anúncio no Corretor Certo';
         const preco = currentAd?.preco ? `R$ ${currentAd.preco.toLocaleString('pt-BR')}` : 'Preço a consultar';
         const localizacao = currentAd?.bairro || currentAd?.cidade || '';
         const tipoAnuncio = currentAdType === 'imovel' ? 'Imóvel' : 'Veículo';
         
-        // Texto formatado para compartilhamento
-        const texto = `🏡 ${tipoAnuncio}: ${titulo}\n💵 ${preco}\n📍 ${localizacao}\n\nConfira este anúncio no Corretor Certo! #CorretorCerto`;
+        // Pega a primeira imagem do anúncio (ou imagem padrão)
+        const imagem = currentAd?.imagens?.[0] || 'https://corretorcerto.netlify.app/images/logo-social.jpg';
         
-        // URL atual
+        // Texto profissional para compartilhamento
+        const texto = `🏘️ ${tipoAnuncio} à ${currentAd?.negociacao === 'venda' ? 'Venda' : 'Aluguel'}\n✍️ ${titulo}\n💵 ${preco}\n📍 ${localizacao}\n\n🔍 Encontrei no Corretor Certo - Plataforma especializada em ${tipoAnuncio === 'Imóvel' ? 'imóveis' : 'veículos'}!`;
+        
+        // URL completa para compartilhamento
         const urlCompartilhamento = window.location.href;
         
-        // Abre a janela de compartilhamento
+        // Abre o diálogo de compartilhamento com todos os parâmetros
         window.open(
-            `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(urlCompartilhamento)}&quote=${encodeURIComponent(texto)}`,
+            `https://www.facebook.com/dialog/share?` +
+            `app_id=2676543169456090` +  // App ID genérico para compartilhamento básico
+            `&display=popup` +
+            `&href=${encodeURIComponent(urlCompartilhamento)}` +
+            `&quote=${encodeURIComponent(texto)}` +
+            `&picture=${encodeURIComponent(imagem)}` +
+            `&redirect_uri=https://corretorcerto.netlify.app`,
             'fb-share-dialog',
             'width=600,height=500,top=100,left=100,toolbar=0,status=0'
         );
-        
-        // Registra o compartilhamento (opcional)
-        console.log('Anúncio compartilhado:', { titulo, preco, localizacao });
-        
+
     } catch (error) {
         console.error('Erro ao compartilhar:', error);
-        // Fallback simples caso ocorra algum erro
+        // Fallback simples
         window.open(
             `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`,
             'fb-share-dialog',
