@@ -21,6 +21,12 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
+
+import { getDatabase, ref, onDisconnect, onValue, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+const rtdb = getDatabase(app);
+
+
 const firebaseConfig = {
   apiKey: "AIzaSyCNr5JoKsWJVeUYAaVDqmPznZo100v0uvg",
   authDomain: "corretorcerto-76933.firebaseapp.com",
@@ -2679,6 +2685,36 @@ document.querySelectorAll('.nav-link').forEach(link => {
         document.body.classList.remove('menu-open');
     });
 });
+
+
+
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        const userStatusRef = ref(rtdb, `/status/${user.uid}`);
+        
+        // Quando o usuário sair (fechar aba, perder conexão, etc)
+        onDisconnect(userStatusRef).remove();
+
+        // Define como online
+        set(userStatusRef, {
+            estado: 'online',
+            timestamp: serverTimestamp()
+        });
+    }
+});
+
+// ============== CONTAGEM DE USUARIOS ATIVOS NO MOMENTO ATUAL ==============
+
+const statusRef = ref(rtdb, '/status');
+
+onValue(statusRef, (snapshot) => {
+    const statusData = snapshot.val();
+    const onlineCount = statusData ? Object.keys(statusData).length : 0;
+    
+    document.getElementById('contador-online').innerText = `${onlineCount} usuário(s) online`;
+});
+
 // ============== EXPORTAÇÕES GLOBAIS ==============
 window.mudarImagem = mudarImagem;
 window.openDetailsModal = openDetailsModal;
