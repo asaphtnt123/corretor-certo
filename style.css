@@ -1966,6 +1966,7 @@ footer {
 .header-actions {
     display: flex;
     align-items: center;
+margin-right: 10px;
 }
 
 /* Ícone de Pesquisa */
@@ -2280,6 +2281,8 @@ main {
     /* Container do logo ajustado */
     #logoContainer {
         height: 100px;
+	margin-left: 10px;
+
     }
 }
 .destaque-item {
@@ -3109,6 +3112,8 @@ section.banner .btn:hover::before {
     section.banner {
         height: 350px;
         border-radius: 12px;
+	  width: 100%;
+
     }
     
     section.banner h1 {
@@ -3146,7 +3151,7 @@ section.banner .btn:hover::before {
 .footer {
     background: var(--gradient-primary);
     color: var(--text-light);
-    padding: 3rem 0 0;
+    padding: 1rem 0 0;
     position: relative;
     overflow: hidden;
 }
@@ -3180,13 +3185,11 @@ section.banner .btn:hover::before {
 }
 
 .footer-logo {
-    height: 50px;
-    margin-bottom: 1rem;
-    filter: brightness(0) invert(1);
+    height: 130px;
 }
 
 .footer-slogan {
-    font-size: 0.9rem;
+    font-size: 1.9rem;
     color: var(--text-muted);
     font-style: italic;
     margin-top: 0.5rem;
@@ -3232,9 +3235,9 @@ section.banner .btn:hover::before {
     display: flex;
     align-items: center;
     gap: 0.8rem;
-    color: var(--text-muted);
+    color: #22404a;
     margin-bottom: 1rem;
-    font-size: 0.9rem;
+    font-size: 18px;
 }
 
 .contact-info i {
@@ -3276,6 +3279,9 @@ section.banner .btn:hover::before {
     display: flex;
     gap: 1.2rem;
     margin-bottom: 1.5rem;
+	    margin-top: 15px;
+
+	
 }
 
 .social-link {
@@ -3288,6 +3294,8 @@ section.banner .btn:hover::before {
     background: rgba(255, 255, 255, 0.1);
     color: white;
     transition: all 0.3s ease;
+	    justify-content: center;
+
 }
 
 .social-link:hover {
@@ -3653,6 +3661,7 @@ section.banner .btn:hover::before {
     color: #ccc;
     font-size: 18px;
     border-top: 1px solid #444;
+	    padding-bottom: 15px;
 }
 
 .footer-bottom a {
@@ -4178,10 +4187,10 @@ select.form-control {
 /* Estilo do botão flutuante */
 .btn-busca-flutuante {
     position: fixed;
-    top: 110px;
-    right: 20px;
-    width: 50px;
-    height: 50px;
+        top: 134px;
+    right: 2px;
+    width: 43px;
+    height: 43px;
     border-radius: 50%;
     background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
     color: white;
@@ -4491,6 +4500,7 @@ select.form-control {
 .counter-label {
     font-size: 0.9rem;
     color: #666;
+	    font-size: 19px;
     text-align: left;
 }
 
@@ -4498,6 +4508,7 @@ select.form-control {
     margin-top: 10px;
     font-size: 0.85rem;
     color: #777;
+	    font-size: 20px;
     font-style: italic;
 }
 
