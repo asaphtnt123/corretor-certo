@@ -1152,22 +1152,28 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // Configuração do botão de login
-    const loginBtn = document.getElementById('login-btn');
-    if (loginBtn) {
-        onAuthStateChanged(auth, (user) => {
-            loginBtn.innerHTML = user 
-                ? `<p>${user.displayName || "Meu Perfil"}</p>`
-                : `<p>Login / Cadastro</p>`;
-            loginBtn.href = user ? "perfil.html" : "login.html";
-        });
+const loginBtn = document.getElementById('login-btn');
+if (loginBtn) {
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // Se o usuário estiver logado, mostra o nome ou email
+            const userName = user.displayName || user.email.split('@')[0] || "Meu Perfil";
+            loginBtn.innerHTML = `<p>${userName}</p>`;
+            loginBtn.href = "perfil.html";
+        } else {
+            // Se não estiver logado, mostra "Login / Cadastro"
+            loginBtn.innerHTML = `<p>Login / Cadastro</p>`;
+            loginBtn.href = "login.html";
+        }
+    });
 
-        loginBtn.addEventListener('click', (e) => {
-            if (!auth.currentUser) {
-                e.preventDefault();
-                window.location.href = "login.html";
-            }
-        });
-    }
+    loginBtn.addEventListener('click', (e) => {
+        if (!auth.currentUser) {
+            e.preventDefault();
+            window.location.href = "login.html";
+        }
+    });
+}
 
     // Configuração do modal
     document.querySelector('.close-modal')?.addEventListener('click', closeDetailsModal);
