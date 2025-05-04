@@ -276,7 +276,9 @@
                         </div>
                         <div class="card-content">
                             <h3 class="card-title">Apartamento 3 Quartos Jardins</h3>
-                            <p class="card-price">R$ 1.250.000</p>
+                            <p class="card-price">
+    <span>${property.preco?.toLocaleString('pt-BR') || 'Sob consulta'}</span>
+</p>
                             <div class="card-details">
                                 <span><i class="fas fa-map-marker-alt"></i> Jardins, SP</span>
                                 <span><i class="fas fa-expand"></i> 120 m²</span>
