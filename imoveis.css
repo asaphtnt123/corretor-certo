@@ -73,7 +73,7 @@ body {
 }
 
 .hero-title {
-    font-size: 3rem;
+    font-size: 23px;
     font-weight: 700;
     margin-bottom: 1rem;
     position: relative;
@@ -314,10 +314,39 @@ body {
 }
 
 .card-price {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--color-primary);
-    margin-bottom: 1rem;
+    font-size: 1.5rem; /* 24px equivalente (usando rem para melhor escalabilidade) */
+    font-weight: 700; /* Mais negrito para destacar */
+    color: #2c3e50; /* Azul escuro sofisticado */
+    margin: 0.5rem 0; /* Espaçamento adequado */
+    letter-spacing: 0.5px; /* Espaçamento sutil entre letras */
+    font-family: 'Montserrat', sans-serif; /* Fonte moderna (certifique-se de importar a fonte) */
+    position: relative;
+    display: inline-block;
+}
+
+/* Efeito de destaque opcional */
+.card-price::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, #3498db, transparent);
+    border-radius: 2px;
+}
+
+/* Se quiser adicionar um símbolo de moeda mais elegante */
+.card-price::before {
+    content: 'R$';
+    font-size: 0.8em;
+    margin-right: 4px;
+    opacity: 0.8;
+}
+
+/* Para valores altos que podem quebrar linha */
+.card-price span {
+    white-space: nowrap;
 }
 
 .card-details {
@@ -331,7 +360,7 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 0.9rem;
+        font-size: 18px;
     color: var(--text-medium);
 }
 
@@ -577,7 +606,5 @@ body {
         font-size: 1.1rem;
     }
     
-    .card-price {
-        font-size: 1.2rem;
-    }
+   
 }
