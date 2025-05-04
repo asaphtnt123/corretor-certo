@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap');
+
 :root {
     --gradient-primary: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
     --color-primary: #2c5364;
@@ -607,4 +609,30 @@ body {
     }
     
    
+}
+/* Para imóveis de aluguel */
+.card-price.aluguel {
+    color: #27ae60; /* Verde para aluguel */
+}
+
+/* Para imóveis de venda */
+.card-price.venda {
+    color: #e74c3c; /* Vermelho para venda */
+}
+
+.property-card:hover .card-price {
+    transform: translateY(-2px);
+    transition: transform 0.2s ease;
+}
+
+.card-price.sob-consulta {
+    font-style: italic;
+    font-weight: 500;
+    color: #7f8c8d;
+}
+
+@media (max-width: 768px) {
+    .card-price {
+        font-size: 1.2rem;
+    }
 }
