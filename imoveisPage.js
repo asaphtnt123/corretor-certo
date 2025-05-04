@@ -31,6 +31,7 @@ const filterTipo = document.getElementById('filter-tipo');
 const filterQuartos = document.getElementById('filter-quartos');
 const filterPreco = document.getElementById('filter-preco');
 const btnLimpar = document.getElementById('btn-limpar');
+const filterNegociacao = document.getElementById('filter-negociacao');
 
 // Variáveis globais
 let currentType = 'todos';
@@ -38,7 +39,8 @@ let currentFilters = {
     bairro: '',
     tipo: '',
     quartos: '',
-    preco: ''
+    preco: '',
+    negociacao: ''
 };
 
 // Função debounce para evitar múltiplas chamadas
@@ -50,13 +52,13 @@ function debounce(func, timeout = 300) {
     };
 }
 
-// Aplicar filtros com debounce
 const applyFilters = debounce(() => {
     currentFilters = {
         bairro: filterBairro.value,
         tipo: filterTipo.value,
         quartos: filterQuartos.value,
-        preco: filterPreco.value
+        preco: filterPreco.value,
+        negociacao: filterNegociacao.value
     };
     loadAnuncios();
 });
@@ -97,7 +99,9 @@ async function loadAnuncios() {
         if (currentType !== 'todos') {
             q = query(q, where("tipo", "==", currentType));
         }
-        
+        if (currentFilters.negociacao && currentFilters.negociacao.trim() !== '' && currentFilters.negociacao !== 'Negociação') {
+    q = query(q, where("negociacao", "==", currentFilters.negociacao.trim()));
+}
         // Aplicar filtro de bairro
         if (currentFilters.bairro && currentFilters.bairro.trim() !== '' && currentFilters.bairro !== 'Bairro') {
             q = query(q, where("bairro", "==", currentFilters.bairro.trim()));
@@ -309,6 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
     filterTipo.addEventListener('change', applyFilters);
     filterQuartos.addEventListener('change', applyFilters);
     filterPreco.addEventListener('change', applyFilters);
+    filterNegociacao.addEventListener('change', applyFilters);
 });
 
 // Função para limpar filtros
@@ -318,6 +323,7 @@ btnLimpar?.addEventListener('click', () => {
     filterTipo.value = '';
     filterQuartos.value = '';
     filterPreco.value = '';
+    filterNegociacao.value = '';
     
     // Resetar tipo para 'todos'
     propertyTypes.forEach(t => t.classList.remove('active'));
@@ -327,6 +333,9 @@ btnLimpar?.addEventListener('click', () => {
     // Recarregar anúncios sem filtros
     loadAnuncios();
 });
+
+// Adicione o event listener para o novo filtro
+
 
 // Função global para SweetAlert
 function showAlert(message, type = 'success') {
