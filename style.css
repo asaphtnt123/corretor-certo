@@ -383,11 +383,7 @@ body {
 }
 
 /* Ajuste para que o conteúdo não fique escondido pelo header */
-main {
-    font-size: 18px;
-    color: #333;
-    padding-top: 80px;
-}
+
 
 
 /* Botão de Filtrar */
@@ -2013,6 +2009,7 @@ main {
     font-size: 18px;
     color: #333;
     padding-top: 80px;
+	background-color:#171f39;
 }
 
 
