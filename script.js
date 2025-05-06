@@ -42,10 +42,9 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 
-// ============== CONFIGURAÇÃO DO FIREBASE ==============
 const firebaseConfig = {
   apiKey: "AIzaSyCNr5JoKsWJVeUYAaVDqmPznZo100v0uvg",
-  authDomain: "corretorcerto-76933.firebaseapp.com",
+  authDomain: "corretorcerto.com.br", // Domínio principal SEM "www"
   databaseURL: "https://corretorcerto-76933-default-rtdb.firebaseio.com",
   projectId: "corretorcerto-76933",
   storageBucket: "corretorcerto-76933.appspot.com",
@@ -59,6 +58,20 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 const rtdb = getDatabase(app); // Agora está após a definição de app
+
+
+// Verifica se o domínio é um dos autorizados
+const allowedDomains = [
+  "corretorcerto.com.br",
+  "www.corretorcerto.com.br",
+  "corretorcerto.netlify.app"
+];
+
+if (!allowedDomains.includes(window.location.hostname)) {
+  console.warn("Domínio não autorizado! Redirecionando...");
+  window.location.href = "https://www.corretorcerto.com.br"; // Redireciona para o domínio principal
+}
+
 
 // ============== VARIÁVEIS GLOBAIS ==============
 let currentAdData = null;
