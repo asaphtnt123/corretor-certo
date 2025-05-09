@@ -4183,6 +4183,8 @@ select.form-control {
 
 /* Estilo do botão flutuante */
 .btn-busca-flutuante {
+	    display: none;
+
     position: fixed;
         top: 134px;
     right: 2px;
