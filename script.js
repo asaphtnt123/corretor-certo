@@ -2165,58 +2165,59 @@ function renderBuyerCTA(prefs) {
 }
 
 function renderGuestCTA() {
-    const ctaContent = document.querySelector('.cta-content');
-    ctaContent.className = 'cta-content cta-guest';
-    ctaContent.innerHTML = `
-        <h2 class="cta-title">Sua Jornada Começa Aqui</h2>
-        <p class="cta-subtitle">Junte-se a <span class="cta-highlight">50.000+ usuários</span> que já encontraram ou anunciaram com sucesso em nossa plataforma</p>
-        
-        <div class="cta-stats">
-            <div class="cta-stat">
-                <div class="cta-stat-number">5.000+</div>
-                <div class="cta-stat-label">Anúncios Ativos</div>
-            </div>
-            <div class="cta-stat">
-                <div class="cta-stat-number">98%</div>
-                <div class="cta-stat-label">Satisfação</div>
-            </div>
-            <div class="cta-stat">
-                <div class="cta-stat-number">0</div>
-                <div class="cta-stat-label">Taxa de Cadastro</div>
-            </div>
-        </div>
-        
-        <p>Cadastre-se em <span class="cta-highlight">menos de 1 minuto</span> e tenha acesso completo às melhores oportunidades</p>
-        
-        <div class="cta-buttons">
-            <a href="registro.html?action=buscar" class="cta-button">
-                <i class="fas fa-search"></i> Buscar Imóveis/Veículos
-            </a>
-            <a href="registro.html?action=anunciar" class="cta-button">
-                <i class="fas fa-plus"></i> Anunciar Propriedade
-            </a>
-        </div>
-        
-        <p class="cta-note"><i class="fas fa-shield-alt"></i> Ambiente 100% seguro e verificado</p>
-    `;
+  const ctaContent = document.querySelector('.cta-content');
+  ctaContent.className = 'cta-content cta-guest';
+  ctaContent.innerHTML = `
+    <h2 class="cta-title">Comece sua Jornada com a Corretor Certo</h2>
+    <p class="cta-subtitle">Os primeiros usuários já estão encontrando ótimas oportunidades — venha conferir você também!</p>
+
+    <div class="cta-stats">
+      <div class="cta-stat">
+        <div class="cta-stat-number">Novidade</div>
+        <div class="cta-stat-label">Plataforma em Lançamento</div>
+      </div>
+      <div class="cta-stat">
+        <div class="cta-stat-number">100%</div>
+        <div class="cta-stat-label">Cadastro Gratuito</div>
+      </div>
+      <div class="cta-stat">
+        <div class="cta-stat-number">0 %</div>
+        <div class="cta-stat-label">Comissão sobre Anúncios</div>
+      </div>
+    </div>
+
+    <p>Crie sua conta em <span class="cta-highlight">menos de 1 minuto</span> e seja um dos pioneiros a anunciar ou encontrar o imóvel/veículo ideal.</p>
+
+    <div class="cta-buttons">
+      <a href="registro.html?action=buscar" class="cta-button">
+        <i class="fas fa-search"></i> Buscar Imóveis/Veículos
+      </a>
+      <a href="registro.html?action=anunciar" class="cta-button">
+        <i class="fas fa-plus"></i> Anunciar Agora
+      </a>
+    </div>
+
+    <p class="cta-note"><i class="fas fa-shield-alt"></i> Ambiente seguro, verificado e sem custos ocultos</p>
+  `;
 }
 
 function renderDefaultCTA() {
-    const ctaContent = document.querySelector('.cta-content');
-    ctaContent.className = 'cta-content cta-default';
-    ctaContent.innerHTML = `
-        <h2 class="cta-title">Encontre o que Você Precisa</h2>
-        <p class="cta-subtitle">Acesso a <span class="cta-highlight">milhares de oportunidades</span> em imóveis e veículos em um só lugar</p>
-        
-        <div class="cta-buttons">
-            <a href="registro.html" class="cta-button">
-                <i class="fas fa-user-plus"></i> Criar Conta Gratuita
-            </a>
-        </div>
-        
-        <p class="cta-note"><i class="fas fa-clock"></i> Leva menos de 1 minuto para se cadastrar</p>
-    `;
+  const ctaContent = document.querySelector('.cta-content');
+  ctaContent.className = 'cta-content cta-default';
+  ctaContent.innerHTML = `
+    <h2 class="cta-title">Encontre ou Anuncie com Facilidade</h2>
+    <p class="cta-subtitle">Tudo o que você precisa para comprar, vender ou alugar está aqui, em um só lugar.</p>
+
+    <div class="cta-buttons">
+      <a href="registro.html" class="cta-button">
+        <i class="fas fa-user-plus"></i> Criar Conta Gratuita
+      </a>
+    </div>
+
+    <p class="cta-note"><i class="fas fa-clock"></i> Cadastre‑se em menos de 60 segundos</p>
+  `;
 }
+
 
 // Inicialização
 document.addEventListener('DOMContentLoaded', () => {
