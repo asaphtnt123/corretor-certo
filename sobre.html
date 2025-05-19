@@ -245,5 +245,24 @@
     
     <!-- Scripts personalizados -->
     <script src="js/main.js"></script>
+
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+  const logo = document.getElementById("logo-site");
+  const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+  function updateLogo(e) {
+    logo.src = e.matches
+      ? "img/logo-corretor-certo-white.png"   // modo escuro
+      : "/logo.png";                          // modo claro
+  }
+
+  updateLogo(darkQuery);           // define logo na carga
+  darkQuery.addEventListener("change", updateLogo); // reage a mudanças
+});
+</script>
+
+<img id="logo-site" alt="Corretor Certo" class="img-fluid" width="180">
+
 </body>
 </html>
