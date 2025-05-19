@@ -249,16 +249,18 @@
     <script>
 document.addEventListener("DOMContentLoaded", function () {
   const logo = document.getElementById("logo-site");
+  if (!logo) return;
+
   const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
   function updateLogo(e) {
     logo.src = e.matches
-      ? "img/logo-corretor-certo-white.png"   // modo escuro
-      : "/logo.png";                          // modo claro
+      ? "img/logo-corretor-certo-white.png"
+      : "/logo.png";
   }
 
-  updateLogo(darkQuery);           // define logo na carga
-  darkQuery.addEventListener("change", updateLogo); // reage a mudanças
+  updateLogo(darkQuery);
+  darkQuery.addEventListener("change", updateLogo);
 });
 </script>
 
