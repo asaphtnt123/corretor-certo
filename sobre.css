@@ -19,7 +19,6 @@ body {
 /* ---------- Header “Sobre” ---------- */
 .sobre-header {
     background: var(--gradient-header), url('../img/hero-sobre.jpg') center/cover no-repeat;
-    padding-top: 80px;
 }
 
 .header-content {
@@ -201,4 +200,18 @@ ul.navbar-nav.ms-auto {
     .nav-item a::after {
         background: var(--primary);
     }
+}
+.navbar-toggler {
+    BACKGROUND-COLOR: azure;
+}
+.navbar-toggler-icon {
+    display: inline-block;
+    BACKGROUND-COLOR: azure;
+    width: 1.5em;
+    height: 1.5em;
+    vertical-align: middle;
+    background-image: var(--bs-navbar-toggler-icon-bg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100%;
 }
